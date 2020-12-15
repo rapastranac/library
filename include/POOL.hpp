@@ -32,14 +32,14 @@ namespace POOL
 		class Queue
 		{
 		public:
-			bool push(T const& value)
+			bool push(T const &value)
 			{
 				std::unique_lock<std::mutex> lock(this->mtx);
 				this->q.push(value);
 				return true;
 			}
 			// deletes the retrieved element, do not use for non integral types
-			bool pop(T& v)
+			bool pop(T &v)
 			{
 				std::unique_lock<std::mutex> lock(this->mtx);
 				if (this->q.empty())
@@ -71,10 +71,10 @@ namespace POOL
 
 		// number of idle threads
 		int n_idle() { return this->nWaiting; }
-		std::thread& get_thread(int i) { return *this->threads[i]; }
+		std::thread &get_thread(int i) { return *this->threads[i]; }
 
 		/*common members*/
-		void linkAnotherPool(POOL::Pool* linkedPool)
+		void linkAnotherPool(POOL::Pool *linkedPool)
 		{
 			this->linkedPool = linkedPool;
 		}
@@ -209,7 +209,7 @@ namespace POOL
 				cv2.wait(lck, [this, &isPop, &_id]() {
 					isPop = this->kill_q.pop(_id);
 					return isPop;
-					});
+				});
 			}
 			/*	if there were no threads in the pool but some functors in the queue,
 				the functors are not deleted by the threads	therefore delete them here	*/
@@ -224,31 +224,31 @@ namespace POOL
 
 		virtual void clear_queue() = 0;
 
-		void setExternNumThreads(std::atomic<int>* externNumThreads)
+		void setExternNumThreads(std::atomic<int> *externNumThreads)
 		{
 			this->externNumThreads = externNumThreads;
 		}
 		/* If this method invoked, thread will return only when pool has no more tasks to execute,
 			this would apply before pushing the first task and right after finishing the last task */
 
-			//template <typename F>
-			//void wait_if_idle(F *f)
-			//{
-			//	std::unique_lock<std::mutex> lck(mtx2);
-			//	cv3.wait(lck, [this, &f]() {
-			//		if (this->size() == this->n_idle())
-			//		{
-			//			if (f)
-			//			{
-			//				(*f)(); //communicates to center node that this node just became available
-			//			}
-	//
-			//			return true;
-			//		}
-			//		return false;
-			//	});
-			//	x0r = !x0r;
-			//}
+		//template <typename F>
+		//void wait_if_idle(F *f)
+		//{
+		//	std::unique_lock<std::mutex> lck(mtx2);
+		//	cv3.wait(lck, [this, &f]() {
+		//		if (this->size() == this->n_idle())
+		//		{
+		//			if (f)
+		//			{
+		//				(*f)(); //communicates to center node that this node just became available
+		//			}
+		//
+		//			return true;
+		//		}
+		//		return false;
+		//	});
+		//	x0r = !x0r;
+		//}
 
 		bool isAwake()
 		{
@@ -263,22 +263,22 @@ namespace POOL
 			}
 		}
 
-		double fetchIdleTime() {
+		double fetchIdleTime()
+		{
 			return ((double)idleTime.load() * 1.0e-9);
 		}
 
 	protected:
-
-		void sumUpIdleTime(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end) {
-			float temp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+		void sumUpIdleTime(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
+		{
+			long long temp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 			idleTime.fetch_add(temp, std::memory_order_relaxed);
 		}
 
-
-		Pool(const Pool&) = delete;
-		Pool(Pool&&) = delete;
-		Pool& operator=(const Pool&) = delete;
-		Pool& operator=(Pool&&) = delete;
+		Pool(const Pool &) = delete;
+		Pool(Pool &&) = delete;
+		Pool &operator=(const Pool &) = delete;
+		Pool &operator=(Pool &&) = delete;
 
 		virtual void run(int threadId) = 0;
 
@@ -299,8 +299,8 @@ namespace POOL
 
 		std::atomic<bool> isDone;
 		std::atomic<bool> isInterrupted;
-		std::atomic<int>* externNumThreads;
-		std::atomic<float> idleTime;
+		std::atomic<int> *externNumThreads = nullptr;
+		std::atomic<long long> idleTime;
 
 		std::mutex mtx;
 		std::mutex mtx2;
@@ -311,7 +311,7 @@ namespace POOL
 		that a new thread (that has received the signal to finish)
 		has been enqueued to kill_q */
 
-		POOL::Pool* linkedPool; //This allows to modify another linked pool
+		POOL::Pool *linkedPool; //This allows to modify another linked pool
 	};
 
 } // namespace POOL

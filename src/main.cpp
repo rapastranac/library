@@ -39,7 +39,7 @@ int main()
 
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
-	read(arr, "input/50000000.txt");
+	read(arr, "input/1000.txt");
 
 	objet.setUnsorted(arr);
 
