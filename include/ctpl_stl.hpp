@@ -125,7 +125,6 @@ namespace ctpl
 						{
 							std::unique_lock<std::mutex> lock(this->mtx);
 							--* this->externNumThreads;
-							//this->externNumThreads->fetch_sub(1,std::memory_order_relaxed);
 						}
 
 						if (_flag)

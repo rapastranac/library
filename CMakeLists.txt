@@ -17,7 +17,7 @@ include_directories(${MPI_INCLUDE_PATH})
 #link_directories(${Boost_LIBRARY_DIRS})
 #include_directories(${Boost_INCLUDE_DIRS})
 
-add_definitions(-g -Wall)
+#add_definitions(-g -Wall)
 #add_compile_options("-std=c++2a")
 
 #add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
@@ -31,7 +31,6 @@ set(Include
     include/barrier.hpp
     include/BranchHandler.hpp
     include/ctpl_stl.hpp
-    include/ExclusiveBarrier.hpp
     include/fwPool.hpp
     include/main.h
     include/POOL.hpp
@@ -40,10 +39,17 @@ set(Include
     include/Sort.h
 )
 
+set(MPI_inc
+        MPI_Modules/Binary.hpp
+        MPI_Modules/Scheduler.hpp
+        MPI_Modules/Serialize.hpp
+        )
+
 set(Sources
     src/main.cpp
     src/buildUnsorted.cpp
 )
+
 
 add_executable(a.out  ${Sources} ${Include})
 
