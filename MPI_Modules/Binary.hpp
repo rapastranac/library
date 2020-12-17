@@ -1,6 +1,6 @@
 #pragma once
-#ifndef BINARY_H
-#define BINARY_H
+#ifndef BINARY_HPP
+#define BINARY_HPP
 
 #include <memory>
 
