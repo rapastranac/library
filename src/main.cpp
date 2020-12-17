@@ -1,5 +1,6 @@
 #include "../include/main.h"
 #include "../include/Sort.h"
+#include "../MPI_Modules/Scheduler.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -9,7 +10,8 @@
 
 namespace fs = std::filesystem;
 
-void print(std::vector<size_t>& ordered) {
+void print(std::vector<size_t> &ordered)
+{
 
 	std::fstream file;
 	std::string path = "ouput";
@@ -21,28 +23,37 @@ void print(std::vector<size_t>& ordered) {
 	file.open(path + "/" + name, std::ofstream::in | std::ofstream::out | std::ofstream::app);
 
 	auto it = ordered.begin();
-	while (it != ordered.end()) {
+	while (it != ordered.end())
+	{
 		file << *it << "\n";
 		it++;
 	}
 
 	file.close();
-
 }
 
-int main()
+int main(int argc, char **argv)
 {
-	/*buildUnsorted(10, 50000000);
-	return 0;*/
 
 	Sort objet;
 
+	library::BranchHandler &handler = library::BranchHandler::getInstance();
+
+	//buildUnsorted(10, 50000000);
+	//return 0;
+
+	library::Scheduler scheduler;
+
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
-	read(arr, "input/50000000.txt");
+	read(arr, "input/1000.txt");
+	
+
+	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr);
+	scheduler.start(argc, argv, handler, _f, -1, arr);
+	return 0;
 
 	objet.setUnsorted(arr);
-
 
 	//mergeSort(-1, arr, 0, arr.size() - 1);
 	//std::vector<size_t> arr{ 12, 11, 13, 5, 6, 7 };

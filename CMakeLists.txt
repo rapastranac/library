@@ -28,10 +28,8 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
 set(Include
     include/args_handler.hpp
-    include/barrier.hpp
     include/BranchHandler.hpp
     include/ctpl_stl.hpp
-    include/ExclusiveBarrier.hpp
     include/fwPool.hpp
     include/main.h
     include/POOL.hpp
@@ -40,10 +38,17 @@ set(Include
     include/Sort.h
 )
 
+set(MPI_inc
+        MPI_Modules/Binary.hpp
+        MPI_Modules/Scheduler.hpp
+        MPI_Modules/Serialize.hpp
+        )
+
 set(Sources
     src/main.cpp
     src/buildUnsorted.cpp
 )
+
 
 add_executable(a.out  ${Sources} ${Include})
 

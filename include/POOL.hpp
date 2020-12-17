@@ -1,8 +1,6 @@
 #ifndef POOL_HPP
 #define POOL_HPP
 
-#include "ExclusiveBarrier.hpp"
-
 #include <any>
 #include <atomic>
 #include <exception>
@@ -270,7 +268,7 @@ namespace POOL
 	protected:
 
 		void sumUpIdleTime(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end) {
-			float temp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+			long long temp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 			idleTime.fetch_add(temp, std::memory_order_relaxed);
 		}
 
@@ -291,8 +289,6 @@ namespace POOL
 		std::atomic<int> nWaiting; // how many threads are waiting
 		bool x0r = true;
 		bool awake = false;
-		//LOGIC tricks
-		ExclusiveBarrier barrier;
 
 		/*It stores threadIds in the order that they finis*/
 		detail::Queue<int> kill_q;
@@ -300,7 +296,7 @@ namespace POOL
 		std::atomic<bool> isDone;
 		std::atomic<bool> isInterrupted;
 		std::atomic<int>* externNumThreads;
-		std::atomic<float> idleTime;
+		std::atomic<long long> idleTime;
 
 		std::mutex mtx;
 		std::mutex mtx2;
