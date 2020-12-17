@@ -28,7 +28,6 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
 set(Include
     include/args_handler.hpp
-    include/barrier.hpp
     include/BranchHandler.hpp
     include/ctpl_stl.hpp
     include/fwPool.hpp

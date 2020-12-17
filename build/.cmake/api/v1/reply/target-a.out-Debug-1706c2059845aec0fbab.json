@@ -25,7 +25,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 54,
+				"line" : 53,
 				"parent" : 0
 			},
 			{
@@ -131,8 +131,7 @@
 				7,
 				8,
 				9,
-				10,
-				11
+				10
 			]
 		}
 	],
@@ -153,11 +152,6 @@
 		{
 			"backtrace" : 1,
 			"path" : "include/args_handler.hpp",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 1,
-			"path" : "include/barrier.hpp",
 			"sourceGroupIndex" : 1
 		},
 		{

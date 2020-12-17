@@ -1,5 +1,8 @@
+#pragma once
 #ifndef SCHEDULER_HPP
 #define SCHEDULER_HPP
+
+#include "Serialize.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -31,8 +34,8 @@ namespace library
 	public:
 		Scheduler(/* args */) {}
 
-		template <typename Handler, typename... Args>
-		void start(int argc, char **argv, Handler &handler, Args... args)
+		template <typename Handler, typename F, typename... Args>
+		void start(int argc, char **argv, Handler &handler, F &&f, Args &&... args)
 		{
 			this->PACKAGE_SIZE = 1;
 
@@ -93,7 +96,7 @@ namespace library
 			if (world_rank == 0)
 			{
 				printf("scheduler() launched!! \n");
-				this->scheduler();
+				this->scheduler(args...);
 			}
 			else
 			{
@@ -112,9 +115,10 @@ namespace library
 		/* all processes that belong to the same window group will be synchronised, such that
 			at MPI_Win_create(...), the same processes will wait until all of them pass by
 			their corresponding MPI_Win_create(...) */
-		void scheduler()
+		template <typename... Args>
+		void scheduler(Args &&... args)
 		{
-			sendSeed();
+			sendSeed(args...);
 			updateNumAvNodes();
 			BcastNumAvNodes(); // comunicate to all nodes the total available nodes
 
@@ -196,8 +200,12 @@ namespace library
 
 		bool onceFlag = false;
 
-		void sendSeed()
+		template <typename... Args>
+		void sendSeed(Args &&... args)
 		{
+
+			Serialize obj;
+			obj.serialize(args...);
 			//auto tuple = handler->getSeed();
 			//TODO serialize tuple in here
 			int localSeed = 0; //This is only initial depth for now

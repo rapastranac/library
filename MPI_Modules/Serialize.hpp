@@ -3,7 +3,7 @@
 #define SERIALIZE_HPP
 
 #include "../include/BranchHandler.hpp"
-#include "Binary.h"
+#include "Binary.hpp"
 
 #include <bits/stdc++.h>
 #include <charconv>
@@ -27,7 +27,7 @@ namespace library
         ~Serialize() {}
 
         template <typename... Args>
-        static void serialize(Args &&... args)
+        void serialize(Args &&... args)
         {
             const int ARGS_SIZE = sizeof...(args);
             std::vector<std::pair<int, char *>> v(ARGS_SIZE + 1);
@@ -57,7 +57,7 @@ namespace library
                 << "Hello, World!" << std::endl;
         }
 
-        static void unserialize(char *raw)
+        void unserialize(char *raw)
         {
             int ARGS_SIZE;
             int disp_unit;
@@ -67,7 +67,7 @@ namespace library
             std::cout << "Hello, World!" << std::endl;
         }
 
-        static void buildRaw(char *raw, std::vector<std::pair<int, char *>> &v, int ARGS_SIZE)
+        void buildRaw(char *raw, std::vector<std::pair<int, char *>> &v, int ARGS_SIZE)
         {
             int position = 0;
             int count = v[0].first;
@@ -89,12 +89,12 @@ namespace library
             }
         }
 
-        static void serializeSTL(std::vector<std::pair<int, char *>> &v, int item, int data)
+        void serializeSTL(std::vector<std::pair<int, char *>> &v, int item, int data)
         {
         }
 
         template <typename... Rest>
-        static void serializeSTL(std::vector<std::pair<int, char *>> &v, int item, int data, Rest &&... rest)
+        void serializeSTL(std::vector<std::pair<int, char *>> &v, int item, int data, Rest &&... rest)
         {
             int disp_unit = sizeof(int);
             int count = disp_unit * 1;
@@ -106,7 +106,7 @@ namespace library
         }
 
         template <typename TYPE>
-        static void serializeSTL(std::vector<std::pair<int, char *>> &v, int item, std::vector<TYPE> data)
+        void serializeSTL(std::vector<std::pair<int, char *>> &v, int item, std::vector<TYPE> data)
         {
             int disp_unit = sizeof(TYPE);
             int count = disp_unit * data.size();
@@ -122,7 +122,7 @@ namespace library
         }
 
         template <typename TYPE, typename... Rest>
-        static void serializeSTL(std::vector<std::pair<int, char *>> &v, int item, std::vector<TYPE> data, Rest &&... rest)
+        void serializeSTL(std::vector<std::pair<int, char *>> &v, int item, std::vector<TYPE> data, Rest &&... rest)
         {
         }
     };
