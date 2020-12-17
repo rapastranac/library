@@ -1,7 +1,7 @@
-#pragma once
 #ifndef BINARY_HPP
 #define BINARY_HPP
 
+#include <cstddef>
 #include <memory>
 
 class Binary
@@ -9,14 +9,20 @@ class Binary
 public:
     Binary(/* args */)
     {
-        this->SIZE = 0;
+        this->Bytes = 0;
     }
 
-    Binary(int SIZE)
+    Binary(int Bytes)
     {
-        this->SIZE = SIZE;
-        buffer.reset(new char[SIZE]);
+        this->Bytes = Bytes;
+        buffer.reset(new char[Bytes]);
         //buffer = std::make_unique<char[]>(SIZE);
+    }
+
+    void allocate(int Bytes)
+    {
+        this->Bytes = Bytes;
+        buffer.reset(new char[Bytes]);
     }
 
     ~Binary() {}
@@ -32,7 +38,7 @@ public:
     }
 
 private:
-    int SIZE;
+    int Bytes;
     std::unique_ptr<char[]> buffer;
 };
 

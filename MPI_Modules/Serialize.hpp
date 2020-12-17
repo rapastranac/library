@@ -2,26 +2,22 @@
 #ifndef SERIALIZE_HPP
 #define SERIALIZE_HPP
 
-#include "../include/BranchHandler.hpp"
 #include "Binary.hpp"
 
-#include <bits/stdc++.h>
 #include <charconv>
 #include <cstddef>
 #include <cstring>
-#include <sstream>
 #include <vector>
-#include <map>
 #include <utility>
 
 namespace library
 {
     class Serialize
     {
-        friend class BranchHandler;
 
     private:
-        /* data */
+        Binary rw;
+
     public:
         Serialize() {}
         ~Serialize() {}
@@ -49,9 +45,9 @@ namespace library
             //size_t backwards;
             //std::memcpy(&backwards, v[2].second, sizeof(size_t));
 
-            char raw[byteSize];
-            Binary rw(byteSize);
-            buildRaw(raw, v, ARGS_SIZE);
+            //char raw[byteSize];
+            rw.allocate(byteSize);
+            buildRaw(*rw, v, ARGS_SIZE);
 
             std::cout
                 << "Hello, World!" << std::endl;
@@ -111,7 +107,7 @@ namespace library
             int disp_unit = sizeof(TYPE);
             int count = disp_unit * data.size();
             v[item].first = count;
-            v[item].second = new char[count, 0];
+            v[item].second = new char[count];
             std::memcpy(v[item].second, data.data(), count);
 
             //TYPE backwards;

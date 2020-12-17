@@ -1,6 +1,7 @@
 #include "../include/main.h"
 #include "../include/Sort.h"
 #include "../MPI_Modules/Scheduler.hpp"
+#include "../MPI_Modules/Serialize.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -47,7 +48,9 @@ int main(int argc, char **argv)
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
-	
+
+	//library::Serialize instance;
+	//instance.serialize(-1, arr);
 
 	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr);
 	scheduler.start(argc, argv, handler, _f, -1, arr);
