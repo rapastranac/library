@@ -97,20 +97,23 @@ int main(int argc, char **argv)
 	//library::Serialize instance(oa);
 	//auto raw = instance.serialize(-1, arr);
 	MyClass ins;
-	int id = -1;
-	//oa << id << arr;
-	oa << myQueue;
+	double id = -1.156;
+
+	//oa << id;
 	//oa << ins;
+	oa << id << arr;
+	//oa << myQueue;
 
 	archive::stream is(os);
 	//is = os;
 	archive::iarchive ia(is);
 
-	int id_i;
+	double id_i;
 	//std::set<double> output;
 	//std::list<float> output;
-	std::queue<float> output;
-	ia >> output;
+	//std::queue<float> output;
+	//ia >> output;
+	ia >> id_i >> sorted;
 	//auto oarchive = instance.get_oarchive();
 	//instance.unserialize(*raw, id, sorted);
 

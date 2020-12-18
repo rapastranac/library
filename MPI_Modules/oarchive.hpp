@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstring>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 //STL containers
@@ -126,11 +127,19 @@ namespace archive
             }
         }
 
-        void serialize(const int &src)
+        /*
+        integral types:         bool, char, char8_t, char16_t, char32_t, wchar_t, short, int, long, long long
+        floating point types:   float, double, long double
+        */
+        template <typename _T,
+                  std::enable_if_t<std::is_integral<_T>::value ||
+                                       std::is_floating_point<_T>::value,
+                                   bool> = true>
+        void serialize(const _T &src)
         {
             ++this->NUM_ARGS;
 
-            int disp_unit = sizeof(int);
+            int disp_unit = sizeof(_T);
             int count = disp_unit * 1;
             this->Bytes += count;
 
@@ -217,7 +226,8 @@ namespace archive
             }
         }
 
-        template <typename TYPE>
+        template <class TYPE,
+                  std::enable_if_t<std::is_class<TYPE>::value, bool> = false>
         void serialize(const TYPE &src)
         {
             ++this->NUM_ARGS;

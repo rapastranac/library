@@ -86,9 +86,15 @@ namespace archive
         }
 
     private:
-        void unserialize(int &target)
+        /*
+        integral types:         bool, char, char8_t, char16_t, char32_t, wchar_t, short, int, long, long long
+        floating point types:   float, double, long double
+        */
+        template <typename _T,
+                  std::enable_if_t<std::is_integral<_T>::value || std::is_floating_point<_T>::value, bool> = true>
+        void unserialize(_T &target)
         {
-            int disp_unit = sizeof(int);
+            int disp_unit = sizeof(_T);
             int count = C[arg_No].first;
             int start = C[arg_No].second;
             std::memcpy(&target, &buffer[start], count);
@@ -143,7 +149,7 @@ namespace archive
             }
             ++arg_No;
         }
-         template <typename TYPE>
+        template <typename TYPE>
         void unserialize(std::queue<TYPE> &target)
         {
             int disp_unit = sizeof(TYPE);
