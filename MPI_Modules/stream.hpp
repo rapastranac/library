@@ -34,7 +34,7 @@ namespace archive
             buffer = new char[Bytes];
         }
 
-        auto *operator*()
+        auto &operator*()
         {
             return buffer;
         }
@@ -42,7 +42,6 @@ namespace archive
         auto &operator[](std::size_t idx)
         {
             return buffer[idx];
-            //return buffer.get()[idx];
         }
 
         stream(const stream &) = delete;

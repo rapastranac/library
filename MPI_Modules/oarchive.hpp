@@ -88,34 +88,31 @@ namespace archive
             int counter = 0;
             int count;
             //archive::stream streamCpy;
-            //if (stream)
-            //{
-            //    if (stream->Bytes != 0)
-            //    {
+            //if (stream){
+            //    if (stream->Bytes != 0){
             //        streamCpy = *stream;
-            //
             //        return;
             //    }
             //}
 
             int firstBytes = (NUM_ARGS + 1) * sizeof(int);
             stream->allocate(Bytes + firstBytes);
+            char *buf = *(*stream);
 
-            std::memcpy(&stream[0], &NUM_ARGS, sizeof(int)); //NUM_ARGS copied into stream
+            std::memcpy(&buf[0], &NUM_ARGS, sizeof(int)); //NUM_ARGS copied into stream
             counter += sizeof(int);
 
             for (int i = 0; i < NUM_ARGS; i++)
             {
                 count = sizeof(int);
-                
-                std::memcpy(&stream[counter], &C[i].first, count); //Bytes count copied
+                std::memcpy(&buf[counter], &C[i].first, count); //Bytes count copied
                 counter += sizeof(int);
             }
 
             for (size_t i = 0; i < NUM_ARGS; i++)
             {
                 count = C[i].first;
-                std::memcpy(&stream[counter], C[i].second, count);
+                std::memcpy(&buf[counter], C[i].second, count);
                 counter += C[i].first;
             }
         }
