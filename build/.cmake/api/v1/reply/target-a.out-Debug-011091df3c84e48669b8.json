@@ -11,6 +11,7 @@
 		"commands" : 
 		[
 			"add_executable",
+			"add_compile_options",
 			"include_directories"
 		],
 		"files" : 
@@ -25,11 +26,17 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 53,
+				"line" : 54,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
+				"file" : 0,
+				"line" : 21,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
 				"file" : 0,
 				"line" : 15,
 				"parent" : 0
@@ -42,10 +49,14 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g  "
+					"fragment" : "-g   -g -Wall"
 				},
 				{
 					"fragment" : "-pthread"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-std=c++2a"
 				},
 				{
 					"fragment" : "-std=gnu++2a"
@@ -54,11 +65,11 @@
 			"includes" : 
 			[
 				{
-					"backtrace" : 2,
+					"backtrace" : 3,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
 				},
 				{
-					"backtrace" : 2,
+					"backtrace" : 3,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
 				}
 			],

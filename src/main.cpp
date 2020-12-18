@@ -1,12 +1,20 @@
 #include "../include/main.h"
 #include "../include/Sort.h"
 #include "../MPI_Modules/Scheduler.hpp"
+#include "../MPI_Modules/oarchive.hpp"
+#include "../MPI_Modules/iarchive.hpp"
+#include "../MPI_Modules/stream.hpp"
 
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <vector>
+
+#include <istream>
+#include <sstream>
+#include <iterator>
+#include <string>
 
 namespace fs = std::filesystem;
 
@@ -47,7 +55,18 @@ int main(int argc, char **argv)
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
-	
+
+	archive::stream strm;
+	archive::oarchive oa(strm);
+	//library::Serialize instance(oa);
+	//auto raw = instance.serialize(-1, arr);
+	int id = -1;
+	oa << id;
+	oa << arr;
+	//auto oarchive = instance.get_oarchive();
+	//instance.unserialize(*raw, id, sorted);
+
+	return 0;
 
 	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr);
 	scheduler.start(argc, argv, handler, _f, -1, arr);
