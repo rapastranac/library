@@ -19,6 +19,16 @@
 /* 
 * Non copyable structure
 * it contains serialized data in bytes
+|NUM_ARGS  |
+|  ARG1    |
+|  ARG2    |
+|   ...    |
+|  ARGN,   |
+|ARG1_BYTES|
+|ARG1_BYTES|
+|   ...    |
+|ARGN_BYTES|
+
 */
 
 namespace archive
@@ -27,11 +37,10 @@ namespace archive
     {
 
     private:
-        archive::stream *stream = nullptr;
-        int NUM_ARGS;
-        std::vector<std::pair<int, char *>> C;
-        int Bytes;
-        int idxIA;
+        archive::stream *stream = nullptr;     // pointer to stream
+        int NUM_ARGS;                          // Number of arguments attached to stream
+        std::vector<std::pair<int, char *>> C; // temporary container to store buffer section while building stream
+        int Bytes;                             // number of bytes to be contained in stream
 
     public:
         oarchive(archive::stream &stream)
@@ -50,9 +59,9 @@ namespace archive
         }
 
         template <typename TYPE>
-        oarchive &operator<<(TYPE &buffer)
+        oarchive &operator<<(const TYPE &src)
         {
-            set(buffer);
+            set(src);
             finishBuffer();
             return *this;
         }
@@ -87,17 +96,10 @@ namespace archive
         {
             int counter = 0;
             int count;
-            //archive::stream streamCpy;
-            //if (stream){
-            //    if (stream->Bytes != 0){
-            //        streamCpy = *stream;
-            //        return;
-            //    }
-            //}
 
             int firstBytes = (NUM_ARGS + 1) * sizeof(int);
             stream->allocate(Bytes + firstBytes);
-            char *buf = *(*stream);
+            char *buf = &stream->operator[](0); //pointer to buffer in stream
 
             std::memcpy(&buf[0], &NUM_ARGS, sizeof(int)); //NUM_ARGS copied into stream
             counter += sizeof(int);
@@ -112,7 +114,7 @@ namespace archive
             for (size_t i = 0; i < NUM_ARGS; i++)
             {
                 count = C[i].first;
-                std::memcpy(&buf[counter], C[i].second, count);
+                std::memcpy(&buf[counter], C[i].second, count); //actual Bytes copied
                 counter += C[i].first;
             }
         }
@@ -138,6 +140,37 @@ namespace archive
 
             C.emplace_back(std::make_pair(count, new char[count]));
             std::memcpy(C.back().second, src.data(), count);
+        }
+
+        template <typename TYPE>
+        void set(const std::set<TYPE> &src)
+        {
+            ++this->NUM_ARGS;
+
+            int disp_unit = sizeof(TYPE);
+            int count = disp_unit * src.size();
+            this->Bytes += count;
+
+            C.emplace_back(std::make_pair(count, new char[count]));
+
+            auto it = src.begin();
+            int idx = 0;
+            while (it != src.end())
+            {
+                std::memcpy(&C.back().second[idx], &*it, disp_unit);
+                ++it;
+                idx += disp_unit;
+            }
+        }
+
+        template <typename TYPE>
+        void set(const TYPE &src)
+        {
+            ++this->NUM_ARGS;
+
+            int disp_unit = sizeof(TYPE);
+            // int count = disp_unit * src.size();
+            //this->Bytes += count;
         }
     };
 

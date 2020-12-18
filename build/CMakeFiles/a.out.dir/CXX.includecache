@@ -59,9 +59,9 @@ vector
 -
 
 /home/andres/Documents/github/library/MPI_Modules/stream.hpp
-oarchive.hpp
-/home/andres/Documents/github/library/MPI_Modules/oarchive.hpp
 memory
+-
+cstring
 -
 
 /home/andres/Documents/github/library/include/BranchHandler.hpp
@@ -212,6 +212,8 @@ fstream
 iostream
 -
 vector
+-
+set
 -
 istream
 -

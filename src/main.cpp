@@ -10,11 +10,39 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <set>
 
 #include <istream>
 #include <sstream>
 #include <iterator>
 #include <string>
+
+class MyClass
+{
+	friend class archive::oarchive;
+	friend class archive::oarchive;
+
+private:
+	template <class Archive>
+	void serialize(Archive &ar)
+	{
+		ar << e1;
+		ar << e2;
+	}
+
+public:
+	MyClass(/* args */)
+	{
+		srand(time(NULL));
+		e1 = {1, 2, 3, 4, 5};
+		e2 = {6, 7, 8, 9, 10};
+	}
+	~MyClass() {}
+
+private:
+	std::vector<int> e1;
+	std::set<int> e2;
+};
 
 namespace fs = std::filesystem;
 
@@ -52,17 +80,28 @@ int main(int argc, char **argv)
 
 	library::Scheduler scheduler;
 
+	std::set<double> mySet{15.516505, 1.56156156, 56.30501505};
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
 
-	archive::stream strm;
-	archive::oarchive oa(strm);
+	archive::stream os;
+	archive::oarchive oa(os);
+
 	//library::Serialize instance(oa);
 	//auto raw = instance.serialize(-1, arr);
+	MyClass ins;
 	int id = -1;
-	oa << id;
-	oa << arr;
+	//oa << id << arr;
+	oa << mySet;
+	//oa << ins;
+
+	archive::stream is(os);
+	//is = os;
+	archive::iarchive ia(is);
+
+	int id_i;
+	ia >> id_i >> sorted;
 	//auto oarchive = instance.get_oarchive();
 	//instance.unserialize(*raw, id, sorted);
 
