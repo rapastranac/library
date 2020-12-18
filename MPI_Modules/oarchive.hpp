@@ -8,6 +8,13 @@
 #include <cstring>
 #include <memory>
 #include <utility>
+
+//STL containers
+#include <array>
+#include <deque>
+#include <list>
+#include <set>
+#include <queue>
 #include <vector>
 
 /*
@@ -61,7 +68,7 @@ namespace archive
         template <typename TYPE>
         oarchive &operator<<(const TYPE &src)
         {
-            set(src);
+            serialize(src);
             finishBuffer();
             return *this;
         }
@@ -118,7 +125,8 @@ namespace archive
                 counter += C[i].first;
             }
         }
-        void set(const int &src)
+
+        void serialize(const int &src)
         {
             ++this->NUM_ARGS;
 
@@ -129,8 +137,9 @@ namespace archive
             C.emplace_back(std::make_pair(count, new char[count]));
             std::memcpy(C.back().second, &src, count);
         }
+
         template <typename TYPE>
-        void set(const std::vector<TYPE> &src)
+        void serialize(const std::vector<TYPE> &src)
         {
             ++this->NUM_ARGS;
 
@@ -143,7 +152,7 @@ namespace archive
         }
 
         template <typename TYPE>
-        void set(const std::set<TYPE> &src)
+        void serialize(const std::set<TYPE> &src)
         {
             ++this->NUM_ARGS;
 
@@ -164,7 +173,52 @@ namespace archive
         }
 
         template <typename TYPE>
-        void set(const TYPE &src)
+        void serialize(const std::list<TYPE> &src)
+        {
+            ++this->NUM_ARGS;
+
+            int disp_unit = sizeof(TYPE);
+            int count = disp_unit * src.size();
+            this->Bytes += count;
+
+            C.emplace_back(std::make_pair(count, new char[count]));
+
+            auto it = src.begin();
+            int idx = 0;
+            while (it != src.end())
+            {
+                std::memcpy(&C.back().second[idx], &*it, disp_unit);
+                ++it;
+                idx += disp_unit;
+            }
+        }
+
+        template <typename TYPE>
+        void serialize(const std::queue<TYPE> &src)
+        {
+            ++this->NUM_ARGS;
+
+            int disp_unit = sizeof(TYPE);
+            int count = disp_unit * src.size();
+            this->Bytes += count;
+
+            C.emplace_back(std::make_pair(count, new char[count]));
+
+            auto srcCpy = src;
+
+            auto it = srcCpy.front();
+            int idx = 0;
+            while (!srcCpy.empty())
+            {
+                std::memcpy(&C.back().second[idx], &it, disp_unit);
+                srcCpy.pop();
+                ++it;
+                idx += disp_unit;
+            }
+        }
+
+        template <typename TYPE>
+        void serialize(const TYPE &src)
         {
             ++this->NUM_ARGS;
 

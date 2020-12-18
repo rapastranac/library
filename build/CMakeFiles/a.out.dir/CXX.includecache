@@ -39,6 +39,16 @@ memory
 -
 utility
 -
+array
+-
+deque
+-
+list
+-
+set
+-
+queue
+-
 vector
 -
 
@@ -54,6 +64,16 @@ cstring
 memory
 -
 utility
+-
+array
+-
+deque
+-
+list
+-
+set
+-
+queue
 -
 vector
 -

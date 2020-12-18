@@ -6,6 +6,13 @@
 #include <cstring>
 #include <memory>
 #include <utility>
+
+//STL containers
+#include <array>
+#include <deque>
+#include <list>
+#include <set>
+#include <queue>
 #include <vector>
 
 /*
@@ -73,13 +80,13 @@ namespace archive
                     arg_indx_begin += argBytes;
                 }
             }
-            fetch(target);
+            unserialize(target);
 
             return *this;
         }
 
     private:
-        void fetch(int &target)
+        void unserialize(int &target)
         {
             int disp_unit = sizeof(int);
             int count = C[arg_No].first;
@@ -87,14 +94,71 @@ namespace archive
             std::memcpy(&target, &buffer[start], count);
             ++arg_No;
         }
+
         template <typename TYPE>
-        void fetch(std::vector<TYPE> &target)
+        void unserialize(std::vector<TYPE> &target)
         {
             int disp_unit = sizeof(TYPE);
             int count = C[arg_No].first;
             int start = C[arg_No].second;
             target.resize(count / disp_unit);
             std::memcpy(target.data(), &buffer[start], count);
+            ++arg_No;
+        }
+
+        template <typename TYPE>
+        void unserialize(std::set<TYPE> &target)
+        {
+            int disp_unit = sizeof(TYPE);
+            int count = C[arg_No].first;
+            int start = C[arg_No].second;
+            int SIZE = count / disp_unit;
+
+            for (int i = 0; i < SIZE; i++)
+            {
+                TYPE item;
+                std::memcpy(&item, &buffer[start], disp_unit);
+                target.insert(item);
+
+                start += disp_unit;
+            }
+            ++arg_No;
+        }
+
+        template <typename TYPE>
+        void unserialize(std::list<TYPE> &target)
+        {
+            int disp_unit = sizeof(TYPE);
+            int count = C[arg_No].first;
+            int start = C[arg_No].second;
+            int SIZE = count / disp_unit;
+
+            for (int i = 0; i < SIZE; i++)
+            {
+                TYPE item;
+                std::memcpy(&item, &buffer[start], disp_unit);
+                target.push_back(item);
+
+                start += disp_unit;
+            }
+            ++arg_No;
+        }
+         template <typename TYPE>
+        void unserialize(std::queue<TYPE> &target)
+        {
+            int disp_unit = sizeof(TYPE);
+            int count = C[arg_No].first;
+            int start = C[arg_No].second;
+            int SIZE = count / disp_unit;
+
+            for (int i = 0; i < SIZE; i++)
+            {
+                TYPE item;
+                std::memcpy(&item, &buffer[start], disp_unit);
+                target.push(item);
+
+                start += disp_unit;
+            }
             ++arg_No;
         }
     };

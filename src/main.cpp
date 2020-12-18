@@ -81,6 +81,7 @@ int main(int argc, char **argv)
 	library::Scheduler scheduler;
 
 	std::set<double> mySet{15.516505, 1.56156156, 56.30501505};
+	std::list<float> myList{15.516505, 1.56156156, 56.30501505};
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
@@ -88,12 +89,17 @@ int main(int argc, char **argv)
 	archive::stream os;
 	archive::oarchive oa(os);
 
+	std::queue<float> myQueue;
+	myQueue.push(15.516505);
+	myQueue.push(1.56156156);
+	myQueue.push(56.30501505);
+
 	//library::Serialize instance(oa);
 	//auto raw = instance.serialize(-1, arr);
 	MyClass ins;
 	int id = -1;
 	//oa << id << arr;
-	oa << mySet;
+	oa << myQueue;
 	//oa << ins;
 
 	archive::stream is(os);
@@ -101,7 +107,10 @@ int main(int argc, char **argv)
 	archive::iarchive ia(is);
 
 	int id_i;
-	ia >> id_i >> sorted;
+	//std::set<double> output;
+	//std::list<float> output;
+	std::queue<float> output;
+	ia >> output;
 	//auto oarchive = instance.get_oarchive();
 	//instance.unserialize(*raw, id, sorted);
 
