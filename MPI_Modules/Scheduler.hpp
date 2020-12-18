@@ -2,8 +2,6 @@
 #ifndef SCHEDULER_HPP
 #define SCHEDULER_HPP
 
-#include "Serialize.hpp"
-
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -204,8 +202,8 @@ namespace library
 		void sendSeed(Args &&... args)
 		{
 
-			Serialize obj;
-			obj.serialize(args...);
+			//Serialize obj;
+			//oarchive raw = obj.serialize(args...);
 			//auto tuple = handler->getSeed();
 			//TODO serialize tuple in here
 			int localSeed = 0; //This is only initial depth for now

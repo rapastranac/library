@@ -1,0 +1,1 @@
+/bin/c++  -g   CMakeFiles/a.out.dir/src/main.cpp.o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o  -o ../a.out  -Wl,-rpath,/usr/lib/x86_64-linux-gnu/openmpi/lib -lpthread /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so 

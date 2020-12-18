@@ -39,9 +39,10 @@ set(Include
 )
 
 set(MPI_inc
-        MPI_Modules/Binary.hpp
+        MPI_Modules/oarchive.hpp
+        MPI_Modules/iarchive.hpp
         MPI_Modules/Scheduler.hpp
-        MPI_Modules/Serialize.hpp
+        MPI_Modules/stream.hpp
         )
 
 set(Sources
