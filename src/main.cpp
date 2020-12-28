@@ -26,8 +26,16 @@ private:
 	template <class Archive>
 	void serialize(Archive &ar)
 	{
+		printf("Hello");
 		ar << e1;
 		ar << e2;
+	}
+
+	template <class Archive>
+	void unserialize(Archive &ar)
+	{
+		ar >> e1;
+		ar >> e2;
 	}
 
 public:
@@ -101,7 +109,8 @@ int main(int argc, char **argv)
 
 	//oa << id;
 	//oa << ins;
-	oa << id << arr;
+	oa << mySet;
+	//oa << id << arr;
 	//oa << myQueue;
 
 	archive::stream is(os);

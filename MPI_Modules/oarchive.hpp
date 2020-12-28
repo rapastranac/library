@@ -67,7 +67,7 @@ namespace archive
         }
 
         template <typename TYPE>
-        oarchive &operator<<(const TYPE &src)
+        oarchive &operator<<(TYPE &src)
         {
             serialize(src);
             finishBuffer();
@@ -131,10 +131,12 @@ namespace archive
         integral types:         bool, char, char8_t, char16_t, char32_t, wchar_t, short, int, long, long long
         floating point types:   float, double, long double
         */
+        //template <typename _T,
+        //          std::enable_if_t<std::is_integral<_T>::value ||
+        //                               std::is_floating_point<_T>::value,
+        //                           bool> = true>
         template <typename _T,
-                  std::enable_if_t<std::is_integral<_T>::value ||
-                                       std::is_floating_point<_T>::value,
-                                   bool> = true>
+                  std::enable_if_t<std::is_fundamental<_T>::value, bool> = true>
         void serialize(const _T &src)
         {
             ++this->NUM_ARGS;
@@ -226,16 +228,22 @@ namespace archive
             }
         }
 
+        //template <class TYPE,
+        //          std::enable_if_t<std::is_class<TYPE>::value, bool> = false>
+        /*
         template <class TYPE,
-                  std::enable_if_t<std::is_class<TYPE>::value, bool> = false>
-        void serialize(const TYPE &src)
+                  std::enable_if_t<std::is_<TYPE>::value, bool> = false>
+        void serialize(TYPE &src)
         {
             ++this->NUM_ARGS;
 
             int disp_unit = sizeof(TYPE);
+
+            src.serialize(*this);
             // int count = disp_unit * src.size();
             //this->Bytes += count;
         }
+        */
     };
 
 }; // namespace archive
