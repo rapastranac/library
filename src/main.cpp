@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <set>
+#include <unordered_set>
 
 #include <istream>
 #include <sstream>
@@ -89,6 +90,8 @@ int main(int argc, char **argv)
 	library::Scheduler scheduler;
 
 	std::set<double> mySet{15.516505, 1.56156156, 56.30501505};
+	std::unordered_set<double> myUSet{15.516505, 1.56156156, 56.30501505};
+
 	std::list<float> myList{15.516505, 1.56156156, 56.30501505};
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
@@ -107,9 +110,10 @@ int main(int argc, char **argv)
 	MyClass ins;
 	double id = -1.156;
 
-	//oa << id;
-	//oa << ins;
-	oa << mySet;
+	oa << id;
+	oa << ins;
+	//oa << mySet;
+	//oa << myUSet;
 	//oa << id << arr;
 	//oa << myQueue;
 

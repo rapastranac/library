@@ -15,6 +15,7 @@
 #include <deque>
 #include <list>
 #include <set>
+#include <unordered_set>
 #include <queue>
 #include <vector>
 
@@ -38,6 +39,74 @@
 |ARGN_BYTES|
 
 */
+
+//specialize a type for all of the STL containers.
+namespace is_stl_container_impl
+{
+    template <typename T>
+    struct is_stl_container : std::false_type
+    {
+    };
+    template <typename T, std::size_t N>
+    struct is_stl_container<std::array<T, N>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::vector<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::deque<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::list<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::set<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::unordered_set<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::multiset<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::map<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::multimap<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::unordered_map<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::unordered_multimap<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::queue<Args...>> : std::true_type
+    {
+    };
+    template <typename... Args>
+    struct is_stl_container<std::priority_queue<Args...>> : std::true_type
+    {
+    };
+} // namespace is_stl_container_impl
+
+//type trait to utilize the implementation type traits as well as decay the type
+template <typename T>
+struct is_stl_container
+{
+    static constexpr bool const value = is_stl_container_impl::is_stl_container<std::decay_t<T>>::value;
+};
 
 namespace archive
 {
@@ -131,10 +200,6 @@ namespace archive
         integral types:         bool, char, char8_t, char16_t, char32_t, wchar_t, short, int, long, long long
         floating point types:   float, double, long double
         */
-        //template <typename _T,
-        //          std::enable_if_t<std::is_integral<_T>::value ||
-        //                               std::is_floating_point<_T>::value,
-        //                           bool> = true>
         template <typename _T,
                   std::enable_if_t<std::is_fundamental<_T>::value, bool> = true>
         void serialize(const _T &src)
@@ -228,11 +293,8 @@ namespace archive
             }
         }
 
-        //template <class TYPE,
-        //          std::enable_if_t<std::is_class<TYPE>::value, bool> = false>
-        /*
         template <class TYPE,
-                  std::enable_if_t<std::is_<TYPE>::value, bool> = false>
+                  std::enable_if_t<!is_stl_container<TYPE>::value && !std::is_fundamental<TYPE>::value, bool> = true>
         void serialize(TYPE &src)
         {
             ++this->NUM_ARGS;
@@ -243,7 +305,6 @@ namespace archive
             // int count = disp_unit * src.size();
             //this->Bytes += count;
         }
-        */
     };
 
 }; // namespace archive
