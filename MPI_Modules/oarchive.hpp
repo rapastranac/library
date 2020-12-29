@@ -41,6 +41,7 @@
 */
 
 //specialize a type for all of the STL containers.
+//https://stackoverflow.com/a/31105859/5248548
 namespace is_stl_container_impl
 {
     template <typename T>
