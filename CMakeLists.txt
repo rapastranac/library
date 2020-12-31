@@ -39,10 +39,11 @@ set(Include
 )
 
 set(MPI_inc
-        MPI_Modules/oarchive.hpp
-        MPI_Modules/iarchive.hpp
         MPI_Modules/Scheduler.hpp
-        MPI_Modules/stream.hpp
+        MPI_Modules/serialize/archive.hpp
+        MPI_Modules/serialize/iarchive.hpp
+        MPI_Modules/serialize/oarchive.hpp        
+        MPI_Modules/serialize/stream.hpp        
         )
 
 set(Sources

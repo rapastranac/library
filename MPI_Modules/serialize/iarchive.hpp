@@ -1,44 +1,11 @@
 #ifndef IARCHIVE_HPP
 #define IARCHIVE_HPP
 
-#include <charconv>
-#include <cstddef>
-#include <cstring>
-#include <memory>
-#include <utility>
-
-//STL containers
-#include <array>
-#include <deque>
-#include <list>
-#include <set>
-#include <queue>
-#include <vector>
-
-/*
-* Created by Andres Pastrana on 2020
-* andres.pastrana@usherbrooke.ca
-* rapastranac@gmail.com
-*/
-
-/* 
-* Non copyable structure
-* it contains serialized data in bytes
-|NUM_ARGS  |
-|  ARG1    |
-|  ARG2    |
-|   ...    |
-|  ARGN,   |
-|ARG1_BYTES|
-|ARG1_BYTES|
-|   ...    |
-|ARGN_BYTES|
-
-*/
+#include "archive.hpp"
 
 namespace archive
 {
-    class iarchive
+    class iarchive : public archive_parent
     {
 
     private:
@@ -47,7 +14,6 @@ namespace archive
         std::vector<std::pair<int, int>> C; // temporary container to store buffer section while building stream
         int Bytes;                          // number of bytes to be contained in stream
         int arg_No;                         // index in stream
-        //int position;
 
     public:
         iarchive(archive::stream &stream)
@@ -91,7 +57,7 @@ namespace archive
         floating point types:   float, double, long double
         */
         template <typename _T,
-                  std::enable_if_t<std::is_integral<_T>::value || std::is_floating_point<_T>::value, bool> = true>
+                  std::enable_if_t<std::is_fundamental<_T>::value, bool> = true>
         void unserialize(_T &target)
         {
             int disp_unit = sizeof(_T);
@@ -149,6 +115,7 @@ namespace archive
             }
             ++arg_No;
         }
+
         template <typename TYPE>
         void unserialize(std::queue<TYPE> &target)
         {
@@ -167,8 +134,14 @@ namespace archive
             }
             ++arg_No;
         }
-    };
 
+        template <class TYPE,
+                  std::enable_if_t<!is_stl_container<TYPE>::value && !std::is_fundamental<TYPE>::value, bool> = true>
+        void unserialize(TYPE &src)
+        {
+            src.unserialize(*this);
+        }
+    };
 }; // namespace archive
 
 #endif

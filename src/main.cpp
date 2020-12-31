@@ -1,9 +1,9 @@
 #include "../include/main.h"
 #include "../include/Sort.h"
 #include "../MPI_Modules/Scheduler.hpp"
-#include "../MPI_Modules/oarchive.hpp"
-#include "../MPI_Modules/iarchive.hpp"
-#include "../MPI_Modules/stream.hpp"
+#include "../MPI_Modules/serialize/oarchive.hpp"
+#include "../MPI_Modules/serialize/iarchive.hpp"
+#include "../MPI_Modules/serialize/stream.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -21,7 +21,7 @@
 class MyClass
 {
 	friend class archive::oarchive;
-	friend class archive::oarchive;
+	friend class archive::iarchive;
 
 private:
 	template <class Archive>
@@ -43,12 +43,9 @@ public:
 	MyClass(/* args */)
 	{
 		srand(time(NULL));
-		e1 = {1, 2, 3, 4, 5};
-		e2 = {6, 7, 8, 9, 10};
 	}
 	~MyClass() {}
 
-private:
 	std::vector<int> e1;
 	std::set<int> e2;
 };
@@ -108,6 +105,8 @@ int main(int argc, char **argv)
 	//library::Serialize instance(oa);
 	//auto raw = instance.serialize(-1, arr);
 	MyClass ins;
+	ins.e1 = {1, 2, 3, 4, 5};
+	ins.e2 = {6, 7, 8, 9, 10};
 	double id = -1.156;
 
 	oa << id;
@@ -121,12 +120,17 @@ int main(int argc, char **argv)
 	//is = os;
 	archive::iarchive ia(is);
 
-	double id_i;
+	double id_received;
+	MyClass ins_received;
+
+	ia >> id_received;
+	ia >> ins_received;
+
 	//std::set<double> output;
 	//std::list<float> output;
 	//std::queue<float> output;
 	//ia >> output;
-	ia >> id_i >> sorted;
+	//ia >> id_received >> sorted;
 	//auto oarchive = instance.get_oarchive();
 	//instance.unserialize(*raw, id, sorted);
 
