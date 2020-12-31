@@ -188,6 +188,11 @@ namespace archive
             }
         }
 
+        template <typename KEY, typename TYPE>
+        void serialize(const std::pair<KEY, TYPE> &src) {
+            
+        }
+
         template <class TYPE,
                   std::enable_if_t<!is_stl_container<TYPE>::value && !std::is_fundamental<TYPE>::value, bool> = true>
         void serialize(TYPE &src)
