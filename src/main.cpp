@@ -30,6 +30,7 @@ private:
 		printf("Hello");
 		ar << e1;
 		ar << e2;
+		ar << e3;
 	}
 
 	template <class Archive>
@@ -37,6 +38,7 @@ private:
 	{
 		ar >> e1;
 		ar >> e2;
+		ar >> e3;
 	}
 
 public:
@@ -48,6 +50,7 @@ public:
 
 	std::vector<int> e1;
 	std::set<int> e2;
+	std::string e3;
 };
 
 namespace fs = std::filesystem;
@@ -88,8 +91,13 @@ int main(int argc, char **argv)
 
 	std::set<double> mySet{15.516505, 1.56156156, 56.30501505};
 	std::unordered_set<double> myUSet{15.516505, 1.56156156, 56.30501505};
+	//std::map<int, float> myMap = {{5, 5.3543}, {3, 1.3423}, {7, 9.23423}};
+	std::map<char, std::set<int>> myMap = {{'f', {3, 5, 34, 3}}, {'d', {5, 67, 4}}, {'j', {5, 67, 34}}};
 
-	std::list<float> myList{15.516505, 1.56156156, 56.30501505};
+	std::string str{"This is a sentence"};
+
+	std::list<float>
+		myList{15.516505, 1.56156156, 56.30501505};
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
@@ -107,32 +115,29 @@ int main(int argc, char **argv)
 	MyClass ins;
 	ins.e1 = {1, 2, 3, 4, 5};
 	ins.e2 = {6, 7, 8, 9, 10};
+	ins.e3 = "This is a whole sentence";
 	double id = -1.156;
 
 	oa << id;
+	oa << str;
+	oa << myMap;
 	oa << ins;
-	//oa << mySet;
-	//oa << myUSet;
-	//oa << id << arr;
-	//oa << myQueue;
+	oa << mySet;
 
 	archive::stream is(os);
-	//is = os;
 	archive::iarchive ia(is);
 
 	double id_received;
+	std::string str_received;
+	std::map<char, std::set<int>> myMap_received;
 	MyClass ins_received;
+	std::set<double> mySet_received;
 
 	ia >> id_received;
+	ia >> str_received;
+	ia >> myMap_received;
 	ia >> ins_received;
-
-	//std::set<double> output;
-	//std::list<float> output;
-	//std::queue<float> output;
-	//ia >> output;
-	//ia >> id_received >> sorted;
-	//auto oarchive = instance.get_oarchive();
-	//instance.unserialize(*raw, id, sorted);
+	ia >> mySet_received;
 
 	return 0;
 

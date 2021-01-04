@@ -135,8 +135,43 @@ namespace archive
             ++arg_No;
         }
 
+        template <typename _Ty1, typename _Ty2>
+        void unserialize(std::map<_Ty1, _Ty2> &target)
+        {
+            int disp_unit = sizeof(int);
+            int count = C[arg_No].first;
+            int start = C[arg_No].second;
+            int mapSize;
+
+            std::memcpy(&mapSize, &buffer[start], disp_unit);
+
+            ++arg_No;
+
+            for (int i = 0; i < mapSize; i++)
+            {
+                _Ty1 key;
+                unserialize(key);
+                _Ty2 val;
+                unserialize(val);
+                target.insert(std::make_pair(key, val));
+            }
+        }
+
+        void unserialize(std::string &target)
+        {
+            int disp_unit = sizeof(char);
+            int count = C[arg_No].first;
+            int start = C[arg_No].second;
+            target.resize(count / disp_unit);
+            std::memcpy(target.data(), &buffer[start], count);
+            ++arg_No;
+        }
+
         template <class TYPE,
-                  std::enable_if_t<!is_stl_container<TYPE>::value && !std::is_fundamental<TYPE>::value, bool> = true>
+                  std::enable_if_t<!is_stl_container<TYPE>::value &&
+                                       !std::is_fundamental<TYPE>::value &&
+                                       !std::is_same<TYPE, std::string>::value,
+                                   bool> = true>
         void unserialize(TYPE &src)
         {
             src.unserialize(*this);

@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstring>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -132,10 +133,6 @@ namespace archive
         {
         }
     };
-
-    void serialize();
-    void unserialize();
-
 }; // namespace archive
 
 #endif

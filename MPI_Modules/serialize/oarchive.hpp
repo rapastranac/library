@@ -188,13 +188,49 @@ namespace archive
             }
         }
 
-        template <typename KEY, typename TYPE>
-        void serialize(const std::pair<KEY, TYPE> &src) {
-            
+        template <typename _Ty1, typename _Ty2>
+        void serialize(const std::map<_Ty1, _Ty2> &src)
+        {
+            /*
+                for maps, an element telling the size of the upcoming map is inserted
+            */
+            ++this->NUM_ARGS;
+            int size = src.size();
+            int disp_unit = sizeof(int);
+            int count = disp_unit * 1;
+            this->Bytes += count;
+
+            C.emplace_back(std::make_pair(count, new char[count]));
+            std::memcpy(&C.back().second[0], &size, disp_unit);
+
+            for (auto const &[key, val] : src)
+            {
+                serialize(key);
+                finishBuffer();
+                serialize(val);
+                finishBuffer();
+            }
+
+            printf("Hello line\n");
+        }
+
+        void serialize(std::string &src)
+        {
+            ++this->NUM_ARGS;
+
+            int disp_unit = sizeof(char);
+            int count = disp_unit * src.size();
+            this->Bytes += count;
+
+            C.emplace_back(std::make_pair(count, new char[count]));
+            std::memcpy(C.back().second, src.c_str(), count);
         }
 
         template <class TYPE,
-                  std::enable_if_t<!is_stl_container<TYPE>::value && !std::is_fundamental<TYPE>::value, bool> = true>
+                  std::enable_if_t<!is_stl_container<TYPE>::value &&
+                                       !std::is_fundamental<TYPE>::value &&
+                                       !std::is_same<TYPE, std::string>::value,
+                                   bool> = true>
         void serialize(TYPE &src)
         {
             src.serialize(*this);
