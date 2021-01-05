@@ -28,6 +28,9 @@
 #include <typeinfo>
 #include <utility>
 
+#include <mpi.h>
+#include <stdio.h>
+
 namespace library
 {
 	class BranchHandler
@@ -212,7 +215,7 @@ namespace library
 			}
 			return false;
 		}
-		
+
 		template <typename Holder>
 		void exclude(Holder *holder)
 		{
@@ -734,7 +737,8 @@ namespace library
 		}
 
 		/* if method receives data, this node is suposed to be totally idle */
-		void seedReceiver()
+		template <typename... Args>
+		void seedReceiver(Args &&... args)
 		{
 			int count_rcv = 0;
 
@@ -758,9 +762,9 @@ namespace library
 			************************************************************************** */
 
 				printf("Receiver on %d ready to receive \n", world_rank);
-				int buffer[1]; //dummy arguments, to be improved
+				int Bytes; //Bytes to be received
 				//MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, *SendToNodes_Comm, &status);
-				MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				MPI_Recv(&Bytes, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 				count_rcv++;
 				int src = status.MPI_SOURCE;
 				printf("process %d has rcvd from %d \n", world_rank, src);
@@ -770,16 +774,24 @@ namespace library
 					printf("Exit tag received on process %d \n", world_rank);
 					return;
 				}
-				printf("Receiver on %d, received %d \n", world_rank, buffer[0]);
+				printf("Receiver on %d, received %d \n", world_rank, Bytes);
+
+				archive::stream is;
+				is.allocate(Bytes);
+				archive::iarchive ia(is);
+				MPI_Recv(&is[0], Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+				//Figure out a way to know the type of incoming arguments
+				Utils::readBuffer(ia, args...);
 
 				accumulate(1, 0, 0, win_accumulator, "busyNodes++");
 
 				//This push should be guaranteed, it is called only once when receiving seed
-//				push(-1, buffer[0]);
-//				printf("Hello from line 297, busy_threads %d \n", busy_threads.load());
+				//push(args...);
+				//				printf("Hello from line 297, busy_threads %d \n", busy_threads.load());
 
 				printf("Passed on process %d \n", world_rank);
-//				_pool.wait();
+				//				_pool.wait();
 				//accumulate(1, 0, world_rank, win_AvNodes, "availableNodes++");
 				accumulate(-1, 0, 0, win_accumulator, "busyNodes--");
 			}
@@ -806,8 +818,7 @@ namespace library
 			//MPI_Win_unlock_all(*window);
 			printf("%s, by %d\n", msg.c_str(), world_rank);
 		}
-
-	}; 
+	};
 	BranchHandler *BranchHandler::INSTANCE = nullptr;
 	std::once_flag BranchHandler::initInstanceFlag;
 

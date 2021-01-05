@@ -2,6 +2,11 @@
 #ifndef SCHEDULER_HPP
 #define SCHEDULER_HPP
 
+#include "serialize/stream.hpp"
+#include "serialize/oarchive.hpp"
+#include "serialize/iarchive.hpp"
+#include "Utils.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -98,7 +103,7 @@ namespace library
 			}
 			else
 			{
-				handler.seedReceiver();
+				handler.seedReceiver(args...);
 			}
 
 			printf("process %d waiting at barrier \n", world_rank);
@@ -201,20 +206,27 @@ namespace library
 		template <typename... Args>
 		void sendSeed(Args &&... args)
 		{
+			archive::stream os;
+			archive::oarchive oa(os);
+			Utils::buildBuffer(oa, args...);
 
-			//Serialize obj;
-			//oarchive raw = obj.serialize(args...);
-			//auto tuple = handler->getSeed();
 			//TODO serialize tuple in here
-			int localSeed = 0; //This is only initial depth for now
+			int count = os.size();
 			int rcvrNode = 1;
 			//int err = MPI_Send(&localSeed, 1, MPI_INT, rcvrNode, 0, SendToNodes_Comm);
 			//int err = MPI_Ssend(&localSeed, 1, MPI_INT, 1, 0, SendToNodes_Comm);
-			int err = MPI_Ssend(&localSeed, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
+			int err = MPI_Ssend(&count, 1, MPI_INT, rcvrNode, 0, MPI_COMM_WORLD);
+			if (err != MPI_SUCCESS)
+			{
+				printf("count could not be sent! \n");
+			}
+
+			err = MPI_Ssend(&os[0], count, MPI_CHAR, 1, 0, MPI_COMM_WORLD);
 			if (err == MPI_SUCCESS)
 			{
 				printf("Seed planted sucessfully! \n");
 			}
+
 			availableNodes[rcvrNode] = 0;
 
 			//busyNodes = 1;

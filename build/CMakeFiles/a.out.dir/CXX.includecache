@@ -7,6 +7,14 @@
 #IncludeRegexTransform: 
 
 /home/andres/Documents/github/library/MPI_Modules/Scheduler.hpp
+serialize/stream.hpp
+/home/andres/Documents/github/library/MPI_Modules/serialize/stream.hpp
+serialize/oarchive.hpp
+/home/andres/Documents/github/library/MPI_Modules/serialize/oarchive.hpp
+serialize/iarchive.hpp
+/home/andres/Documents/github/library/MPI_Modules/serialize/iarchive.hpp
+Utils.hpp
+/home/andres/Documents/github/library/MPI_Modules/Utils.hpp
 fstream
 -
 iostream
@@ -28,11 +36,13 @@ stdlib.h
 time.h
 -
 
+/home/andres/Documents/github/library/MPI_Modules/Utils.hpp
+serialize/oarchive.hpp
+/home/andres/Documents/github/library/MPI_Modules/serialize/oarchive.hpp
+
 /home/andres/Documents/github/library/MPI_Modules/serialize/archive.hpp
 stream.hpp
 /home/andres/Documents/github/library/MPI_Modules/serialize/stream.hpp
-charconv
--
 cstddef
 -
 cstring
@@ -50,6 +60,10 @@ array
 deque
 -
 list
+-
+map
+-
+unordered_map
 -
 set
 -
@@ -110,6 +124,10 @@ type_traits
 typeinfo
 -
 utility
+-
+mpi.h
+-
+stdio.h
 -
 
 /home/andres/Documents/github/library/include/POOL.hpp
