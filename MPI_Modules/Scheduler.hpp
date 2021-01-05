@@ -103,7 +103,7 @@ namespace library
 			}
 			else
 			{
-				handler.seedReceiver(args...);
+				handler.seedReceiver(f, args...);
 			}
 
 			printf("process %d waiting at barrier \n", world_rank);
@@ -208,7 +208,7 @@ namespace library
 		{
 			archive::stream os;
 			archive::oarchive oa(os);
-			Utils::buildBuffer(oa, args...);
+			Utils::buildBuffer(false, oa, args...);
 
 			//TODO serialize tuple in here
 			int count = os.size();

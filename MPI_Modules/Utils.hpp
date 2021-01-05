@@ -9,16 +9,25 @@ class Utils
 {
 public:
     template <typename TYPE>
-    static void buildBuffer(archive::oarchive &oa, TYPE &&lastElement)
+    static void buildBuffer(bool flag, archive::oarchive &oa, TYPE &&lastElement)
     {
         oa << lastElement;
     }
 
     template <typename TYPE, typename... Args>
-    static void buildBuffer(archive::oarchive &oa, TYPE &&element, Args &&... args)
+    static void buildBuffer(bool flag, archive::oarchive &oa, TYPE &&element, Args &&... args)
     {
-        oa << element;
-        buildBuffer(oa, args...);
+        if (!flag)
+        {
+            //just ignores firs element which is int id
+            flag = true;
+            return buildBuffer(flag, oa, args...);
+        }
+        else
+        {
+            oa << element;
+            return buildBuffer(flag, oa, args...);
+        }
     }
 
     template <typename TYPE>
@@ -31,7 +40,7 @@ public:
     static void readBuffer(archive::iarchive &ia, TYPE &&element, Args &&... args)
     {
         ia >> element;
-        readBuffer(ia, args...);
+        return readBuffer(ia, args...);
     }
 };
 

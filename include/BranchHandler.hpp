@@ -737,8 +737,8 @@ namespace library
 		}
 
 		/* if method receives data, this node is suposed to be totally idle */
-		template <typename... Args>
-		void seedReceiver(Args &&... args)
+		template <typename F, typename... Args>
+		void seedReceiver(F &&f, Args &&... args)
 		{
 			int count_rcv = 0;
 
@@ -785,6 +785,8 @@ namespace library
 				Utils::readBuffer(ia, args...);
 
 				accumulate(1, 0, 0, win_accumulator, "busyNodes++");
+
+				//library::ResultHolder < holder_tmp;
 
 				//This push should be guaranteed, it is called only once when receiving seed
 				//push(args...);
