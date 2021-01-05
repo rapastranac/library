@@ -184,7 +184,7 @@ namespace library {
 					branchHandler->sumUpIdleTime(begin, end);
 					/*This violates encapsulation? is it a good practice?
 					it is possible due to class friendship*/
-					--(branchHandler->numThreads);
+					--(branchHandler->busyThreads);
 					//To be checked, it is reduced from ThreadPool
 					//return true;
 				}

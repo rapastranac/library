@@ -42,6 +42,7 @@ public:
         ia >> element;
         return readBuffer(ia, args...);
     }
+
 };
 
 #endif

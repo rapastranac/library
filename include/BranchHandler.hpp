@@ -165,7 +165,7 @@ namespace library
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			if (numThreads < _pool->size())
+			if (busyThreads < _pool->size())
 			{
 				if (is_LB)
 				{
@@ -173,7 +173,7 @@ namespace library
 					Holder *upperHolder = checkParent(&holder);
 					if (upperHolder)
 					{
-						numThreads++;
+						busyThreads++;
 
 						if (std::get<1>(upperHolder->tup).fetchCover().size() == 0)
 						{
@@ -191,7 +191,7 @@ namespace library
 					exclude(&holder);
 				}
 
-				numThreads++;
+				busyThreads++;
 				holder.isPushed = true;
 
 				if (std::get<1>(holder.tup).fetchCover().size() == 0)
@@ -483,6 +483,14 @@ namespace library
 			return _root;
 		}
 
+		template <typename F, typename... Rest>
+		auto pushSeed(F &&f, Rest &&... rest)
+		{
+			auto _pool = ctpl_casted(_pool_default);
+			busyThreads = 1;
+			return _pool->push(f, rest...);
+		}
+
 	public:
 		template <typename F, typename Holder>
 		bool push(F &&f, int id, Holder &holder)
@@ -491,9 +499,9 @@ namespace library
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			if (numThreads < _pool->size())
+			if (busyThreads < _pool->size())
 			{
-				numThreads++;
+				busyThreads++;
 				holder.isPushed = true;
 
 				lck.unlock();
@@ -599,14 +607,14 @@ namespace library
 			nevertheless this should be avoided when pushing void functions*/
 		void functionIsVoid()
 		{
-			this->_pool_default->setExternNumThreads(&this->numThreads);
+			this->_pool_default->setExternNumThreads(&this->busyThreads);
 		}
 
 	private:
 		void init()
 		{
 			this->processor_count = std::thread::hardware_concurrency();
-			this->numThreads = 0;
+			this->busyThreads = 0;
 			this->idleTime = 0;
 			this->isDone = false;
 			this->_pool_default = nullptr;
@@ -638,7 +646,7 @@ namespace library
 
 		unsigned int processor_count;
 		std::atomic<long long> idleTime;
-		std::atomic<int> numThreads;
+		std::atomic<int> busyThreads;
 		size_t numThreadInitial;
 		std::mutex mtx;	 //local mutex
 		std::mutex mtx2; //local mutex
@@ -786,7 +794,7 @@ namespace library
 
 				accumulate(1, 0, 0, win_accumulator, "busyNodes++");
 
-				//library::ResultHolder < holder_tmp;
+				pushSeed(f, args...);
 
 				//This push should be guaranteed, it is called only once when receiving seed
 				//push(args...);
