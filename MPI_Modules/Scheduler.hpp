@@ -96,7 +96,7 @@ namespace library
 								  &win_accumulator);
 
 			printf("About to start, %d / %d!! \n", world_rank, world_size);
-			if (world_rank == 0)
+			if (world_rank == 1)
 			{
 				printf("scheduler() launched!! \n");
 				this->scheduler(args...);
@@ -204,11 +204,21 @@ namespace library
 		bool onceFlag = false;
 
 		template <typename... Args>
-		void sendSeed(Args &&... args)
+		void sendSeed(int id, Args &&... args)
 		{
 			serializer::stream os;
 			serializer::oarchive oa(os);
-			Utils::buildBuffer(false, oa, args...);
+			Utils::buildBuffer(oa, args...);
+			/*
+			size_t Bytes = os.size();
+			serializer::stream is(os);
+			is.allocate(Bytes);
+			serializer::iarchive ia(is);
+			Utils::readBuffer(ia, args...);*/
+
+			
+
+
 
 			//TODO serialize tuple in here
 			int count = os.size();

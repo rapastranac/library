@@ -744,9 +744,18 @@ namespace library
 
 		/* if method receives data, this node is suposed to be totally idle */
 		template <typename F, typename... Args>
-		void seedReceiver(F &&f, Args &&... args)
+		void seedReceiver(F &&f, int id, Args &&... args)
 		{
 			int count_rcv = 0;
+
+			//TESTING //////////////////////////////////////////////////////
+			/*typedef decltype(f(0, args...)) rt;
+
+			auto futureVar = pushSeed(f, -1, args...);			   //future can be void type
+			auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
+			auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
+*/
+			//TESTING //////////////////////////////////////////////////////
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
 			accumulate(1, 0, world_rank, win_AvNodes, msg);
@@ -787,26 +796,17 @@ namespace library
 				serializer::iarchive ia(is);
 				MPI_Recv(&is[0], Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
-				//Figure out a way to know the type of incoming arguments
-				Utils::readBuffer(ia, args...);
+				Utils::readBuffer(ia, args...); //received buffer conversion
 
 				accumulate(1, 0, 0, win_accumulator, "busyNodes++");
 
-				typedef decltype(f) _ret;
+				auto futureVar = pushSeed(f, -1, args...);			   //future type can handle void returns
+				auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
+				auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
 
-				auto fut = pushSeed(f, args...);
+				//TODO handle return Val to send it back to center node
 
-				std::any val = fut.get();
-				if (val.has_value())
-				{
-					_ret rVal = std::any_cast<_ret>(val);
-
-					//figure out a way to return this to center node
-				}
-
-				//This push should be guaranteed, it is called only once when receiving seed
-				//push(args...);
-				//				printf("Hello from line 297, busy_threads %d \n", busy_threads.load());
+				//printf("Hello from line 297, busy_threads %d \n", busy_threads.load());
 
 				printf("Passed on process %d \n", world_rank);
 				//				_pool.wait();

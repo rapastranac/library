@@ -48,6 +48,7 @@ int main(int argc, char **argv)
 	Sort objet;
 
 	library::BranchHandler &handler = library::BranchHandler::getInstance();
+	handler.setMaxThreads(1);
 
 	//buildUnsorted(10, 50000000);
 	//return 0;
