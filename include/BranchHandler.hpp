@@ -488,7 +488,7 @@ namespace library
 		{
 			auto _pool = ctpl_casted(_pool_default);
 			busyThreads = 1;
-			return _pool->push(f, rest...);
+			return std::move(_pool->push(f, rest...));
 		}
 
 	public:
@@ -794,7 +794,17 @@ namespace library
 
 				accumulate(1, 0, 0, win_accumulator, "busyNodes++");
 
-				pushSeed(f, args...);
+				typedef decltype(f) _ret;
+
+				auto fut = pushSeed(f, args...);
+
+				std::any val = fut.get();
+				if (val.has_value())
+				{
+					_ret rVal = std::any_cast<_ret>(val);
+
+					//figure out a way to return this to center node
+				}
 
 				//This push should be guaranteed, it is called only once when receiving seed
 				//push(args...);
