@@ -162,8 +162,8 @@ namespace library
 		bool push_to_pool_ctpl(ctpl::Pool *_pool, F &&f, int id, Holder &holder)
 		{
 
-			/*This lock must be performed before checking the condition,
-			even though numThread is atomic*/
+			/*This lock must be adquired before checking the condition,
+			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
 			if (busyThreads < _pool->size())
 			{
@@ -173,7 +173,7 @@ namespace library
 					Holder *upperHolder = checkParent(&holder);
 					if (upperHolder)
 					{
-						busyThreads++;
+						this->busyThreads++;
 
 						if (std::get<1>(upperHolder->tup).fetchCover().size() == 0)
 						{
@@ -191,7 +191,7 @@ namespace library
 					exclude(&holder);
 				}
 
-				busyThreads++;
+				this->busyThreads++;
 				holder.isPushed = true;
 
 				if (std::get<1>(holder.tup).fetchCover().size() == 0)
@@ -472,8 +472,6 @@ namespace library
 
 			while (_root->children.size() == 1) // lowering the root
 			{
-				//_root = root->children.front();
-				//_root->children.pop_front();
 				_root = _root->children.front();
 				_root->parent->children.pop_front();
 				_root->parent = nullptr;
@@ -487,7 +485,7 @@ namespace library
 		auto pushSeed(F &&f, Rest &&... rest)
 		{
 			auto _pool = ctpl_casted(_pool_default);
-			busyThreads = 1;
+			this->busyThreads = 1;
 			return std::move(_pool->push(f, rest...));
 		}
 
@@ -784,9 +782,9 @@ namespace library
 				}
 				printf("Receiver on %d, received %d \n", world_rank, Bytes);
 
-				archive::stream is;
+				serializer::stream is;
 				is.allocate(Bytes);
-				archive::iarchive ia(is);
+				serializer::iarchive ia(is);
 				MPI_Recv(&is[0], Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
 				//Figure out a way to know the type of incoming arguments

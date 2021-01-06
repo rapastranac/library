@@ -206,8 +206,8 @@ namespace library
 		template <typename... Args>
 		void sendSeed(Args &&... args)
 		{
-			archive::stream os;
-			archive::oarchive oa(os);
+			serializer::stream os;
+			serializer::oarchive oa(os);
 			Utils::buildBuffer(false, oa, args...);
 
 			//TODO serialize tuple in here

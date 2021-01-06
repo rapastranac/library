@@ -9,13 +9,13 @@ class Utils
 {
 public:
     template <typename TYPE>
-    static void buildBuffer(bool flag, archive::oarchive &oa, TYPE &&lastElement)
+    static void buildBuffer(bool flag, serializer::oarchive &oa, TYPE &&lastElement)
     {
         oa << lastElement;
     }
 
     template <typename TYPE, typename... Args>
-    static void buildBuffer(bool flag, archive::oarchive &oa, TYPE &&element, Args &&... args)
+    static void buildBuffer(bool flag, serializer::oarchive &oa, TYPE &&element, Args &&... args)
     {
         if (!flag)
         {
@@ -31,13 +31,13 @@ public:
     }
 
     template <typename TYPE>
-    static void readBuffer(archive::iarchive &ia, TYPE &&lastElement)
+    static void readBuffer(serializer::iarchive &ia, TYPE &&lastElement)
     {
         ia >> lastElement;
     }
 
     template <typename TYPE, typename... Args>
-    static void readBuffer(archive::iarchive &ia, TYPE &&element, Args &&... args)
+    static void readBuffer(serializer::iarchive &ia, TYPE &&element, Args &&... args)
     {
         ia >> element;
         return readBuffer(ia, args...);
