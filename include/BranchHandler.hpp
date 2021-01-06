@@ -28,6 +28,9 @@
 #include <typeinfo>
 #include <utility>
 
+#include <mpi.h>
+#include <stdio.h>
+
 namespace library
 {
 	class BranchHandler
@@ -159,10 +162,10 @@ namespace library
 		bool push_to_pool_ctpl(ctpl::Pool *_pool, F &&f, int id, Holder &holder)
 		{
 
-			/*This lock must be performed before checking the condition,
-			even though numThread is atomic*/
+			/*This lock must be adquired before checking the condition,
+			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			if (numThreads < _pool->size())
+			if (busyThreads < _pool->size())
 			{
 				if (is_LB)
 				{
@@ -170,7 +173,7 @@ namespace library
 					Holder *upperHolder = checkParent(&holder);
 					if (upperHolder)
 					{
-						numThreads++;
+						this->busyThreads++;
 
 						if (std::get<1>(upperHolder->tup).fetchCover().size() == 0)
 						{
@@ -188,7 +191,7 @@ namespace library
 					exclude(&holder);
 				}
 
-				numThreads++;
+				this->busyThreads++;
 				holder.isPushed = true;
 
 				if (std::get<1>(holder.tup).fetchCover().size() == 0)
@@ -212,7 +215,7 @@ namespace library
 			}
 			return false;
 		}
-		
+
 		template <typename Holder>
 		void exclude(Holder *holder)
 		{
@@ -469,8 +472,6 @@ namespace library
 
 			while (_root->children.size() == 1) // lowering the root
 			{
-				//_root = root->children.front();
-				//_root->children.pop_front();
 				_root = _root->children.front();
 				_root->parent->children.pop_front();
 				_root->parent = nullptr;
@@ -478,6 +479,14 @@ namespace library
 			}
 
 			return _root;
+		}
+
+		template <typename F, typename... Rest>
+		auto pushSeed(F &&f, Rest &&... rest)
+		{
+			auto _pool = ctpl_casted(_pool_default);
+			this->busyThreads = 1;
+			return std::move(_pool->push(f, rest...));
 		}
 
 	public:
@@ -488,9 +497,9 @@ namespace library
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			if (numThreads < _pool->size())
+			if (busyThreads < _pool->size())
 			{
-				numThreads++;
+				busyThreads++;
 				holder.isPushed = true;
 
 				lck.unlock();
@@ -596,14 +605,14 @@ namespace library
 			nevertheless this should be avoided when pushing void functions*/
 		void functionIsVoid()
 		{
-			this->_pool_default->setExternNumThreads(&this->numThreads);
+			this->_pool_default->setExternNumThreads(&this->busyThreads);
 		}
 
 	private:
 		void init()
 		{
 			this->processor_count = std::thread::hardware_concurrency();
-			this->numThreads = 0;
+			this->busyThreads = 0;
 			this->idleTime = 0;
 			this->isDone = false;
 			this->_pool_default = nullptr;
@@ -635,7 +644,7 @@ namespace library
 
 		unsigned int processor_count;
 		std::atomic<long long> idleTime;
-		std::atomic<int> numThreads;
+		std::atomic<int> busyThreads;
 		size_t numThreadInitial;
 		std::mutex mtx;	 //local mutex
 		std::mutex mtx2; //local mutex
@@ -734,9 +743,19 @@ namespace library
 		}
 
 		/* if method receives data, this node is suposed to be totally idle */
-		void seedReceiver()
+		template <typename F, typename... Args>
+		void seedReceiver(F &&f, int id, Args &&... args)
 		{
 			int count_rcv = 0;
+
+			//TESTING //////////////////////////////////////////////////////
+			/*typedef decltype(f(0, args...)) rt;
+
+			auto futureVar = pushSeed(f, -1, args...);			   //future can be void type
+			auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
+			auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
+*/
+			//TESTING //////////////////////////////////////////////////////
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
 			accumulate(1, 0, world_rank, win_AvNodes, msg);
@@ -758,9 +777,9 @@ namespace library
 			************************************************************************** */
 
 				printf("Receiver on %d ready to receive \n", world_rank);
-				int buffer[1]; //dummy arguments, to be improved
+				int Bytes; //Bytes to be received
 				//MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, *SendToNodes_Comm, &status);
-				MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				MPI_Recv(&Bytes, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 				count_rcv++;
 				int src = status.MPI_SOURCE;
 				printf("process %d has rcvd from %d \n", world_rank, src);
@@ -770,16 +789,27 @@ namespace library
 					printf("Exit tag received on process %d \n", world_rank);
 					return;
 				}
-				printf("Receiver on %d, received %d \n", world_rank, buffer[0]);
+				printf("Receiver on %d, received %d \n", world_rank, Bytes);
+
+				serializer::stream is;
+				is.allocate(Bytes);
+				serializer::iarchive ia(is);
+				MPI_Recv(&is[0], Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+				Utils::readBuffer(ia, args...); //received buffer conversion
 
 				accumulate(1, 0, 0, win_accumulator, "busyNodes++");
 
-				//This push should be guaranteed, it is called only once when receiving seed
-//				push(-1, buffer[0]);
-//				printf("Hello from line 297, busy_threads %d \n", busy_threads.load());
+				auto futureVar = pushSeed(f, -1, args...);			   //future type can handle void returns
+				auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
+				auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
+
+				//TODO handle return Val to send it back to center node
+
+				//printf("Hello from line 297, busy_threads %d \n", busy_threads.load());
 
 				printf("Passed on process %d \n", world_rank);
-//				_pool.wait();
+				//				_pool.wait();
 				//accumulate(1, 0, world_rank, win_AvNodes, "availableNodes++");
 				accumulate(-1, 0, 0, win_accumulator, "busyNodes--");
 			}
@@ -806,8 +836,7 @@ namespace library
 			//MPI_Win_unlock_all(*window);
 			printf("%s, by %d\n", msg.c_str(), world_rank);
 		}
-
-	}; 
+	};
 	BranchHandler *BranchHandler::INSTANCE = nullptr;
 	std::once_flag BranchHandler::initInstanceFlag;
 
