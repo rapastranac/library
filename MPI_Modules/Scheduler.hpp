@@ -134,11 +134,12 @@ namespace library
 		void schedule(Args &&... args)
 		{
 			sendSeed(args...);
-			MPI_Barrier(prime_Commm); // syncrhonises only process 0 and 1
+			MPI_Barrier(prime_Commm); // syncrhonises only process 0 and 1 - this guarantees ...
+									  // ... that process 0 does not terminate the loop before process 1...
+									  // ... receives the seed, then busyNodes will be != 0 for the first ...
+									  // ... loop
 			updateNumAvNodes();
 			BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
-
-			std::this_thread::sleep_for(std::chrono::seconds(2)); // 4 testing
 
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
 			printf("Scheduler started!! \n");
@@ -172,11 +173,9 @@ namespace library
 							//printf("Hello from line 214 \n");
 							MPI_Ssend(&flag, 1, MPI_INT, i, 0, SendToNodes_Comm); //returns signal that data cannot be received
 						}
-
-						//........
 					}
 				}
-				//std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
+
 				if (breakLoop())
 				{
 					break;
@@ -186,21 +185,15 @@ namespace library
 
 		bool breakLoop()
 		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 4 testing
 			printf("test, busyNodes = %d\n", busyNodes[0]);
-			int count = 0;
-			for (int i = 1; i < world_size; i++)
-			{
-				count += availableNodes[i];
-			}
-
-			//if (count == (world_size - 1) && !onceFlag)
-			//if (busyNodes[0] == 0 && !onceFlag)
 			if (busyNodes[0] == 0)
 			{
-				for (int target = 1; target < world_size; target++)
+				for (int dest = 1; dest < world_size; dest++)
 				{
 					int buffer;
-					MPI_Ssend(&buffer, 0, MPI_INT, target, 3, world_Comm);
+					int tag = 3;
+					MPI_Ssend(&buffer, 0, MPI_INT, dest, tag, world_Comm);
 				}
 				printf("BusyNodes = 0 achieved \n");
 				onceFlag = true;

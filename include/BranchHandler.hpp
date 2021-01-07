@@ -790,8 +790,11 @@ namespace library
 				accumulate(1, 0, 0, *win_accumulator, "busyNodes++");
 
 				auto futureVar = pushSeed(f, -1, args...); //future type can handle void returns
-				if (prime_Commm)
+				if (prime_Commm && !lFlag)
+				{
 					MPI_Barrier(*prime_Commm);
+					lFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
+				}
 
 				auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
 				auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
