@@ -103,7 +103,7 @@ public:
 		std::vector<size_t> R(Nr);
 		std::vector<size_t> merged;
 
-		std::memcpy(L.data(), &section[0], Nl * sizeof(size_t));
+		std::memcpy(L.data(), &section[0], Nl * sizeof(size_t));	//faster than loops
 		std::memcpy(R.data(), &section[middle], Nr * sizeof(size_t));
 
 		library::ResultHolder< std::vector<size_t>, std::vector<size_t>> hl(&branchHandler);

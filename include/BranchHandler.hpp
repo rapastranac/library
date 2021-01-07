@@ -43,8 +43,8 @@ namespace library
 	protected:
 		void sumUpIdleTime(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
 		{
-			double temp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
-			idleTime.fetch_add(temp, std::memory_order_relaxed);
+			double time_tmp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+			idleTime.fetch_add(time_tmp, std::memory_order_relaxed);
 		}
 
 	public:
@@ -58,18 +58,18 @@ namespace library
 			return this->_pool_default->size();
 		}
 
-		void setMaxThreads(int n)
+		void setMaxThreads(int poolSize)
 		{
 			/*	I have not implemented yet the resize of other pool*/
 			//this->init();
-			this->_pool_default = new ctpl::Pool(n);
-			this->_pool_default->setSize(n);
+			this->processor_count = poolSize;
+			this->_pool_default = new ctpl::Pool(poolSize);
+			//this->_pool_default->setSize(n);
 		}
 
 		//seconds
 		double getIdleTime()
 		{
-			//return idleTime / ((double)numThreadInitial + 1);
 			double nanoseconds = idleTime / ((double)processor_count + 1);
 			return nanoseconds * 1.0e-9; // convert to seconds
 		}
@@ -595,7 +595,6 @@ namespace library
 				this->_pool_2 = new ctpl::Pool();
 				this->_pool_default->linkAnotherPool(this->_pool_2);
 			}
-			this->numThreadInitial = numThreads;
 			this->appliedStrategy = strat;
 		}
 
@@ -645,7 +644,6 @@ namespace library
 		unsigned int processor_count;
 		std::atomic<long long> idleTime;
 		std::atomic<int> busyThreads;
-		size_t numThreadInitial;
 		std::mutex mtx;	 //local mutex
 		std::mutex mtx2; //local mutex
 		std::condition_variable cv;
@@ -664,12 +662,6 @@ namespace library
 
 		BranchHandler()
 		{
-			/*static bool static_init = [&]() -> bool {
-				INSTANCE = new ThisType;
-				init();
-				return true;
-			}();*/
-
 			init();
 		}
 
@@ -695,31 +687,31 @@ namespace library
 		MPI_Win *win_boolean = nullptr;
 		MPI_Win *win_NumNodes = nullptr;
 		MPI_Win *win_AvNodes = nullptr;
-		MPI_Win *win_test = nullptr;
 		MPI_Win *win_accumulator = nullptr;
 		char processor_name[128];
+		MPI_Comm *world_Comm = nullptr;
 		MPI_Comm *SendToNodes_Comm = nullptr;
 		MPI_Comm *SendToCenter_Comm = nullptr;
 		MPI_Comm *NodeToNode_Comm = nullptr;
+		MPI_Comm *prime_Commm = nullptr;
 
 		int *numAvailableNodes;
-		int *sch_inbox_boolean = nullptr;
 		bool request_response = false;
 		bool data_ready = false;
 
 		void linkMPIargs(int world_rank,
-						   int world_size,
-						   char *processor_name,
-						   MPI_Win *win_boolean,
-						   MPI_Win *win_NumNodes,
-						   MPI_Win *win_AvNodes,
-						   int *sch_inbox_boolean,
-						   MPI_Comm *SendToNodes_Comm,
-						   MPI_Comm *SendToCenter_Comm,
-						   MPI_Comm *NodeToNode_Comm,
-						   int *numAvailableNodes,
-						   MPI_Win *win_test,
-						   MPI_Win *win_accumulator)
+						 int world_size,
+						 char *processor_name,
+						 MPI_Win *win_boolean,
+						 MPI_Win *win_NumNodes,
+						 MPI_Win *win_AvNodes,
+						 MPI_Comm *world_Comm,
+						 MPI_Comm *SendToNodes_Comm,
+						 MPI_Comm *SendToCenter_Comm,
+						 MPI_Comm *NodeToNode_Comm,
+						 MPI_Comm *prime_Commm,
+						 int *numAvailableNodes,
+						 MPI_Win *win_accumulator)
 		{
 			this->world_rank = world_rank;
 			this->world_size = world_size;
@@ -727,12 +719,14 @@ namespace library
 			this->win_boolean = win_boolean;
 			this->win_NumNodes = win_NumNodes;
 			this->win_AvNodes = win_AvNodes;
-			this->sch_inbox_boolean = sch_inbox_boolean;
+			this->world_Comm = world_Comm;
 			this->SendToNodes_Comm = SendToNodes_Comm;
 			this->SendToCenter_Comm = SendToCenter_Comm;
 			this->NodeToNode_Comm = NodeToNode_Comm;
+			if (world_rank == 1)
+				this->prime_Commm = prime_Commm;
+
 			this->numAvailableNodes = numAvailableNodes;
-			this->win_test = win_test;
 			this->win_accumulator = win_accumulator;
 		}
 
@@ -740,6 +734,7 @@ namespace library
 		template <typename F, typename... Args>
 		void receiveSeed(F &&f, Args &&... args)
 		{
+			bool lFlag = false;
 			int count_rcv = 0;
 
 			//TESTING //////////////////////////////////////////////////////
@@ -752,7 +747,7 @@ namespace library
 			//TESTING //////////////////////////////////////////////////////
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
-			accumulate(1, 0, world_rank, win_AvNodes, msg);
+			accumulate(1, 0, world_rank, *win_AvNodes, msg);
 			printf("process %d put data [%d] in process 0 \n", world_rank, 1);
 
 			while (true) // Find a way to terminate this loop
@@ -773,28 +768,31 @@ namespace library
 				printf("Receiver on %d ready to receive \n", world_rank);
 				int Bytes; //Bytes to be received
 				//MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, *SendToNodes_Comm, &status);
-				MPI_Recv(&Bytes, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				MPI_Recv(&Bytes, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status);
 				count_rcv++;
 				int src = status.MPI_SOURCE;
 				printf("process %d has rcvd from %d \n", world_rank, src);
 				printf("process %d has rcvd %d times \n", world_rank, count_rcv);
 				if (status.MPI_TAG == 3)
 				{
-					printf("Exit tag received on process %d \n", world_rank);	//loop termination
+					printf("Exit tag received on process %d \n", world_rank); //loop termination
 					return;
 				}
-				printf("Receiver on %d, received %d \n", world_rank, Bytes);
+				printf("Receiver on %d, received %d Bytes \n", world_rank, Bytes);
 
 				serializer::stream is;
 				is.allocate(Bytes);
 				serializer::iarchive ia(is);
-				MPI_Recv(&is[0], Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				MPI_Recv(&is[0], Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status);
 
 				Utils::readBuffer(ia, args...); //received buffer conversion
 
-				accumulate(1, 0, 0, win_accumulator, "busyNodes++");
+				accumulate(1, 0, 0, *win_accumulator, "busyNodes++");
 
-				auto futureVar = pushSeed(f, -1, args...);			   //future type can handle void returns
+				auto futureVar = pushSeed(f, -1, args...); //future type can handle void returns
+				if (prime_Commm)
+					MPI_Barrier(*prime_Commm);
+
 				auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
 				auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
 
@@ -805,28 +803,31 @@ namespace library
 				printf("Passed on process %d \n", world_rank);
 				//				_pool.wait();
 				//accumulate(1, 0, world_rank, win_AvNodes, "availableNodes++");
-				accumulate(-1, 0, 0, win_accumulator, "busyNodes--");
+				accumulate(-1, 0, 0, *win_accumulator, "busyNodes--");
 			}
 		}
 
-		void accumulate(int buffer, int target_rank, MPI_Aint offset, MPI_Win *window, std::string msg)
+		void accumulate(int buffer, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
 		{
+			//std::stringstream ss;
+			//ss << world_rank << " about to accumulate on " << msg << "\n";
+			//std::cout << ss.str();
 			printf("%d about to accumulate on %s\n", world_rank, msg.c_str());
-			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, *window);
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window);
 			//MPI_Win_lock(MPI_LOCK_SHARED, target_rank, 0, *window);
 			//MPI_Win_lock_all(0, *window);
 
-			MPI_Accumulate(&buffer, 1, MPI_INT, target_rank, offset, 1, MPI_INT, MPI_SUM, *window);
+			MPI_Accumulate(&buffer, 1, MPI_INT, target_rank, offset, 1, MPI_INT, MPI_SUM, window);
 
 			//MPI_Put(&buffer, 1, MPI_INT, target_rank, offset, 1, MPI_INT, *window);
 
 			printf("%d about to unlock RMA on %d \n", world_rank, target_rank);
 
-			MPI_Win_flush(target_rank, *window);
+			MPI_Win_flush(target_rank, window);
 			//MPI_Win_flush_all(*window);
 			printf("%d between flush and unlock \n", world_rank);
 
-			MPI_Win_unlock(target_rank, *window);
+			MPI_Win_unlock(target_rank, window);
 			//MPI_Win_unlock_all(*window);
 			printf("%s, by %d\n", msg.c_str(), world_rank);
 		}

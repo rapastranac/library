@@ -44,23 +44,20 @@ void print(std::vector<size_t> &ordered)
 
 int main(int argc, char **argv)
 {
+	//buildUnsorted(10, 50000000);
+	//return 0;
 
 	Sort objet;
 
 	library::BranchHandler &handler = library::BranchHandler::getInstance();
-	handler.setMaxThreads(1);
-
-	//buildUnsorted(10, 50000000);
-	//return 0;
 
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
 
-	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr);
-
-	library::Scheduler scheduler(handler);
-	scheduler.start(argc, argv, _f, arr);
+	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr); // target algorithm [all arguments]
+	library::Scheduler scheduler(handler, 1);			  // MPI Scheduler
+	scheduler.start(argc, argv, _f, arr);				  // solve in parallel, ignore args{id, tracker(is applicable)}
 
 	return 0;
 
