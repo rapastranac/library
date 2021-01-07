@@ -149,13 +149,10 @@ namespace library
 					MPI_Ssend(&buffer, 0, MPI::INTEGER, dest, tag, world_Comm);
 				}
 				printf("BusyNodes = 0 achieved \n");
-				onceFlag = true;
 				return true;
 			}
 			return false;
 		}
-
-		bool onceFlag = false;
 
 		template <typename... Args>
 		void sendSeed(Args &&... args)
