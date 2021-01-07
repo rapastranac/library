@@ -170,7 +170,7 @@ namespace library
 			serializer::iarchive ia(is);
 			Utils::readBuffer(ia, args...);*/
 
-			int count = os.size();
+			int count = os.size(); // number of Bytes
 			int rcvrNode = 1;
 			int err = MPI_Ssend(&count, 1, MPI::INTEGER, rcvrNode, 0, world_Comm); // send buffer size
 			if (err != MPI::SUCCESS)
@@ -178,9 +178,9 @@ namespace library
 
 			err = MPI_Ssend(&os[0], count, MPI::CHARACTER, 1, 0, world_Comm); // send buffer
 			if (err == MPI::SUCCESS)
-				printf("Seed planted sucessfully! \n");
+				printf("buffer sent sucessfully! \n");
 
-			availableNodes[rcvrNode] = 0;
+			availableNodes[rcvrNode] = 0; // becomes unavailable until it finishes
 		}
 
 		/* this should be called only when the number of available nodes is modified */
@@ -196,10 +196,8 @@ namespace library
 			}
 		}
 
-		/*
-		this is supposed to be invoked only when there are available nodes
-		returns -1 if no available node
-	*/
+		/* this is supposed to be invoked only when there are available nodes
+		returns -1 if no available node [it sould not happen] */
 		int findAvailableNode()
 		{
 			std::vector<int> nodes; // testing
@@ -342,7 +340,6 @@ namespace library
 			{
 				numAvailableNodes[0] = world_size - 1;
 				busyNodes[0] = 0;
-
 				for (int i = 0; i < world_size; i++)
 				{
 					inbox_boolean[i] = 0;
@@ -350,9 +347,7 @@ namespace library
 				}
 			}
 			else
-			{
 				numAvailableNodes[0] = world_size - 1;
-			}
 		}
 
 	private:
@@ -376,7 +371,7 @@ namespace library
 		int *inbox_boolean;		// receives signal of a node attempting to put data [only center node has the list]
 		int *numAvailableNodes; // Number of available nodes	[every node is aware of this number]
 		int *availableNodes;	// list of available nodes [only center node has the list]
-		int *busyNodes;
+		int *busyNodes;			// number of nodes working at the time
 
 		size_t threadsPerNode = std::thread::hardware_concurrency();
 	};
