@@ -53,14 +53,15 @@ int main(int argc, char **argv)
 	//buildUnsorted(10, 50000000);
 	//return 0;
 
-	library::Scheduler scheduler;
-
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
 
 	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr);
-	scheduler.start(argc, argv, handler, _f, -1, arr);
+
+	library::Scheduler scheduler(handler);
+	scheduler.start(argc, argv, _f, arr);
+
 	return 0;
 
 	objet.setUnsorted(arr);

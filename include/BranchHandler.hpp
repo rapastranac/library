@@ -693,7 +693,6 @@ namespace library
 		int world_rank = -1;
 		int world_size = -1;
 		MPI_Win *win_boolean = nullptr;
-		MPI_Win *win_data = nullptr;
 		MPI_Win *win_NumNodes = nullptr;
 		MPI_Win *win_AvNodes = nullptr;
 		MPI_Win *win_test = nullptr;
@@ -705,19 +704,16 @@ namespace library
 
 		int *numAvailableNodes;
 		int *sch_inbox_boolean = nullptr;
-		int *sch_inbox_data = nullptr;
 		bool request_response = false;
 		bool data_ready = false;
 
-		void pass_MPI_args(int world_rank,
+		void linkMPIargs(int world_rank,
 						   int world_size,
 						   char *processor_name,
 						   MPI_Win *win_boolean,
-						   MPI_Win *win_data,
 						   MPI_Win *win_NumNodes,
 						   MPI_Win *win_AvNodes,
 						   int *sch_inbox_boolean,
-						   int *sch_inbox_data,
 						   MPI_Comm *SendToNodes_Comm,
 						   MPI_Comm *SendToCenter_Comm,
 						   MPI_Comm *NodeToNode_Comm,
@@ -729,11 +725,9 @@ namespace library
 			this->world_size = world_size;
 			strncpy(this->processor_name, processor_name, 128);
 			this->win_boolean = win_boolean;
-			this->win_data = win_data;
 			this->win_NumNodes = win_NumNodes;
 			this->win_AvNodes = win_AvNodes;
 			this->sch_inbox_boolean = sch_inbox_boolean;
-			this->sch_inbox_data = sch_inbox_data;
 			this->SendToNodes_Comm = SendToNodes_Comm;
 			this->SendToCenter_Comm = SendToCenter_Comm;
 			this->NodeToNode_Comm = NodeToNode_Comm;
@@ -742,9 +736,9 @@ namespace library
 			this->win_accumulator = win_accumulator;
 		}
 
-		/* if method receives data, this node is suposed to be totally idle */
+		/* if method receives data, this node is supposed to be totally idle */
 		template <typename F, typename... Args>
-		void seedReceiver(F &&f, int id, Args &&... args)
+		void receiveSeed(F &&f, Args &&... args)
 		{
 			int count_rcv = 0;
 
@@ -786,7 +780,7 @@ namespace library
 				printf("process %d has rcvd %d times \n", world_rank, count_rcv);
 				if (status.MPI_TAG == 3)
 				{
-					printf("Exit tag received on process %d \n", world_rank);
+					printf("Exit tag received on process %d \n", world_rank);	//loop termination
 					return;
 				}
 				printf("Receiver on %d, received %d \n", world_rank, Bytes);
