@@ -178,7 +178,7 @@ namespace library
 
 			err = MPI_Ssend(&os[0], count, MPI::CHARACTER, 1, 0, world_Comm); // send buffer
 			if (err == MPI::SUCCESS)
-				printf("buffer sent sucessfully! \n");
+				printf("buffer sucessfully sent! \n");
 
 			availableNodes[rcvrNode] = 0; // becomes unavailable until it finishes
 		}
