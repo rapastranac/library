@@ -7,25 +7,14 @@
 #include "serialize/iarchive.hpp"
 #include "Utils.hpp"
 
+#include <stdlib.h> /* srand, rand */
 #include <fstream>
 #include <iostream>
+#include <mpi.h>
 #include <string>
 #include <sstream>
-
-//#include <bits/stdc++.h>
-
-#include <stdlib.h> /* srand, rand */
-#include <time.h>
-
-#include <mpi.h>
 #include <stdio.h>
-
-#include <stdlib.h> /* srand, rand */
-#include <time.h>	/* time */
-
-#define TEST 0
-
-using namespace std;
+#include <time.h>
 
 namespace library
 {
@@ -47,39 +36,10 @@ namespace library
 		template <typename F, typename... Args>
 		void start(int argc, char **argv, F &&f, Args &&... args)
 		{
-
-			// Initilialise MPI and ask for thread support
-			int provided;
-			MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &provided);
-			if (provided < MPI_THREAD_SERIALIZED)
-			{
-				printf("The threading support level is lesser than that demanded.\n");
-				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-			}
-			else
-			{
-				printf("The threading support level corresponds to that demanded.\n");
-			}
-
-			MPI_Comm_dup(MPI_COMM_WORLD, &world_Comm); // world communicator for this library
-
-			MPI_Comm_size(world_Comm, &this->world_size);
-			MPI_Comm_rank(world_Comm, &this->world_rank);
-
-			// a communicator to syncronise only process 0 and 1 ****************************
-			MPI_Comm_group(world_Comm, &world_group);						 // world group, all ranks
-			const int prime_group_ranks[2] = {0, 1};						 // construct a group ranks in prime_group
-			MPI_Group_incl(world_group, 2, prime_group_ranks, &prime_group); // include ranks in group
-			MPI_Comm_create_group(world_Comm, prime_group, 0, &prime_Commm); // creates the group
-																			 // ******************************************************************************
-			MPI_Comm_dup(world_Comm, &SendToNodes_Comm);
-			MPI_Comm_dup(world_Comm, &SendToCenter_Comm);
-			MPI_Comm_dup(world_Comm, &NodeToNode_Comm);
-			MPI_Comm_dup(world_Comm, &BCast_Comm);
-			MPI_Comm_dup(world_Comm, &Accumulator_Comm);
+			initMPI(argc, argv);
+			communicators();
 
 			int namelen;
-			this->processor_name = new char[128];
 			MPI_Get_processor_name(processor_name, &namelen);
 
 			fprintf(stdout, "Process %d of %d is on %s\n", world_rank, world_size, processor_name);
@@ -88,22 +48,21 @@ namespace library
 			printf("About to create window, %d / %d!! \n", world_rank, world_size);
 			MPI_Barrier(world_Comm);
 			win_allocate();
-			//goto dummy;
 			MPI_Barrier(world_Comm);
 
 			handler.linkMPIargs(world_rank,
 								world_size,
 								processor_name,
+								numAvailableNodes,
+								&win_accumulator,
+								&win_AvNodes,
 								&win_boolean,
 								&win_NumNodes,
-								&win_AvNodes,
 								&world_Comm,
+								&prime_Commm,
 								&SendToNodes_Comm,
 								&SendToCenter_Comm,
-								&NodeToNode_Comm,
-								&prime_Commm,
-								numAvailableNodes,
-								&win_accumulator);
+								&NodeToNode_Comm);
 
 			printf("About to start, %d / %d!! \n", world_rank, world_size);
 			if (world_rank == 0)
@@ -122,7 +81,6 @@ namespace library
 			printf("process %d passed barrier \n", world_rank);
 
 			win_deallocate();
-
 			MPI_Finalize();
 		}
 
@@ -144,42 +102,37 @@ namespace library
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
 			printf("Scheduler started!! \n");
 
-			while (true) // inifite loop to receive information ||-- FIND A WAY TO TERMINATE THIS LOOP --||
+			while (true)
 			{
-				for (int i = 1; i < world_size; i++)
+				for (int rank = 1; rank < world_size; rank++)
 				{
-					updateNumAvNodes();		   // check list of available nodes
-					if (inbox_boolean[i] == 1) //if this cell changes, then a node has requested permission to push
+					updateNumAvNodes();			  // check list of available nodes
+					if (inbox_boolean[rank] == 1) //if this cell changes, then a node has requested permission to push
 					{
 						if (numAvailableNodes[0] > 0) //if found, positive signal is sent back to requesting node
 						{
 							--numAvailableNodes[0];
 							BcastNumAvNodes();
 
-							int k = findAvailableNode();						  // first node available in the list
-							inbox_boolean[i] = false;							  // reset boolean to zero lest center node check it again
-							int flag = true;									  // signal to be sent back to node 'i'
-							MPI_Ssend(&flag, 1, MPI_INT, i, k, SendToNodes_Comm); // returns signal to 'i' that data can be received
-																				  //MPI_Recv(&inbox_data[i], 1, MPI_INT, i, MPI_ANY_TAG, SendToCenter_Comm, &status); // receives data
-																				  //MPI_Ssend(&inbox_data[i], 1, MPI_INT, k, 0, SendToNodes_Comm);					  // send data to node 'k'
-																				  //printf("process %d forwarded to process %d \n", i, k);
+							int k = findAvailableNode();								  // first available node in the list
+							inbox_boolean[rank] = false;								  // reset boolean to zero lest center node check it again, unless requested by nodes
+							int flag = true;											  // signal to be sent back to node 'rank'
+							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, k, SendToNodes_Comm); // returns signal to 'rank' that data can be received
+
+							//printf("process %d forwarded to process %d \n", rank, k);
 						}
 						else
 						{
-							/* No available nodes, return false signal so the handler could forward
-							the information sequentially */
+							/* No available nodes, return false signal so the handler could forward the information sequentially */
 							int flag = false;
-							inbox_boolean[i] = false;
+							inbox_boolean[rank] = false; // this is safe due to MPI_THREAD_SERIALIZED reasons
 							//printf("Hello from line 214 \n");
-							MPI_Ssend(&flag, 1, MPI_INT, i, 0, SendToNodes_Comm); //returns signal that data cannot be received
+							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, 0, SendToNodes_Comm); //returns signal that data cannot be received
 						}
 					}
 				}
-
 				if (breakLoop())
-				{
 					break;
-				}
 			}
 		}
 
@@ -193,7 +146,7 @@ namespace library
 				{
 					int buffer;
 					int tag = 3;
-					MPI_Ssend(&buffer, 0, MPI_INT, dest, tag, world_Comm);
+					MPI_Ssend(&buffer, 0, MPI::INTEGER, dest, tag, world_Comm);
 				}
 				printf("BusyNodes = 0 achieved \n");
 				onceFlag = true;
@@ -210,29 +163,23 @@ namespace library
 			serializer::stream os;
 			serializer::oarchive oa(os);
 			Utils::buildBuffer(oa, args...);
-			/*
+			/* //testing only
 			size_t Bytes = os.size();
 			serializer::stream is(os);
 			is.allocate(Bytes);
 			serializer::iarchive ia(is);
 			Utils::readBuffer(ia, args...);*/
 
-			//TODO serialize tuple in here
 			int count = os.size();
 			int rcvrNode = 1;
-			//int err = MPI_Send(&localSeed, 1, MPI_INT, rcvrNode, 0, SendToNodes_Comm);
-			//int err = MPI_Ssend(&localSeed, 1, MPI_INT, 1, 0, SendToNodes_Comm);
-			int err = MPI_Ssend(&count, 1, MPI_INT, rcvrNode, 0, world_Comm);
-			if (err != MPI_SUCCESS)
-			{
+			int err = MPI_Ssend(&count, 1, MPI::INTEGER, rcvrNode, 0, world_Comm); // send buffer size
+			if (err != MPI::SUCCESS)
 				printf("count could not be sent! \n");
-			}
 
-			err = MPI_Ssend(&os[0], count, MPI_CHAR, 1, 0, world_Comm);
-			if (err == MPI_SUCCESS)
-			{
+			err = MPI_Ssend(&os[0], count, MPI::CHARACTER, 1, 0, world_Comm); // send buffer
+			if (err == MPI::SUCCESS)
 				printf("Seed planted sucessfully! \n");
-			}
+
 			availableNodes[rcvrNode] = 0;
 		}
 
@@ -242,8 +189,8 @@ namespace library
 			//local number at [0] is broadcasted to other nodes
 			for (int i = 1; i < world_size; i++)
 			{
-				MPI_Win_lock(MPI_LOCK_SHARED, i, 0, win_NumNodes);
-				MPI_Put(numAvailableNodes, 1, MPI_INT, i, 0, 1, MPI_INT, win_NumNodes);
+				MPI_Win_lock(MPI::LOCK_SHARED, i, 0, win_NumNodes);
+				MPI_Put(numAvailableNodes, 1, MPI::INTEGER, i, 0, 1, MPI::INTEGER, win_NumNodes);
 				MPI_Win_flush(i, win_NumNodes);
 				MPI_Win_unlock(i, win_NumNodes);
 			}
@@ -286,6 +233,43 @@ namespace library
 			numAvailableNodes[0] = count;
 		}
 
+		void initMPI(int argc, char **argv)
+		{
+			// Initilialise MPI and ask for thread support
+			int provided;
+			MPI_Init_thread(&argc, &argv, MPI::THREAD_SERIALIZED, &provided);
+			if (provided < MPI::THREAD_SERIALIZED)
+			{
+				printf("The threading support level is lesser than that demanded.\n");
+				MPI_Abort(MPI::COMM_WORLD, EXIT_FAILURE);
+			}
+			else
+			{
+				printf("The threading support level corresponds to that demanded.\n");
+			}
+		}
+		void communicators()
+		{
+			MPI_Comm_dup(MPI::COMM_WORLD, &world_Comm); // world communicator for this library
+
+			MPI_Comm_size(world_Comm, &this->world_size);
+			MPI_Comm_rank(world_Comm, &this->world_rank);
+
+			// a communicator to syncronise only process 0 and 1 ****************************
+			MPI_Comm_group(world_Comm, &world_group);						 // world group, all ranks
+			const int prime_group_ranks[2] = {0, 1};						 // build a ranks group in prime_group
+			MPI_Group_incl(world_group, 2, prime_group_ranks, &prime_group); // include ranks in group
+			MPI_Comm_create_group(world_Comm, prime_group, 0, &prime_Commm); // creates the group
+
+			// ******************************************************************************
+
+			MPI_Comm_dup(world_Comm, &SendToNodes_Comm);
+			MPI_Comm_dup(world_Comm, &SendToCenter_Comm);
+			MPI_Comm_dup(world_Comm, &NodeToNode_Comm);
+			MPI_Comm_dup(world_Comm, &BCast_Comm);
+			MPI_Comm_dup(world_Comm, &accumulator_Comm);
+		}
+
 		void win_allocate()
 		{
 			printf("About to allocate\n");
@@ -293,20 +277,20 @@ namespace library
 			{
 				if (world_rank == 0)
 				{
-					MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
-					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
-					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
-					MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, Accumulator_Comm, &busyNodes, &win_accumulator);
+					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
+					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
+					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
+					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				}
 				else
 				{
-					MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
-					MPI_Win_allocate(0, sizeof(int), MPI_INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
-					MPI_Win_allocate(0, sizeof(int), MPI_INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
-					MPI_Win_allocate(0, sizeof(int), MPI_INFO_NULL, Accumulator_Comm, &busyNodes, &win_accumulator);
+					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
+					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
+					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
+					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				}
 
-				printf("Heyyyyyy\n");
+				printf("Allocated\n");
 
 				init();
 			}
@@ -341,7 +325,7 @@ namespace library
 			MPI_Comm_free(&SendToCenter_Comm);
 			MPI_Comm_free(&NodeToNode_Comm);
 			MPI_Comm_free(&BCast_Comm);
-			MPI_Comm_free(&Accumulator_Comm);
+			MPI_Comm_free(&accumulator_Comm);
 
 			if (world_rank == 0 || world_rank == 1)
 			{
@@ -354,8 +338,6 @@ namespace library
 
 		void init()
 		{
-			//isNodeAvailable.resize(world_size, true);
-			//isNodeAvailable[0] = false;
 			if (world_rank == 0)
 			{
 				numAvailableNodes[0] = world_size - 1;
@@ -374,34 +356,27 @@ namespace library
 		}
 
 	private:
-		int world_rank;		  // get the rank of the process
-		int world_size;		  // get the number of processes
-		char *processor_name; // name of the node
-
-		std::unique_ptr<std::thread> sch_t;
-
-		MPI_Win win_boolean;  // window for push request from nodes
-		MPI_Win win_NumNodes; // window for the number of available nodes
-		MPI_Win win_AvNodes;  // window for the list of available nodes
-		MPI_Win win_accumulator;
-
-		MPI_Group world_group;
-		MPI_Group prime_group;
-		MPI_Comm prime_Commm;
-
+		int world_rank;				// get the rank of the process
+		int world_size;				// get the number of processes/nodes
+		char processor_name[128];	// name of the node
+		MPI_Win win_boolean;		// window for pushing request from nodes
+		MPI_Win win_NumNodes;		// window for the number of available nodes
+		MPI_Win win_AvNodes;		// window for the list of available nodes
+		MPI_Win win_accumulator;	// windows for the busyNodes variable
+		MPI_Group world_group;		// all ranks belong to this group
+		MPI_Group prime_group;		// only rank 0 & 1 belong to this group
+		MPI_Comm world_Comm;		// world communicator
+		MPI_Comm prime_Commm;		// used to synchronise ranks 0 & 1
 		MPI_Comm SendToNodes_Comm;	// exclusive communicator attached to the aformentionned groups
 		MPI_Comm SendToCenter_Comm; // exclusive communicator attached to the aformentionned groups
 		MPI_Comm NodeToNode_Comm;
 		MPI_Comm BCast_Comm;	   // attached to number of nodes
-		MPI_Comm Accumulator_Comm; // attached to win_accumulator
-		MPI_Comm world_Comm;
+		MPI_Comm accumulator_Comm; // attached to win_accumulator
 
 		int *inbox_boolean;		// receives signal of a node attempting to put data [only center node has the list]
 		int *numAvailableNodes; // Number of available nodes	[every node is aware of this number]
 		int *availableNodes;	// list of available nodes [only center node has the list]
 		int *busyNodes;
-
-		int *testBuffer;
 
 		size_t threadsPerNode = std::thread::hardware_concurrency();
 	};
