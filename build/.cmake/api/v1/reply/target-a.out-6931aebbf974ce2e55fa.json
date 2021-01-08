@@ -49,7 +49,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g   -g -Wall"
+					"fragment" : "  -g -Wall"
 				},
 				{
 					"fragment" : "-pthread"
@@ -86,10 +86,6 @@
 	{
 		"commandFragments" : 
 		[
-			{
-				"fragment" : "-g",
-				"role" : "flags"
-			},
 			{
 				"fragment" : "",
 				"role" : "flags"
