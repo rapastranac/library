@@ -489,9 +489,10 @@ namespace library
 			auto future = std::move(_pool->push(f, rest...)); // future type can handle void returns
 			if (!onceFlag)
 			{
-				if (world_rank == 0 || world_rank == 1)
+				//if (world_rank == 0 || world_rank == 1)/
+				if (MPI_COMM_NULL != *second_Comm)
 				{
-					MPI_Barrier(*prime_Comm);
+					MPI_Barrier(*second_Comm);
 					onceFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
 				}
 				onceFlag = true;
@@ -704,7 +705,7 @@ namespace library
 		MPI_Win *win_accumulator = nullptr;
 
 		MPI_Comm *world_Comm = nullptr;
-		MPI_Comm *prime_Comm = nullptr;
+		MPI_Comm *second_Comm = nullptr;
 		MPI_Comm *SendToNodes_Comm = nullptr;
 		MPI_Comm *SendToCenter_Comm = nullptr;
 		MPI_Comm *NodeToNode_Comm = nullptr;
@@ -721,7 +722,7 @@ namespace library
 						 MPI_Win *win_boolean,
 						 MPI_Win *win_NumNodes,
 						 MPI_Comm *world_Comm,
-						 MPI_Comm *prime_Comm,
+						 MPI_Comm *second_Comm,
 						 MPI_Comm *SendToNodes_Comm,
 						 MPI_Comm *SendToCenter_Comm,
 						 MPI_Comm *NodeToNode_Comm)
@@ -735,8 +736,8 @@ namespace library
 			this->win_boolean = win_boolean;
 			this->win_NumNodes = win_NumNodes;
 			this->world_Comm = world_Comm;
-			if (world_rank == 1 || world_rank == 1)
-				this->prime_Comm = prime_Comm;
+			//if (world_rank == 1 || world_rank == 1)
+			this->second_Comm = second_Comm;
 			this->SendToNodes_Comm = SendToNodes_Comm;
 			this->SendToCenter_Comm = SendToCenter_Comm;
 			this->NodeToNode_Comm = NodeToNode_Comm;

@@ -58,7 +58,7 @@ namespace library
 								&win_boolean,
 								&win_NumNodes,
 								&world_Comm,
-								&prime_Comm,
+								&second_Comm,
 								&SendToNodes_Comm,
 								&SendToCenter_Comm,
 								&NodeToNode_Comm);
@@ -91,10 +91,11 @@ namespace library
 		void schedule(Args &&... args)
 		{
 			sendSeed(args...);
-			MPI_Barrier(prime_Comm); // syncrhonises only process 0 and 1 - this guarantees ...
-									 // ... that process 0 does not terminate the loop before process 1...
-									 // ... receives the seed, then busyNodes will be != 0 for the first ...
-									 // ... loop
+			if (MPI_COMM_NULL != second_Comm)
+				MPI_Barrier(second_Comm); // syncrhonises only process 0 and 1 - this guarantees ...
+										  // ... that process 0 does not terminate the loop before process 1...
+										  // ... receives the seed, then busyNodes will be != 0 for the first ...
+										  // ... loop
 			updateNumAvNodes();
 			BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
 
@@ -253,15 +254,15 @@ namespace library
 			MPI_Comm_group(world_Comm, &world_group); // world group, all ranks
 
 			// a communicator to syncronise only process 0 and 1 ****************************
-			const int prime_group_ranks[2] = {0, 1}; // build a ranks group in prime_group
-			if (world_rank == 0 || world_rank == 1)
-			{
+			const int prime_group_ranks[2] = {0, 1}; // build a ranks group in second_group
+													 //if (world_rank == 0 || world_rank == 1)
+													 //{
 
-				int err = MPI_Group_incl(world_group, 2, prime_group_ranks, &prime_group); // include ranks in group
-				printf("rank %d, err = %d \n", world_rank, err);
-				err = MPI_Comm_create_group(world_Comm, prime_group, 0, &prime_Comm); // creates the group
-				printf("rank %d, err = %d \n", world_rank, err);
-			}
+			int err = MPI_Group_incl(world_group, 2, prime_group_ranks, &second_group); // include ranks in group
+			printf("rank %d, err = %d \n", world_rank, err);
+			err = MPI_Comm_create_group(world_Comm, second_group, 0, &second_Comm); // creates the group
+			printf("rank %d, err = %d \n", world_rank, err);
+			//}
 			// ******************************************************************************
 
 			MPI_Comm_dup(world_Comm, &SendToNodes_Comm);
@@ -322,19 +323,17 @@ namespace library
 				delete[] busyNodes;
 			}
 
+			MPI_Group_free(&second_group);
+			MPI_Group_free(&world_group);
+			//if (world_rank == 0 || world_rank == 1)
+			if (MPI_COMM_NULL != second_Comm)
+				MPI_Comm_free(&second_Comm);
+
 			MPI_Comm_free(&SendToNodes_Comm);
 			MPI_Comm_free(&SendToCenter_Comm);
 			MPI_Comm_free(&NodeToNode_Comm);
 			MPI_Comm_free(&BCast_Comm);
 			MPI_Comm_free(&accumulator_Comm);
-
-			if (world_rank == 0 || world_rank == 1)
-			{
-				MPI_Group_free(&prime_group);
-				MPI_Comm_free(&prime_Comm);
-			}
-			MPI_Group_free(&world_group);
-			MPI_Comm_free(&world_Comm);
 		}
 
 		void init()
@@ -362,9 +361,9 @@ namespace library
 		MPI_Win win_AvNodes;		// window for the list of available nodes
 		MPI_Win win_accumulator;	// windows for the busyNodes variable
 		MPI_Group world_group;		// all ranks belong to this group
-		MPI_Group prime_group;		// only rank 0 & 1 belong to this group
+		MPI_Group second_group;		// only rank 0 & 1 belong to this group
 		MPI_Comm world_Comm;		// world communicator
-		MPI_Comm prime_Comm;		// used to synchronise ranks 0 & 1
+		MPI_Comm second_Comm;		// used to synchronise ranks 0 & 1
 		MPI_Comm SendToNodes_Comm;	// exclusive communicator attached to the aformentionned groups
 		MPI_Comm SendToCenter_Comm; // exclusive communicator attached to the aformentionned groups
 		MPI_Comm NodeToNode_Comm;
