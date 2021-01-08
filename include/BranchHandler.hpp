@@ -482,15 +482,19 @@ namespace library
 		}
 
 		template <typename F, typename... Rest>
-		auto pushSeed(bool &flag, F &&f, Rest &&... rest)
+		auto pushSeed(bool &onceFlag, F &&f, Rest &&... rest)
 		{
 			auto _pool = ctpl_casted(_pool_default);
 			this->busyThreads = 1;							  // forces just in case
 			auto future = std::move(_pool->push(f, rest...)); // future type can handle void returns
-			if (prime_Commm && !flag)
+			if (!onceFlag)
 			{
-				MPI_Barrier(*prime_Commm);
-				flag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
+				if (world_rank == 0 || world_rank == 1)
+				{
+					MPI_Barrier(*prime_Comm);
+					onceFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
+				}
+				onceFlag = true;
 			}
 			auto lambda = [&future]() { return future.get(); }; // create lambda to pass to args_handler::invoke_void()
 
@@ -700,7 +704,7 @@ namespace library
 		MPI_Win *win_accumulator = nullptr;
 
 		MPI_Comm *world_Comm = nullptr;
-		MPI_Comm *prime_Commm = nullptr;
+		MPI_Comm *prime_Comm = nullptr;
 		MPI_Comm *SendToNodes_Comm = nullptr;
 		MPI_Comm *SendToCenter_Comm = nullptr;
 		MPI_Comm *NodeToNode_Comm = nullptr;
@@ -717,7 +721,7 @@ namespace library
 						 MPI_Win *win_boolean,
 						 MPI_Win *win_NumNodes,
 						 MPI_Comm *world_Comm,
-						 MPI_Comm *prime_Commm,
+						 MPI_Comm *prime_Comm,
 						 MPI_Comm *SendToNodes_Comm,
 						 MPI_Comm *SendToCenter_Comm,
 						 MPI_Comm *NodeToNode_Comm)
@@ -731,8 +735,8 @@ namespace library
 			this->win_boolean = win_boolean;
 			this->win_NumNodes = win_NumNodes;
 			this->world_Comm = world_Comm;
-			if (world_rank == 1)
-				this->prime_Commm = prime_Commm;
+			if (world_rank == 1 || world_rank == 1)
+				this->prime_Comm = prime_Comm;
 			this->SendToNodes_Comm = SendToNodes_Comm;
 			this->SendToCenter_Comm = SendToCenter_Comm;
 			this->NodeToNode_Comm = NodeToNode_Comm;
@@ -798,15 +802,7 @@ namespace library
 				accumulate(1, 0, 0, *win_accumulator, "busyNodes++");
 
 				auto retVal = pushSeed(lFlag, f, -1, args...);
-				/*if (prime_Commm && !lFlag)
-				{
-					MPI_Barrier(*prime_Commm);
-					lFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
-				}
 
-				auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
-				auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
-*/
 				//TODO handle return Val to send it back to center node
 
 				printf("Passed on process %d \n", world_rank);

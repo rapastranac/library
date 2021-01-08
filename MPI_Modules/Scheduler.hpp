@@ -42,9 +42,8 @@ namespace library
 			int namelen;
 			MPI_Get_processor_name(processor_name, &namelen);
 
-			fprintf(stdout, "Process %d of %d is on %s\n", world_rank, world_size, processor_name);
-			fflush(stdout);
-
+			printf("Process %d of %d is on %s\n", world_rank, world_size, processor_name);
+			MPI_Barrier(world_Comm);
 			printf("About to create window, %d / %d!! \n", world_rank, world_size);
 			MPI_Barrier(world_Comm);
 			win_allocate();
@@ -59,7 +58,7 @@ namespace library
 								&win_boolean,
 								&win_NumNodes,
 								&world_Comm,
-								&prime_Commm,
+								&prime_Comm,
 								&SendToNodes_Comm,
 								&SendToCenter_Comm,
 								&NodeToNode_Comm);
@@ -92,10 +91,10 @@ namespace library
 		void schedule(Args &&... args)
 		{
 			sendSeed(args...);
-			MPI_Barrier(prime_Commm); // syncrhonises only process 0 and 1 - this guarantees ...
-									  // ... that process 0 does not terminate the loop before process 1...
-									  // ... receives the seed, then busyNodes will be != 0 for the first ...
-									  // ... loop
+			MPI_Barrier(prime_Comm); // syncrhonises only process 0 and 1 - this guarantees ...
+									 // ... that process 0 does not terminate the loop before process 1...
+									 // ... receives the seed, then busyNodes will be != 0 for the first ...
+									 // ... loop
 			updateNumAvNodes();
 			BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
 
@@ -138,7 +137,7 @@ namespace library
 
 		bool breakLoop()
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 4 testing
+			std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
 			printf("test, busyNodes = %d\n", busyNodes[0]);
 			if (busyNodes[0] == 0)
 			{
@@ -243,19 +242,26 @@ namespace library
 				printf("The threading support level corresponds to that demanded.\n");
 			}
 		}
+
 		void communicators()
 		{
-			MPI_Comm_dup(MPI::COMM_WORLD, &world_Comm); // world communicator for this library
+			MPI_Comm_dup(MPI_COMM_WORLD, &world_Comm); // world communicator for this library
 
 			MPI_Comm_size(world_Comm, &this->world_size);
 			MPI_Comm_rank(world_Comm, &this->world_rank);
 
-			// a communicator to syncronise only process 0 and 1 ****************************
-			MPI_Comm_group(world_Comm, &world_group);						 // world group, all ranks
-			const int prime_group_ranks[2] = {0, 1};						 // build a ranks group in prime_group
-			MPI_Group_incl(world_group, 2, prime_group_ranks, &prime_group); // include ranks in group
-			MPI_Comm_create_group(world_Comm, prime_group, 0, &prime_Commm); // creates the group
+			MPI_Comm_group(world_Comm, &world_group); // world group, all ranks
 
+			// a communicator to syncronise only process 0 and 1 ****************************
+			const int prime_group_ranks[2] = {0, 1}; // build a ranks group in prime_group
+			if (world_rank == 0 || world_rank == 1)
+			{
+
+				int err = MPI_Group_incl(world_group, 2, prime_group_ranks, &prime_group); // include ranks in group
+				printf("rank %d, err = %d \n", world_rank, err);
+				err = MPI_Comm_create_group(world_Comm, prime_group, 0, &prime_Comm); // creates the group
+				printf("rank %d, err = %d \n", world_rank, err);
+			}
 			// ******************************************************************************
 
 			MPI_Comm_dup(world_Comm, &SendToNodes_Comm);
@@ -324,10 +330,10 @@ namespace library
 
 			if (world_rank == 0 || world_rank == 1)
 			{
-				MPI_Group_free(&world_group);
 				MPI_Group_free(&prime_group);
-				MPI_Comm_free(&prime_Commm);
+				MPI_Comm_free(&prime_Comm);
 			}
+			MPI_Group_free(&world_group);
 			MPI_Comm_free(&world_Comm);
 		}
 
@@ -358,7 +364,7 @@ namespace library
 		MPI_Group world_group;		// all ranks belong to this group
 		MPI_Group prime_group;		// only rank 0 & 1 belong to this group
 		MPI_Comm world_Comm;		// world communicator
-		MPI_Comm prime_Commm;		// used to synchronise ranks 0 & 1
+		MPI_Comm prime_Comm;		// used to synchronise ranks 0 & 1
 		MPI_Comm SendToNodes_Comm;	// exclusive communicator attached to the aformentionned groups
 		MPI_Comm SendToCenter_Comm; // exclusive communicator attached to the aformentionned groups
 		MPI_Comm NodeToNode_Comm;

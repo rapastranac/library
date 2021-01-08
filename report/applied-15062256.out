@@ -1,0 +1,35 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/10.2.0".
+
+
+Inactive Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.3     3) ucx/1.8.0
+
+The following have been reloaded with a version change:
+  1) gcccore/.9.3.0 => gcccore/.10.2.0
+
+
+Activating Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.5     3) ucx/1.9.0
+
+
+Currently Loaded Modules:
+  1) CCconfig                 5) gcccore/.10.2.0 (H)   9) libfabric/1.10.1
+  2) gentoo/2020     (S)      6) gcc/10.2.0      (t)  10) openmpi/4.0.5    (m)
+  3) imkl/2020.1.217 (math)   7) ucx/1.9.0
+  4) StdEnv/2020     (S)      8) pmix/3.1.5
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /lustre03/project/6054778/pasr1602/applied
+Starting run at: Fri Jan  8 12:10:14 EST 2021
+srun: error: blg8629: task 1: Segmentation fault (core dumped)
+slurmstepd: error: *** JOB 15062256 ON blg8626 CANCELLED AT 2021-01-08T17:15:25 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 15062256.0 ON blg8626 CANCELLED AT 2021-01-08T17:15:25 DUE TO TIME LIMIT ***

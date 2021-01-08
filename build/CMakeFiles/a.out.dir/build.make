@@ -60,28 +60,28 @@ include CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main.cpp.o: ../src/main.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/a.out.dir/src/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main.cpp.o -c /home/andres/Documents/github/library/src/main.cpp
+	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main.cpp.o -c /home/andres/Documents/github/library/src/main.cpp
 
 CMakeFiles/a.out.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/main.cpp > CMakeFiles/a.out.dir/src/main.cpp.i
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/main.cpp > CMakeFiles/a.out.dir/src/main.cpp.i
 
 CMakeFiles/a.out.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main.cpp -o CMakeFiles/a.out.dir/src/main.cpp.s
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main.cpp -o CMakeFiles/a.out.dir/src/main.cpp.s
 
 CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o: ../src/buildUnsorted.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o -c /home/andres/Documents/github/library/src/buildUnsorted.cpp
+	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o -c /home/andres/Documents/github/library/src/buildUnsorted.cpp
 
 CMakeFiles/a.out.dir/src/buildUnsorted.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/buildUnsorted.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/buildUnsorted.cpp > CMakeFiles/a.out.dir/src/buildUnsorted.cpp.i
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/buildUnsorted.cpp > CMakeFiles/a.out.dir/src/buildUnsorted.cpp.i
 
 CMakeFiles/a.out.dir/src/buildUnsorted.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/buildUnsorted.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/buildUnsorted.cpp -o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.s
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/buildUnsorted.cpp -o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.s
 
 # Object files for target a.out
 a_out_OBJECTS = \
