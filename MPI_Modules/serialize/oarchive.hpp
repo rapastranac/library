@@ -3,33 +3,40 @@
 
 #include "archive.hpp"
 
-namespace serializer {
+namespace serializer
+{
 
-    class oarchive : protected archive {
+    class oarchive : protected archive
+    {
         friend class archive;
 
     private:
-        std::vector<std::pair<int, char *>> C;  // temporary container to store buffer sections while building stream
+        std::vector<std::pair<int, char *>> C; // temporary container to store buffer sections while building stream
 
     public:
-        explicit oarchive(serializer::stream &stream) : archive(stream) {
+        explicit oarchive(serializer::stream &stream) : archive(stream)
+        {
         }
 
-        ~oarchive() override {
-            for (int i = 0; i < C.size(); i++) {
+        ~oarchive() override
+        {
+            for (size_t i = 0; i < C.size(); i++)
+            {
                 delete[] C[i].second;
             }
         }
 
-        template<typename TYPE>
-        oarchive &operator<<(TYPE &src) {
+        template <typename TYPE>
+        oarchive &operator<<(TYPE &src)
+        {
             serialize(src);
             fillBuffer();
             return *this;
         }
 
     protected:
-        void fillBuffer() {
+        void fillBuffer()
+        {
             int counter = 0;
             int count;
 
@@ -39,13 +46,15 @@ namespace serializer {
             std::memcpy(&strm[0], &NUM_ARGS, sizeof(int)); //NUM_ARGS copied into stream
             counter += sizeof(int);
 
-            for (int i = 0; i < NUM_ARGS; i++) {
+            for (int i = 0; i < NUM_ARGS; i++)
+            {
                 count = sizeof(int);
                 std::memcpy(&strm[counter], &C[i].first, count); //Bytes count copied
                 counter += sizeof(int);
             }
 
-            for (size_t i = 0; i < NUM_ARGS; i++) {
+            for (int i = 0; i < NUM_ARGS; i++)
+            {
                 count = C[i].first;
                 std::memcpy(&strm[counter], C[i].second, count); //actual Bytes copied
                 counter += C[i].first;
@@ -55,9 +64,10 @@ namespace serializer {
         /*
          * fundamental types
          * */
-        template<typename _T,
-                std::enable_if_t<std::is_fundamental<_T>::value, bool> = true>
-        void serialize(const _T &src) {
+        template <typename _T,
+                  std::enable_if_t<std::is_fundamental<_T>::value, bool> = true>
+        void serialize(const _T &src)
+        {
             ++this->NUM_ARGS;
 
             int disp_unit = sizeof(_T);
@@ -68,8 +78,9 @@ namespace serializer {
             std::memcpy(C.back().second, &src, count);
         }
 
-        template<typename TYPE>
-        void serialize(const std::vector<TYPE> &src) {
+        template <typename TYPE>
+        void serialize(const std::vector<TYPE> &src)
+        {
             ++this->NUM_ARGS;
 
             int disp_unit = sizeof(TYPE);
@@ -80,8 +91,9 @@ namespace serializer {
             std::memcpy(C.back().second, src.data(), count);
         }
 
-        template<typename TYPE>
-        void serialize(const std::set<TYPE> &src) {
+        template <typename TYPE>
+        void serialize(const std::set<TYPE> &src)
+        {
             ++this->NUM_ARGS;
 
             int disp_unit = sizeof(TYPE);
@@ -92,15 +104,17 @@ namespace serializer {
 
             auto it = src.begin();
             int idx = 0;
-            while (it != src.end()) {
+            while (it != src.end())
+            {
                 std::memcpy(&C.back().second[idx], &*it, disp_unit);
                 ++it;
                 idx += disp_unit;
             }
         }
 
-        template<typename TYPE>
-        void serialize(const std::list<TYPE> &src) {
+        template <typename TYPE>
+        void serialize(const std::list<TYPE> &src)
+        {
             ++this->NUM_ARGS;
 
             int disp_unit = sizeof(TYPE);
@@ -111,15 +125,17 @@ namespace serializer {
 
             auto it = src.begin();
             int idx = 0;
-            while (it != src.end()) {
+            while (it != src.end())
+            {
                 std::memcpy(&C.back().second[idx], &*it, disp_unit);
                 ++it;
                 idx += disp_unit;
             }
         }
 
-        template<typename TYPE>
-        void serialize(const std::queue<TYPE> &src) {
+        template <typename TYPE>
+        void serialize(const std::queue<TYPE> &src)
+        {
             ++this->NUM_ARGS;
 
             int disp_unit = sizeof(TYPE);
@@ -130,15 +146,17 @@ namespace serializer {
 
             auto srcCpy = src;
             int idx = 0;
-            while (!srcCpy.empty()) {
+            while (!srcCpy.empty())
+            {
                 std::memcpy(&C.back().second[idx], &srcCpy.front(), disp_unit);
                 srcCpy.pop();
                 idx += disp_unit;
             }
         }
 
-        template<typename _Ty1, typename _Ty2>
-        void serialize(const std::map<_Ty1, _Ty2> &src) {
+        template <typename _Ty1, typename _Ty2>
+        void serialize(const std::map<_Ty1, _Ty2> &src)
+        {
             /*
                 for maps, an element telling the size of the upcoming map is inserted
             */
@@ -151,13 +169,15 @@ namespace serializer {
             C.emplace_back(std::make_pair(count, new char[count]));
             std::memcpy(&C.back().second[0], &size, disp_unit);
 
-            for (auto const &[key, val] : src) {
+            for (auto const &[key, val] : src)
+            {
                 serialize(key);
                 serialize(val);
             }
         }
 
-        void serialize(std::string &src) {
+        void serialize(std::string &src)
+        {
             ++this->NUM_ARGS;
 
             int disp_unit = sizeof(char);
@@ -168,12 +188,13 @@ namespace serializer {
             std::memcpy(C.back().second, src.c_str(), count);
         }
 
-        template<class TYPE,
-                std::enable_if_t<!is_stl_container<TYPE>::value &&
-                                 !std::is_fundamental<TYPE>::value &&
-                                 !std::is_same<TYPE, std::string>::value,
-                        bool> = true>
-        void serialize(TYPE &src) {
+        template <class TYPE,
+                  std::enable_if_t<!is_stl_container<TYPE>::value &&
+                                       !std::is_fundamental<TYPE>::value &&
+                                       !std::is_same<TYPE, std::string>::value,
+                                   bool> = true>
+        void serialize(TYPE &src)
+        {
             auto &tmp = dynamic_cast<archive &>(*this);
             //tmp.template operator()(src);
             tmp.template pass(*this, src, 0);

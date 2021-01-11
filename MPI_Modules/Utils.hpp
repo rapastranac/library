@@ -34,6 +34,21 @@ public:
         readBuffer(ia, args...);
         return;
     }
+
+    /*begin<--- General unpack tuple and passes arguments to callable -----*/
+    template <typename Tuple, size_t... I>
+    static void unpack_tuple(serializer::oarchive &oa, Tuple &t, std::index_sequence<I...>)
+    {
+        buildBuffer(oa, std::get<I>(t)...);
+    }
+
+    template <typename Tuple>
+    static void unpack_tuple(serializer::oarchive &oa, Tuple &t)
+    {
+        static constexpr auto size = std::tuple_size<Tuple>::value;
+        unpack_tuple(oa, t, std::make_index_sequence<size>{});
+    }
+    /*------- General unpack tuple and passes arguments to callable ----->end*/
 };
 
 #endif

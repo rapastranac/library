@@ -202,6 +202,16 @@ namespace library
 		{
 			return isPushed;
 		}
+
+		void setForwardStatus(bool val)
+		{
+			this->isForwarded = val;
+		}
+
+		void setPushStatus(bool val)
+		{
+			this->isPushed = val;
+		}
 	};
 
 } // namespace library

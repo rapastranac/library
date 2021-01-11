@@ -112,7 +112,7 @@ namespace std
 			static auto ignore_id(P* _pool, F&& f, Args &&... args)
 		{
 
-			int size = sizeof...(args); //testing
+			//int size = sizeof...(args); //testing
 			/* Maybe a flag to know if passing last argument or not,
 				for the cases when no holder is passed*/
 			auto fun = [f, _pool](int id, Args &&... args) {

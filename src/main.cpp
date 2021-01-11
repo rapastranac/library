@@ -56,8 +56,12 @@ int main(int argc, char **argv)
 	read(arr, "input/1000.txt");
 
 	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr); // target algorithm [all arguments]
-	library::Scheduler scheduler(handler, 1);			  // MPI Scheduler
-	scheduler.start(argc, argv, _f, arr);				  // solve in parallel, ignore args{id, tracker(is applicable)}
+	//handler.setMaxThreads(1);
+	//_f(0, arr); //TESTING only
+	//return 0;
+
+	library::Scheduler scheduler(handler, 1); // MPI Scheduler
+	scheduler.start(argc, argv, _f, arr);	  // solve in parallel, ignore args{id, tracker(is applicable)}
 
 	return 0;
 

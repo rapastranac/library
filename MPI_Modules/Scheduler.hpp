@@ -36,6 +36,7 @@ namespace library
 		template <typename F, typename... Args>
 		void start(int argc, char **argv, F &&f, Args &&... args)
 		{
+			handler.is_MPI_enable = true;
 			initMPI(argc, argv);
 			communicators();
 
@@ -96,13 +97,13 @@ namespace library
 										  // ... that process 0 does not terminate the loop before process 1...
 										  // ... receives the seed, then busyNodes will be != 0 for the first ...
 										  // ... loop
-			updateNumAvNodes();
+			//updateNumAvNodes();
 			BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
 
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
 			printf("Scheduler started!! \n");
 
-			while (true)
+			do
 			{
 				for (int rank = 1; rank < world_size; rank++)
 				{
@@ -114,10 +115,10 @@ namespace library
 							--numAvailableNodes[0];
 							BcastNumAvNodes();
 
-							int k = findAvailableNode();								  // first available node in the list
-							inbox_boolean[rank] = false;								  // reset boolean to zero lest center node check it again, unless requested by nodes
-							int flag = true;											  // signal to be sent back to node 'rank'
-							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, k, SendToNodes_Comm); // returns signal to 'rank' that data can be received
+							int k = findAvailableNode();							// first available node in the list
+							inbox_boolean[rank] = false;							// reset boolean to zero lest center node check it again, unless requested by nodes
+							int flag = true;										// signal to be sent back to node 'rank'
+							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, k, world_Comm); // returns signal to 'rank' that data can be received
 
 							//printf("process %d forwarded to process %d \n", rank, k);
 						}
@@ -127,13 +128,13 @@ namespace library
 							int flag = false;
 							inbox_boolean[rank] = false; // this is safe due to MPI_THREAD_SERIALIZED reasons
 							//printf("Hello from line 214 \n");
-							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, 0, SendToNodes_Comm); //returns signal that data cannot be received
+							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, 0, world_Comm); //returns signal that data cannot be received
 						}
 					}
 				}
 				if (breakLoop())
 					break;
-			}
+			} while (true);
 		}
 
 		bool breakLoop()
@@ -223,7 +224,7 @@ namespace library
 			int count = 0;
 			for (int i = 1; i < world_size; i++)
 			{
-				count = availableNodes[i];
+				count += availableNodes[i];
 			}
 			numAvailableNodes[0] = count;
 		}

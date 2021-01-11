@@ -161,10 +161,11 @@ namespace library
 		template <typename F, typename Holder>
 		bool push_to_pool_ctpl(ctpl::Pool *_pool, F &&f, int id, Holder &holder)
 		{
-
+			int flag = false;
 			/*This lock must be adquired before checking the condition,
 			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
+			numAvailableNodes[0] = 1; //TESTING only
 			if (busyThreads < _pool->size())
 			{
 				if (is_LB)
@@ -180,7 +181,7 @@ namespace library
 							int gfdg = 34; //just to create a break point
 						}
 
-						upperHolder->isPushed = true;
+						upperHolder->setPushStatus(true);
 
 						lck.unlock();
 						auto tmp = std::args_handler::unpack_tuple(_pool, f, upperHolder->getArgs(), true);
@@ -192,7 +193,7 @@ namespace library
 				}
 
 				this->busyThreads++;
-				holder.isPushed = true;
+				holder.setPushStatus(true);
 
 				if (std::get<1>(holder.tup).fetchCover().size() == 0)
 				{
@@ -205,15 +206,65 @@ namespace library
 				holder.hold_future(std::move(tmp));
 				return true;
 			}
+			else if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+			{
+				printf("%d about to request center node to push\n", world_rank);
+				customPut(true, 1, MPI::INT, 0, world_rank, *win_boolean); // send signal to center node
+				MPI_Status status;
+
+				printf("process %d requested to push \n", world_rank);
+				MPI_Recv(&flag, 1, MPI::INT, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+
+				if (flag)
+				{
+					int dest = status.MPI_TAG;
+					printf("process %d received ID %d\n", world_rank, dest);
+
+					serializer::stream os;
+					serializer::oarchive oa(os);
+					Utils::unpack_tuple(oa, holder.getArgs());
+
+					int count = os.size();												// number of Bytes
+					int err = MPI_Ssend(&count, 1, MPI::INTEGER, dest, 0, *world_Comm); // send buffer size
+					if (err != MPI::SUCCESS)
+						printf("count could not be sent from rank %d to center! \n", world_rank);
+
+					err = MPI_Ssend(&os[0], count, MPI::CHARACTER, dest, 0, *world_Comm); // send buffer
+					if (err == MPI::SUCCESS)
+						printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
+
+					//TODO how to retrieve result from destination rank?
+
+					lck.unlock();
+					printf("process %d forwarded to process %d \n", world_rank, dest);
+					return true;
+				}
+				else // numAvailableNodes might have changed due to delay
+				{
+					lck.unlock();
+					printf("process %d push request failed, forwarded!\n", world_rank);
+					auto retVal = this->forward(f, id, holder, true);
+					holder.hold_actual_result(retVal);
+					return true;
+				}
+			}
 			else
 			{
 				lck.unlock();
 
-				auto val = this->forward(f, id, holder, true);
-				holder.hold_actual_result(val);
+				auto retVal = this->forward(f, id, holder, true);
+				holder.hold_actual_result(retVal);
 				return true;
 			}
 			return false;
+		}
+
+		void customPut(int buffer, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
+		{
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window); // opens epoch
+			MPI_Put(&buffer, count, mpi_type, target_rank, offset, 1, MPI_INT, window);
+			MPI_Win_flush(target_rank, window);
+			MPI_Win_unlock(target_rank, window); // closes epoch
 		}
 
 		template <typename Holder>
@@ -482,21 +533,11 @@ namespace library
 		}
 
 		template <typename F, typename... Rest>
-		auto pushSeed(bool &onceFlag, F &&f, Rest &&... rest)
+		auto pushSeed(F &&f, Rest &&... rest)
 		{
 			auto _pool = ctpl_casted(_pool_default);
-			this->busyThreads = 1;							  // forces just in case
-			auto future = std::move(_pool->push(f, rest...)); // future type can handle void returns
-			if (!onceFlag)
-			{
-				//if (world_rank == 0 || world_rank == 1)/
-				if (MPI_COMM_NULL != *second_Comm)
-				{
-					MPI_Barrier(*second_Comm);
-					onceFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
-				}
-				onceFlag = true;
-			}
+			this->busyThreads = 1;								// forces just in case
+			auto future = std::move(_pool->push(f, rest...));	// future type can handle void returns
 			auto lambda = [&future]() { return future.get(); }; // create lambda to pass to args_handler::invoke_void()
 
 			return std::args_handler::invoke_void(lambda); //this guarantees to assign a non-void value
@@ -504,8 +545,9 @@ namespace library
 
 	public:
 		template <typename F, typename Holder>
-		bool push(F &&f, int id, Holder &holder)
+		int push(F &&f, int id, Holder &holder)
 		{
+			bool flag = false;
 			auto _pool = ctpl_casted(_pool_default);
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
@@ -513,21 +555,62 @@ namespace library
 			if (busyThreads < _pool->size())
 			{
 				busyThreads++;
-				holder.isPushed = true;
+				holder.setPushStatus(true);
 
 				lck.unlock();
 				auto tmp = std::args_handler::unpack_tuple(_pool, f, holder.getArgs());
 				holder.hold_future(std::move(tmp));
-				return true;
+				return 1;
+			}
+			else if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+			{
+				printf("%d about to request center node to push\n", world_rank);
+				customPut(true, 1, MPI::INT, 0, world_rank, *win_boolean); // send signal to center node
+				MPI_Status status;
+
+				printf("process %d requested to push \n", world_rank);
+				MPI_Recv(&flag, 1, MPI::INT, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+
+				if (flag)
+				{
+					int dest = status.MPI_TAG;
+					printf("process %d received ID %d\n", world_rank, dest);
+
+					serializer::stream os;
+					serializer::oarchive oa(os);
+					Utils::unpack_tuple(oa, holder.getArgs());
+
+					int count = os.size();												// number of Bytes
+					int err = MPI_Ssend(&count, 1, MPI::INTEGER, dest, 0, *world_Comm); // send buffer size
+					if (err != MPI::SUCCESS)
+						printf("count could not be sent from rank %d to center! \n", world_rank);
+
+					err = MPI_Ssend(&os[0], count, MPI::CHARACTER, dest, 0, *world_Comm); // send buffer
+					if (err == MPI::SUCCESS)
+						printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
+
+					//TODO how to retrieve result from destination rank?
+
+					lck.unlock();
+					printf("process %d forwarded to process %d \n", world_rank, dest);
+					return 2;
+				}
+				else // numAvailableNodes might have changed due to delay
+				{
+					lck.unlock();
+					printf("process %d push request failed, forwarded!\n", world_rank);
+					auto retVal = this->forward(f, id, holder);
+					holder.hold_actual_result(retVal);
+					return 0;
+				}
 			}
 			else
 			{
 				lck.unlock();
-				auto val = this->forward(f, id, holder);
-				holder.hold_actual_result(val);
-				return true;
+				auto retVal = this->forward(f, id, holder);
+				holder.hold_actual_result(retVal);
+				return 0;
 			}
-			return false;
 		}
 
 		template <typename F, typename Holder>
@@ -561,7 +644,7 @@ namespace library
 				checkLeftSibling(&holder);
 			}
 
-			holder.isForwarded = true;
+			holder.setForwardStatus(true);
 			holder.threadId = threadId;
 			return std::args_handler::unpack_tuple(&holder, f, threadId, holder.getArgs(), trackStack);
 		}
@@ -695,6 +778,7 @@ namespace library
 		/*----------------Singleton----------------->>end*/
 	protected:
 		/* MPI parameters */
+		bool is_MPI_enable = false;
 		int world_rank = -1;	  // get the rank of the process
 		int world_size = -1;	  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
@@ -747,7 +831,7 @@ namespace library
 		template <typename F, typename... Args>
 		void receiveSeed(F &&f, Args &&... args)
 		{
-			bool lFlag = false;
+			bool onceFlag = false;
 			int count_rcv = 0;
 
 			//TESTING //////////////////////////////////////////////////////
@@ -802,7 +886,17 @@ namespace library
 
 				accumulate(1, 0, 0, *win_accumulator, "busyNodes++");
 
-				auto retVal = pushSeed(lFlag, f, -1, args...);
+				if (!onceFlag)
+				{
+					if (MPI_COMM_NULL != *second_Comm)
+					{
+						MPI_Barrier(*second_Comm);
+						onceFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
+					}
+					onceFlag = true;
+				}
+
+				auto retVal = pushSeed(f, -1, args...);
 
 				//TODO handle return Val to send it back to center node
 
