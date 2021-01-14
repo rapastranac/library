@@ -40,7 +40,7 @@ namespace library
 	class ResultHolder;
 
 	class Scheduler;
-	
+
 	class BranchHandler
 	{
 		template <typename _Ret, typename... Args>
@@ -794,6 +794,7 @@ namespace library
 		MPI_Win *win_boolean = nullptr;
 		MPI_Win *win_NumNodes = nullptr;
 		MPI_Win *win_AvNodes = nullptr;
+		MPI_Win *win_finalFlag = nullptr;
 		MPI_Win *win_accumulator = nullptr;
 
 		MPI_Comm *world_Comm = nullptr;
@@ -810,6 +811,7 @@ namespace library
 						 char *processor_name,
 						 int *numAvailableNodes,
 						 MPI_Win *win_accumulator,
+						 MPI_Win *win_finalFlag,
 						 MPI_Win *win_AvNodes,
 						 MPI_Win *win_boolean,
 						 MPI_Win *win_NumNodes,
@@ -825,10 +827,10 @@ namespace library
 			strncpy(this->processor_name, processor_name, 128);
 			this->win_accumulator = win_accumulator;
 			this->win_AvNodes = win_AvNodes;
+			this->win_finalFlag = win_finalFlag;
 			this->win_boolean = win_boolean;
 			this->win_NumNodes = win_NumNodes;
 			this->world_Comm = world_Comm;
-			//if (world_rank == 1 || world_rank == 1)
 			this->second_Comm = second_Comm;
 			this->SendToNodes_Comm = SendToNodes_Comm;
 			this->SendToCenter_Comm = SendToCenter_Comm;

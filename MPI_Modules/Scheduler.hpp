@@ -250,6 +250,7 @@ namespace library
 								processor_name,
 								numAvailableNodes,
 								&win_accumulator,
+								&win_finalFlag,
 								&win_AvNodes,
 								&win_boolean,
 								&win_NumNodes,
@@ -299,6 +300,7 @@ namespace library
 					MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
+					MPI_Win_allocate(sizeof(bool), sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
 				}
 				else
 				{
@@ -306,6 +308,7 @@ namespace library
 					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
+					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
 				}
 
 				printf("Allocated\n");
@@ -327,18 +330,19 @@ namespace library
 		{
 			if (world_size > 1)
 			{
-				MPI_Win_free(&win_boolean);
-				MPI_Win_free(&win_NumNodes);
-				MPI_Win_free(&win_AvNodes);
 				MPI_Win_free(&win_accumulator);
+				MPI_Win_free(&win_AvNodes);
+				MPI_Win_free(&win_boolean);
+				MPI_Win_free(&win_finalFlag);
+				MPI_Win_free(&win_NumNodes);
 			}
 			else
 			{
-				delete[] numAvailableNodes;
-				delete[] inbox_boolean;
 				delete[] availableNodes;
 				delete[] busyNodes;
 				delete[] finalFlag;
+				delete[] numAvailableNodes;
+				delete[] inbox_boolean;
 			}
 
 			MPI_Group_free(&second_group);
@@ -371,13 +375,15 @@ namespace library
 		}
 
 	private:
-		int world_rank;				// get the rank of the process
-		int world_size;				// get the number of processes/nodes
-		char processor_name[128];	// name of the node
-		MPI_Win win_boolean;		// window for pushing request from nodes
-		MPI_Win win_NumNodes;		// window for the number of available nodes
-		MPI_Win win_AvNodes;		// window for the list of available nodes
-		MPI_Win win_accumulator;	// windows for the busyNodes variable
+		int world_rank;			  // get the rank of the process
+		int world_size;			  // get the number of processes/nodes
+		char processor_name[128]; // name of the node
+		MPI_Win win_boolean;	  // window for pushing request from nodes
+		MPI_Win win_finalFlag;
+		MPI_Win win_NumNodes;	 // window for the number of available nodes
+		MPI_Win win_AvNodes;	 // window for the list of available nodes
+		MPI_Win win_accumulator; // windows for the busyNodes variable
+
 		MPI_Group world_group;		// all ranks belong to this group
 		MPI_Group second_group;		// only rank 0 & 1 belong to this group
 		MPI_Comm world_Comm;		// world communicator

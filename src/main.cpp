@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
 	Sort objet;
 
-	library::BranchHandler &handler = library::BranchHandler::getInstance();
+	auto &handler = library::BranchHandler::getInstance();
 
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
