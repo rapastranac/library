@@ -48,14 +48,12 @@ int main(int argc, char **argv)
 	//return 0;
 
 	Sort objet;
-
+	auto _f = std::bind(&Sort::mergeSort, objet, _1, _2); // target algorithm [all arguments]
 	auto &handler = library::BranchHandler::getInstance();
 
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
-
-	auto _f = std::bind(&Sort::mergeSort, objet, _1, _2); // target algorithm [all arguments]
 
 	library::ResultHolder<std::vector<size_t>, std::vector<size_t>> holder(handler);
 

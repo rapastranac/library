@@ -23,7 +23,6 @@ namespace library
 
 	class Scheduler
 	{
-		friend class BranchHandler;
 
 	private:
 		BranchHandler &handler;
@@ -108,8 +107,6 @@ namespace library
 							inbox_boolean[rank] = false;							// reset boolean to zero lest center node check it again, unless requested by nodes
 							int flag = true;										// signal to be sent back to node 'rank'
 							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, k, world_Comm); // returns signal to 'rank' that data can be received
-
-							//printf("process %d forwarded to process %d \n", rank, k);
 						}
 						else
 						{
@@ -134,9 +131,9 @@ namespace library
 			{
 				for (int dest = 1; dest < world_size; dest++)
 				{
-					int buffer;
+					int emptyBuffer;
 					int tag = 3;
-					MPI_Ssend(&buffer, 0, MPI::INTEGER, dest, tag, world_Comm);
+					MPI_Ssend(&emptyBuffer, 0, MPI::INTEGER, dest, tag, world_Comm);
 				}
 				printf("BusyNodes = 0 achieved \n");
 				return true;
@@ -271,11 +268,11 @@ namespace library
 			MPI_Comm_group(world_Comm, &world_group); // world group, all ranks
 
 			// a communicator to syncronise only process 0 and 1 ****************************
-			const int prime_group_ranks[2] = {0, 1}; // build a ranks group in second_group
-													 //if (world_rank == 0 || world_rank == 1)
-													 //{
+			const int second_group_ranks[2] = {0, 1}; // build a ranks group in second_group
+													  //if (world_rank == 0 || world_rank == 1)
+													  //{
 
-			int err = MPI_Group_incl(world_group, 2, prime_group_ranks, &second_group); // include ranks in group
+			int err = MPI_Group_incl(world_group, 2, second_group_ranks, &second_group); // include ranks in group
 			printf("rank %d, err = %d \n", world_rank, err);
 			err = MPI_Comm_create_group(world_Comm, second_group, 0, &second_Comm); // creates the group
 			printf("rank %d, err = %d \n", world_rank, err);
@@ -300,7 +297,9 @@ namespace library
 					MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
-					MPI_Win_allocate(sizeof(bool), sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
+
+					if (MPI_COMM_NULL != second_Comm)
+						MPI_Win_allocate(sizeof(bool), sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
 				}
 				else
 				{
@@ -308,7 +307,9 @@ namespace library
 					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
-					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
+
+					if (MPI_COMM_NULL != second_Comm)
+						MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
 				}
 
 				printf("Allocated\n");
@@ -333,8 +334,9 @@ namespace library
 				MPI_Win_free(&win_accumulator);
 				MPI_Win_free(&win_AvNodes);
 				MPI_Win_free(&win_boolean);
-				MPI_Win_free(&win_finalFlag);
 				MPI_Win_free(&win_NumNodes);
+				if (MPI_COMM_NULL != second_Comm)
+					MPI_Win_free(&win_finalFlag);
 			}
 			else
 			{
@@ -404,10 +406,6 @@ namespace library
 
 		/* singleton*/
 		Scheduler(BranchHandler &bHandler) : handler(bHandler) {}
-		Scheduler(BranchHandler &bHandler, size_t threadsPerNode) : handler(bHandler)
-		{
-			this->threadsPerNode = threadsPerNode;
-		}
 	};
 } // namespace library
 #endif
