@@ -141,6 +141,25 @@ namespace library
 			return false;
 		}
 
+		void receiveResult()
+		{
+			MPI_Status status;
+			if (finalFlag[0])
+			{
+				int Bytes;
+				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, second_Comm, &status);
+				returnStream.allocate(Bytes);
+				MPI_Recv(&returnStream[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, second_Comm, &status);
+			}
+		}
+
+		template <typename Target>
+		void retrieveResult(Target &target)
+		{
+			serializer::iarchive ia(returnStream);
+			ia >> target;
+		}
+
 		template <typename Holder>
 		void sendSeed(Holder &holder)
 		{
@@ -401,6 +420,8 @@ namespace library
 		int *availableNodes;	// list of available nodes [only center node has the list]
 		int *busyNodes;			// number of nodes working at the time
 		bool *finalFlag;
+
+		serializer::stream returnStream;
 
 		size_t threadsPerNode = std::thread::hardware_concurrency();
 

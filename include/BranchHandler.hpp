@@ -874,12 +874,10 @@ namespace library
 
 				printf("Receiver on %d ready to receive \n", world_rank);
 				int Bytes; //Bytes to be received
-				//MPI_Recv(&buffer, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, *SendToNodes_Comm, &status);
 				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
 				count_rcv++;
 				int src = status.MPI_SOURCE;
-				printf("process %d has rcvd from %d \n", world_rank, src);
-				printf("process %d has rcvd %d times \n", world_rank, count_rcv);
+				printf("process %d has rcvd from %d,%d times \n", world_rank, src, count_rcv);
 				if (status.MPI_TAG == 3)
 				{
 					printf("Exit tag received on process %d \n", world_rank); // loop termination
@@ -892,7 +890,8 @@ namespace library
 				serializer::iarchive ia(is);
 				MPI_Recv(&is[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
 
-				Utils::unpack_tuple(ia, holder.getArgs());
+				Holder newHolder(*this);
+				Utils::unpack_tuple(ia, newHolder.getArgs());
 
 				accumulate(1, 0, 0, *win_accumulator, "busyNodes++");
 
@@ -907,6 +906,7 @@ namespace library
 				}
 
 				//auto retVal = pushSeed(f, -1, args...);
+				push(f, 0, newHolder);
 
 				//TODO handle return Val to send it back to center node
 

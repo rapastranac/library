@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 	//return 0;
 
 	Sort objet;
-	auto _f = std::bind(&Sort::mergeSort, objet, _1, _2); // target algorithm [all arguments]
+	auto _f = std::bind(&Sort::mergeSort, &objet, _1, _2); // target algorithm [all arguments]
 	auto &handler = library::BranchHandler::getInstance();
 
 	std::vector<size_t> arr;
