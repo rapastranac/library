@@ -7,8 +7,6 @@
 * rapastranac@gmail.com
 */
 
-#include "BranchHandler.hpp"
-
 #include <list>
 
 namespace library

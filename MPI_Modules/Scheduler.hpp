@@ -96,8 +96,8 @@ namespace library
 			{
 				for (int rank = 1; rank < world_size; rank++)
 				{
-					updateNumAvNodes();			  // check list of available nodes
-					if (inbox_boolean[rank] == 1) //if this cell changes, then a node has requested permission to push
+					updateNumAvNodes();				 // check list of available nodes
+					if (inbox_boolean[rank] == true) //if this cell changes, then a node has requested permission to push
 					{
 						if (numAvailableNodes[0] > 0) //if found, positive signal is sent back to requesting node
 						{
@@ -296,14 +296,14 @@ namespace library
 				if (world_rank == 0)
 				{
 					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
-					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
+					MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				}
 				else
 				{
 					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
-					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
+					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				}
@@ -315,9 +315,10 @@ namespace library
 			else
 			{
 				this->numAvailableNodes = new int[1];
-				this->inbox_boolean = new int[world_size];
-				this->availableNodes = new int[world_size];
+				this->inbox_boolean = new bool[1];
+				this->availableNodes = new int[1];
 				this->busyNodes = new int[1];
+				this->finalFlag = new bool[1];
 				init();
 			}
 		}
@@ -337,6 +338,7 @@ namespace library
 				delete[] inbox_boolean;
 				delete[] availableNodes;
 				delete[] busyNodes;
+				delete[] finalFlag;
 			}
 
 			MPI_Group_free(&second_group);
@@ -360,7 +362,7 @@ namespace library
 				busyNodes[0] = 0;
 				for (int i = 0; i < world_size; i++)
 				{
-					inbox_boolean[i] = 0;
+					inbox_boolean[i] = false;
 					availableNodes[i] = 0; // no node is available, each node is in charge of communicating its availability
 				}
 			}
@@ -386,10 +388,11 @@ namespace library
 		MPI_Comm BCast_Comm;	   // attached to number of nodes
 		MPI_Comm accumulator_Comm; // attached to win_accumulator
 
-		int *inbox_boolean;		// receives signal of a node attempting to put data [only center node has the list]
+		bool *inbox_boolean;	// receives signal of a node attempting to put data [only center node has the list]
 		int *numAvailableNodes; // Number of available nodes	[every node is aware of this number]
 		int *availableNodes;	// list of available nodes [only center node has the list]
 		int *busyNodes;			// number of nodes working at the time
+		bool *finalFlag;
 
 		size_t threadsPerNode = std::thread::hardware_concurrency();
 

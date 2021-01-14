@@ -10,7 +10,6 @@
 
 #include "args_handler.hpp"
 #include "pool_include.hpp"
-#include "ResultHolder.hpp"
 
 #include "../MPI_Modules/serialize/archive.hpp"
 #include "../MPI_Modules/serialize/oarchive.hpp"
@@ -37,7 +36,11 @@
 
 namespace library
 {
+	template <typename _Ret, typename... Args>
+	class ResultHolder;
+
 	class Scheduler;
+	
 	class BranchHandler
 	{
 		template <typename _Ret, typename... Args>
@@ -214,7 +217,7 @@ namespace library
 			else if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
 			{
 				printf("%d about to request center node to push\n", world_rank);
-				customPut(true, 1, MPI::INT, 0, world_rank, *win_boolean); // send signal to center node
+				customPut(true, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
 				MPI_Status status;
 
 				printf("process %d requested to push \n", world_rank);
@@ -570,7 +573,7 @@ namespace library
 			else if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
 			{
 				printf("%d about to request center node to push\n", world_rank);
-				customPut(true, 1, MPI::INT, 0, world_rank, *win_boolean); // send signal to center node
+				customPut(true, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
 				MPI_Status status;
 
 				printf("process %d requested to push \n", world_rank);

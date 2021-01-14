@@ -98,7 +98,7 @@ public:
 			k++;
 		}
 
-		return std::move(merged);
+		return merged;
 	}
 
 	std::vector<size_t> mergeSort(int id, std::vector<size_t> &section)
