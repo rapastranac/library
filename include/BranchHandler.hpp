@@ -11,7 +11,11 @@
 #include "args_handler.hpp"
 #include "pool_include.hpp"
 #include "ResultHolder.hpp"
-#include "../MPI_Modules/Scheduler.hpp"
+
+#include "../MPI_Modules/serialize/archive.hpp"
+#include "../MPI_Modules/serialize/oarchive.hpp"
+#include "../MPI_Modules/serialize/iarchive.hpp"
+#include "../MPI_Modules/Utils.hpp"
 
 #include <any>
 #include <atomic>
@@ -33,6 +37,7 @@
 
 namespace library
 {
+	class Scheduler;
 	class BranchHandler
 	{
 		template <typename _Ret, typename... Args>
@@ -828,8 +833,8 @@ namespace library
 		}
 
 		/* if method receives data, this node is supposed to be totally idle */
-		template <typename F, typename... Args>
-		void receiveSeed(F &&f, Args &&... args)
+		template <typename F, typename Holder>
+		void receiveSeed(F &&f, Holder &holder)
 		{
 			bool onceFlag = false;
 			int count_rcv = 0;
@@ -882,7 +887,7 @@ namespace library
 				serializer::iarchive ia(is);
 				MPI_Recv(&is[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
 
-				Utils::readBuffer(ia, args...); //received buffer conversion
+				Utils::unpack_tuple(ia, holder.getArgs());
 
 				accumulate(1, 0, 0, *win_accumulator, "busyNodes++");
 
@@ -896,7 +901,7 @@ namespace library
 					onceFlag = true;
 				}
 
-				auto retVal = pushSeed(f, -1, args...);
+				//auto retVal = pushSeed(f, -1, args...);
 
 				//TODO handle return Val to send it back to center node
 

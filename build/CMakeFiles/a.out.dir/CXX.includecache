@@ -35,6 +35,8 @@ time.h
 /home/andres/Documents/github/library/MPI_Modules/Utils.hpp
 serialize/oarchive.hpp
 /home/andres/Documents/github/library/MPI_Modules/serialize/oarchive.hpp
+serialize/iarchive.hpp
+/home/andres/Documents/github/library/MPI_Modules/serialize/iarchive.hpp
 
 /home/andres/Documents/github/library/MPI_Modules/serialize/archive.hpp
 stream.hpp
@@ -91,8 +93,14 @@ pool_include.hpp
 /home/andres/Documents/github/library/include/pool_include.hpp
 ResultHolder.hpp
 /home/andres/Documents/github/library/include/ResultHolder.hpp
-../MPI_Modules/Scheduler.hpp
-/home/andres/Documents/github/library/MPI_Modules/Scheduler.hpp
+../MPI_Modules/serialize/archive.hpp
+/home/andres/Documents/github/library/MPI_Modules/serialize/archive.hpp
+../MPI_Modules/serialize/oarchive.hpp
+/home/andres/Documents/github/library/MPI_Modules/serialize/oarchive.hpp
+../MPI_Modules/serialize/iarchive.hpp
+/home/andres/Documents/github/library/MPI_Modules/serialize/iarchive.hpp
+../MPI_Modules/Utils.hpp
+/home/andres/Documents/github/library/MPI_Modules/Utils.hpp
 any
 -
 atomic

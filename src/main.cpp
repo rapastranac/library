@@ -55,13 +55,16 @@ int main(int argc, char **argv)
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
 
-	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr); // target algorithm [all arguments]
-	//handler.setMaxThreads(1);
-	//_f(0, arr); //TESTING only
-	//return 0;
+	auto _f = std::bind(&Sort::mergeSort, objet, _1, _2); // target algorithm [all arguments]
 
-	library::Scheduler scheduler(handler, 1); // MPI Scheduler
-	scheduler.start(argc, argv, _f, arr);	  // solve in parallel, ignore args{id, tracker(is applicable)}
+	library::ResultHolder<std::vector<size_t>, std::vector<size_t>> holder(handler);
+
+	holder.holdArgs(arr);
+
+	auto scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
+	scheduler.setThreadsPerNode(1);
+	scheduler.start(argc, argv, _f, holder); // solve in parallel, ignore args{id, tracker(is applicable)}
+	scheduler.finalize();
 
 	return 0;
 

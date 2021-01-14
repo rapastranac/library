@@ -34,6 +34,7 @@ namespace library
 
 		bool isPushed = false;	  //It was performed by another thread
 		bool isForwarded = false; //It was performed sequentially
+		bool isMPISent = false;
 
 		size_t id;
 		size_t threadId = 0;
@@ -203,6 +204,11 @@ namespace library
 			return isPushed;
 		}
 
+		bool is_MPI_Sent()
+		{
+			return isMPISent;
+		}
+
 		void setForwardStatus(bool val)
 		{
 			this->isForwarded = val;
@@ -211,6 +217,11 @@ namespace library
 		void setPushStatus(bool val)
 		{
 			this->isPushed = val;
+		}
+
+		void setMPISent(bool val)
+		{
+			this->isMPISent = val;
 		}
 	};
 

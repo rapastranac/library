@@ -4,6 +4,7 @@
 #define UTILS_HPP
 
 #include "serialize/oarchive.hpp"
+#include "serialize/iarchive.hpp"
 
 class Utils
 {
@@ -47,6 +48,19 @@ public:
     {
         static constexpr auto size = std::tuple_size<Tuple>::value;
         unpack_tuple(oa, t, std::make_index_sequence<size>{});
+    }
+
+    template <typename Tuple, size_t... I>
+    static void unpack_tuple(serializer::iarchive &ia, Tuple &t, std::index_sequence<I...>)
+    {
+        readBuffer(ia, std::get<I>(t)...);
+    }
+
+    template <typename Tuple>
+    static void unpack_tuple(serializer::iarchive &ia, Tuple &t)
+    {
+        static constexpr auto size = std::tuple_size<Tuple>::value;
+        unpack_tuple(ia, t, std::make_index_sequence<size>{});
     }
     /*------- General unpack tuple and passes arguments to callable ----->end*/
 };
