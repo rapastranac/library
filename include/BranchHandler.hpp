@@ -541,7 +541,7 @@ namespace library
 		}
 
 		template <typename F, typename... Rest>
-		auto pushSeed(F &&f, Rest &&... rest)
+		auto pushSeed(F &&f, Rest &&...rest)
 		{
 			auto _pool = ctpl_casted(_pool_default);
 			this->busyThreads = 1;								// forces just in case
@@ -786,6 +786,9 @@ namespace library
 		/*----------------Singleton----------------->>end*/
 	protected:
 		/* MPI parameters */
+		std::function<std::any(std::any)> _serialize;
+		std::function<std::any(std::any)> _deserialize;
+
 		bool is_MPI_enable = false;
 		int world_rank = -1;	  // get the rank of the process
 		int world_size = -1;	  // get the number of processes/nodes
@@ -890,7 +893,7 @@ namespace library
 				serializer::iarchive ia(is);
 				MPI_Recv(&is[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
 
-				Holder newHolder(*this);
+				Holder newHolder(*this); //copies types
 				Utils::unpack_tuple(ia, newHolder.getArgs());
 
 				accumulate(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");

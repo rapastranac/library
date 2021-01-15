@@ -25,12 +25,12 @@ namespace library
 	{
 
 	private:
-		BranchHandler &handler;
+		BranchHandler &_branchHandler;
 
 	public:
-		static Scheduler &getInstance(BranchHandler &handler)
+		static Scheduler &getInstance(BranchHandler &branchHandler)
 		{
-			static Scheduler instance(handler);
+			static Scheduler instance(branchHandler);
 			return instance;
 		}
 
@@ -39,10 +39,12 @@ namespace library
 			this->threadsPerNode = threadsPerNode;
 		}
 
-		template <typename F, typename Holder>
-		void start(int argc, char **argv, F &&f, Holder &holder)
+		template <typename F, typename Holder, typename Serialize, typename Deserialize>
+		void start(int argc, char **argv, F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
 		{
-			handler.is_MPI_enable = true;
+			_branchHandler.is_MPI_enable = true;
+
+			//_branchHandler._serialize = serialize;
 			initMPI(argc, argv);
 
 			printf("About to start, %d / %d!! \n", world_rank, world_size);
@@ -57,8 +59,8 @@ namespace library
 			}
 			else
 			{
-				this->handler.setMaxThreads(threadsPerNode);
-				this->handler.receiveSeed(f, holder);
+				this->_branchHandler.setMaxThreads(threadsPerNode);
+				this->_branchHandler.receiveSeed(f, holder);
 
 				printf("process %d waiting at barrier \n", world_rank);
 				MPI_Barrier(world_Comm);
@@ -261,20 +263,20 @@ namespace library
 			win_allocate();
 			MPI_Barrier(world_Comm);
 
-			handler.linkMPIargs(world_rank,
-								world_size,
-								processor_name,
-								numAvailableNodes,
-								&win_accumulator,
-								&win_finalFlag,
-								&win_AvNodes,
-								&win_boolean,
-								&win_NumNodes,
-								&world_Comm,
-								&second_Comm,
-								&SendToNodes_Comm,
-								&SendToCenter_Comm,
-								&NodeToNode_Comm);
+			this->_branchHandler.linkMPIargs(world_rank,
+											 world_size,
+											 processor_name,
+											 numAvailableNodes,
+											 &win_accumulator,
+											 &win_finalFlag,
+											 &win_AvNodes,
+											 &win_boolean,
+											 &win_NumNodes,
+											 &world_Comm,
+											 &second_Comm,
+											 &SendToNodes_Comm,
+											 &SendToCenter_Comm,
+											 &NodeToNode_Comm);
 		}
 
 		void communicators()
@@ -426,7 +428,7 @@ namespace library
 		size_t threadsPerNode = std::thread::hardware_concurrency();
 
 		/* singleton*/
-		Scheduler(BranchHandler &bHandler) : handler(bHandler) {}
+		Scheduler(BranchHandler &branchHandler) : _branchHandler(branchHandler) {}
 	};
 } // namespace library
 #endif

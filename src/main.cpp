@@ -42,26 +42,38 @@ void print(std::vector<size_t> &ordered)
 	file.close();
 }
 
+auto user_serializer = [](auto &...args) {
+	serializer::stream is;
+	serializer::oarchive oa(is);
+	Utils::buildBuffer(oa, args...);
+	return is;
+};
+
+auto user_deserializer = [](int Bytes, serializer::stream &is, auto &...args) {
+	serializer::iarchive ia(is);
+	Utils::readBuffer(ia, args...);
+};
+
 int main(int argc, char **argv)
 {
+
 	//buildUnsorted(10, 50000000);
 	//return 0;
 
 	Sort objet;
-	auto _f = std::bind(&Sort::mergeSort, &objet, _1, _2); // target algorithm [all arguments]
-	auto &handler = library::BranchHandler::getInstance();
+	auto mainAlgo = std::bind(&Sort::mergeSort, &objet, _1, _2); // target algorithm [all arguments]
 
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
 
+	auto &handler = library::BranchHandler::getInstance();
 	library::ResultHolder<std::vector<size_t>, std::vector<size_t>> holder(handler);
-
 	holder.holdArgs(arr);
 
 	auto scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
 	scheduler.setThreadsPerNode(1);
-	scheduler.start(argc, argv, _f, holder); // solve in parallel, ignore args{id, tracker(is applicable)}
+	scheduler.start(argc, argv, mainAlgo, holder, user_serializer, user_deserializer); // solve in parallel, ignore args{id, tracker(is applicable)}
 	scheduler.finalize();
 
 	return 0;
