@@ -103,10 +103,10 @@ namespace library
 							--numAvailableNodes[0];
 							BcastNumAvNodes();
 
-							int k = findAvailableNode();							// first available node in the list
-							inbox_boolean[rank] = false;							// reset boolean to zero lest center node check it again, unless requested by nodes
-							int flag = true;										// signal to be sent back to node 'rank'
-							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, k, world_Comm); // returns signal to 'rank' that data can be received
+							int k = findAvailableNode();						 // first available node in the list
+							inbox_boolean[rank] = false;						 // reset boolean to zero lest center node check it again, unless requested by nodes
+							int flag = true;									 // signal to be sent back to node 'rank'
+							MPI_Ssend(&flag, 1, MPI::BOOL, rank, k, world_Comm); // returns signal to 'rank' that data can be received
 						}
 						else
 						{
@@ -114,7 +114,7 @@ namespace library
 							int flag = false;
 							inbox_boolean[rank] = false; // this is safe due to MPI_THREAD_SERIALIZED reasons
 							//printf("Hello from line 214 \n");
-							MPI_Ssend(&flag, 1, MPI::INTEGER, rank, 0, world_Comm); //returns signal that data cannot be received
+							MPI_Ssend(&flag, 1, MPI::BOOL, rank, 0, world_Comm); //returns signal that data cannot be received
 						}
 					}
 				}

@@ -180,6 +180,17 @@ namespace library
 					it is possible due to class friendship*/
 					--branchHandler.busyThreads; // this is reduced from ThreadPool when the callable type is VOID
 				}
+				else if (isMPISent)
+				{
+					MPI_Status status;
+					int Bytes;
+					MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, *branchHandler.second_Comm, &status);
+					serializer::stream is;
+					serializer::iarchive ia(is);
+					is.allocate(Bytes);
+
+					MPI_Recv(&is[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *branchHandler.second_Comm, &status);
+				}
 				/*	This condition is relevant due to some functions might return empty values
 				which are not stored in variables of type std::any	*/
 				if (expected.has_value())

@@ -577,7 +577,7 @@ namespace library
 				MPI_Status status;
 
 				printf("process %d requested to push \n", world_rank);
-				MPI_Recv(&flag, 1, MPI::INT, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+				MPI_Recv(&flag, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
 
 				if (flag)
 				{
@@ -854,7 +854,7 @@ namespace library
 			//TESTING //////////////////////////////////////////////////////
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
-			accumulate(1, 0, world_rank, *win_AvNodes, msg);
+			accumulate(1, 1, MPI::INT, 0, world_rank, *win_AvNodes, msg);
 			printf("process %d put data [%d] in process 0 \n", world_rank, 1);
 
 			while (true)
@@ -893,7 +893,7 @@ namespace library
 				Holder newHolder(*this);
 				Utils::unpack_tuple(ia, newHolder.getArgs());
 
-				accumulate(1, 0, 0, *win_accumulator, "busyNodes++");
+				accumulate(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
 
 				if (!onceFlag)
 				{
@@ -908,16 +908,23 @@ namespace library
 				//auto retVal = pushSeed(f, -1, args...);
 				push(f, 0, newHolder);
 
-				//TODO handle return Val to send it back to center node
+				//temporary
+				std::vector<size_t> retVal;
+				newHolder.get(retVal);
+
+				if (src == 0)
+				{
+					//TODO handle return Val to send it back to center node
+				}
 
 				printf("Passed on process %d \n", world_rank);
 				//				_pool.wait();
 				//accumulate(1, 0, world_rank, win_AvNodes, "availableNodes++");
-				accumulate(-1, 0, 0, *win_accumulator, "busyNodes--");
+				accumulate(-1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes--");
 			}
 		}
 
-		void accumulate(int buffer, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
+		void accumulate(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
 		{
 			//std::stringstream ss;
 			//ss << world_rank << " about to accumulate on " << msg << "\n";
@@ -925,7 +932,7 @@ namespace library
 			printf("%d about to accumulate on %s\n", world_rank, msg.c_str());
 			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window);
 
-			MPI_Accumulate(&buffer, 1, MPI::INTEGER, target_rank, offset, 1, MPI::INTEGER, MPI::SUM, window);
+			MPI_Accumulate(&buffer, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, MPI::SUM, window);
 
 			printf("%d about to unlock RMA on %d \n", world_rank, target_rank);
 			MPI_Win_flush(target_rank, window);
