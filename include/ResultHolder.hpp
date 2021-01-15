@@ -188,8 +188,8 @@ namespace library
 					serializer::stream is;
 					serializer::iarchive ia(is);
 					is.allocate(Bytes);
-
 					MPI_Recv(&is[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *branchHandler.second_Comm, &status);
+					ia >> target;
 				}
 				/*	This condition is relevant due to some functions might return empty values
 				which are not stored in variables of type std::any	*/
