@@ -136,7 +136,7 @@ namespace library
 		could not be fetched*/
 		//https://stackoverflow.com/questions/4573952/template-class-c
 		template <typename F, typename... Rest>
-		void bindCondition(F &&f, Rest &&... rest)
+		void bindCondition(F &&f, Rest &&...rest)
 		{
 			this->boundCond = std::bind(std::forward<F>(f), std::forward<Rest &&>(rest)...);
 			this->isBoundCond = true;
@@ -149,7 +149,7 @@ namespace library
 
 		//14.7.3 Explicit specialization
 		//template<typename...Args>
-		void holdArgs(Args &... args)
+		void holdArgs(Args &...args)
 		{
 			this->tup = std::make_tuple(std::forward<Args &&>(args)...);
 			//std::cout << typeid(tup).name() << "\n";
@@ -163,7 +163,7 @@ namespace library
 		template <typename TYPE>
 		bool get(TYPE &target)
 		{
-			if (branchHandler.appliedStrategy != 1) //TODO...  check
+			if (branchHandler.whichStrategy() != 1) //TODO...  check
 			{
 
 				if (isPushed)
@@ -172,27 +172,67 @@ namespace library
 					expected = expectedFut->get();
 					std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 					/*If a thread comes in this scope, then it is clear that numThread
-					must be reduced in one, also it should be locked before another thread
-					changes it, since it is atomic this operation is already well defined*/
+					must be decremented in one, also it should be locked before another thread
+					changes it, since it is atomic, this operation is already well defined*/
 
 					branchHandler.sumUpIdleTime(begin, end);
-					/*This violates encapsulation? is it a good practice?
-					it is possible due to class friendship*/
-					--branchHandler.busyThreads; // this is reduced from ThreadPool when the callable type is VOID
+					branchHandler.decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
+				}
+				/*	This condition is relevant due to some functions might return empty values
+				which are not stored in std::any types	*/
+				if (expected.has_value())
+				{
+					target = std::any_cast<TYPE>(expected);
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		template <typename F_DESERIALIZER, typename TYPE>
+		bool get(F_DESERIALIZER &&f_deser, TYPE &target)
+		{
+			if (branchHandler.whichStrategy() != 1) //TODO...  check
+			{
+
+				if (isPushed)
+				{
+					std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+					expected = expectedFut->get();
+					std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+					/*If a thread comes in this scope, then it is clear that numThread
+					must be decremented in one, also it should be locked before another thread
+					changes it, since it is atomic, this operation is already well defined*/
+
+					branchHandler.sumUpIdleTime(begin, end);
+					branchHandler.decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
 				}
 				else if (isMPISent)
 				{
+					branchHandler.lock_mpi(); /* this blocks any other thread to use an MPI function since MPI_Recv is blocking
+												thus, mpi_thread_serialized is guaranteed */
+
 					MPI_Status status;
 					int Bytes;
-					MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, *branchHandler.second_Comm, &status);
-					serializer::stream is;
-					serializer::iarchive ia(is);
-					is.allocate(Bytes);
-					MPI_Recv(&is[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *branchHandler.second_Comm, &status);
-					ia >> target;
+					MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
+					char in_buffer[Bytes];
+					MPI_Recv(&in_buffer[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
+
+					std::stringstream ss;
+					for (int i = 0; i < Bytes; i++)
+					{
+						ss << in_buffer[i];
+					}
+
+					f_deser(ss, target);
+
+					//ia >> target;
+
+					branchHandler.unlock_mpi();
 				}
 				/*	This condition is relevant due to some functions might return empty values
-				which are not stored in variables of type std::any	*/
+				which are not stored in std::any types	*/
 				if (expected.has_value())
 				{
 					target = std::any_cast<TYPE>(expected);

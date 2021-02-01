@@ -18,13 +18,15 @@ include_directories(${MPI_INCLUDE_PATH})
 #include_directories(${Boost_INCLUDE_DIRS})
 
 add_definitions(-g -Wall)
-add_compile_options("-std=c++2a")
+add_compile_options("-std=c++2a" "-fconcepts")
 
 #add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
 #add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
 
 #sets the executable in main folder
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+
+include_directories("cereal")
 
 set(Include
     include/args_handler.hpp

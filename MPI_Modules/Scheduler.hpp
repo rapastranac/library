@@ -51,7 +51,7 @@ namespace library
 			if (world_rank == 0)
 			{
 				printf("scheduler() launched!! \n");
-				this->schedule(holder);
+				this->schedule(holder, serialize, deserialize);
 
 				printf("process %d waiting at barrier \n", world_rank);
 				MPI_Barrier(world_Comm);
@@ -78,10 +78,10 @@ namespace library
 		/* all processes that belong to the same window group will be synchronised, such that
 			at MPI_Win_create(...), the same processes will wait until all of them pass by
 			their corresponding MPI_Win_create(...) */
-		template <typename Holder>
-		void schedule(Holder &holder)
+		template <typename Holder, typename Serialize, typename Deserialize>
+		void schedule(Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
 		{
-			sendSeed(holder);
+			sendSeed(holder, serialize);
 			if (MPI_COMM_NULL != second_Comm)
 				MPI_Barrier(second_Comm); // syncrhonises only process 0 and 1 - this guarantees ...
 										  // ... that process 0 does not terminate the loop before process 1...
@@ -162,12 +162,13 @@ namespace library
 			ia >> target;
 		}
 
-		template <typename Holder>
-		void sendSeed(Holder &holder)
+		template <typename Holder, typename Serialize>
+		void sendSeed(Holder &holder, Serialize &&serialize)
 		{
-			serializer::stream os;
-			serializer::oarchive oa(os);
-			Utils::unpack_tuple(oa, holder.getArgs());
+			//serializer::stream os;
+			//serializer::oarchive oa(os);
+			//Utils::unpack_tuple(oa, holder.getArgs());
+			std::stringstream ss = std::args_handler::unpack_tuple(serialize, holder.getArgs());
 			/* //testing only
 			size_t Bytes = os.size();
 			serializer::stream is(os);
@@ -175,13 +176,13 @@ namespace library
 			serializer::iarchive ia(is);
 			Utils::readBuffer(ia, args...);*/
 
-			int count = os.size(); // number of Bytes
+			int count = ss.str().size(); // os.size(); // number of Bytes
 			int rcvrNode = 1;
 			int err = MPI_Ssend(&count, 1, MPI::INTEGER, rcvrNode, 0, world_Comm); // send buffer size
 			if (err != MPI::SUCCESS)
 				printf("count could not be sent! \n");
 
-			err = MPI_Ssend(&os[0], count, MPI::CHARACTER, 1, 0, world_Comm); // send buffer
+			err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, 1, 0, world_Comm); // send buffer
 			if (err == MPI::SUCCESS)
 				printf("buffer sucessfully sent! \n");
 

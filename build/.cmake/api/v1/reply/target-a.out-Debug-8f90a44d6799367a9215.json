@@ -26,7 +26,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 55,
+				"line" : 57,
 				"parent" : 0
 			},
 			{
@@ -39,6 +39,12 @@
 				"command" : 2,
 				"file" : 0,
 				"line" : 15,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 29,
 				"parent" : 0
 			}
 		]
@@ -59,6 +65,10 @@
 					"fragment" : "-std=c++2a"
 				},
 				{
+					"backtrace" : 2,
+					"fragment" : "-fconcepts"
+				},
+				{
 					"fragment" : "-std=gnu++2a"
 				}
 			],
@@ -71,6 +81,10 @@
 				{
 					"backtrace" : 3,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/home/andres/Documents/github/library/cereal"
 				}
 			],
 			"language" : "CXX",

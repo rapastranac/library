@@ -1,12 +1,12 @@
 [
 {
   "directory": "/home/andres/Documents/github/library/build",
-  "command": "/bin/c++   -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include  -g   -g -Wall -pthread -std=c++2a -std=gnu++2a -o CMakeFiles/a.out.dir/src/main.cpp.o -c /home/andres/Documents/github/library/src/main.cpp",
+  "command": "/bin/c++   -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -I/home/andres/Documents/github/library/cereal  -g   -g -Wall -pthread -std=c++2a -fconcepts -std=gnu++2a -o CMakeFiles/a.out.dir/src/main.cpp.o -c /home/andres/Documents/github/library/src/main.cpp",
   "file": "/home/andres/Documents/github/library/src/main.cpp"
 },
 {
   "directory": "/home/andres/Documents/github/library/build",
-  "command": "/bin/c++   -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include  -g   -g -Wall -pthread -std=c++2a -std=gnu++2a -o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o -c /home/andres/Documents/github/library/src/buildUnsorted.cpp",
+  "command": "/bin/c++   -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -I/home/andres/Documents/github/library/cereal  -g   -g -Wall -pthread -std=c++2a -fconcepts -std=gnu++2a -o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o -c /home/andres/Documents/github/library/src/buildUnsorted.cpp",
   "file": "/home/andres/Documents/github/library/src/buildUnsorted.cpp"
 }
 ]

@@ -27,6 +27,7 @@
 #include <math.h>
 #include <mutex>
 #include <queue>
+#include <sstream>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
@@ -53,6 +54,22 @@ namespace library
 		{
 			double time_tmp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 			idleTime.fetch_add(time_tmp, std::memory_order_relaxed);
+		}
+
+		void decrementBusyThreads()
+		{
+			std::unique_lock lck(mtx);
+			--this->busyThreads;
+		}
+
+		int whichStrategy()
+		{
+			return appliedStrategy;
+		}
+
+		MPI_Comm &getCommunicator()
+		{
+			return *second_Comm;
 		}
 
 	public:
@@ -149,6 +166,15 @@ namespace library
 			//https://developercommunity.visualstudio.com/content/problem/459999/incorrect-lock-warnings-by-analyzer-c26110-and-c26.html
 #pragma warning(suppress : 26110)
 			this->mtx.unlock();
+		}
+
+		void lock_mpi()
+		{
+			this->mtx_MPI.lock();
+		}
+		void unlock_mpi()
+		{
+			this->mtx_MPI.unlock();
 		}
 
 		/*begin<<------casting strategies -------------------------*/
@@ -555,7 +581,6 @@ namespace library
 		template <typename F, typename Holder>
 		int push(F &&f, int id, Holder &holder)
 		{
-			bool flag = false;
 			auto _pool = ctpl_casted(_pool_default);
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
@@ -570,42 +595,73 @@ namespace library
 				holder.hold_future(std::move(tmp));
 				return 1;
 			}
-			else if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+			else
 			{
+				lck.unlock();
+				auto retVal = this->forward(f, id, holder);
+				holder.hold_actual_result(retVal);
+				return 0;
+			}
+		}
+
+		template <typename F, typename F_SERIAL, typename Holder>
+		int push(F &&f, F_SERIAL &&f_serial, int id, Holder &holder)
+		{
+			bool signal{false};
+			auto _pool = ctpl_casted(_pool_default);
+			/*This lock must be performed before checking the condition,
+			even though numThread is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+			if (busyThreads < _pool->size())
+			{
+				busyThreads++;
+				holder.setPushStatus(true);
+
+				lck.unlock();
+				auto tmp = std::args_handler::unpack_tuple(_pool, f, holder.getArgs());
+				holder.hold_future(std::move(tmp));
+				return 1;
+			}
+			lck.unlock();										// this allows to other threads to keep pushing in the pool
+			std::unique_lock mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
+
+			if (mpi_lck.try_lock() && numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+			{
+
 				printf("%d about to request center node to push\n", world_rank);
 				customPut(true, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
 				MPI_Status status;
 
 				printf("process %d requested to push \n", world_rank);
-				MPI_Recv(&flag, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+				MPI_Recv(&signal, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
 
-				if (flag)
+				if (signal)
 				{
 					int dest = status.MPI_TAG;
 					printf("process %d received ID %d\n", world_rank, dest);
 
-					serializer::stream os;
-					serializer::oarchive oa(os);
-					Utils::unpack_tuple(oa, holder.getArgs());
+					//serializer::stream os;
+					//serializer::oarchive oa(os);
+					//Utils::unpack_tuple(oa, holder.getArgs());
+					std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
 
-					int count = os.size();												// number of Bytes
+					int count = ss.str().size();										// number of Bytes
 					int err = MPI_Ssend(&count, 1, MPI::INTEGER, dest, 0, *world_Comm); // send buffer size
 					if (err != MPI::SUCCESS)
 						printf("count could not be sent from rank %d to center! \n", world_rank);
 
-					err = MPI_Ssend(&os[0], count, MPI::CHARACTER, dest, 0, *world_Comm); // send buffer
+					err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, dest, 0, *world_Comm); // send buffer
 					if (err == MPI::SUCCESS)
 						printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
 
 					//TODO how to retrieve result from destination rank?
 
-					lck.unlock();
+					mpi_lck.unlock();
 					printf("process %d forwarded to process %d \n", world_rank, dest);
 					return 2;
 				}
 				else // numAvailableNodes might have changed due to delay
 				{
-					lck.unlock();
 					printf("process %d push request failed, forwarded!\n", world_rank);
 					auto retVal = this->forward(f, id, holder);
 					holder.hold_actual_result(retVal);
@@ -614,7 +670,7 @@ namespace library
 			}
 			else
 			{
-				lck.unlock();
+				//lck.unlock();
 				auto retVal = this->forward(f, id, holder);
 				holder.hold_actual_result(retVal);
 				return 0;
@@ -748,8 +804,9 @@ namespace library
 		unsigned int processor_count;
 		std::atomic<long long> idleTime;
 		std::atomic<int> busyThreads;
-		std::mutex mtx;	 //local mutex
-		std::mutex mtx2; //local mutex
+		std::mutex mtx;		//local mutex
+		std::mutex mtx_MPI; //local mutex
+		bool is_mtx_mpi_acquired = false;
 		std::condition_variable cv;
 		std::atomic<bool> superFlag;
 		POOL::Pool *_pool_default = nullptr;

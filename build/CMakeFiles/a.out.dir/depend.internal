@@ -5,6 +5,18 @@ CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o
  /home/andres/Documents/github/library/include/main.h
  /home/andres/Documents/github/library/src/buildUnsorted.cpp
 CMakeFiles/a.out.dir/src/main.cpp.o
+ ../cereal/cereal/access.hpp
+ ../cereal/cereal/archives/binary.hpp
+ ../cereal/cereal/cereal.hpp
+ ../cereal/cereal/details/helpers.hpp
+ ../cereal/cereal/details/polymorphic_impl_fwd.hpp
+ ../cereal/cereal/details/static_object.hpp
+ ../cereal/cereal/details/traits.hpp
+ ../cereal/cereal/macros.hpp
+ ../cereal/cereal/specialize.hpp
+ ../cereal/cereal/types/base_class.hpp
+ ../cereal/cereal/types/common.hpp
+ ../cereal/cereal/types/vector.hpp
  /home/andres/Documents/github/library/MPI_Modules/Scheduler.hpp
  /home/andres/Documents/github/library/MPI_Modules/Utils.hpp
  /home/andres/Documents/github/library/MPI_Modules/serialize/archive.hpp

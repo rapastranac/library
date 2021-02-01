@@ -5,14 +5,39 @@
 #include "BranchHandler.hpp"
 #include "ResultHolder.hpp"
 
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
+
 #include <cstring>
 #include <filesystem>
 #include <functional>
 #include <fstream>
-#include <vector>
+#include <sstream>
+//#include <vector>
 
 using namespace std::placeholders;
 namespace fs = std::filesystem;
+
+//template <typename... Args>
+//std::stringstream user_serializer(Args &...args)
+auto user_serializer = [](auto &...args) {
+	/* here inside, user can implement his/her favourite serialization method given the
+	arguments pack and it must return a std::stream */
+	std::stringstream ss;
+	cereal::BinaryOutputArchive archive(ss);
+	archive(args...);
+	return ss;
+};
+
+//template <typename... Args>
+//void user_deserializer(std::stringstream &ss, Args &...args)
+auto user_deserializer = [](std::stringstream &ss, auto &...args) {
+	/* here inside, user can implement his/her favourite deserialization method given buffer
+	and the arguments pack*/
+	cereal::BinaryInputArchive archive(ss);
+	archive(args...);
+	return 0;
+};
 
 class Sort
 {
@@ -122,12 +147,14 @@ public:
 		library::ResultHolder<std::vector<size_t>, std::vector<size_t>> hl(branchHandler);
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		hl.holdArgs(L);
-		branchHandler.push(_f, id, hl);
+		//branchHandler.push(_f, id, hl);
+		branchHandler.push(_f, user_serializer, id, hl);
 		//L = mergeSort(id, L);
 		//L = _f(id, L);
 		R = mergeSort(id, R);
 
-		hl.get(L);
+		//hl.get(L);
+		hl.get(user_deserializer, L);
 
 		merged = merge(L, R);
 

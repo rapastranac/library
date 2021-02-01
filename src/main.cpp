@@ -42,18 +42,6 @@ void print(std::vector<size_t> &ordered)
 	file.close();
 }
 
-auto user_serializer = [](auto &...args) {
-	serializer::stream is;
-	serializer::oarchive oa(is);
-	Utils::buildBuffer(oa, args...);
-	return is;
-};
-
-auto user_deserializer = [](int Bytes, serializer::stream &is, auto &...args) {
-	serializer::iarchive ia(is);
-	Utils::readBuffer(ia, args...);
-};
-
 int main(int argc, char **argv)
 {
 
