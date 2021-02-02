@@ -23,7 +23,7 @@ auto user_serializer = [](auto &...args) {
 	std::stringstream ss;
 	cereal::BinaryOutputArchive archive(ss);
 	archive(args...);
-	return ss;
+	return std::move(ss);
 };
 
 auto user_deserializer = [](std::stringstream &ss, auto &...args) {
@@ -142,14 +142,14 @@ public:
 		library::ResultHolder<std::vector<size_t>, std::vector<size_t>> hl(branchHandler);
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		hl.holdArgs(L);
-		//branchHandler.push(_f, id, hl);
-		branchHandler.push(_f, user_serializer, id, hl);
+		branchHandler.push(_f, id, hl);
+		//branchHandler.push(_f, user_serializer, id, hl);
 		//L = mergeSort(id, L);
 		//L = _f(id, L);
 		R = mergeSort(id, R);
 
-		//hl.get(L);
-		hl.get(user_deserializer, L);
+		hl.get(L);
+		//hl.get(user_deserializer, L);
 
 		merged = merge(L, R);
 

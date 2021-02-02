@@ -41,7 +41,7 @@ namespace library
 		}
 
 		template <typename Result, typename F, typename Holder, typename Serialize, typename Deserialize>
-		void start(int argc, char **argv, F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
+		void start(int argc, char *argv[], F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
 		{
 			_branchHandler.is_MPI_enable = true;
 
@@ -177,13 +177,22 @@ namespace library
 		{
 			std::stringstream ss = std::args_handler::unpack_tuple(serialize, holder.getArgs());
 
+			//for (size_t i = 0; i < std::get<0>(holder.getArgs()).size(); i++)
+			//{
+			//	printf("%d ", std::get<0>(holder.getArgs())[i]);
+			//}
+			//printf("seed to be sent\n"); // problem found
+
 			int count = ss.str().size(); // number of Bytes
+			char buffer[count];
+			std::memcpy(buffer, ss.str().data(), count);
+
 			int rcvrNode = 1;
 			int err = MPI_Ssend(&count, 1, MPI::INTEGER, rcvrNode, 0, world_Comm); // send buffer size
 			if (err != MPI::SUCCESS)
 				printf("count could not be sent! \n");
 
-			err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, 1, 0, world_Comm); // send buffer
+			err = MPI_Ssend(buffer, count, MPI::CHARACTER, 1, 0, world_Comm); // send buffer
 			if (err == MPI::SUCCESS)
 				printf("buffer sucessfully sent! \n");
 
@@ -236,7 +245,7 @@ namespace library
 			numAvailableNodes[0] = count;
 		}
 
-		void initMPI(int argc, char **argv)
+		void initMPI(int argc, char *argv[])
 		{
 			// Initilialise MPI and ask for thread support
 			int provided;

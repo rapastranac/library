@@ -295,7 +295,7 @@ namespace POOL
 
 		std::atomic<bool> isDone;
 		std::atomic<bool> isInterrupted;
-		std::atomic<int> *externNumThreads;
+		std::atomic<int> *externNumThreads = nullptr;
 		std::atomic<long long> idleTime;
 
 		std::mutex mtx;

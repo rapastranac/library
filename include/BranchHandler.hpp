@@ -930,19 +930,25 @@ namespace library
 				}
 				printf("Receiver on %d, received %d Bytes \n", world_rank, Bytes);
 
-				std::stringstream ss;
 				char in_buffer[Bytes];
-
 				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
 
+				Holder newHolder(*this); // copy types
+
+				std::stringstream ss;
 				for (int i = 0; i < Bytes; i++)
 					ss << in_buffer[i];
-
-				Holder newHolder(*this); // copy types
 
 				Utils::unpack_tuple(deserialize, ss, newHolder.getArgs());
 
 				accumulate(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
+
+				for (size_t i = 0; i < std::get<0>(newHolder.getArgs()).size(); i++)
+				{
+					printf("%d ", std::get<0>(newHolder.getArgs())[i]);
+				}
+
+				//TODO Warning, probably call mtx_MPI in here
 
 				if (!onceFlag)
 				{
