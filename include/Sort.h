@@ -13,13 +13,10 @@
 #include <functional>
 #include <fstream>
 #include <sstream>
-//#include <vector>
 
 using namespace std::placeholders;
 namespace fs = std::filesystem;
 
-//template <typename... Args>
-//std::stringstream user_serializer(Args &...args)
 auto user_serializer = [](auto &...args) {
 	/* here inside, user can implement his/her favourite serialization method given the
 	arguments pack and it must return a std::stream */
@@ -29,8 +26,6 @@ auto user_serializer = [](auto &...args) {
 	return ss;
 };
 
-//template <typename... Args>
-//void user_deserializer(std::stringstream &ss, Args &...args)
 auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 	/* here inside, user can implement his/her favourite deserialization method given buffer
 	and the arguments pack*/

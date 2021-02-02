@@ -59,11 +59,19 @@ int main(int argc, char **argv)
 	library::ResultHolder<std::vector<size_t>, std::vector<size_t>> holder(handler);
 	holder.holdArgs(arr);
 
-	auto scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
+	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
 	scheduler.setThreadsPerNode(1);
-	scheduler.start(argc, argv, mainAlgo, holder, user_serializer, user_deserializer); // solve in parallel, ignore args{id, tracker(is applicable)}
-	scheduler.finalize();
-
+	scheduler.start<std::vector<size_t>>(argc, argv,
+										 mainAlgo,
+										 holder,
+										 user_serializer,
+										 user_deserializer); // solve in parallel, ignore args{id, tracker(is applicable)}
+	int rank = scheduler.finalize();
+	if (rank == 0)
+	{
+		auto result = scheduler.retrieveResult(); // returns a stringstream
+		user_deserializer(result, sorted);
+	}
 	return 0;
 
 	objet.setUnsorted(arr);

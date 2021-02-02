@@ -16,7 +16,7 @@ public:
     }
 
     template <typename TYPE, typename... Args>
-    static void buildBuffer(serializer::oarchive &oa, TYPE &&element, Args &&... args)
+    static void buildBuffer(serializer::oarchive &oa, TYPE &&element, Args &&...args)
     {
         oa << element;
         return buildBuffer(oa, args...);
@@ -29,7 +29,7 @@ public:
     }
 
     template <typename TYPE, typename... Args>
-    static void readBuffer(serializer::iarchive &ia, TYPE &&element, Args &&... args)
+    static void readBuffer(serializer::iarchive &ia, TYPE &&element, Args &&...args)
     {
         ia >> element;
         readBuffer(ia, args...);
@@ -62,6 +62,21 @@ public:
         static constexpr auto size = std::tuple_size<Tuple>::value;
         unpack_tuple(ia, t, std::make_index_sequence<size>{});
     }
+
+  
+    template <typename F, typename Tuple, size_t... I>
+    static void unpack_tuple(F &&f, std::stringstream &ss, Tuple &t, std::index_sequence<I...>)
+    {
+        f(ss, std::get<I>(t)...);
+    }
+
+    template <typename F, typename Tuple>
+    static void unpack_tuple(F &&f, std::stringstream &ss, Tuple &t)
+    {
+        static constexpr auto size = std::tuple_size<Tuple>::value;
+        unpack_tuple(f, ss, t, std::make_index_sequence<size>{});
+    }
+
     /*------- General unpack tuple and passes arguments to callable ----->end*/
 };
 

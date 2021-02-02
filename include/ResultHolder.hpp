@@ -190,8 +190,8 @@ namespace library
 			return false;
 		}
 
-		template <typename F_DESERIALIZER, typename TYPE>
-		bool get(F_DESERIALIZER &&f_deser, TYPE &target)
+		template <typename F_deser, typename TYPE>
+		bool get(F_deser &&f_deser, TYPE &target)
 		{
 			if (branchHandler.whichStrategy() != 1) //TODO...  check
 			{
@@ -221,15 +221,12 @@ namespace library
 
 					std::stringstream ss;
 					for (int i = 0; i < Bytes; i++)
-					{
 						ss << in_buffer[i];
-					}
 
 					f_deser(ss, target);
 
-					//ia >> target;
-
-					branchHandler.unlock_mpi();
+					branchHandler.unlock_mpi(); /* release mpi mutex, thus, other threads are able to push to other nodes*/
+					return true;
 				}
 				/*	This condition is relevant due to some functions might return empty values
 				which are not stored in std::any types	*/

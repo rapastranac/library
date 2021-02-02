@@ -7,6 +7,7 @@
 #include "serialize/iarchive.hpp"
 #include "Utils.hpp"
 
+#include <random>
 #include <stdlib.h> /* srand, rand */
 #include <fstream>
 #include <iostream>
@@ -39,7 +40,7 @@ namespace library
 			this->threadsPerNode = threadsPerNode;
 		}
 
-		template <typename F, typename Holder, typename Serialize, typename Deserialize>
+		template <typename Result, typename F, typename Holder, typename Serialize, typename Deserialize>
 		void start(int argc, char **argv, F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
 		{
 			_branchHandler.is_MPI_enable = true;
@@ -51,7 +52,7 @@ namespace library
 			if (world_rank == 0)
 			{
 				printf("scheduler() launched!! \n");
-				this->schedule(holder, serialize, deserialize);
+				this->schedule(holder, serialize);
 
 				printf("process %d waiting at barrier \n", world_rank);
 				MPI_Barrier(world_Comm);
@@ -60,7 +61,7 @@ namespace library
 			else
 			{
 				this->_branchHandler.setMaxThreads(threadsPerNode);
-				this->_branchHandler.receiveSeed(f, holder);
+				this->_branchHandler.receiveSeed<Result>(f, serialize, deserialize, holder);
 
 				printf("process %d waiting at barrier \n", world_rank);
 				MPI_Barrier(world_Comm);
@@ -68,18 +69,24 @@ namespace library
 			}
 		}
 
-		void finalize()
+		int finalize()
 		{
 			win_deallocate();
 			MPI_Finalize();
+			return world_rank;
+		}
+
+		std::stringstream retrieveResult()
+		{
+			return std::move(returnStream);
 		}
 
 	private:
 		/* all processes that belong to the same window group will be synchronised, such that
 			at MPI_Win_create(...), the same processes will wait until all of them pass by
 			their corresponding MPI_Win_create(...) */
-		template <typename Holder, typename Serialize, typename Deserialize>
-		void schedule(Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
+		template <typename Holder, typename Serialize>
+		void schedule(Holder &holder, Serialize &&serialize)
 		{
 			sendSeed(holder, serialize);
 			if (MPI_COMM_NULL != second_Comm)
@@ -87,7 +94,7 @@ namespace library
 										  // ... that process 0 does not terminate the loop before process 1...
 										  // ... receives the seed, then busyNodes will be != 0 for the first ...
 										  // ... loop
-			//updateNumAvNodes();
+			updateNumAvNodes();
 			BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
 
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
@@ -109,6 +116,7 @@ namespace library
 							inbox_boolean[rank] = false;						 // reset boolean to zero lest center node check it again, unless requested by nodes
 							int flag = true;									 // signal to be sent back to node 'rank'
 							MPI_Ssend(&flag, 1, MPI::BOOL, rank, k, world_Comm); // returns signal to 'rank' that data can be received
+							++approvedRequests;
 						}
 						else
 						{
@@ -117,11 +125,15 @@ namespace library
 							inbox_boolean[rank] = false; // this is safe due to MPI_THREAD_SERIALIZED reasons
 							//printf("Hello from line 214 \n");
 							MPI_Ssend(&flag, 1, MPI::BOOL, rank, 0, world_Comm); //returns signal that data cannot be received
+							++failedRequests;
 						}
+						++totalRequests;
 					}
 				}
 				if (breakLoop())
 					break;
+				receiveResult();
+
 			} while (true);
 		}
 
@@ -145,38 +157,27 @@ namespace library
 
 		void receiveResult()
 		{
-			MPI_Status status;
 			if (finalFlag[0])
 			{
+				MPI_Status status;
 				int Bytes;
 				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, second_Comm, &status);
-				returnStream.allocate(Bytes);
-				MPI_Recv(&returnStream[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, second_Comm, &status);
-			}
-		}
+				char in_buffer[Bytes];
+				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, second_Comm, &status);
 
-		template <typename Target>
-		void retrieveResult(Target &target)
-		{
-			serializer::iarchive ia(returnStream);
-			ia >> target;
+				for (int i = 0; i < Bytes; i++)
+					this->returnStream << in_buffer[i];
+
+				finalFlag[0] = false; // this should happen only once, thus breakLoop() will end the execution
+			}
 		}
 
 		template <typename Holder, typename Serialize>
 		void sendSeed(Holder &holder, Serialize &&serialize)
 		{
-			//serializer::stream os;
-			//serializer::oarchive oa(os);
-			//Utils::unpack_tuple(oa, holder.getArgs());
 			std::stringstream ss = std::args_handler::unpack_tuple(serialize, holder.getArgs());
-			/* //testing only
-			size_t Bytes = os.size();
-			serializer::stream is(os);
-			is.allocate(Bytes);
-			serializer::iarchive ia(is);
-			Utils::readBuffer(ia, args...);*/
 
-			int count = ss.str().size(); // os.size(); // number of Bytes
+			int count = ss.str().size(); // number of Bytes
 			int rcvrNode = 1;
 			int err = MPI_Ssend(&count, 1, MPI::INTEGER, rcvrNode, 0, world_Comm); // send buffer size
 			if (err != MPI::SUCCESS)
@@ -192,13 +193,12 @@ namespace library
 		/* this should be called only when the number of available nodes is modified */
 		void BcastNumAvNodes()
 		{
-			//local number at [0] is broadcasted to other nodes
 			for (int i = 1; i < world_size; i++)
 			{
-				MPI_Win_lock(MPI::LOCK_SHARED, i, 0, win_NumNodes);
-				MPI_Put(numAvailableNodes, 1, MPI::INTEGER, i, 0, 1, MPI::INTEGER, win_NumNodes);
-				MPI_Win_flush(i, win_NumNodes);
-				MPI_Win_unlock(i, win_NumNodes);
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, i, 0, win_NumNodes);							  // open epoch
+				MPI_Put(numAvailableNodes, 1, MPI::INTEGER, i, 0, 1, MPI::INTEGER, win_NumNodes); // put date through window
+				MPI_Win_flush(i, win_NumNodes);													  // complete RMA operation
+				MPI_Win_unlock(i, win_NumNodes);												  // close epoch
 			}
 		}
 
@@ -208,19 +208,18 @@ namespace library
 		{
 			std::vector<int> nodes; // testing
 			int availableNodeID = -1;
-			for (int j = 1; j < world_size; j++)
+			for (int rank = 1; rank < world_size; rank++)
 			{
-				if (availableNodes[j] == 1)
-				{
-					nodes.push_back(j); // testing
-										/* availableNodes[j] = false; //if a node is picked, then this is no longer available
-				availableNodeID = j;
-				break; */
-				}
+				if (availableNodes[rank] == 1)
+					nodes.push_back(rank);
 			}
-			srand(time(NULL));						 // testing
-			int val = rand() % nodes.size();		 // testing
-			availableNodeID = nodes[val];			 // testing
+
+			std::random_device rd;	// Will be used to obtain a seed for the random number engine
+			std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+			std::uniform_int_distribution<> distrib(0, nodes.size());
+
+			int rank = distrib(gen);				 // testing
+			availableNodeID = nodes[rank];			 // testing
 			availableNodes[availableNodeID] = false; // testing
 
 			return availableNodeID;
@@ -388,6 +387,7 @@ namespace library
 			{
 				numAvailableNodes[0] = world_size - 1;
 				busyNodes[0] = 0;
+				finalFlag[0] = false;
 				for (int i = 0; i < world_size; i++)
 				{
 					inbox_boolean[i] = false;
@@ -424,9 +424,14 @@ namespace library
 		int *busyNodes;			// number of nodes working at the time
 		bool *finalFlag;
 
-		serializer::stream returnStream;
+		std::stringstream returnStream;
 
 		size_t threadsPerNode = std::thread::hardware_concurrency();
+
+		// statistics
+		size_t totalRequests = 0;
+		size_t approvedRequests = 0;
+		size_t failedRequests = 0;
 
 		/* singleton*/
 		Scheduler(BranchHandler &branchHandler) : _branchHandler(branchHandler) {}

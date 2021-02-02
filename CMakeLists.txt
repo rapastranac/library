@@ -18,7 +18,7 @@ include_directories(${MPI_INCLUDE_PATH})
 #include_directories(${Boost_INCLUDE_DIRS})
 
 add_definitions(-g -Wall)
-add_compile_options("-std=c++2a" "-fconcepts")
+add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
 
 #add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
 #add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")

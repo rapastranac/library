@@ -55,7 +55,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g   -g -Wall"
+					"fragment" : "  -g -Wall"
 				},
 				{
 					"fragment" : "-pthread"
@@ -67,6 +67,14 @@
 				{
 					"backtrace" : 2,
 					"fragment" : "-fconcepts"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-Wextra"
 				},
 				{
 					"fragment" : "-std=gnu++2a"
@@ -100,10 +108,6 @@
 	{
 		"commandFragments" : 
 		[
-			{
-				"fragment" : "-g",
-				"role" : "flags"
-			},
 			{
 				"fragment" : "",
 				"role" : "flags"
