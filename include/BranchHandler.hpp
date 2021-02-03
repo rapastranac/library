@@ -10,8 +10,11 @@
 
 #include "args_handler.hpp"
 #include "pool_include.hpp"
-#include "ResultHolder.hpp"
-#include "../MPI_Modules/Scheduler.hpp"
+
+#include "../MPI_Modules/serialize/archive.hpp"
+#include "../MPI_Modules/serialize/oarchive.hpp"
+#include "../MPI_Modules/serialize/iarchive.hpp"
+#include "../MPI_Modules/Utils.hpp"
 
 #include <any>
 #include <atomic>
@@ -24,6 +27,7 @@
 #include <math.h>
 #include <mutex>
 #include <queue>
+#include <sstream>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
@@ -33,6 +37,11 @@
 
 namespace library
 {
+	template <typename _Ret, typename... Args>
+	class ResultHolder;
+
+	class Scheduler;
+
 	class BranchHandler
 	{
 		template <typename _Ret, typename... Args>
@@ -43,8 +52,24 @@ namespace library
 	protected:
 		void sumUpIdleTime(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
 		{
-			double temp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
-			idleTime.fetch_add(temp, std::memory_order_relaxed);
+			double time_tmp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+			idleTime.fetch_add(time_tmp, std::memory_order_relaxed);
+		}
+
+		void decrementBusyThreads()
+		{
+			std::unique_lock lck(mtx);
+			--this->busyThreads;
+		}
+
+		int whichStrategy()
+		{
+			return appliedStrategy;
+		}
+
+		MPI_Comm &getCommunicator()
+		{
+			return *world_Comm;
 		}
 
 	public:
@@ -58,18 +83,18 @@ namespace library
 			return this->_pool_default->size();
 		}
 
-		void setMaxThreads(int n)
+		void setMaxThreads(int poolSize)
 		{
 			/*	I have not implemented yet the resize of other pool*/
 			//this->init();
-			this->_pool_default = new ctpl::Pool(n);
-			this->_pool_default->setSize(n);
+			this->processor_count = poolSize;
+			this->_pool_default = new ctpl::Pool(poolSize);
+			//this->_pool_default->setSize(n);
 		}
 
 		//seconds
 		double getIdleTime()
 		{
-			//return idleTime / ((double)numThreadInitial + 1);
 			double nanoseconds = idleTime / ((double)processor_count + 1);
 			return nanoseconds * 1.0e-9; // convert to seconds
 		}
@@ -143,6 +168,15 @@ namespace library
 			this->mtx.unlock();
 		}
 
+		void lock_mpi()
+		{
+			this->mtx_MPI.lock();
+		}
+		void unlock_mpi()
+		{
+			this->mtx_MPI.unlock();
+		}
+
 		/*begin<<------casting strategies -------------------------*/
 		//https://stackoverflow.com/questions/15326186/how-to-call-child-method-from-a-parent-pointer-in-c
 		//https://stackoverflow.com/questions/3747066/c-cannot-convert-from-base-a-to-derived-type-b-via-virtual-base-a
@@ -161,10 +195,11 @@ namespace library
 		template <typename F, typename Holder>
 		bool push_to_pool_ctpl(ctpl::Pool *_pool, F &&f, int id, Holder &holder)
 		{
-
+			int flag = false;
 			/*This lock must be adquired before checking the condition,
 			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
+			numAvailableNodes[0] = 1; //TESTING only
 			if (busyThreads < _pool->size())
 			{
 				if (is_LB)
@@ -180,7 +215,7 @@ namespace library
 							int gfdg = 34; //just to create a break point
 						}
 
-						upperHolder->isPushed = true;
+						upperHolder->setPushStatus(true);
 
 						lck.unlock();
 						auto tmp = std::args_handler::unpack_tuple(_pool, f, upperHolder->getArgs(), true);
@@ -192,7 +227,7 @@ namespace library
 				}
 
 				this->busyThreads++;
-				holder.isPushed = true;
+				holder.setPushStatus(true);
 
 				if (std::get<1>(holder.tup).fetchCover().size() == 0)
 				{
@@ -205,15 +240,66 @@ namespace library
 				holder.hold_future(std::move(tmp));
 				return true;
 			}
+			else if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+			{
+				printf("%d about to request center node to push\n", world_rank);
+				bool buffer = true;
+				customPut(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
+				MPI_Status status;
+
+				printf("process %d requested to push \n", world_rank);
+				MPI_Recv(&flag, 1, MPI::INT, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+
+				if (flag)
+				{
+					int dest = status.MPI_TAG;
+					printf("process %d received ID %d\n", world_rank, dest);
+
+					serializer::stream os;
+					serializer::oarchive oa(os);
+					Utils::unpack_tuple(oa, holder.getArgs());
+
+					int count = os.size();												// number of Bytes
+					int err = MPI_Ssend(&count, 1, MPI::INTEGER, dest, 0, *world_Comm); // send buffer size
+					if (err != MPI::SUCCESS)
+						printf("count could not be sent from rank %d to center! \n", world_rank);
+
+					err = MPI_Ssend(&os[0], count, MPI::CHARACTER, dest, 0, *world_Comm); // send buffer
+					if (err == MPI::SUCCESS)
+						printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
+
+					//TODO how to retrieve result from destination rank?
+
+					lck.unlock();
+					printf("process %d forwarded to process %d \n", world_rank, dest);
+					return true;
+				}
+				else // numAvailableNodes might have changed due to delay
+				{
+					lck.unlock();
+					printf("process %d push request failed, forwarded!\n", world_rank);
+					auto retVal = this->forward(f, id, holder, true);
+					holder.hold_actual_result(retVal);
+					return true;
+				}
+			}
 			else
 			{
 				lck.unlock();
 
-				auto val = this->forward(f, id, holder, true);
-				holder.hold_actual_result(val);
+				auto retVal = this->forward(f, id, holder, true);
+				holder.hold_actual_result(retVal);
 				return true;
 			}
 			return false;
+		}
+
+		void customPut(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
+		{
+			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // opens epoch
+			MPI_Put(origin_addr, count, mpi_type, target_rank, offset, 1, mpi_type, window);
+			MPI_Win_flush(target_rank, window);
+			MPI_Win_unlock(target_rank, window); // closes epoch
 		}
 
 		template <typename Holder>
@@ -482,16 +568,19 @@ namespace library
 		}
 
 		template <typename F, typename... Rest>
-		auto pushSeed(F &&f, Rest &&... rest)
+		auto pushSeed(F &&f, Rest &&...rest)
 		{
 			auto _pool = ctpl_casted(_pool_default);
-			this->busyThreads = 1;
-			return std::move(_pool->push(f, rest...));
+			this->busyThreads = 1;								// forces just in case
+			auto future = std::move(_pool->push(f, rest...));	// future type can handle void returns
+			auto lambda = [&future]() { return future.get(); }; // create lambda to pass to args_handler::invoke_void()
+
+			return std::args_handler::invoke_void(lambda); //this guarantees to assign a non-void value
 		}
 
 	public:
 		template <typename F, typename Holder>
-		bool push(F &&f, int id, Holder &holder)
+		int push(F &&f, int id, Holder &holder)
 		{
 			auto _pool = ctpl_casted(_pool_default);
 			/*This lock must be performed before checking the condition,
@@ -500,21 +589,96 @@ namespace library
 			if (busyThreads < _pool->size())
 			{
 				busyThreads++;
-				holder.isPushed = true;
+				holder.setPushStatus(true);
 
 				lck.unlock();
 				auto tmp = std::args_handler::unpack_tuple(_pool, f, holder.getArgs());
 				holder.hold_future(std::move(tmp));
-				return true;
+				return 1;
 			}
 			else
 			{
 				lck.unlock();
-				auto val = this->forward(f, id, holder);
-				holder.hold_actual_result(val);
-				return true;
+				auto retVal = this->forward(f, id, holder);
+				holder.hold_actual_result(retVal);
+				return 0;
 			}
-			return false;
+		}
+
+		template <typename F, typename F_SERIAL, typename Holder>
+		int push(F &&f, F_SERIAL &&f_serial, int id, Holder &holder)
+		{
+			bool signal{false};
+			auto _pool = ctpl_casted(_pool_default);
+			/*This lock must be performed before checking the condition,
+			even though numThread is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+			if (busyThreads < _pool->size())
+			{
+				busyThreads++;
+				holder.setPushStatus(true);
+
+				lck.unlock();
+				auto tmp = std::args_handler::unpack_tuple(_pool, f, holder.getArgs());
+				holder.hold_future(std::move(tmp));
+				return 1;
+			}
+			lck.unlock();										// this allows to other threads to keep pushing in the pool
+			std::unique_lock mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
+
+			if (mpi_lck.try_lock() && numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+			{
+
+				printf("%d about to request center node to push\n", world_rank);
+				bool buffer = true;
+				customPut(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
+				MPI_Status status;
+
+				printf("process %d requested to push \n", world_rank);
+				MPI_Recv(&signal, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+
+				if (signal)
+				{
+					holder.setMPISent(true);
+					int dest = status.MPI_TAG;
+					printf("process %d received ID %d\n", world_rank, dest);
+
+					//serializer::stream os;
+					//serializer::oarchive oa(os);
+					//Utils::unpack_tuple(oa, holder.getArgs());
+					std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
+
+					int count = ss.str().size();										// number of Bytes
+					int err = MPI_Ssend(&count, 1, MPI::INTEGER, dest, 0, *world_Comm); // send buffer size
+					if (err != MPI::SUCCESS)
+						printf("count could not be sent from rank %d to center! \n", world_rank);
+
+					err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, dest, 0, *world_Comm); // send buffer
+					if (err == MPI::SUCCESS)
+						printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
+
+					//TODO how to retrieve result from destination rank?
+
+					mpi_lck.unlock();
+					printf("process %d forwarded to process %d \n", world_rank, dest);
+					return 2;
+				}
+				else // numAvailableNodes might have changed due to delay
+				{
+					mpi_lck.unlock();
+					printf("process %d push request failed, forwarded!\n", world_rank);
+					auto retVal = this->forward(f, id, holder);
+					holder.hold_actual_result(retVal);
+					return 0;
+				}
+			}
+			else
+			{
+				//lck.unlock(); // unlocked already before mpi push
+				auto retVal = this->forward(f, id, holder);
+				holder.hold_actual_result(retVal);
+				return 0;
+			}
 		}
 
 		template <typename F, typename Holder>
@@ -548,7 +712,7 @@ namespace library
 				checkLeftSibling(&holder);
 			}
 
-			holder.isForwarded = true;
+			holder.setForwardStatus(true);
 			holder.threadId = threadId;
 			return std::args_handler::unpack_tuple(&holder, f, threadId, holder.getArgs(), trackStack);
 		}
@@ -595,7 +759,6 @@ namespace library
 				this->_pool_2 = new ctpl::Pool();
 				this->_pool_default->linkAnotherPool(this->_pool_2);
 			}
-			this->numThreadInitial = numThreads;
 			this->appliedStrategy = strat;
 		}
 
@@ -645,9 +808,9 @@ namespace library
 		unsigned int processor_count;
 		std::atomic<long long> idleTime;
 		std::atomic<int> busyThreads;
-		size_t numThreadInitial;
-		std::mutex mtx;	 //local mutex
-		std::mutex mtx2; //local mutex
+		std::mutex mtx;		//local mutex
+		std::mutex mtx_MPI; //local mutex
+		bool is_mtx_mpi_acquired = false;
 		std::condition_variable cv;
 		std::atomic<bool> superFlag;
 		POOL::Pool *_pool_default = nullptr;
@@ -664,12 +827,6 @@ namespace library
 
 		BranchHandler()
 		{
-			/*static bool static_init = [&]() -> bool {
-				INSTANCE = new ThisType;
-				init();
-				return true;
-			}();*/
-
 			init();
 		}
 
@@ -690,150 +847,200 @@ namespace library
 		/*----------------Singleton----------------->>end*/
 	protected:
 		/* MPI parameters */
-		int world_rank = -1;
-		int world_size = -1;
+		std::function<std::any(std::any)> _serialize;
+		std::function<std::any(std::any)> _deserialize;
+
+		bool is_MPI_enable = false;
+		int world_rank = -1;	  // get the rank of the process
+		int world_size = -1;	  // get the number of processes/nodes
+		char processor_name[128]; // name of the node
+
 		MPI_Win *win_boolean = nullptr;
-		MPI_Win *win_data = nullptr;
 		MPI_Win *win_NumNodes = nullptr;
 		MPI_Win *win_AvNodes = nullptr;
-		MPI_Win *win_test = nullptr;
+		MPI_Win *win_finalFlag = nullptr;
 		MPI_Win *win_accumulator = nullptr;
-		char processor_name[128];
+
+		MPI_Comm *world_Comm = nullptr;
+		MPI_Comm *second_Comm = nullptr;
 		MPI_Comm *SendToNodes_Comm = nullptr;
 		MPI_Comm *SendToCenter_Comm = nullptr;
 		MPI_Comm *NodeToNode_Comm = nullptr;
 
 		int *numAvailableNodes;
-		int *sch_inbox_boolean = nullptr;
-		int *sch_inbox_data = nullptr;
 		bool request_response = false;
-		bool data_ready = false;
 
-		void pass_MPI_args(int world_rank,
-						   int world_size,
-						   char *processor_name,
-						   MPI_Win *win_boolean,
-						   MPI_Win *win_data,
-						   MPI_Win *win_NumNodes,
-						   MPI_Win *win_AvNodes,
-						   int *sch_inbox_boolean,
-						   int *sch_inbox_data,
-						   MPI_Comm *SendToNodes_Comm,
-						   MPI_Comm *SendToCenter_Comm,
-						   MPI_Comm *NodeToNode_Comm,
-						   int *numAvailableNodes,
-						   MPI_Win *win_test,
-						   MPI_Win *win_accumulator)
+		void linkMPIargs(int world_rank,
+						 int world_size,
+						 char *processor_name,
+						 int *numAvailableNodes,
+						 MPI_Win *win_accumulator,
+						 MPI_Win *win_finalFlag,
+						 MPI_Win *win_AvNodes,
+						 MPI_Win *win_boolean,
+						 MPI_Win *win_NumNodes,
+						 MPI_Comm *world_Comm,
+						 MPI_Comm *second_Comm,
+						 MPI_Comm *SendToNodes_Comm,
+						 MPI_Comm *SendToCenter_Comm,
+						 MPI_Comm *NodeToNode_Comm)
 		{
 			this->world_rank = world_rank;
 			this->world_size = world_size;
+			this->numAvailableNodes = numAvailableNodes;
 			strncpy(this->processor_name, processor_name, 128);
-			this->win_boolean = win_boolean;
-			this->win_data = win_data;
-			this->win_NumNodes = win_NumNodes;
+			this->win_accumulator = win_accumulator;
 			this->win_AvNodes = win_AvNodes;
-			this->sch_inbox_boolean = sch_inbox_boolean;
-			this->sch_inbox_data = sch_inbox_data;
+			this->win_finalFlag = win_finalFlag;
+			this->win_boolean = win_boolean;
+			this->win_NumNodes = win_NumNodes;
+			this->world_Comm = world_Comm;
+			this->second_Comm = second_Comm;
 			this->SendToNodes_Comm = SendToNodes_Comm;
 			this->SendToCenter_Comm = SendToCenter_Comm;
 			this->NodeToNode_Comm = NodeToNode_Comm;
-			this->numAvailableNodes = numAvailableNodes;
-			this->win_test = win_test;
-			this->win_accumulator = win_accumulator;
 		}
 
-		/* if method receives data, this node is suposed to be totally idle */
-		template <typename F, typename... Args>
-		void seedReceiver(F &&f, int id, Args &&... args)
+		/* if method receives data, this node is supposed to be totally idle */
+		template <typename Result, typename F, typename Serialize, typename Deserialize, typename Holder>
+		void receiveSeed(F &&f, Serialize &&serialize, Deserialize &&deserialize, Holder &holder)
 		{
+			bool onceFlag = false;
 			int count_rcv = 0;
 
-			//TESTING //////////////////////////////////////////////////////
-			/*typedef decltype(f(0, args...)) rt;
-
-			auto futureVar = pushSeed(f, -1, args...);			   //future can be void type
-			auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
-			auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
-*/
-			//TESTING //////////////////////////////////////////////////////
-
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
-			accumulate(1, 0, world_rank, win_AvNodes, msg);
+			accumulate(1, 1, MPI::INT, 0, world_rank, *win_AvNodes, msg);
 			printf("process %d put data [%d] in process 0 \n", world_rank, 1);
 
-			while (true) // Find a way to terminate this loop
+			while (true)
 			{
 				MPI_Status status;
 				/* if a thread passes succesfully this method, library gets ready to receive data*/
 
-				//comm_idle_node_to_center(); //as long as it starts, it communicates center node it's ready for duty
-
 				printf("Receiver called on process %d, avl processes %d \n", world_rank, numAvailableNodes[0]);
 
-				//getter(); //check on remote memory if data sent succesfully
-				/* **************************************************************************
-			*	TODO wait until the thread pool run out of task, then send signal back to
-			*	center node so it knows for new available node 
-			************************************************************************** */
-
 				printf("Receiver on %d ready to receive \n", world_rank);
-				int Bytes; //Bytes to be received
-				//MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, *SendToNodes_Comm, &status);
-				MPI_Recv(&Bytes, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				int Bytes; // Bytes to be received
+				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
 				count_rcv++;
 				int src = status.MPI_SOURCE;
-				printf("process %d has rcvd from %d \n", world_rank, src);
-				printf("process %d has rcvd %d times \n", world_rank, count_rcv);
+				printf("process %d has rcvd from %d,%d times \n", world_rank, src, count_rcv);
 				if (status.MPI_TAG == 3)
 				{
-					printf("Exit tag received on process %d \n", world_rank);
+					printf("Exit tag received on process %d \n", world_rank); // loop termination
 					return;
 				}
-				printf("Receiver on %d, received %d \n", world_rank, Bytes);
+				printf("Receiver on %d, received %d Bytes \n", world_rank, Bytes);
 
-				serializer::stream is;
-				is.allocate(Bytes);
-				serializer::iarchive ia(is);
-				MPI_Recv(&is[0], Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				char in_buffer[Bytes];
+				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
 
-				Utils::readBuffer(ia, args...); //received buffer conversion
+				Holder newHolder(*this); // copy types
 
-				accumulate(1, 0, 0, win_accumulator, "busyNodes++");
+				std::stringstream ss;
+				for (int i = 0; i < Bytes; i++)
+					ss << in_buffer[i];
 
-				auto futureVar = pushSeed(f, -1, args...);			   //future type can handle void returns
-				auto lmd = [&futureVar]() { return futureVar.get(); }; //create lambda to pass to invoke_void()
-				auto retVal = args_handler::invoke_void(lmd);		   //this guarantees to assign a non-void value
+				Utils::unpack_tuple(deserialize, ss, newHolder.getArgs());
 
-				//TODO handle return Val to send it back to center node
+				accumulate(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
 
-				//printf("Hello from line 297, busy_threads %d \n", busy_threads.load());
+				//for (size_t i = 0; i < std::get<0>(newHolder.getArgs()).size(); i++)
+				//{
+				//	printf("%d ", std::get<0>(newHolder.getArgs())[i]);
+				//}
+
+				//TODO Warning, probably call mtx_MPI in here
+
+				if (!onceFlag)
+				{
+					if (MPI_COMM_NULL != *second_Comm)
+						MPI_Barrier(*second_Comm);
+					//onceFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
+					onceFlag = true;
+				}
+
+				//auto retVal = pushSeed(f, -1, args...);
+				push(f, 0, newHolder); // first push, node is idle
+
+				//temporary
+				//std::vector<size_t> retVal;
+				//newHolder.get(retVal);
+
+				reply<Result>(serialize, newHolder, src);
 
 				printf("Passed on process %d \n", world_rank);
 				//				_pool.wait();
 				//accumulate(1, 0, world_rank, win_AvNodes, "availableNodes++");
-				accumulate(-1, 0, 0, win_accumulator, "busyNodes--");
+				accumulate(-1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes--");
 			}
 		}
 
-		void accumulate(int buffer, int target_rank, MPI_Aint offset, MPI_Win *window, std::string msg)
+		template <typename Result, typename Holder, typename Serialize,
+				  std::enable_if_t<!std::is_void_v<Result>, int> = 0>
+		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
+			Result res;
+			holder.get(res);
+
+			if (src == 0) // termination, since all recursions return to center node
+			{
+				std::unique_lock lck(mtx_MPI); // in theory other threads should be are idle, TO DO ..
+				//this sends a signal so center node turns into receiving mode
+				bool buffer = true;
+				customPut(&buffer, 1, MPI::BOOL, src, 0, *win_finalFlag);
+
+				std::stringstream ss = serialize(res);
+				int count = ss.str().size();
+
+				int err = MPI_Ssend(&count, 1, MPI::INTEGER, src, 0, *world_Comm);
+				if (err != MPI::SUCCESS)
+					printf("count could not be sent from rank %d to rank %d! \n", world_rank, src);
+
+				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *world_Comm);
+				if (err != MPI::SUCCESS)
+					printf("final result could not be sent from rank %d to rank %d! \n", world_rank, src);
+			}
+			else // some other node requested help and it is surely waiting for the result
+			{
+				std::unique_lock lck(mtx_MPI); //no other thread can retrieve nor send via MPI
+
+				std::stringstream ss = serialize(res);
+				int count = ss.str().size();
+
+				int err = MPI_Ssend(&count, 1, MPI::INTEGER, src, 0, *world_Comm);
+				if (err != MPI::SUCCESS)
+					printf("count could not be sent from rank %d to rank %d! \n", world_rank, src);
+
+				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *world_Comm);
+				if (err != MPI::SUCCESS)
+					printf("result could not be sent from rank %d to rank %d! \n", world_rank, src);
+			}
+		}
+
+		template <typename Result, typename Holder, typename Serialize,
+				  std::enable_if_t<std::is_void_v<Result>, int> = 0>
+		void reply(Serialize &&serialize, Holder &holder, int src)
+		{
+			/* this method is invoked only if function is void type 
+				result is passed withing catchBest result*/
+		}
+
+		void accumulate(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
+		{
+			//std::stringstream ss;
+			//ss << world_rank << " about to accumulate on " << msg << "\n";
+			//std::cout << ss.str();
 			printf("%d about to accumulate on %s\n", world_rank, msg.c_str());
-			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, *window);
-			//MPI_Win_lock(MPI_LOCK_SHARED, target_rank, 0, *window);
-			//MPI_Win_lock_all(0, *window);
+			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window);
 
-			MPI_Accumulate(&buffer, 1, MPI_INT, target_rank, offset, 1, MPI_INT, MPI_SUM, *window);
-
-			//MPI_Put(&buffer, 1, MPI_INT, target_rank, offset, 1, MPI_INT, *window);
+			MPI_Accumulate(&buffer, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, MPI::SUM, window);
 
 			printf("%d about to unlock RMA on %d \n", world_rank, target_rank);
-
-			MPI_Win_flush(target_rank, *window);
-			//MPI_Win_flush_all(*window);
+			MPI_Win_flush(target_rank, window);
 			printf("%d between flush and unlock \n", world_rank);
+			MPI_Win_unlock(target_rank, window);
 
-			MPI_Win_unlock(target_rank, *window);
-			//MPI_Win_unlock_all(*window);
 			printf("%s, by %d\n", msg.c_str(), world_rank);
 		}
 	};

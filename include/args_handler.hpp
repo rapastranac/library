@@ -30,13 +30,13 @@ namespace std
 		/*begin<-- this allows to bind a function with unknown number of parameters ---*/
 
 		template <typename F, size_t... Is>
-		static auto bind_place_holders(std::index_sequence<Is...>, F&& f)
+		static auto bind_place_holders(std::index_sequence<Is...>, F &&f)
 		{
 			return std::bind(std::forward<F>(f), variadic_placeholder<Is>{}...);
 		}
 
 		template <typename F, typename... Args>
-		static auto bind_place_holders(F&& f, Args &&... args)
+		static auto bind_place_holders(F &&f, Args &&...args)
 		{
 			return bind_place_holders(std::make_index_sequence<sizeof...(Args)>{}, std::forward<F>(f));
 		}
@@ -49,18 +49,18 @@ namespace std
 		};
 
 		template <typename F, typename... Args,
-			typename Result = std::invoke_result_t<F, Args...>,
-			std::enable_if_t<!std::is_void_v<Result>, int> = 0>
-			static Result invoke_void(F&& f, Args &&... args)
+				  typename Result = std::invoke_result_t<F, Args...>,
+				  std::enable_if_t<!std::is_void_v<Result>, int> = 0>
+		static Result invoke_void(F &&f, Args &&...args)
 		{
 			return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
 		}
 
 		// void case
 		template <typename F, typename... Args,
-			typename Result = std::invoke_result_t<F, Args...>,
-			std::enable_if_t<std::is_void_v<Result>, int> = 0>
-			static Void invoke_void(F&& f, Args &&... args)
+				  typename Result = std::invoke_result_t<F, Args...>,
+				  std::enable_if_t<std::is_void_v<Result>, int> = 0>
+		static Void invoke_void(F &&f, Args &&...args)
 		{
 			std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
 			return Void();
@@ -70,14 +70,14 @@ namespace std
 		/*begin<----------	This unpacks tuple before pushing to pool -------------------*/
 		//tracking with a holder
 
-		template <typename P, typename F, typename... Args>//,  // typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type * = nullptr>
-		static auto ignore_holder(P* _pool, F&& f, Args &&... args)
+		template <typename P, typename F, typename... Args> //,  // typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type * = nullptr>
+		static auto ignore_holder(P *_pool, F &&f, Args &&...args)
 		{
 
 			int size = sizeof...(args); //testing
 			/* Maybe a flag to know if passing last argument or not,
 				for the cases when no holder is passed*/
-			auto fun = [f, _pool](int id, Args &... args, void* last) {
+			auto fun = [f, _pool](int id, Args &...args, void *last) {
 				//id is ignored due to ctpl stuff
 				//holder tracker (last parameter) is not passed when pushed
 				return _pool->push(f, args..., nullptr);
@@ -87,14 +87,14 @@ namespace std
 		}
 
 		template <typename P, typename F, typename Tuple, size_t... I>
-		static auto unpack_tuple(P* p, F&& f, Tuple& t, std::index_sequence<I...>, bool trackingStack)
+		static auto unpack_tuple(P *p, F &&f, Tuple &t, std::index_sequence<I...>, bool trackingStack)
 		{
 			return ignore_holder(p, f, std::get<I>(t)...);
 			//return Void();
 		}
 
 		template <typename P, typename F, typename Tuple>
-		static auto unpack_tuple(P* p, F&& f, Tuple& t, bool trackingStack)
+		static auto unpack_tuple(P *p, F &&f, Tuple &t, bool trackingStack)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
 			static constexpr auto size = std::tuple_size<Tuple>::value;
@@ -108,14 +108,14 @@ namespace std
 		//not tracking
 
 		template <typename P, typename F, typename... Args>
-			//typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type* = nullptr>
-			static auto ignore_id(P* _pool, F&& f, Args &&... args)
+		//typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type* = nullptr>
+		static auto ignore_id(P *_pool, F &&f, Args &&...args)
 		{
 
-			int size = sizeof...(args); //testing
+			//int size = sizeof...(args); //testing
 			/* Maybe a flag to know if passing last argument or not,
 				for the cases when no holder is passed*/
-			auto fun = [f, _pool](int id, Args &&... args) {
+			auto fun = [f, _pool](int, Args &&...args) {
 				//id is ignored due to ctpl stuff
 				//holder tracker (last parameter) is not passed when pushed
 				return _pool->push(f, args...);
@@ -124,13 +124,13 @@ namespace std
 		}
 
 		template <typename P, typename F, typename Tuple, size_t... I>
-		static auto unpack_tuple(P* p, F&& f, Tuple& t, std::index_sequence<I...>)
+		static auto unpack_tuple(P *p, F &&f, Tuple &t, std::index_sequence<I...>)
 		{
 			return ignore_id(p, f, std::get<I>(t)...);
 		}
 
 		template <typename P, typename F, typename Tuple>
-		static auto unpack_tuple(P* p, F&& f, Tuple& t)
+		static auto unpack_tuple(P *p, F &&f, Tuple &t)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
 			static constexpr auto size = std::tuple_size<Tuple>::value;
@@ -143,13 +143,13 @@ namespace std
 		/* tracking stack */
 
 		template <typename HOLDER, typename Function, typename Tuple, size_t... I>
-		static auto unpack_tuple(HOLDER* h, Function&& f, int id, Tuple& t, std::index_sequence<I...>, bool trackingStack)
+		static auto unpack_tuple(HOLDER *h, Function &&f, int id, Tuple &t, std::index_sequence<I...>, bool trackingStack)
 		{
 			return invoke_void(f, id, std::get<I>(t)..., h);
 		}
 
 		template <typename HOLDER, typename Function, typename Tuple>
-		static auto unpack_tuple(HOLDER* h, Function&& f, int id, Tuple& t, bool trackingStack)
+		static auto unpack_tuple(HOLDER *h, Function &&f, int id, Tuple &t, bool trackingStack)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
 			static constexpr auto size = std::tuple_size<Tuple>::value;
@@ -163,13 +163,13 @@ namespace std
 		/* same as above, not tracking stack */ // TO IMPROVE
 
 		template <typename Function, typename Tuple, size_t... I>
-		static auto unpack_tuple(Function&& f, int id, Tuple& t, std::index_sequence<I...>)
+		static auto unpack_tuple(Function &&f, int id, Tuple &t, std::index_sequence<I...>)
 		{
 			return invoke_void(f, id, std::get<I>(t)...);
 		}
 
 		template <typename Function, typename Tuple>
-		static auto unpack_tuple(Function&& f, int id, Tuple& t)
+		static auto unpack_tuple(Function &&f, int id, Tuple &t)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
 			static constexpr auto size = std::tuple_size<Tuple>::value;
@@ -179,13 +179,13 @@ namespace std
 
 		/*begin<--- General unpack tuple and passes arguments to callable -----*/
 		template <typename Function, typename Tuple, size_t... I>
-		static auto unpack_tuple(Function&& f, Tuple& t, std::index_sequence<I...>)
+		static auto unpack_tuple(Function &&f, Tuple &t, std::index_sequence<I...>)
 		{
 			return invoke_void(f, std::get<I>(t)...);
 		}
 
 		template <typename Function, typename Tuple>
-		static auto unpack_tuple(Function&& f, Tuple& t)
+		static auto unpack_tuple(Function &&f, Tuple &t)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
 			static constexpr auto size = std::tuple_size<Tuple>::value;

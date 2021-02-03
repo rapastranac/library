@@ -1,0 +1,80 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/10.2.0".
+
+
+Inactive Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.3     3) ucx/1.8.0
+
+The following have been reloaded with a version change:
+  1) gcccore/.9.3.0 => gcccore/.10.2.0
+
+
+Activating Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.5     3) ucx/1.9.0
+
+
+Currently Loaded Modules:
+  1) CCconfig                 5) gcccore/.10.2.0 (H)   9) libfabric/1.10.1
+  2) gentoo/2020     (S)      6) gcc/10.2.0      (t)  10) openmpi/4.0.5    (m)
+  3) imkl/2020.1.217 (math)   7) ucx/1.9.0
+  4) StdEnv/2020     (S)      8) pmix/3.1.5
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /lustre03/project/6054778/pasr1602/applied
+Starting run at: Fri Jan  8 10:10:05 EST 2021
+The threading support level corresponds to that demanded.
+Process 0 of 2 is on blg9323.int.ets1.calculquebec.ca
+The threading support level corresponds to that demanded.
+Process 1 of 2 is on blg9324.int.ets1.calculquebec.ca
+About to create window, 0 / 2!! 
+About to allocate
+Allocated
+About to start, 0 / 2!! 
+scheduler() launched!! 
+buffer sucessfully sent! 
+*** Busy nodes: 1 ***
+ Scheduler started!! 
+test, busyNodes = 0
+BusyNodes = 0 achieved 
+process 0 waiting at barrier 
+process 0 passed barrier 
+About to create window, 1 / 2!! 
+About to allocate
+Allocated
+About to start, 1 / 2!! 
+Pool size increased by one, thread : 0 
+1 about to accumulate on avalaibleNodes[1]
+1 about to unlock RMA on 0 
+1 between flush and unlock 
+avalaibleNodes[1], by 1
+process 1 put data [1] in process 0 
+Receiver called on process 1, avl processes 1 
+Receiver on 1 ready to receive 
+process 1 has rcvd from 0 
+process 1 has rcvd 1 times 
+Receiver on 1, received 8008 Bytes 
+1 about to accumulate on busyNodes++
+1 about to unlock RMA on 0 
+1 between flush and unlock 
+busyNodes++, by 1
+Passed on process 1 
+1 about to accumulate on busyNodes--
+1 about to unlock RMA on 0 
+1 between flush and unlock 
+busyNodes--, by 1
+Receiver called on process 1, avl processes 0 
+Receiver on 1 ready to receive 
+process 1 has rcvd from 0 
+process 1 has rcvd 2 times 
+Exit tag received on process 1 
+process 1 waiting at barrier 
+process 1 passed barrier 
+Finishing run at: Fri Jan  8 10:10:11 EST 2021

@@ -33,9 +33,9 @@ namespace serializer
             buffer = new char[Bytes];
         }
 
-        char &operator*()
+        char *operator*()
         {
-            return *buffer;
+            return buffer;
         }
 
         char &operator[](int idx)

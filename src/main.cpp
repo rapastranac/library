@@ -42,25 +42,64 @@ void print(std::vector<size_t> &ordered)
 	file.close();
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-
-	Sort objet;
-
-	library::BranchHandler &handler = library::BranchHandler::getInstance();
-	handler.setMaxThreads(1);
 
 	//buildUnsorted(10, 50000000);
 	//return 0;
 
-	library::Scheduler scheduler;
+	Sort objet;
+	auto mainAlgo = std::bind(&Sort::mergeSort, &objet, _1, _2); // target algorithm [all arguments]
 
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	read(arr, "input/1000.txt");
 
-	auto _f = std::bind(&Sort::mergeSort, objet, 0, arr);
-	scheduler.start(argc, argv, handler, _f, -1, arr);
+	auto &handler = library::BranchHandler::getInstance();
+	library::ResultHolder<std::vector<size_t>, std::vector<size_t>> holder(handler);
+
+	//handler.setMaxThreads(1);
+	//sorted = mainAlgo(0, arr);
+	//return 0;
+
+	holder.holdArgs(arr);
+
+	//auto ss = user_serializer(arr);
+	std::stringstream ss = std::args_handler::unpack_tuple(user_serializer, holder.getArgs());
+	int SIZE = ss.str().size();
+	char buffer[SIZE];
+	std::stringstream ss2;
+
+	std::memcpy(buffer, ss.str().data(), SIZE);
+
+	for (int i = 0; i < SIZE; i++)
+	{
+		ss2 << buffer[i];
+	}
+
+	user_deserializer(ss2, sorted);
+
+	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
+	scheduler.setThreadsPerNode(1);
+
+	scheduler.start<std::vector<size_t>>(argc, argv,
+										 mainAlgo,
+										 holder,
+										 user_serializer,
+										 user_deserializer); // solve in parallel, ignore args{id, tracker(is applicable)}
+	int rank = scheduler.finalize();
+	if (rank == 0)
+	{
+		auto result = scheduler.retrieveResult(); // returns a stringstream
+		user_deserializer(result, sorted);
+		printf("Sorted size : %d \n", sorted.size());
+
+		for (size_t i = 0; i < sorted.size(); i++)
+		{
+			std::cout << sorted[i] << " ";
+		}
+		std::cout << "\n";
+	}
 	return 0;
 
 	objet.setUnsorted(arr);
