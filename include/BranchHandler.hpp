@@ -909,8 +909,9 @@ namespace library
 			int count_rcv = 0;
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
-			accumulate(1, 1, MPI::INT, 0, world_rank, *win_AvNodes, msg);
-			printf("process %d put data [%d] in process 0 \n", world_rank, 1);
+			bool flag = true;
+			customPut(&flag, 1, MPI::BOOL, 0, world_rank, *win_AvNodes);
+			printf("process %d put flag [true] in process 0 \n", world_rank);
 
 			while (true)
 			{
@@ -981,7 +982,9 @@ namespace library
 		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
 			Result res;
+			printf("rank %d entered reply! \n", world_rank);
 			holder.get(res);
+			printf("rank %d about to reply to %d! \n", world_rank, src);
 
 			if (src == 0) // termination, since all recursions return to center node
 			{
@@ -989,6 +992,7 @@ namespace library
 				//this sends a signal so center node turns into receiving mode
 				bool buffer = true;
 				customPut(&buffer, 1, MPI::BOOL, src, 0, *win_finalFlag);
+				printf("rank %d put to finalFlag! \n", world_rank);
 
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();

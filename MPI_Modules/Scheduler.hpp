@@ -196,7 +196,7 @@ namespace library
 			if (err == MPI::SUCCESS)
 				printf("buffer sucessfully sent! \n");
 
-			availableNodes[rcvrNode] = 0; // becomes unavailable until it finishes
+			availableNodes[rcvrNode] = false; // becomes unavailable until it finishes
 		}
 
 		/* this should be called only when the number of available nodes is modified */
@@ -219,7 +219,7 @@ namespace library
 			int availableNodeID = -1;
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				if (availableNodes[rank] == 1)
+				if (availableNodes[rank])
 					nodes.push_back(rank);
 			}
 
@@ -240,7 +240,8 @@ namespace library
 			int count = 0;
 			for (int i = 1; i < world_size; i++)
 			{
-				count += availableNodes[i];
+				if (availableNodes[i])
+					++count;
 			}
 			numAvailableNodes[0] = count;
 		}
@@ -325,7 +326,7 @@ namespace library
 				{
 					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
 					MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
-					MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
+					MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 
 					if (MPI_COMM_NULL != second_Comm)
@@ -335,7 +336,7 @@ namespace library
 				{
 					MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
 					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
-					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
+					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 					MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 
 					if (MPI_COMM_NULL != second_Comm)
@@ -350,7 +351,7 @@ namespace library
 			{
 				this->numAvailableNodes = new int[1];
 				this->inbox_boolean = new bool[1];
-				this->availableNodes = new int[1];
+				this->availableNodes = new bool[1];
 				this->busyNodes = new int[1];
 				this->finalFlag = new bool[1];
 				init();
@@ -400,7 +401,7 @@ namespace library
 				for (int i = 0; i < world_size; i++)
 				{
 					inbox_boolean[i] = false;
-					availableNodes[i] = 0; // no node is available, each node is in charge of communicating its availability
+					availableNodes[i] = false; // no node is available, each node is in charge of communicating its availability
 				}
 			}
 			else
@@ -429,7 +430,7 @@ namespace library
 
 		bool *inbox_boolean;	// receives signal of a node attempting to put data [only center node has the list]
 		int *numAvailableNodes; // Number of available nodes	[every node is aware of this number]
-		int *availableNodes;	// list of available nodes [only center node has the list]
+		bool *availableNodes;	// list of available nodes [only center node has the list]
 		int *busyNodes;			// number of nodes working at the time
 		bool *finalFlag;
 
