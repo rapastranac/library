@@ -139,7 +139,7 @@ namespace library
 
 		bool breakLoop()
 		{
-			std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
+			//std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
 			printf("test, busyNodes = %d\n", busyNodes[0]);
 			if (busyNodes[0] == 0)
 			{
@@ -161,9 +161,9 @@ namespace library
 			{
 				MPI_Status status;
 				int Bytes;
-				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, second_Comm, &status);
+				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
 				char in_buffer[Bytes];
-				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, second_Comm, &status);
+				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
 
 				for (int i = 0; i < Bytes; i++)
 					this->returnStream << in_buffer[i];
@@ -225,7 +225,7 @@ namespace library
 
 			std::random_device rd;	// Will be used to obtain a seed for the random number engine
 			std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-			std::uniform_int_distribution<> distrib(0, nodes.size());
+			std::uniform_int_distribution<> distrib(0, nodes.size() - 1);
 
 			int rank = distrib(gen);				 // testing
 			availableNodeID = nodes[rank];			 // testing

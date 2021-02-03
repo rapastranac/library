@@ -69,7 +69,7 @@ namespace library
 
 		MPI_Comm &getCommunicator()
 		{
-			return *second_Comm;
+			return *world_Comm;
 		}
 
 	public:
@@ -639,6 +639,7 @@ namespace library
 
 				if (signal)
 				{
+					holder.setMPISent(true);
 					int dest = status.MPI_TAG;
 					printf("process %d received ID %d\n", world_rank, dest);
 
@@ -664,6 +665,7 @@ namespace library
 				}
 				else // numAvailableNodes might have changed due to delay
 				{
+					mpi_lck.unlock();
 					printf("process %d push request failed, forwarded!\n", world_rank);
 					auto retVal = this->forward(f, id, holder);
 					holder.hold_actual_result(retVal);
@@ -672,7 +674,7 @@ namespace library
 			}
 			else
 			{
-				//lck.unlock();
+				//lck.unlock(); // unlocked already before mpi push
 				auto retVal = this->forward(f, id, holder);
 				holder.hold_actual_result(retVal);
 				return 0;
@@ -991,11 +993,11 @@ namespace library
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
 
-				int err = MPI_Ssend(&count, 1, MPI::INTEGER, src, 0, *second_Comm);
+				int err = MPI_Ssend(&count, 1, MPI::INTEGER, src, 0, *world_Comm);
 				if (err != MPI::SUCCESS)
 					printf("count could not be sent from rank %d to rank %d! \n", world_rank, src);
 
-				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *second_Comm);
+				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *world_Comm);
 				if (err != MPI::SUCCESS)
 					printf("final result could not be sent from rank %d to rank %d! \n", world_rank, src);
 			}
@@ -1006,11 +1008,11 @@ namespace library
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
 
-				int err = MPI_Ssend(&count, 1, MPI::INT, src, 0, *second_Comm);
+				int err = MPI_Ssend(&count, 1, MPI::INTEGER, src, 0, *world_Comm);
 				if (err != MPI::SUCCESS)
 					printf("count could not be sent from rank %d to rank %d! \n", world_rank, src);
 
-				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *second_Comm);
+				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *world_Comm);
 				if (err != MPI::SUCCESS)
 					printf("result could not be sent from rank %d to rank %d! \n", world_rank, src);
 			}
