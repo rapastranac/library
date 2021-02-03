@@ -296,6 +296,12 @@ namespace library
 			MPI_Comm_size(world_Comm, &this->world_size);
 			MPI_Comm_rank(world_Comm, &this->world_rank);
 
+			if (world_size < 2)
+			{
+				printf("At least two processes required \n");
+				MPI_Abort(MPI_COMM_WORLD, 7);
+			}
+
 			MPI_Comm_group(world_Comm, &world_group); // world group, all ranks
 
 			// a communicator to syncronise only process 0 and 1 ****************************
