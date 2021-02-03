@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
 	int rank = scheduler.finalize();
 	if (rank == 0)
 	{
+		scheduler.printfStats();
+
 		auto result = scheduler.retrieveResult(); // returns a stringstream
 		user_deserializer(result, sorted);
 		printf("Sorted size : %d \n", sorted.size());

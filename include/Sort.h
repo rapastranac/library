@@ -31,7 +31,6 @@ auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 	and the arguments pack*/
 	cereal::BinaryInputArchive archive(ss);
 	archive(args...);
-	return 0;
 };
 
 class Sort
