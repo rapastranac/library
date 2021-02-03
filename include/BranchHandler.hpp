@@ -943,10 +943,10 @@ namespace library
 
 				accumulate(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
 
-				for (size_t i = 0; i < std::get<0>(newHolder.getArgs()).size(); i++)
-				{
-					printf("%d ", std::get<0>(newHolder.getArgs())[i]);
-				}
+				//for (size_t i = 0; i < std::get<0>(newHolder.getArgs()).size(); i++)
+				//{
+				//	printf("%d ", std::get<0>(newHolder.getArgs())[i]);
+				//}
 
 				//TODO Warning, probably call mtx_MPI in here
 
@@ -983,7 +983,7 @@ namespace library
 
 			if (src == 0) // termination, since all recursions return to center node
 			{
-				std::unique_lock lck(mtx_MPI);
+				std::unique_lock lck(mtx_MPI); // in theory other threads should be are idle, TO DO ..
 				//this sends a signal so center node turns into receiving mode
 				bool buffer = true;
 				customPut(&buffer, 1, MPI::BOOL, src, 0, *win_finalFlag);
@@ -991,17 +991,17 @@ namespace library
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
 
-				int err = MPI_Ssend(&count, 1, MPI::INT, src, 0, *second_Comm);
+				int err = MPI_Ssend(&count, 1, MPI::INTEGER, src, 0, *second_Comm);
 				if (err != MPI::SUCCESS)
 					printf("count could not be sent from rank %d to rank %d! \n", world_rank, src);
 
-				err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, src, 0, *second_Comm);
+				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *second_Comm);
 				if (err != MPI::SUCCESS)
 					printf("final result could not be sent from rank %d to rank %d! \n", world_rank, src);
 			}
 			else // some other node requested help and it is surely waiting for the result
 			{
-				std::unique_lock lck(mtx_MPI);
+				std::unique_lock lck(mtx_MPI); //no other thread can retrieve nor send via MPI
 
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
@@ -1010,7 +1010,7 @@ namespace library
 				if (err != MPI::SUCCESS)
 					printf("count could not be sent from rank %d to rank %d! \n", world_rank, src);
 
-				err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, src, 0, *second_Comm);
+				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *second_Comm);
 				if (err != MPI::SUCCESS)
 					printf("result could not be sent from rank %d to rank %d! \n", world_rank, src);
 			}

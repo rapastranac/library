@@ -140,7 +140,7 @@ public:
 		std::memcpy(R.data(), &section[middle], Nr * sizeof(size_t));
 
 		library::ResultHolder<std::vector<size_t>, std::vector<size_t>> hl(branchHandler);
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		hl.holdArgs(L);
 		branchHandler.push(_f, id, hl);
 		//branchHandler.push(_f, user_serializer, id, hl);

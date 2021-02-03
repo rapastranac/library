@@ -96,8 +96,9 @@ int main(int argc, char *argv[])
 
 		for (size_t i = 0; i < sorted.size(); i++)
 		{
-			printf("%d ", sorted[i]);
+			std::cout << sorted[i] << " ";
 		}
+		std::cout << "\n";
 	}
 	return 0;
 
