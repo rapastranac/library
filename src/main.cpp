@@ -65,22 +65,17 @@ int main(int argc, char *argv[])
 	holder.holdArgs(arr);
 
 	//auto ss = user_serializer(arr);
-	std::stringstream ss = std::args_handler::unpack_tuple(user_serializer, holder.getArgs());
-	int SIZE = ss.str().size();
-	char buffer[SIZE];
-	std::stringstream ss2;
-
-	std::memcpy(buffer, ss.str().data(), SIZE);
-
-	for (int i = 0; i < SIZE; i++)
-	{
-		ss2 << buffer[i];
-	}
-
-	user_deserializer(ss2, sorted);
+	//std::stringstream ss = std::args_handler::unpack_tuple(user_serializer, holder.getArgs());
+	//int SIZE = ss.str().size();
+	//char buffer[SIZE];
+	//std::stringstream ss2;
+	//std::memcpy(buffer, ss.str().data(), SIZE);
+	//for (int i = 0; i < SIZE; i++)
+	//	ss2 << buffer[i];
+	//user_deserializer(ss2, sorted);
 
 	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
-	scheduler.setThreadsPerNode(1);
+	scheduler.setThreadsPerNode(10);
 
 	scheduler.start<std::vector<size_t>>(argc, argv,
 										 mainAlgo,
