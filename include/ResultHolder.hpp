@@ -23,16 +23,19 @@ namespace library
 	protected:
 		BranchHandler &branchHandler; // = library::BranchHandler();
 
-		std::unique_ptr<std::future<_Ret>> expectedFut; //Unique_ptr check it out
-		std::any expected;								//expected value
+		std::unique_ptr<std::future<_Ret>> expectedFut; // Unique_ptr check it out
+		std::any expected;								// expected value
 
 		std::tuple<Args...> tup;
-		std::function<bool()> boundCond; //Condition prior to run the branch
-		bool isBoundCond = false;		 //is there a condition before running this branch?
+		std::function<bool()> boundCond; // Condition prior to run the branch
+		bool isBoundCond = false;		 // is there a condition before running this branch?
+		bool isPushed = false;			 // It was performed by another thread
+		bool isForwarded = false;		 // It was performed sequentially
 
-		bool isPushed = false;	  //It was performed by another thread
-		bool isForwarded = false; //It was performed sequentially
-		bool isMPISent = false;
+		// MPI attributes ******
+		bool isMPISent = false; // flag to check if was sent via MPI
+		int dest_rank = -1;		// rank destination
+		// **********************
 
 		size_t id;
 		size_t threadId = 0;
@@ -215,9 +218,9 @@ namespace library
 
 					MPI_Status status;
 					int Bytes;
-					MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
+					MPI_Recv(&Bytes, 1, MPI::INTEGER, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
 					char in_buffer[Bytes];
-					MPI_Recv(&in_buffer[0], Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
+					MPI_Recv(&in_buffer[0], Bytes, MPI::CHARACTER, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
 
 					std::stringstream ss;
 					for (int i = 0; i < Bytes; i++)
@@ -265,9 +268,10 @@ namespace library
 			this->isPushed = val;
 		}
 
-		void setMPISent(bool val)
+		void setMPISent(bool val, int dest_rank)
 		{
 			this->isMPISent = val;
+			this->dest_rank = dest_rank;
 		}
 	};
 

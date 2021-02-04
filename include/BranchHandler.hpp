@@ -639,8 +639,8 @@ namespace library
 
 				if (signal)
 				{
-					holder.setMPISent(true);
 					int dest = status.MPI_TAG;
+					holder.setMPISent(true, dest);
 					printf("process %d received ID %d\n", world_rank, dest);
 
 					//serializer::stream os;
@@ -933,7 +933,7 @@ namespace library
 				}
 				printf("Receiver on %d, received %d Bytes \n", world_rank, Bytes);
 
-				char in_buffer[Bytes];
+				char *in_buffer = new char[Bytes];
 				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
 
 				Holder newHolder(*this); // copy types
@@ -946,6 +946,7 @@ namespace library
 
 				accumulate(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
 
+				delete[] in_buffer;
 				//for (size_t i = 0; i < std::get<0>(newHolder.getArgs()).size(); i++)
 				//{
 				//	printf("%d ", std::get<0>(newHolder.getArgs())[i]);

@@ -7,7 +7,7 @@ echo "Starting run at: `date`"
 #xhost +node1 +manager
 #mpirun -hostfile hostfile -np 2 xterm -hold -fa 'Monospace' DISPLAY=manager -fs 12 -e gdb -ex=run ./a.out
 
-mpirun -n 3 xterm -fa 'Monospace' -fs 12 -display :0 -e gdb ./a.out -x gdb_commands
+mpirun -n 2 xterm -fa 'Monospace' -fs 12 -display :0 -e gdb ./a.out -x gdb_commands
 
 #mpirun -hostfile hostfile -np 10 ./a.out
 #mpirun -n 3 a.out

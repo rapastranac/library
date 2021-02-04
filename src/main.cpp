@@ -45,7 +45,7 @@ void print(std::vector<size_t> &ordered)
 int main(int argc, char *argv[])
 {
 
-	//buildUnsorted(10, 50000000);
+	//buildUnsorted(10, 1000000);
 	//return 0;
 
 	Sort objet;
@@ -53,7 +53,8 @@ int main(int argc, char *argv[])
 
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
-	read(arr, "input/1000.txt");
+	//read(arr, "input/1000.txt");
+	read(arr, "input/1000000.txt");
 
 	auto &handler = library::BranchHandler::getInstance();
 	library::ResultHolder<std::vector<size_t>, std::vector<size_t>> holder(handler);
@@ -65,17 +66,17 @@ int main(int argc, char *argv[])
 	holder.holdArgs(arr);
 
 	//auto ss = user_serializer(arr);
-	//std::stringstream ss = std::args_handler::unpack_tuple(user_serializer, holder.getArgs());
-	//int SIZE = ss.str().size();
-	//char buffer[SIZE];
-	//std::stringstream ss2;
-	//std::memcpy(buffer, ss.str().data(), SIZE);
-	//for (int i = 0; i < SIZE; i++)
-	//	ss2 << buffer[i];
-	//user_deserializer(ss2, sorted);
+	/*	std::stringstream ss = std::args_handler::unpack_tuple(user_serializer, holder.getArgs());
+	int SIZE = ss.str().size();
+	char *buffer = new char[SIZE];
+	std::stringstream ss2;
+	std::memcpy(buffer, ss.str().data(), SIZE);
+	for (int i = 0; i < SIZE; i++)
+		ss2 << buffer[i];
+	user_deserializer(ss2, sorted); */
 
 	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
-	scheduler.setThreadsPerNode(10);
+	scheduler.setThreadsPerNode(1);
 
 	scheduler.start<std::vector<size_t>>(argc, argv,
 										 mainAlgo,
@@ -91,10 +92,13 @@ int main(int argc, char *argv[])
 		user_deserializer(result, sorted);
 		printf("Sorted size : %d \n", sorted.size());
 
-		for (size_t i = 0; i < sorted.size(); i++)
-		{
-			std::cout << sorted[i] << " ";
-		}
+		std::cout << "first : " << sorted.front() << " ";
+		std::cout << "last : " << sorted.back() << " ";
+
+		//for (size_t i = 0; i < sorted.size(); i++)
+		//{
+		//	std::cout << sorted[i] << " ";
+		//}
 		std::cout << "\n";
 	}
 	return 0;

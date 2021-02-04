@@ -147,7 +147,7 @@ namespace library
 		// this sends the termination signal
 		auto breakLoop()
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 4 testing
+			std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
 			printf("test, busyNodes = %d\n", busyNodes[0]);
 			if (busyNodes[0] == 0)
 			{
@@ -171,13 +171,14 @@ namespace library
 				MPI_Status status;
 				int Bytes;
 				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
-				char in_buffer[Bytes];
+				char *in_buffer = new char[Bytes];
 				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
 
 				for (int i = 0; i < Bytes; i++)
 					this->returnStream << in_buffer[i];
 
 				finalFlag[0] = false; // this should happen only once, thus breakLoop() will end the execution
+				delete[] in_buffer;
 			}
 		}
 
@@ -187,7 +188,7 @@ namespace library
 			std::stringstream ss = std::args_handler::unpack_tuple(serialize, holder.getArgs());
 
 			int count = ss.str().size(); // number of Bytes
-			char buffer[count];
+			char *buffer = new char[count];
 			std::memcpy(buffer, ss.str().data(), count);
 
 			int rcvrNode = 1;
@@ -200,6 +201,7 @@ namespace library
 				printf("buffer sucessfully sent! \n");
 
 			availableNodes[rcvrNode] = false; // becomes unavailable until it finishes
+			delete[] buffer;
 		}
 
 		/* this should be called only when the number of available nodes is modified */
