@@ -45,7 +45,6 @@ namespace library
 		{
 			_branchHandler.is_MPI_enable = true;
 
-			//_branchHandler._serialize = serialize;
 			initMPI(argc, argv);
 
 			printf("About to start, %d / %d!! \n", world_rank, world_size);
@@ -53,20 +52,15 @@ namespace library
 			{
 				printf("scheduler() launched!! \n");
 				this->schedule(holder, serialize);
-
-				printf("process %d waiting at barrier \n", world_rank);
-				MPI_Barrier(world_Comm);
-				printf("process %d passed barrier \n", world_rank);
 			}
 			else
 			{
 				this->_branchHandler.setMaxThreads(threadsPerNode);
 				this->_branchHandler.receiveSeed<Result>(f, serialize, deserialize, holder);
-
-				printf("process %d waiting at barrier \n", world_rank);
-				MPI_Barrier(world_Comm);
-				printf("process %d passed barrier \n", world_rank);
 			}
+			printf("process %d waiting at barrier \n", world_rank);
+			MPI_Barrier(world_Comm);
+			printf("process %d passed barrier \n", world_rank);
 		}
 
 		auto finalize()
@@ -273,7 +267,7 @@ namespace library
 
 			printf("Process %d of %d is on %s\n", world_rank, world_size, processor_name);
 			MPI_Barrier(world_Comm);
-			printf("About to create window, %d / %d!! \n", world_rank, world_size);
+			//printf("About to create window, %d / %d!! \n", world_rank, world_size);
 			MPI_Barrier(world_Comm);
 			win_allocate();
 			MPI_Barrier(world_Comm);
@@ -329,7 +323,7 @@ namespace library
 
 		void win_allocate()
 		{
-			printf("About to allocate\n");
+			//printf("About to allocate\n");
 
 			if (world_rank == 0)
 			{
@@ -352,7 +346,7 @@ namespace library
 					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
 			}
 
-			printf("Allocated\n");
+			//printf("Allocated\n");
 
 			init();
 		}
