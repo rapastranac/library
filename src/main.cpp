@@ -18,8 +18,6 @@
 #include <iterator>
 #include <string>
 
-#define MPI_TAG
-
 namespace fs = std::filesystem;
 
 void print(std::vector<size_t> &ordered)

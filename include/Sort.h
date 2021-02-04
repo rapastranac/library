@@ -14,6 +14,8 @@
 #include <fstream>
 #include <sstream>
 
+#define MPI_TAG
+
 using namespace std::placeholders;
 namespace fs = std::filesystem;
 
@@ -141,15 +143,19 @@ public:
 		library::ResultHolder<std::vector<size_t>, std::vector<size_t>> hl(branchHandler);
 		//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		hl.holdArgs(L);
+#ifndef MPI_TAG
 		branchHandler.push(_f, id, hl);
-		//branchHandler.push(_f, user_serializer, id, hl);
+#else
+		branchHandler.push(_f, user_serializer, id, hl);
+#endif
 		//L = mergeSort(id, L);
 		//L = _f(id, L);
 		R = mergeSort(id, R);
-
+#ifndef MPI_TAG
 		hl.get(L);
-		//hl.get(user_deserializer, L);
-
+#else
+		hl.get(user_deserializer, L);
+#endif
 		merged = merge(L, R);
 
 		return merged;
