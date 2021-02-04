@@ -67,9 +67,9 @@ int main(int argc, char *argv[])
 	thus, other nodes know the data type*/
 
 #ifndef MPI_TAG
-	read(arr, "input/1000000.txt");
+	read(arr, "input/50000000.txt");
 
-	handler.setMaxThreads(4);
+	handler.setMaxThreads(3);
 	auto begin = std::chrono::steady_clock::now();
 	sorted = mainAlgo(0, arr);
 	auto end = std::chrono::steady_clock::now();
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	if (rank == 0) //only center node will read input and printing results
 	{
 		//read(arr, "input/1000.txt");
-		read(arr, "input/1000000.txt");
+		read(arr, "input/50000000.txt");
 		holder.holdArgs(arr);
 
 		//auto ss = user_serializer(arr);
