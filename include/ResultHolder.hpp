@@ -215,11 +215,12 @@ namespace library
 				{
 					branchHandler.lock_mpi(); /* this blocks any other thread to use an MPI function since MPI_Recv is blocking
 												thus, mpi_thread_serialized is guaranteed */
+					printf("rank %d entered get() to retrieve from %d! \n", branchHandler.world_rank, dest_rank);
 
 					MPI_Status status;
 					int Bytes;
 					MPI_Recv(&Bytes, 1, MPI::INTEGER, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
-					char in_buffer[Bytes];
+					char *in_buffer = new char[Bytes];
 					MPI_Recv(&in_buffer[0], Bytes, MPI::CHARACTER, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
 
 					std::stringstream ss;
@@ -227,6 +228,7 @@ namespace library
 						ss << in_buffer[i];
 
 					f_deser(ss, target);
+					delete[] in_buffer;
 
 					branchHandler.unlock_mpi(); /* release mpi mutex, thus, other threads are able to push to other nodes*/
 					return true;

@@ -54,13 +54,18 @@ int main(int argc, char *argv[])
 	std::vector<size_t> arr;
 	std::vector<size_t> sorted;
 	//read(arr, "input/1000.txt");
-	read(arr, "input/1000000.txt");
+	read(arr, "input/50000000.txt");
 
 	auto &handler = library::BranchHandler::getInstance();
 	library::ResultHolder<std::vector<size_t>, std::vector<size_t>> holder(handler);
 
 	//handler.setMaxThreads(1);
 	//sorted = mainAlgo(0, arr);
+	//printf("Sorted size : %d \n", sorted.size());
+	//
+	//std::cout << "first : " << sorted.front() << " ";
+	//std::cout << "last : " << sorted.back() << " ";
+	//std::cout << "\n";
 	//return 0;
 
 	holder.holdArgs(arr);
