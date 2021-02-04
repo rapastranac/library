@@ -76,7 +76,9 @@ namespace library
 											 &win_finalFlag,
 											 &win_AvNodes,
 											 &win_boolean,
+											 &win_inbox_bestResult,
 											 &win_NumNodes,
+											 &win_refValueGlobal,
 											 &world_Comm,
 											 &second_Comm,
 											 &SendToNodes_Comm,
@@ -183,7 +185,8 @@ namespace library
 				}
 				if (breakLoop())
 					break;
-				receiveResult();
+				receiveResult();		// waiting algorithms
+				receiveCurrentResult(); // non-waiting algorithms
 
 			} while (true);
 		}
@@ -223,6 +226,35 @@ namespace library
 
 				finalFlag[0] = false; // this should happen only once, thus breakLoop() will end the execution
 				delete[] in_buffer;
+			}
+		}
+
+		void receiveCurrentResult()
+		{
+			for (int rank = 1; rank < world_size; rank++)
+			{
+				if (inbox_bestResult[rank])
+				{
+					inbox_bestResult[rank] = false;
+
+					MPI_Status status;
+					int Bytes;
+					MPI_Recv(&Bytes, 1, MPI::INTEGER, rank, MPI::ANY_TAG, world_Comm, &status);
+
+					// sender would not need to send data size before hand **********************************************
+					//MPI_Probe(rank, 0, world_Comm, &status);		// receives status before receiving the message
+					//MPI_Get_count(&status, MPI::CHARACTER, &Bytes); // receives total number of datatype elements of the message
+					//***************************************************************************************************
+
+					char *buffer = new char[Bytes];
+					MPI_Recv(buffer, Bytes, MPI::CHARACTER, rank, MPI::ANY_TAG, world_Comm, &status);
+
+					for (int i = 0; i < Bytes; i++)
+					{
+						returnStream2 << buffer[i];
+					}
+					delete[] buffer;
+				}
 			}
 		}
 
@@ -338,6 +370,8 @@ namespace library
 				MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 				MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
+				MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, world_Comm, &inbox_bestResult, &win_inbox_bestResult);
+				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
 
 				if (MPI_COMM_NULL != second_Comm)
 					MPI_Win_allocate(sizeof(bool), sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
@@ -348,6 +382,8 @@ namespace library
 				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
 				MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
+				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, world_Comm, &inbox_bestResult, &win_inbox_bestResult);
+				MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
 
 				if (MPI_COMM_NULL != second_Comm)
 					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
@@ -365,6 +401,9 @@ namespace library
 			MPI_Win_free(&win_AvNodes);
 			MPI_Win_free(&win_boolean);
 			MPI_Win_free(&win_NumNodes);
+			MPI_Win_free(&win_inbox_bestResult);
+			MPI_Win_free(&win_refValueGlobal);
+
 			if (MPI_COMM_NULL != second_Comm)
 				MPI_Win_free(&win_finalFlag);
 
@@ -392,6 +431,7 @@ namespace library
 				{
 					inbox_boolean[i] = false;
 					availableNodes[i] = false; // no node is available, each node is in charge of communicating its availability
+					inbox_bestResult[i] = false;
 				}
 			}
 			else
@@ -405,6 +445,8 @@ namespace library
 		int world_size;			  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
 		MPI_Win win_boolean;	  // window for pushing request from nodes
+		MPI_Win win_inbox_bestResult;
+		MPI_Win win_refValueGlobal;
 		MPI_Win win_finalFlag;
 		MPI_Win win_NumNodes;	 // window for the number of available nodes
 		MPI_Win win_AvNodes;	 // window for the list of available nodes
@@ -420,13 +462,16 @@ namespace library
 		MPI_Comm BCast_Comm;	   // attached to number of nodes
 		MPI_Comm accumulator_Comm; // attached to win_accumulator
 
-		bool *inbox_boolean;	// receives signal of a node attempting to put data [only center node has the list]
-		int *numAvailableNodes; // Number of available nodes	[every node is aware of this number]
-		bool *availableNodes;	// list of available nodes [only center node has the list]
-		int *busyNodes;			// number of nodes working at the time
-		bool *finalFlag;
+		bool *inbox_boolean = nullptr;	  // receives signal of a node attempting to put data [only center node has the list]
+		int *numAvailableNodes = nullptr; // Number of available nodes	[every node is aware of this number]
+		bool *availableNodes = nullptr;	  // list of available nodes [only center node has the list]
+		int *busyNodes = nullptr;		  // number of nodes working at the time
+		bool *finalFlag = nullptr;		  // applicable only of waiting algorithms, it means that final result is ready
+		int *refValueGlobal = nullptr;	  // reference value to chose a best result
+		bool *inbox_bestResult = nullptr; // a process is requesting to update the best result
 
 		std::stringstream returnStream;
+		std::stringstream returnStream2; // for testing only, recipient of best result
 
 		size_t threadsPerNode = std::thread::hardware_concurrency(); // detects the number of logical processors in machine
 

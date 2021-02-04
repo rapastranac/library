@@ -14,13 +14,13 @@
 #include <fstream>
 #include <sstream>
 
-//#define MPI_TAG
+#define MPI_TAG
 
 using namespace std::placeholders;
 namespace fs = std::filesystem;
 
 auto user_serializer = [](auto &...args) {
-	/* here inside, user can implement his/her favourite serialization method given the
+	/* here inside, user can implement its favourite serialization method given the
 	arguments pack and it must return a std::stream */
 	std::stringstream ss;
 	cereal::BinaryOutputArchive archive(ss);
@@ -29,10 +29,16 @@ auto user_serializer = [](auto &...args) {
 };
 
 auto user_deserializer = [](std::stringstream &ss, auto &...args) {
-	/* here inside, user can implement his/her favourite deserialization method given buffer
+	/* here inside, the user can implement its favourite deserialization method given buffer
 	and the arguments pack*/
 	cereal::BinaryInputArchive archive(ss);
 	archive(args...);
+};
+
+auto condition = [](int refValGlobal, int refValLocal) {
+	/*replaceIf receives this callable, thought the 
+	 user is free to define its own condition */
+	return refValLocal > refValGlobal ? true : false;
 };
 
 class Sort
@@ -124,8 +130,12 @@ public:
 
 	std::vector<size_t> mergeSort(int id, std::vector<size_t> &section)
 	{
+
 		if (section.size() <= 1)
+		{
+			branchHandler.replaceIf(4, condition, section, user_serializer); // testing compiling errors only, not functional for this algorithm
 			return section;
+		}
 
 		//size_t middle = (left + (right - 1)) / 2;
 		size_t middle = section.size() / 2;
@@ -146,7 +156,7 @@ public:
 #ifndef MPI_TAG
 		branchHandler.push(_f, id, hl);
 #else
-		branchHandler.push(_f, user_serializer, id, hl);
+		branchHandler.push(_f, id, hl, user_serializer);
 #endif
 		//L = mergeSort(id, L);
 		//L = _f(id, L);
@@ -154,7 +164,7 @@ public:
 #ifndef MPI_TAG
 		hl.get(L);
 #else
-		hl.get(user_deserializer, L);
+		hl.get(L, user_deserializer);
 #endif
 		merged = merge(L, R);
 
