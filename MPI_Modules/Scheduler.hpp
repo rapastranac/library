@@ -40,18 +40,63 @@ namespace library
 			this->threadsPerNode = threadsPerNode;
 		}
 
-		template <typename Result, typename F, typename Holder, typename Serialize, typename Deserialize>
-		void start(int argc, char *argv[], F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
+		auto initMPI(int argc, char *argv[])
 		{
 			_branchHandler.is_MPI_enable = true;
+			// Initilialise MPI and ask for thread support
+			int provided;
+			MPI_Init_thread(&argc, &argv, MPI::THREAD_SERIALIZED, &provided);
+			if (provided < MPI::THREAD_SERIALIZED)
+			{
+				printf("The threading support level is lesser than that demanded.\n");
+				MPI_Abort(MPI::COMM_WORLD, EXIT_FAILURE);
+			}
+			else
+			{
+				printf("The threading support level corresponds to that demanded.\n");
+			}
 
-			initMPI(argc, argv);
+			communicators();
 
+			int namelen;
+			MPI_Get_processor_name(processor_name, &namelen);
+
+			printf("Process %d of %d is on %s\n", world_rank, world_size, processor_name);
+			MPI_Barrier(world_Comm);
+			//printf("About to create window, %d / %d!! \n", world_rank, world_size);
+			MPI_Barrier(world_Comm);
+			win_allocate();
+			MPI_Barrier(world_Comm);
+
+			this->_branchHandler.linkMPIargs(world_rank,
+											 world_size,
+											 processor_name,
+											 numAvailableNodes,
+											 &win_accumulator,
+											 &win_finalFlag,
+											 &win_AvNodes,
+											 &win_boolean,
+											 &win_NumNodes,
+											 &world_Comm,
+											 &second_Comm,
+											 &SendToNodes_Comm,
+											 &SendToCenter_Comm,
+											 &NodeToNode_Comm);
+
+			return world_rank;
+		}
+
+		template <typename Result, typename F, typename Holder, typename Serialize, typename Deserialize>
+		void start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
+		{
 			printf("About to start, %d / %d!! \n", world_rank, world_size);
+
 			if (world_rank == 0)
 			{
+				start_time = MPI_Wtime();
 				printf("scheduler() launched!! \n");
 				this->schedule(holder, serialize);
+				end_time = MPI_Wtime();
 			}
 			else
 			{
@@ -63,11 +108,10 @@ namespace library
 			printf("process %d passed barrier \n", world_rank);
 		}
 
-		auto finalize()
+		void finalize()
 		{
 			win_deallocate();
 			MPI_Finalize();
-			return world_rank;
 		}
 
 		auto [[nodiscard("Move semantics need a recipient")]] retrieveResult()
@@ -79,11 +123,17 @@ namespace library
 		{
 			printf("\n \n \n");
 			printf("*****************************************************\n");
+			printf("Elapsed time : %3.2f \n", elapsedTime());
 			printf("Total number of requests : %zu \n", totalRequests);
 			printf("Number of approved requests : %zu \n", approvedRequests);
 			printf("Number of failed requests : %zu \n", failedRequests);
 			printf("*****************************************************\n");
 			printf("\n \n \n");
+		}
+
+		double elapsedTime()
+		{
+			return end_time - start_time;
 		}
 
 	private:
@@ -245,49 +295,6 @@ namespace library
 			numAvailableNodes[0] = count;
 		}
 
-		void initMPI(int argc, char *argv[])
-		{
-			// Initilialise MPI and ask for thread support
-			int provided;
-			MPI_Init_thread(&argc, &argv, MPI::THREAD_SERIALIZED, &provided);
-			if (provided < MPI::THREAD_SERIALIZED)
-			{
-				printf("The threading support level is lesser than that demanded.\n");
-				MPI_Abort(MPI::COMM_WORLD, EXIT_FAILURE);
-			}
-			else
-			{
-				printf("The threading support level corresponds to that demanded.\n");
-			}
-
-			communicators();
-
-			int namelen;
-			MPI_Get_processor_name(processor_name, &namelen);
-
-			printf("Process %d of %d is on %s\n", world_rank, world_size, processor_name);
-			MPI_Barrier(world_Comm);
-			//printf("About to create window, %d / %d!! \n", world_rank, world_size);
-			MPI_Barrier(world_Comm);
-			win_allocate();
-			MPI_Barrier(world_Comm);
-
-			this->_branchHandler.linkMPIargs(world_rank,
-											 world_size,
-											 processor_name,
-											 numAvailableNodes,
-											 &win_accumulator,
-											 &win_finalFlag,
-											 &win_AvNodes,
-											 &win_boolean,
-											 &win_NumNodes,
-											 &world_Comm,
-											 &second_Comm,
-											 &SendToNodes_Comm,
-											 &SendToCenter_Comm,
-											 &NodeToNode_Comm);
-		}
-
 		void communicators()
 		{
 			MPI_Comm_dup(MPI_COMM_WORLD, &world_Comm); // world communicator for this library
@@ -392,6 +399,8 @@ namespace library
 		}
 
 	private:
+		int argc;
+		char **argv;
 		int world_rank;			  // get the rank of the process
 		int world_size;			  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
@@ -425,6 +434,8 @@ namespace library
 		size_t totalRequests = 0;
 		size_t approvedRequests = 0;
 		size_t failedRequests = 0;
+		double start_time;
+		double end_time;
 
 		/* singleton*/
 		Scheduler(BranchHandler &branchHandler) : _branchHandler(branchHandler) {}
