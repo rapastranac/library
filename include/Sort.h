@@ -133,7 +133,7 @@ public:
 
 		if (section.size() <= 1)
 		{
-			branchHandler.replaceIf(4, condition, section, user_serializer); // testing compiling errors only, not functional for this algorithm
+			//branchHandler.replaceIf(4, condition, section, user_serializer); // testing compiling errors only, not functional for this algorithm
 			return section;
 		}
 

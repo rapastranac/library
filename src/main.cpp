@@ -88,8 +88,10 @@ int main(int argc, char *argv[])
 	if (rank == 0) //only center node will read input and printing results
 	{
 		//read(arr, "input/1000.txt");
-		read(arr, "input/50000000.txt");
+		read(arr, "input/1000.txt");
 		holder.holdArgs(arr);
+
+		//handler.setRefValue(arr.size());
 
 		//auto ss = user_serializer(arr);
 		/*	std::stringstream ss = std::args_handler::unpack_tuple(user_serializer, holder.getArgs());

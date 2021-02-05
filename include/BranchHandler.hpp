@@ -259,6 +259,11 @@ namespace library
 				return refValueGlobal;
 		}
 
+		void setRefValue(int refValue)
+		{
+			this->refValueGlobal = refValue;
+		}
+
 		/*begin<<------casting strategies -------------------------*/
 		//https://stackoverflow.com/questions/15326186/how-to-call-child-method-from-a-parent-pointer-in-c
 		//https://stackoverflow.com/questions/3747066/c-cannot-convert-from-base-a-to-derived-type-b-via-virtual-base-a
