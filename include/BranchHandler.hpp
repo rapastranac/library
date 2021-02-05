@@ -175,7 +175,7 @@ namespace library
 			if (Cond(refValueGlobal, refValueLocal))
 			{
 				this->refValueGlobal = refValueLocal;
-				this->bestR = std::move(result);
+				this->bestR = result; //it should move, this copy is only for testing
 				return true;
 			}
 			else
@@ -254,14 +254,29 @@ namespace library
 		int getRefValue()
 		{
 			if (is_MPI_enable)
-				return this->get();
+				return this->getRefValueGlobal();
 			else
 				return refValueGlobal;
 		}
 
 		void setRefValue(int refValue)
 		{
-			this->refValueGlobal = refValue;
+			// since this is invoked once, it should be worth it to broadcast it
+			if (is_MPI_enable)
+			{
+				// since all processes pass by here, then MPI_Bcast is effective
+				if (world_rank == 0)
+				{
+					this->refValueGlobal = refValue;
+					MPI_Bcast(&refValueGlobal, 1, MPI::INTEGER, 0, *world_Comm);
+				}
+				else
+				{
+					MPI_Bcast(&refValueGlobal, 1, MPI::INTEGER, 0, *world_Comm);
+				}
+			}
+			else
+				this->refValueGlobal = refValue;
 		}
 
 		/*begin<<------casting strategies -------------------------*/
@@ -996,7 +1011,7 @@ namespace library
 		}
 
 		//TODO .. window not created yet
-		int get()
+		int getRefValueGlobal()
 		{
 			int buffer;
 			int origin_count = 1;

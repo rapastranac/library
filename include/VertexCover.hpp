@@ -13,8 +13,6 @@
 #include <iomanip>
 #include <vector>
 
-#define MPI_TAG
-
 using namespace std::placeholders;
 
 namespace fs = std::filesystem;
@@ -38,7 +36,7 @@ auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 auto condition = [](int refValGlobal, int refValLocal) {
 	/*replaceIf receives this callable, thought the 
 	 user is free to define its own condition */
-	return refValLocal > refValGlobal ? true : false;
+	return refValLocal < refValGlobal ? true : false;
 };
 
 class VertexCover
@@ -117,6 +115,7 @@ public:
 		//this->branchHandler.setStrategy(0, 0);
 		this->branchHandler.setMaxThreads(numThreads);
 		this->branchHandler.functionIsVoid();
+
 		//branchHandler.wrap(mvc2);			//strategy 1,2
 		//branchHandler.setMaxDepth(4);		//strategy 1,2
 
@@ -135,6 +134,7 @@ public:
 		size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
 		currentMVCSize = k_prime;
 
+		this->branchHandler.setRefValue(currentMVCSize);
 		//k_prime = 83;
 
 		//graph.currentMVCSize = k_prime;
@@ -415,7 +415,7 @@ private:
 	//const std::vector<int>& terminate_condition(std::vector<int>& visited, int id, int depth)
 	void terminate_condition(Graph &graph, int id, int depth)
 	{
-		//mtx.lock();
+		branchHandler.replaceIf(graph.coverSize(), condition, graph);
 		std::unique_lock<std::mutex> lck(mtx);
 		if (leaves == 0)
 		{

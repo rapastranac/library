@@ -33,14 +33,11 @@ int main(int argc, char *argv[])
 	int SIZE = ss.str().size();
 	char buffer[SIZE];
 	std::memcpy(buffer, ss.str().data(), SIZE);
-
 	std::stringstream ss2;
-
 	for (int i = 0; i < SIZE; i++)
 	{
 		ss2 << buffer[i];
 	}
-
 	user_deserializer(ss2, oGraph); 
 	*/
 
@@ -50,7 +47,7 @@ int main(int argc, char *argv[])
 
 	return 0;
 
-#ifdef MPI_TAG
+#ifdef MPI_ENABLE
 	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
 	int rank = scheduler.initMPI(argc, argv);					// initialize MPI and member variable linkin
 	scheduler.setThreadsPerNode(1);								// set number of thread to be used per node
@@ -60,7 +57,7 @@ int main(int argc, char *argv[])
 	/* previous input and output required before following condition
 	thus, other nodes know the data type*/
 
-#ifndef MPI_TAG
+#ifndef MPI_ENABLE
 
 	handler.setMaxThreads(3);
 	auto begin = std::chrono::steady_clock::now();
