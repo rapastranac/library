@@ -26,7 +26,7 @@ add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
 #sets the executable in main folder
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
-include_directories("cereal")
+include_directories("cereal" "fmt/include")
 
 set(Include
     include/args_handler.hpp
@@ -50,11 +50,13 @@ set(MPI_inc
 
 set(Sources
     src/main.cpp
-    src/buildUnsorted.cpp
+    src/read_graphs.cpp
 )
 
 
-add_executable(a.out  ${Sources} ${Include})
+add_executable(a.out  ${Sources} ${Include}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/fmt/src/format.cc
+                    ${CMAKE_CURRENT_SOURCE_DIR}/fmt/src/os.cc)
 
 target_link_libraries(a.out ${CMAKE_THREAD_LIBS_INIT}
                             ${MPI_LIBRARIES}

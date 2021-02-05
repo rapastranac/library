@@ -70,34 +70,64 @@ CMakeFiles/a.out.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main.cpp.s"
 	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main.cpp -o CMakeFiles/a.out.dir/src/main.cpp.s
 
-CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o: CMakeFiles/a.out.dir/flags.make
-CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o: ../src/buildUnsorted.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o"
-	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o -c /home/andres/Documents/github/library/src/buildUnsorted.cpp
+CMakeFiles/a.out.dir/src/read_graphs.cpp.o: CMakeFiles/a.out.dir/flags.make
+CMakeFiles/a.out.dir/src/read_graphs.cpp.o: ../src/read_graphs.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
+	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/read_graphs.cpp.o -c /home/andres/Documents/github/library/src/read_graphs.cpp
 
-CMakeFiles/a.out.dir/src/buildUnsorted.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/buildUnsorted.cpp.i"
-	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/buildUnsorted.cpp > CMakeFiles/a.out.dir/src/buildUnsorted.cpp.i
+CMakeFiles/a.out.dir/src/read_graphs.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/read_graphs.cpp.i"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/read_graphs.cpp > CMakeFiles/a.out.dir/src/read_graphs.cpp.i
 
-CMakeFiles/a.out.dir/src/buildUnsorted.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/buildUnsorted.cpp.s"
-	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/buildUnsorted.cpp -o CMakeFiles/a.out.dir/src/buildUnsorted.cpp.s
+CMakeFiles/a.out.dir/src/read_graphs.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/read_graphs.cpp.s"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/read_graphs.cpp -o CMakeFiles/a.out.dir/src/read_graphs.cpp.s
+
+CMakeFiles/a.out.dir/fmt/src/format.cc.o: CMakeFiles/a.out.dir/flags.make
+CMakeFiles/a.out.dir/fmt/src/format.cc.o: ../fmt/src/format.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/a.out.dir/fmt/src/format.cc.o"
+	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/fmt/src/format.cc.o -c /home/andres/Documents/github/library/fmt/src/format.cc
+
+CMakeFiles/a.out.dir/fmt/src/format.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/fmt/src/format.cc.i"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/fmt/src/format.cc > CMakeFiles/a.out.dir/fmt/src/format.cc.i
+
+CMakeFiles/a.out.dir/fmt/src/format.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/fmt/src/format.cc.s"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/fmt/src/format.cc -o CMakeFiles/a.out.dir/fmt/src/format.cc.s
+
+CMakeFiles/a.out.dir/fmt/src/os.cc.o: CMakeFiles/a.out.dir/flags.make
+CMakeFiles/a.out.dir/fmt/src/os.cc.o: ../fmt/src/os.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/a.out.dir/fmt/src/os.cc.o"
+	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/fmt/src/os.cc.o -c /home/andres/Documents/github/library/fmt/src/os.cc
+
+CMakeFiles/a.out.dir/fmt/src/os.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/fmt/src/os.cc.i"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/fmt/src/os.cc > CMakeFiles/a.out.dir/fmt/src/os.cc.i
+
+CMakeFiles/a.out.dir/fmt/src/os.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/fmt/src/os.cc.s"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/fmt/src/os.cc -o CMakeFiles/a.out.dir/fmt/src/os.cc.s
 
 # Object files for target a.out
 a_out_OBJECTS = \
 "CMakeFiles/a.out.dir/src/main.cpp.o" \
-"CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o"
+"CMakeFiles/a.out.dir/src/read_graphs.cpp.o" \
+"CMakeFiles/a.out.dir/fmt/src/format.cc.o" \
+"CMakeFiles/a.out.dir/fmt/src/os.cc.o"
 
 # External object files for target a.out
 a_out_EXTERNAL_OBJECTS =
 
 ../a.out: CMakeFiles/a.out.dir/src/main.cpp.o
-../a.out: CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o
+../a.out: CMakeFiles/a.out.dir/src/read_graphs.cpp.o
+../a.out: CMakeFiles/a.out.dir/fmt/src/format.cc.o
+../a.out: CMakeFiles/a.out.dir/fmt/src/os.cc.o
 ../a.out: CMakeFiles/a.out.dir/build.make
 ../a.out: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so
 ../a.out: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so
 ../a.out: CMakeFiles/a.out.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable ../a.out"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable ../a.out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/a.out.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

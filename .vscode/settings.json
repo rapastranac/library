@@ -94,6 +94,7 @@
         "locale": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "version": "cpp"
+        "version": "cpp",
+        "format": "cpp"
     }
 }

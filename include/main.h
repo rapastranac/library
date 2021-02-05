@@ -4,9 +4,6 @@
 #include <string>
 #include <vector>
 
-void buildUnsorted(size_t, size_t);
-void read(std::vector<size_t>& unsorted, std::string path);
+std::vector<std::string> read_graphs(std::string graphSize);
 
-#endif 
-
-
+#endif

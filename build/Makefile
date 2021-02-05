@@ -123,32 +123,59 @@ a.out/fast:
 	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/build
 .PHONY : a.out/fast
 
-src/buildUnsorted.o: src/buildUnsorted.cpp.o
+fmt/src/format.o: fmt/src/format.cc.o
 
-.PHONY : src/buildUnsorted.o
+.PHONY : fmt/src/format.o
 
 # target to build an object file
-src/buildUnsorted.cpp.o:
-	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o
-.PHONY : src/buildUnsorted.cpp.o
+fmt/src/format.cc.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/fmt/src/format.cc.o
+.PHONY : fmt/src/format.cc.o
 
-src/buildUnsorted.i: src/buildUnsorted.cpp.i
+fmt/src/format.i: fmt/src/format.cc.i
 
-.PHONY : src/buildUnsorted.i
+.PHONY : fmt/src/format.i
 
 # target to preprocess a source file
-src/buildUnsorted.cpp.i:
-	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/buildUnsorted.cpp.i
-.PHONY : src/buildUnsorted.cpp.i
+fmt/src/format.cc.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/fmt/src/format.cc.i
+.PHONY : fmt/src/format.cc.i
 
-src/buildUnsorted.s: src/buildUnsorted.cpp.s
+fmt/src/format.s: fmt/src/format.cc.s
 
-.PHONY : src/buildUnsorted.s
+.PHONY : fmt/src/format.s
 
 # target to generate assembly for a file
-src/buildUnsorted.cpp.s:
-	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/buildUnsorted.cpp.s
-.PHONY : src/buildUnsorted.cpp.s
+fmt/src/format.cc.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/fmt/src/format.cc.s
+.PHONY : fmt/src/format.cc.s
+
+fmt/src/os.o: fmt/src/os.cc.o
+
+.PHONY : fmt/src/os.o
+
+# target to build an object file
+fmt/src/os.cc.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/fmt/src/os.cc.o
+.PHONY : fmt/src/os.cc.o
+
+fmt/src/os.i: fmt/src/os.cc.i
+
+.PHONY : fmt/src/os.i
+
+# target to preprocess a source file
+fmt/src/os.cc.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/fmt/src/os.cc.i
+.PHONY : fmt/src/os.cc.i
+
+fmt/src/os.s: fmt/src/os.cc.s
+
+.PHONY : fmt/src/os.s
+
+# target to generate assembly for a file
+fmt/src/os.cc.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/fmt/src/os.cc.s
+.PHONY : fmt/src/os.cc.s
 
 src/main.o: src/main.cpp.o
 
@@ -177,6 +204,33 @@ src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/read_graphs.o: src/read_graphs.cpp.o
+
+.PHONY : src/read_graphs.o
+
+# target to build an object file
+src/read_graphs.cpp.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/read_graphs.cpp.o
+.PHONY : src/read_graphs.cpp.o
+
+src/read_graphs.i: src/read_graphs.cpp.i
+
+.PHONY : src/read_graphs.i
+
+# target to preprocess a source file
+src/read_graphs.cpp.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/read_graphs.cpp.i
+.PHONY : src/read_graphs.cpp.i
+
+src/read_graphs.s: src/read_graphs.cpp.s
+
+.PHONY : src/read_graphs.s
+
+# target to generate assembly for a file
+src/read_graphs.cpp.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/read_graphs.cpp.s
+.PHONY : src/read_graphs.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -186,12 +240,18 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... a.out"
-	@echo "... src/buildUnsorted.o"
-	@echo "... src/buildUnsorted.i"
-	@echo "... src/buildUnsorted.s"
+	@echo "... fmt/src/format.o"
+	@echo "... fmt/src/format.i"
+	@echo "... fmt/src/format.s"
+	@echo "... fmt/src/os.o"
+	@echo "... fmt/src/os.i"
+	@echo "... fmt/src/os.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/read_graphs.o"
+	@echo "... src/read_graphs.i"
+	@echo "... src/read_graphs.s"
 .PHONY : help
 
 

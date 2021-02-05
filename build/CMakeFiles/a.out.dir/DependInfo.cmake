@@ -4,8 +4,10 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/andres/Documents/github/library/src/buildUnsorted.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/buildUnsorted.cpp.o"
+  "/home/andres/Documents/github/library/fmt/src/format.cc" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/fmt/src/format.cc.o"
+  "/home/andres/Documents/github/library/fmt/src/os.cc" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/fmt/src/os.cc.o"
   "/home/andres/Documents/github/library/src/main.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/main.cpp.o"
+  "/home/andres/Documents/github/library/src/read_graphs.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -14,6 +16,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
   "/usr/lib/x86_64-linux-gnu/openmpi/include"
   "../cereal"
+  "../fmt/include"
   )
 
 # Targets to which this target links.
