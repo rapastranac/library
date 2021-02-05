@@ -33,7 +33,7 @@ auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 	archive(args...);
 };
 
-auto condition = [](int refValGlobal, int refValLocal) {
+auto condition2 = [](int refValGlobal, int refValLocal) {
 	/*replaceIf receives this callable, thought the 
 	 user is free to define its own condition */
 	return refValLocal < refValGlobal ? true : false;
@@ -413,9 +413,49 @@ private:
 	}
 
 	//const std::vector<int>& terminate_condition(std::vector<int>& visited, int id, int depth)
-	void terminate_condition(Graph &graph, int id, int depth)
+	void
+	terminate_condition(Graph &graph, int id, int depth)
 	{
-		branchHandler.replaceIf(graph.coverSize(), condition, graph);
+		auto condition1 = [this](int refValGlobal, int refValLocal) {
+			return leaves == 0 ? true : false;
+		};
+
+		auto ifCond1 = [this, &depth, &id](int refValGlobal, int refValLocal) {
+			//currentMVCSize = graph.coverSize(); //refValueLocal and rerValueGlobal
+			foundAtDepth = depth;
+			string col1 = fmt::format("MVC found so far has {} elements", refValLocal);
+			string col2 = fmt::format("thread {}", id);
+			cout << std::internal
+				 << std::setfill('.')
+				 << col1
+				 << std::setw(wide - col1.size())
+				 << col2
+				 << "\n";
+
+			outFile(col1, col2);
+		};
+
+		auto ifCond2 = [this, &depth, &id](int refValGlobal, int refValLocal) {
+			//currentMVCSize = graph.coverSize();
+			foundAtDepth = depth;
+			string col1 = fmt::format("MVC found so far has {} elements", refValLocal);
+			string col2 = fmt::format("thread {}", id);
+			cout << std::internal
+				 << col1
+				 << std::setw(wide - col1.size())
+				 << col2
+				 << "\n";
+
+			outFile(col1, col2);
+			if (depth > measured_Depth)
+			{
+				measured_Depth = depth;
+			}
+		};
+
+		branchHandler.replaceIf(graph.coverSize(), condition1, &ifCond1, graph);
+		branchHandler.replaceIf(graph.coverSize(), condition2, &ifCond2, graph);
+
 		std::unique_lock<std::mutex> lck(mtx);
 		if (leaves == 0)
 		{

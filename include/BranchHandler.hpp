@@ -113,8 +113,8 @@ namespace library
 		Cond is a lambda function where the user writes its own contidion such that this values are updated or not
 		result is the most up-to-date result that complies with previous condition
 		*/
-		template <class C, typename T, class F_SERIAL>
-		bool replaceIf(int refValueLocal, C &&Cond, T &&result, F_SERIAL &&f_serial)
+		template <class C1, class C2, typename T, class F_SERIAL>
+		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result, F_SERIAL &&f_serial)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 			int buffer;
@@ -133,6 +133,9 @@ namespace library
 
 			if (Cond(buffer, refValueLocal))
 			{
+				if (ifCond)
+					(*ifCond)(refValueGlobal, refValueLocal);
+
 				this->refValueGlobal = refValueLocal; // updates global ref value, in node
 
 				MPI_Accumulate(&refValueLocal, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, MPI::REPLACE, window);
@@ -168,12 +171,14 @@ namespace library
 			}
 		}
 
-		template <class C, typename T>
-		bool replaceIf(int refValueLocal, C &&Cond, T &&result)
+		template <class C1, class C2, typename T>
+		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
 			if (Cond(refValueGlobal, refValueLocal))
 			{
+				if (ifCond)
+					(*ifCond)(refValueGlobal, refValueLocal);
 				this->refValueGlobal = refValueLocal;
 				this->bestR = result; //it should move, this copy is only for testing
 				return true;
