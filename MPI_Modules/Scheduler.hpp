@@ -2,9 +2,6 @@
 #ifndef SCHEDULER_HPP
 #define SCHEDULER_HPP
 
-#include "serialize/stream.hpp"
-#include "serialize/oarchive.hpp"
-#include "serialize/iarchive.hpp"
 #include "Utils.hpp"
 
 #include <random>
@@ -103,6 +100,9 @@ namespace library
 			else
 			{
 				this->_branchHandler.setMaxThreads(threadsPerNode);
+				if (std::is_void<Result>::value)
+					this->_branchHandler.functionIsVoid();
+
 				this->_branchHandler.receiveSeed<Result>(f, serialize, deserialize, holder);
 			}
 			printf("process %d waiting at barrier \n", world_rank);
@@ -138,6 +138,10 @@ namespace library
 			return end_time - start_time;
 		}
 
+		void setRefValueGlobal()
+		{
+		}
+
 	private:
 		template <typename Holder, typename Serialize>
 		void schedule(Holder &holder, Serialize &&serialize)
@@ -150,7 +154,7 @@ namespace library
 										  // ... loop
 			updateNumAvNodes();
 			//BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
-			BcastPut(numAvailableNodes, 1, MPI::INTEGER, 0, 1, win_NumNodes);
+			BcastPut(numAvailableNodes, 1, MPI::INTEGER, 0, 1, win_NumNodes, -1);
 
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
 			printf("Scheduler started!! \n");
@@ -166,7 +170,7 @@ namespace library
 						{
 							--numAvailableNodes[0];
 							//BcastNumAvNodes();
-							BcastPut(numAvailableNodes, 1, MPI::INTEGER, 0, 1, win_NumNodes);
+							BcastPut(numAvailableNodes, 1, MPI::INTEGER, 0, 1, win_NumNodes, -1);
 
 							int k = findAvailableNode();						 // first available node in the list
 							inbox_boolean[rank] = false;						 // reset boolean to zero lest center node check it again, unless requested by nodes
@@ -233,6 +237,7 @@ namespace library
 
 		void receiveCurrentResult()
 		{
+			int src;
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (inbox_bestResult[rank])
@@ -247,6 +252,9 @@ namespace library
 					//MPI_Probe(rank, 0, world_Comm, &status);		// receives status before receiving the message
 					//MPI_Get_count(&status, MPI::CHARACTER, &Bytes); // receives total number of datatype elements of the message
 					//***************************************************************************************************
+					src = rank; /* since best result is sent by other processes, then each process
+					 is in charge of updating its own value, therefore there's no need of broadcasting to the source 
+					 of this best result */
 
 					char *buffer = new char[Bytes];
 					MPI_Recv(buffer, Bytes, MPI::CHARACTER, rank, MPI::ANY_TAG, world_Comm, &status);
@@ -256,9 +264,11 @@ namespace library
 						returnStream2 << buffer[i];
 					}
 					delete[] buffer;
+
+					break; //break loop to ensure not broadcasting to src
 				}
 			}
-			BcastPut(refValueGlobal, 1, MPI::INTEGER, 0, 1, win_refValueGlobal);
+			BcastPut(refValueGlobal, 1, MPI::INTEGER, 0, 1, win_refValueGlobal, src); // broadcast the absolute global ref value
 		}
 
 		template <typename Holder, typename Serialize>
@@ -300,10 +310,13 @@ namespace library
 					  MPI_Datatype mpi_datatype,
 					  MPI_Aint offset,
 					  int target_count,
-					  MPI_Win &window)
+					  MPI_Win &window, int except)
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
+				if (rank == except)
+					continue;
+
 				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, rank, 0, window);													// open epoch
 				MPI_Put(origin_addr, origin_count, mpi_datatype, rank, offset, target_count, mpi_datatype, window); // put date through window
 				MPI_Win_flush(rank, window);																		// complete RMA operation

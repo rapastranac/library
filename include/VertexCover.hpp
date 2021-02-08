@@ -106,12 +106,8 @@ public:
 		cout << msg_center;
 		outFile(msg_center, "");
 
-		//this->branchHandler.setStrategy(0, 0);
 		this->branchHandler.setMaxThreads(numThreads);
 		this->branchHandler.functionIsVoid();
-
-		//branchHandler.wrap(mvc2);			//strategy 1,2
-		//branchHandler.setMaxDepth(4);		//strategy 1,2
 
 		//size_t _k_mm = maximum_matching(graph);
 		//size_t _k_uBound = graph.max_k();
@@ -120,17 +116,12 @@ public:
 		//currentMVCSize = k_prime;
 		//preSize = graph.size();
 		preSize = graph.preprocessing();
-		//graph.postProcessing();
 
 		size_t k_mm = maximum_matching(graph);
 		size_t k_uBound = graph.max_k();
 		size_t k_lBound = graph.min_k();
 		size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
 		currentMVCSize = k_prime;
-
-		//k_prime = 83;
-
-		//graph.currentMVCSize = k_prime;
 
 		begin = std::chrono::steady_clock::now();
 
@@ -161,6 +152,8 @@ public:
 		printf("refGlobal : %d \n", branchHandler.getRefValue());
 		return true;
 	}
+
+	using HolderType = library::ResultHolder<void, int, Graph>;
 
 	void outFile(std::string col1, std::string col2)
 	{
@@ -366,7 +359,11 @@ public:
 		output_raw.close();
 	}
 
-	using HolderType = library::ResultHolder<void, int, Graph>;
+	void setMVCSize(size_t mvcSize)
+	{
+		this->currentMVCSize = mvcSize;
+		branchHandler.setRefValue(&currentMVCSize);
+	}
 
 	void mvc(int id, int depth, Graph &graph)
 	//void mvc(int id, int depth, Graph &graph, HANDLER::ResultHolder *parent)
@@ -375,7 +372,7 @@ public:
 		size_t k2 = graph.max_k();
 		size_t k = relaxation(k1, k2);
 
-		if (k + graph.coverSize() >= currentMVCSize)
+		if (k + graph.coverSize() >= (size_t)currentMVCSize)
 		{
 			size_t addition = k + graph.coverSize();
 			//printf("%d + %d = %d \n", k, visited.size(), k + visited.size());
@@ -399,19 +396,22 @@ public:
 
 		gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
 		gLeft.clean_graph();
-		size_t C1Size = gLeft.coverSize();
+		int C1Size = (int)gLeft.coverSize();
 
 		if (C1Size < currentMVCSize)
 		{
 			hol_l.holdArgs(newDepth, gLeft);
+#ifdef MPI_ENABLE
+			branchHandler.push(_f, id, hol_l, user_serializer);
+#else
 			branchHandler.push(_f, id, hol_l);
+#endif
 		}
 
 		gRight.removeNv(v);
 		gRight.clean_graph();
-		//gRight.removeZeroVertexDegree();
 
-		size_t C2Size = gRight.coverSize();
+		int C2Size = (int)gRight.coverSize();
 		hol_r.holdArgs(newDepth, gRight);
 
 		if (C2Size < currentMVCSize || hol_r.isBound())
@@ -422,7 +422,7 @@ public:
 	}
 
 private:
-	const size_t relaxation(const size_t &k1, const size_t &k2)
+	size_t relaxation(const size_t &k1, const size_t &k2)
 	{
 		return floor(((1.0 - factor) * (double)k1 + factor * (double)k2));
 	}
@@ -456,7 +456,6 @@ private:
 				 << "\n";
 
 			outFile(col1, col2);
-			branchHandler.catchBestResult(graph); //to be checked!!
 		}
 		else if (cond2)
 		{
@@ -475,7 +474,6 @@ private:
 			{
 				measured_Depth = depth;
 			}
-			branchHandler.catchBestResult(graph); //to be checked!!
 		}
 		leaves++;
 
@@ -499,6 +497,7 @@ private:
 			return std::vector<int>();
 	}
 
+public:
 	size_t maximum_matching(Graph g)
 	{
 		size_t k = 0;

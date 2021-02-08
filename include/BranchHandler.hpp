@@ -123,7 +123,7 @@ namespace library
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 
-			if (Cond(refValueGlobal, refValueLocal)) // check global val in this node
+			if (Cond(*refValueGlobal, refValueLocal)) // check global val in this node
 			{
 				// then, absolute global is checked
 				int refValueGlobalAbsolute;
@@ -140,7 +140,7 @@ namespace library
 
 				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
 				{
-					this->refValueGlobal = refValueLocal; // updates global ref value, in this node
+					*this->refValueGlobal = refValueLocal; // updates global ref value, in this node
 
 					MPI_Accumulate(&refValueLocal, origin_count, MPI::INTEGER, target_rank, offset, 1, MPI::INTEGER, MPI::REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
@@ -183,7 +183,7 @@ namespace library
 			if (Cond(*refValueGlobal, refValueLocal))
 			{
 				*this->refValueGlobal = refValueLocal;
-				this->bestR2 = result; //it should move, this copy is only for testing
+				this->bestR = result; //it should move, this copy is only for testing
 				return true;
 			}
 			else
@@ -997,8 +997,7 @@ namespace library
 				  std::enable_if_t<std::is_void_v<Result>, int> = 0>
 		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
-			/* this method is invoked only if function is void type 
-				result is passed withing catchBest result*/
+			this->waitResult(true);
 		}
 
 		void accumulate(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
