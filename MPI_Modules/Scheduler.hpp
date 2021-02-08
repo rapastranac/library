@@ -149,7 +149,8 @@ namespace library
 										  // ... receives the seed, then busyNodes will be != 0 for the first ...
 										  // ... loop
 			updateNumAvNodes();
-			BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
+			//BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
+			BcastPut(numAvailableNodes, 1, MPI::INTEGER, 0, 1, win_NumNodes);
 
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
 			printf("Scheduler started!! \n");
@@ -164,7 +165,8 @@ namespace library
 						if (numAvailableNodes[0] > 0) // if found, positive signal is sent back to requesting node
 						{
 							--numAvailableNodes[0];
-							BcastNumAvNodes();
+							//BcastNumAvNodes();
+							BcastPut(numAvailableNodes, 1, MPI::INTEGER, 0, 1, win_NumNodes);
 
 							int k = findAvailableNode();						 // first available node in the list
 							inbox_boolean[rank] = false;						 // reset boolean to zero lest center node check it again, unless requested by nodes
@@ -256,6 +258,7 @@ namespace library
 					delete[] buffer;
 				}
 			}
+			BcastPut(refValueGlobal, 1, MPI::INTEGER, 0, 1, win_refValueGlobal);
 		}
 
 		template <typename Holder, typename Serialize>
@@ -283,12 +286,28 @@ namespace library
 		/* this should be called only when the number of available nodes is modified */
 		void BcastNumAvNodes()
 		{
-			for (int i = 1; i < world_size; i++)
+			for (int rank = 1; rank < world_size; rank++)
 			{
-				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, i, 0, win_NumNodes);							  // open epoch
-				MPI_Put(numAvailableNodes, 1, MPI::INTEGER, i, 0, 1, MPI::INTEGER, win_NumNodes); // put date through window
-				MPI_Win_flush(i, win_NumNodes);													  // complete RMA operation
-				MPI_Win_unlock(i, win_NumNodes);												  // close epoch
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, rank, 0, win_NumNodes);							 // open epoch
+				MPI_Put(numAvailableNodes, 1, MPI::INTEGER, rank, 0, 1, MPI::INTEGER, win_NumNodes); // put date through window
+				MPI_Win_flush(rank, win_NumNodes);													 // complete RMA operation
+				MPI_Win_unlock(rank, win_NumNodes);													 // close epoch
+			}
+		}
+
+		void BcastPut(const void *origin_addr,
+					  int origin_count,
+					  MPI_Datatype mpi_datatype,
+					  MPI_Aint offset,
+					  int target_count,
+					  MPI_Win &window)
+		{
+			for (int rank = 1; rank < world_size; rank++)
+			{
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, rank, 0, window);													// open epoch
+				MPI_Put(origin_addr, origin_count, mpi_datatype, rank, offset, target_count, mpi_datatype, window); // put date through window
+				MPI_Win_flush(rank, window);																		// complete RMA operation
+				MPI_Win_unlock(rank, window);																		// close epoch
 			}
 		}
 
@@ -362,28 +381,27 @@ namespace library
 
 		void win_allocate()
 		{
-			//printf("About to allocate\n");
+			// anything outside the condition is applicable for all the processes
+			MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
+			MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
 
 			if (world_rank == 0)
 			{
-				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
+				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 				MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
-				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, world_Comm, &inbox_bestResult, &win_inbox_bestResult);
-				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
 
 				if (MPI_COMM_NULL != second_Comm)
 					MPI_Win_allocate(sizeof(bool), sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);
 			}
 			else
 			{
-				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, BCast_Comm, &numAvailableNodes, &win_NumNodes);
+				// it is not required to allocate buffer memory for the other processes
+				MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
-				MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, world_Comm, &inbox_bestResult, &win_inbox_bestResult);
-				MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
 
 				if (MPI_COMM_NULL != second_Comm)
 					MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, second_Comm, &finalFlag, &win_finalFlag);

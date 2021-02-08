@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
 	auto mainAlgo = std::bind(&VertexCover::mvc, &cover, _1, _2, _3); // target algorithm [all arguments]
 
-	auto file = "input/prob_4/100/00100_1";
+	auto file = "input/prob_4/400/00400_1";
 	graph.readEdges(file);
 
 	/*auto ss = user_serializer(graph);
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 	*/
 
 	cover.init(graph, 1, file, 4);
-	cover.findCover(1);
+	cover.findCover(12);
 	cover.printSolution();
 
 	return 0;

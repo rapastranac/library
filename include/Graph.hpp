@@ -10,6 +10,7 @@ using namespace std;
 #include "util.hpp"
 
 #include <cmath> /* floor, ceil */
+#include <cassert>
 #include <mutex>
 #include <random>
 #include <sstream>

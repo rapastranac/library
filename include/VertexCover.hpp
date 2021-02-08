@@ -33,12 +33,6 @@ auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 	archive(args...);
 };
 
-auto condition2 = [](int refValGlobal, int refValLocal) {
-	/*replaceIf receives this callable, thought the 
-	 user is free to define its own condition */
-	return refValLocal < refValGlobal ? true : false;
-};
-
 class VertexCover
 {
 public:
@@ -134,19 +128,19 @@ public:
 		size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
 		currentMVCSize = k_prime;
 
-		this->branchHandler.setRefValue(currentMVCSize);
 		//k_prime = 83;
 
 		//graph.currentMVCSize = k_prime;
 
 		begin = std::chrono::steady_clock::now();
+
 		try
 		{
-
+			branchHandler.setRefValue(&currentMVCSize);
 			mvc(-1, 0, graph);
-			bool check = branchHandler.waitResult(graph_res, true);
+			branchHandler.waitResult(true);
+			graph_res = branchHandler.retrieveResult<Graph>();
 			cover = graph_res.postProcessing();
-			//cover = graph_res.cover();
 		}
 		catch (std::exception &e)
 		{
@@ -164,6 +158,7 @@ public:
 		end = std::chrono::steady_clock::now();
 		elapsed_secs = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 
+		printf("refGlobal : %d \n", branchHandler.getRefValue());
 		return true;
 	}
 
@@ -325,6 +320,25 @@ public:
 			   << col3
 			   << "\n";
 
+		col1 = "Pool idle time:";
+		col2 = Util::ToString((double)(branchHandler.getPoolIdleTime()));
+		col3 = Util::ToString((double)(branchHandler.getPoolIdleTime() * 100.0 / elapsed_secs)) + "%";
+
+		cout << std::left << std::setw(wide * 0.3)
+			 << col1
+			 << std::right << std::setw(wide * 0.3)
+			 << col2
+			 << std::right << std::setw(wide * 0.4)
+			 << col3
+			 << "\n";
+		output << std::left << std::setw(wide * 0.3)
+			   << col1
+			   << std::right << std::setw(wide * 0.3)
+			   << col2
+			   << std::right << std::setw(wide * 0.4)
+			   << col3
+			   << "\n";
+
 		std::cout << "!" << fmt::format("{:-^{}}", "", wide - 2) << "!"
 				  << "\n";
 		output << "!" << fmt::format("{:-^{}}", "", wide - 2) << "!"
@@ -347,7 +361,8 @@ public:
 				   << Util::ToString((double)(elapsed_secs * 1.0e-9)) << ","
 				   << Util::ToString((int)leaves) << ","
 				   << Util::ToString((int)measured_Depth) << ","
-				   << Util::ToString((double)(branchHandler.getIdleTime() * 1.0e-9)) << "\n";
+				   << Util::ToString((double)(branchHandler.getIdleTime() * 1.0e-9)) << ","
+				   << Util::ToString((double)(branchHandler.getPoolIdleTime())) << "\n";
 		output_raw.close();
 	}
 
@@ -416,50 +431,20 @@ private:
 	void
 	terminate_condition(Graph &graph, int id, int depth)
 	{
-		auto condition1 = [this](int refValGlobal, int refValLocal) {
+		auto condition1 = [this](int, int) {
 			return leaves == 0 ? true : false;
 		};
 
-		auto ifCond1 = [this, &depth, &id](int refValGlobal, int refValLocal) {
-			//currentMVCSize = graph.coverSize(); //refValueLocal and rerValueGlobal
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", refValLocal);
-			string col2 = fmt::format("thread {}", id);
-			cout << std::internal
-				 << std::setfill('.')
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
+		auto condition2 = [](int refValGlobal, int refValLocal) {
+			return refValLocal < refValGlobal ? true : false;
 		};
 
-		auto ifCond2 = [this, &depth, &id](int refValGlobal, int refValLocal) {
-			//currentMVCSize = graph.coverSize();
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", refValLocal);
-			string col2 = fmt::format("thread {}", id);
-			cout << std::internal
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
+		bool cond1 = branchHandler.replaceIf(graph.coverSize(), condition1, graph); // thread/process safe
+		bool cond2 = branchHandler.replaceIf(graph.coverSize(), condition2, graph);
 
-			outFile(col1, col2);
-			if (depth > measured_Depth)
-			{
-				measured_Depth = depth;
-			}
-		};
-
-		branchHandler.replaceIf(graph.coverSize(), condition1, &ifCond1, graph);
-		branchHandler.replaceIf(graph.coverSize(), condition2, &ifCond2, graph);
-
-		std::unique_lock<std::mutex> lck(mtx);
-		if (leaves == 0)
+		if (cond1)
 		{
-			currentMVCSize = graph.coverSize();
+			//currentMVCSize = graph.coverSize();
 			foundAtDepth = depth;
 			string col1 = fmt::format("MVC found so far has {} elements", currentMVCSize);
 			string col2 = fmt::format("thread {}", id);
@@ -473,9 +458,9 @@ private:
 			outFile(col1, col2);
 			branchHandler.catchBestResult(graph); //to be checked!!
 		}
-		else if (graph.coverSize() < currentMVCSize)
+		else if (cond2)
 		{
-			currentMVCSize = graph.coverSize();
+			//currentMVCSize = graph.coverSize();
 			foundAtDepth = depth;
 			string col1 = fmt::format("MVC found so far has {} elements", currentMVCSize);
 			string col2 = fmt::format("thread {}", id);
@@ -556,7 +541,8 @@ private:
 	std::vector<int> visited;
 
 	size_t leaves = 0;
-	size_t currentMVCSize = 0;
+	int currentMVCSize = 0;
+	size_t refGlobal = 0;
 	size_t foundAtDepth = 0;
 	size_t measured_Depth = 0;
 

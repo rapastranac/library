@@ -69,9 +69,9 @@ namespace library
 		}
 
 	public:
-		double fetchPoolIdleTime()
+		double getPoolIdleTime()
 		{
-			return _pool_default->fetchIdleTime() / (double)processor_count;
+			return _pool_default->getIdleTime() / (double)processor_count;
 		}
 
 		int getMaxThreads() //ParBranchHandler::getInstance().MaxThreads() = 10;
@@ -112,81 +112,82 @@ namespace library
 		refValueLocal is the value to compare with a global value, usually the result
 		Cond is a lambda function where the user writes its own contidion such that this values are updated or not
 		result is the most up-to-date result that complies with previous condition
+
+		reference values:
+		local : value found at the end of a leaf
+		global : best value within the same rank
+		global absolute: best value in the whole execution "There might be a delay"
 		*/
-		template <class C1, class C2, typename T, class F_SERIAL>
-		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result, F_SERIAL &&f_serial)
+		template <class C1, typename T, class F_SERIAL>
+		bool replaceIf(int refValueLocal, C1 &&Cond, T &&result, F_SERIAL &&f_serial)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
-			int buffer;
-			int origin_count = 1;
-			MPI_Datatype mpi_datatype = MPI::INTEGER;
-			int target_rank = 0;
-			MPI_Aint offset = 0;
-			MPI_Win window; // change to a reference to the window (&window, or *window)
 
-			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
-			// this blocks access to this window
-			// this is the only place where this window is read or modified
-
-			MPI_Get(&buffer, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, window);
-			MPI_Win_flush(target_rank, window); // after this line, this is the most up-to-date value
-
-			if (Cond(buffer, refValueLocal))
+			if (Cond(refValueGlobal, refValueLocal)) // check global val in this node
 			{
-				if (ifCond)
-					(*ifCond)(refValueGlobal, refValueLocal);
+				// then, absolute global is checked
+				int refValueGlobalAbsolute;
+				int origin_count = 1;
+				int target_rank = 0;
+				MPI_Aint offset = 0;
+				MPI_Win &window = *win_refValueGlobal;					   // change to a reference to the window (&window, or *window)
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+				// this blocks access to this window
+				// this is the only place where this window is read or modified
 
-				this->refValueGlobal = refValueLocal; // updates global ref value, in node
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INTEGER, target_rank, offset, 1, MPI::INTEGER, window);
+				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
 
-				MPI_Accumulate(&refValueLocal, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, MPI::REPLACE, window);
-				MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
+				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
+				{
+					this->refValueGlobal = refValueLocal; // updates global ref value, in this node
 
-				auto ss = f_serial(result);
+					MPI_Accumulate(&refValueLocal, origin_count, MPI::INTEGER, target_rank, offset, 1, MPI::INTEGER, MPI::REPLACE, window);
+					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
-				int Bytes = ss.str().size();
-				char *buffer = new char[Bytes];
+					auto ss = f_serial(result); // serialized result
 
-				//sending signal to center so this one turn into receiving best result mode
-				int signal = true;
-				customPut(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
-				//**************************************************************************
+					int Bytes = ss.str().size();
+					//char *buffer = new char[Bytes];
 
-				MPI_Ssend(&Bytes, 1, MPI::INTEGER, 0, 0, *world_Comm); // blocking send
+					//sending signal to center so this one turn into receiving best result mode
+					int signal = true;
+					customPut(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
+					//**************************************************************************
 
-				MPI_Ssend(buffer, Bytes, MPI::CHARACTER, 0, 0, *world_Comm); // blocking send
-				/*
+					MPI_Ssend(&Bytes, 1, MPI::INTEGER, 0, 0, *world_Comm); // blocking send
+
+					MPI_Ssend(ss.str().data(), Bytes, MPI::CHARACTER, 0, 0, *world_Comm); // blocking send
+					/*
 					1. serialize result, and send it to center node
 					2. request center node to replace a better result
 						(this guarantees that only one process in the whole execution does it)
 					3. when signal received, send number of bytes
 					4. send buffer
 					*/
-				MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
-				return true;
-			}
-			else
-			{
+					MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
+
+					return true;
+				}
 				MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
 				return false;
 			}
+			else
+				return false;
 		}
 
-		template <class C1, class C2, typename T>
-		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result)
+		template <class C1, typename T>
+		bool replaceIf(int refValueLocal, C1 &&Cond, T &&result)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
-			if (Cond(refValueGlobal, refValueLocal))
+			if (Cond(*refValueGlobal, refValueLocal))
 			{
-				if (ifCond)
-					(*ifCond)(refValueGlobal, refValueLocal);
-				this->refValueGlobal = refValueLocal;
-				this->bestR = result; //it should move, this copy is only for testing
+				*this->refValueGlobal = refValueLocal;
+				this->bestR2 = result; //it should move, this copy is only for testing
 				return true;
 			}
 			else
-			{
 				return false;
-			}
 		}
 
 		//BETA: It restricts the maximum recursion depth
@@ -195,28 +196,27 @@ namespace library
 			this->max_push_depth = max_push_depth;
 		}
 
-		/*This tells mainThread to join Threads in Pool but waiting
-			until they finish their tasks*/
-
-		template <typename TYPE>
-		bool waitResult(TYPE &target, bool isVoid = false)
+		/* for void algorithms, whether main thread helps solving some branches 
+		or only pushes to solve in parallel. Main thread will sleep in here until
+		a result is ready I*/
+		void waitResult(bool isVoid = false)
 		{
+#ifdef DEBUG_COMMENTS
 			printf("Main thread waiting results \n");
+#endif
 			if (isVoid)
 				this->_pool_default->wait();
 
+#ifdef DEBUG_COMMENTS
 			printf("Main thread interrupting pool \n");
+#endif
 			this->_pool_default->interrupt(true);
-			if (this->_pool_2)
-				this->_pool_2->interrupt(true);
+		}
 
-			// feching results caught by the library
-			if (bestR.has_value())
-			{
-				target = std::any_cast<TYPE>(bestR);
-				return true;
-			}
-			return false;
+		template <typename RESULT_TYPE>
+		auto retrieveResult()
+		{ // fetching results caught by the library
+			return std::any_cast<RESULT_TYPE>(bestR);
 		}
 
 		bool isResultDone(bool isDone = false)
@@ -261,12 +261,12 @@ namespace library
 			if (is_MPI_enable)
 				return this->getRefValueGlobal();
 			else
-				return refValueGlobal;
+				return *refValueGlobal;
 		}
 
-		void setRefValue(int refValue)
+		//if multi-processing, then every process should call this method
+		void setRefValue(int *refValue)
 		{
-			// since this is invoked once, it should be worth it to broadcast it
 			if (is_MPI_enable)
 			{
 				// since all processes pass by here, then MPI_Bcast is effective
@@ -756,6 +756,7 @@ namespace library
 		int max_push_depth;
 		std::once_flag isDoneFlag;
 		std::any bestR;
+		std::any bestR2;
 		bool is_LB = false;
 
 		/*Dequeue while using strategy myPool*/
@@ -811,7 +812,7 @@ namespace library
 		std::function<std::any(std::any)> _serialize;
 		std::function<std::any(std::any)> _deserialize;
 
-		int refValueGlobal = INT_MIN;
+		int *refValueGlobal = nullptr;
 
 		bool is_MPI_enable = false;
 		int world_rank = -1;	  // get the rank of the process

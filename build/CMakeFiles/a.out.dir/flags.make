@@ -4,7 +4,7 @@
 # compile CXX with /bin/c++
 CXX_FLAGS = -g   -pthread -g -std=c++2a -fconcepts -Wall -Wextra -std=gnu++2a
 
-CXX_DEFINES = -DMPI_ENABLE
+CXX_DEFINES = -DDEBUG_COMMENTS -DMPI_ENABLE
 
 CXX_INCLUDES = -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -I/home/andres/Documents/github/library/cereal -I/home/andres/Documents/github/library/fmt/include 
 

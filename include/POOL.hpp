@@ -111,7 +111,9 @@ namespace POOL
 					{
 						this->flags[i] = std::make_shared<std::atomic<bool>>(false);
 						this->run(i);
+#ifdef DEBUG_COMMENTS
 						printf("Pool size increased by one, thread : %d \n", i);
+#endif
 					}
 				}
 				else
@@ -194,7 +196,9 @@ namespace POOL
 						threads[_id]->join();
 						threads.erase(_id);
 						flags.erase(_id);
+#ifdef DEBUG_COMMENTS
 						printf("Thread exited : %d \n", _id);
+#endif
 					}
 
 					isPop = this->kill_q.pop(_id);
@@ -261,7 +265,7 @@ namespace POOL
 			}
 		}
 
-		double fetchIdleTime()
+		double getIdleTime()
 		{
 			return ((double)idleTime.load() * 1.0e-9); //seconds
 		}
