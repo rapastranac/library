@@ -127,7 +127,7 @@ public:
 
 		try
 		{
-			branchHandler.setRefValue(&currentMVCSize);
+			branchHandler.setRefValue(currentMVCSize);
 			mvc(-1, 0, graph);
 			branchHandler.waitResult(true);
 			graph_res = branchHandler.retrieveResult<Graph>();
@@ -362,17 +362,23 @@ public:
 	void setMVCSize(size_t mvcSize)
 	{
 		this->currentMVCSize = mvcSize;
-		branchHandler.setRefValue(&currentMVCSize);
 	}
 
 	void mvc(int id, int depth, Graph &graph)
 	//void mvc(int id, int depth, Graph &graph, HANDLER::ResultHolder *parent)
 	{
+		printf("Entered algorithm, depth : %d \n", depth);
+		printf("Graph size : %d \n", graph.size());
+		printf("Cover size : %d \n", graph.coverSize());
 		size_t k1 = graph.min_k();
+		printf("k1 : %zu \n", k1);
 		size_t k2 = graph.max_k();
+		printf("k2 : %zu \n", k2);
 		size_t k = relaxation(k1, k2);
+		printf("k : %zu \n", k);
 
-		if (k + graph.coverSize() >= (size_t)currentMVCSize)
+		printf("refValue : %d, depth : %d \n", branchHandler.getRefValue(), depth);
+		if (k + graph.coverSize() >= branchHandler.getRefValue())
 		{
 			size_t addition = k + graph.coverSize();
 			//printf("%d + %d = %d \n", k, visited.size(), k + visited.size());
@@ -381,6 +387,7 @@ public:
 
 		if (graph.size() == 0)
 		{
+			printf("Leaf reached, depth : %d \n", depth);
 			terminate_condition(graph, id, depth);
 			return;
 		}
@@ -398,7 +405,7 @@ public:
 		gLeft.clean_graph();
 		int C1Size = (int)gLeft.coverSize();
 
-		if (C1Size < currentMVCSize)
+		if (C1Size < branchHandler.getRefValue())
 		{
 			hol_l.holdArgs(newDepth, gLeft);
 #ifdef MPI_ENABLE
@@ -414,7 +421,7 @@ public:
 		int C2Size = (int)gRight.coverSize();
 		hol_r.holdArgs(newDepth, gRight);
 
-		if (C2Size < currentMVCSize || hol_r.isBound())
+		if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
 		{
 			branchHandler.forward(_f, id, hol_r);
 		}
@@ -439,14 +446,19 @@ private:
 			return refValLocal < refValGlobal ? true : false;
 		};
 
+#ifdef MPI_ENABLE
+		bool cond1 = branchHandler.replaceIf(graph.coverSize(), condition1, graph, user_serializer); // thread/process safe
+		bool cond2 = branchHandler.replaceIf(graph.coverSize(), condition2, graph, user_serializer);
+#else
 		bool cond1 = branchHandler.replaceIf(graph.coverSize(), condition1, graph); // thread/process safe
 		bool cond2 = branchHandler.replaceIf(graph.coverSize(), condition2, graph);
+#endif
 
 		if (cond1)
 		{
 			//currentMVCSize = graph.coverSize();
 			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", currentMVCSize);
+			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
 			string col2 = fmt::format("thread {}", id);
 			cout << std::internal
 				 << std::setfill('.')
@@ -461,7 +473,7 @@ private:
 		{
 			//currentMVCSize = graph.coverSize();
 			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", currentMVCSize);
+			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
 			string col2 = fmt::format("thread {}", id);
 			cout << std::internal
 				 << col1

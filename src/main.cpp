@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
 #ifndef MPI_ENABLE
 
-	auto file = "input/prob_4/100/00100_1";
+	auto file = "input/prob_4/400/00400_1";
 	graph.readEdges(file);
 
 	/*auto ss = user_serializer(graph);
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	user_deserializer(ss2, oGraph); 
 	*/
 
-	cover.init(graph, 1, file, 4);
+	cover.init(graph, 12, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
 
@@ -79,16 +79,12 @@ int main(int argc, char *argv[])
 	size_t k_mm = cover.maximum_matching(graph);
 	size_t k_uBound = graph.max_k();
 	size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
-	cover.setMVCSize(k_prime);
+	//cover.setMVCSize(k_prime);
+	handler.setRefValue(k_prime);
 
 	scheduler.setThreadsPerNode(1);
 	holder.holdArgs(depth, graph);
 	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
-
-	//scheduler.start<std::vector<size_t>>(mainAlgo,
-	//									 holder,
-	//									 user_serializer,
-	//									 user_deserializer); // solve in parallel, ignore args{id, tracker(is applicable)}
 	scheduler.finalize();
 
 	if (rank == 0)

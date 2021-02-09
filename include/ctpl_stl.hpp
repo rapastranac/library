@@ -49,12 +49,12 @@ namespace ctpl
 
 		// number of idle threads
 		int n_idle() { return this->nWaiting; }
-		std::thread& get_thread(int i) { return *this->threads[i]; }
+		std::thread &get_thread(int i) { return *this->threads[i]; }
 
 		// empty the queue
 		void clear_queue()
 		{
-			std::function<void(int id)>* _f;
+			std::function<void(int id)> *_f;
 			while (this->q.pop(_f))
 				delete _f; // empty the queue
 		}
@@ -62,7 +62,7 @@ namespace ctpl
 		// pops a functional wrapper to the original function
 		std::function<void(int)> pop()
 		{
-			std::function<void(int id)>* _f = nullptr;
+			std::function<void(int id)> *_f = nullptr;
 			this->q.pop(_f);
 			std::unique_ptr<std::function<void(int id)>> func(_f); // at return, delete the function even if an exception occurred
 			std::function<void(int)> f;
@@ -72,7 +72,7 @@ namespace ctpl
 		}
 
 		template <typename F, typename... Args>
-		auto push(F&& f, Args &&... args) -> std::future<decltype(f(0, args...))>
+		auto push(F &&f, Args &&...args) -> std::future<decltype(f(0, args...))>
 		{
 			using namespace std::placeholders;
 			auto pck = std::make_shared<std::packaged_task<decltype(f(0, args...))(int)>>(
@@ -80,7 +80,7 @@ namespace ctpl
 
 			auto _f = new std::function<void(int id)>([pck](int id) {
 				(*pck)(id);
-				});
+			});
 
 			this->q.push(_f);
 			std::unique_lock<std::mutex> lock(this->mtx);
@@ -99,7 +99,7 @@ namespace ctpl
 				if (nWaiting.load() == size())
 					flag = true;
 				return flag;
-				});
+			});
 		}
 
 	protected:
@@ -107,8 +107,8 @@ namespace ctpl
 		{
 			std::shared_ptr<std::atomic<bool>> flag(this->flags[threadId]); // a copy of the shared ptr to the flag
 			auto f = [this, threadId, flag /* a copy of the shared ptr to the flag */]() {
-				std::atomic<bool>& _flag = *flag;
-				std::function<void(int threadId)>* _f;
+				std::atomic<bool> &_flag = *flag;
+				std::function<void(int threadId)> *_f;
 				bool isPop = this->q.pop(_f);
 				std::chrono::steady_clock::time_point begin;
 				std::chrono::steady_clock::time_point end;
@@ -124,7 +124,7 @@ namespace ctpl
 						if (this->externNumThreads)
 						{
 							std::unique_lock<std::mutex> lock(this->mtx);
-							--* this->externNumThreads;
+							--*this->externNumThreads;
 						}
 
 						if (_flag)
@@ -147,7 +147,7 @@ namespace ctpl
 					this->cv.wait(lock, [this, &_f, &isPop, &_flag]() {
 						isPop = this->q.pop(_f);
 						return isPop || this->isDone || _flag;
-						});
+					});
 					end = std::chrono::steady_clock::now();
 					sumUpIdleTime(begin, end);
 					--this->nWaiting;
@@ -172,7 +172,7 @@ namespace ctpl
 			this->idleTime = 0;
 		}
 
-		Queue<std::function<void(int id)>*> q;
+		Queue<std::function<void(int id)> *> q;
 
 		std::atomic<int> nWaiting; // how many threads are waiting
 	};

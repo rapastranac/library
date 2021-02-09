@@ -69,6 +69,7 @@ namespace library
 											 world_size,
 											 processor_name,
 											 numAvailableNodes,
+											 refValueGlobal,
 											 &win_accumulator,
 											 &win_finalFlag,
 											 &win_AvNodes,
