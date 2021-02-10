@@ -210,7 +210,7 @@ namespace library
 #ifdef DEBUG_COMMENTS
 			printf("Main thread interrupting pool \n");
 #endif
-			this->_pool_default->interrupt(true);
+			//this->_pool_default->interrupt(true);
 		}
 
 		template <typename RESULT_TYPE>

@@ -1,0 +1,144 @@
+!-------------------------run # 1 -------------------------!
+
+Exception caught : bad any_cast
+!-------------------Minimum vertex cover-------------------!
+                                                            
+------------------------------------------------------------
+
+path                                input/prob_4/100/00100_1
+Initial graph size after preprocessing:                   49
+Size:                                                      0
+Found at depth:                                            0
+Elapsed time:                                  0.000161866 s
+Number of leaves:                                          0
+Maximum depth reached:                                     0
+Idle time:                         0                      0%
+Pool idle time:           0.00116631            7.20538e-07%
+!----------------------------------------------------------!
+
+
+
+!-------------------------run # 1 -------------------------!
+
+Exception caught : bad any_cast
+!-------------------Minimum vertex cover-------------------!
+                                                            
+------------------------------------------------------------
+
+path                                input/prob_4/100/00100_1
+Initial graph size after preprocessing:                   49
+Size:                                                      0
+Found at depth:                                            0
+Elapsed time:                                  0.000140899 s
+Number of leaves:                                          0
+Maximum depth reached:                                     0
+Idle time:                         0                      0%
+Pool idle time:          0.000876659             6.2219e-07%
+!----------------------------------------------------------!
+
+
+
+!-------------------------run # 1 -------------------------!
+
+Exception caught : bad any_cast
+!-------------------Minimum vertex cover-------------------!
+                                                            
+------------------------------------------------------------
+
+path                                input/prob_4/100/00100_1
+Initial graph size after preprocessing:                   49
+Size:                                                      0
+Found at depth:                                            0
+Elapsed time:                                  0.000137792 s
+Number of leaves:                                          0
+Maximum depth reached:                                     0
+Idle time:                         0                      0%
+Pool idle time:          0.000907571            6.58653e-07%
+!----------------------------------------------------------!
+
+
+
+!-------------------------run # 1 -------------------------!
+
+Exception caught : bad any_cast
+!-------------------Minimum vertex cover-------------------!
+                                                            
+------------------------------------------------------------
+
+path                                input/prob_4/100/00100_1
+Initial graph size after preprocessing:                   49
+Size:                                                      0
+Found at depth:                                            0
+Elapsed time:                                  0.000134485 s
+Number of leaves:                                          0
+Maximum depth reached:                                     0
+Idle time:                         0                      0%
+Pool idle time:          0.000880794            6.54938e-07%
+!----------------------------------------------------------!
+
+
+
+!-------------------------run # 1 -------------------------!
+
+Exception caught : bad any_cast
+!-------------------Minimum vertex cover-------------------!
+                                                            
+------------------------------------------------------------
+
+path                                input/prob_4/100/00100_1
+Initial graph size after preprocessing:                   49
+Size:                                                      0
+Found at depth:                                            0
+Elapsed time:                                  0.000136199 s
+Number of leaves:                                          0
+Maximum depth reached:                                     0
+Idle time:                         0                      0%
+Pool idle time:          0.000885014            6.49795e-07%
+!----------------------------------------------------------!
+
+
+
+!-------------------------run # 1 -------------------------!
+
+Exception caught : bad any_cast
+!-------------------Minimum vertex cover-------------------!
+                                                            
+------------------------------------------------------------
+
+path                                input/prob_4/100/00100_1
+Initial graph size after preprocessing:                   49
+Size:                                                      0
+Found at depth:                                            0
+Elapsed time:                                  0.000140089 s
+Number of leaves:                                          0
+Maximum depth reached:                                     0
+Idle time:                         0                      0%
+Pool idle time:          0.000909815            6.49455e-07%
+!----------------------------------------------------------!
+
+
+
+!-------------------------run # 1 -------------------------!
+
+MVC found so far has 48 elements                    thread 0
+!-------------------Minimum vertex cover-------------------!
+3   5   7   8   9   14   15   16   17   18   19   23   24   
+25   27   29   31   37   38   39   42   44   45   46   48   
+49   51   53   56   57   58   60   61   62   63   65   66   
+67   74   75   79   80   85   86   87   88   89   90   91   
+92   93   94   95   96   98                                 
+------------------------------------------------------------
+
+path                                input/prob_4/100/00100_1
+Initial graph size after preprocessing:                   49
+Size:                                                     55
+Found at depth:                                            8
+Elapsed time:                                   0.00291629 s
+Number of leaves:                                          1
+Maximum depth reached:                                     0
+Idle time:                         0                      0%
+Pool idle time:          0.000881399            3.02233e-08%
+!----------------------------------------------------------!
+
+
+

@@ -128,7 +128,15 @@ public:
 		try
 		{
 			branchHandler.setRefValue(currentMVCSize);
-			mvc(-1, 0, graph);
+			//mvc(-1, 0, graph);
+			//testing ****************************************
+			HolderType initial(branchHandler);
+			int depth = 0;
+			initial.holdArgs(depth, graph);
+			branchHandler.push(_f, -1, initial);
+
+			//************************************************
+
 			branchHandler.waitResult(true);
 			graph_res = branchHandler.retrieveResult<Graph>();
 			cover = graph_res.postProcessing();

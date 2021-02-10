@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 #ifndef MPI_ENABLE
 	printf("MPI disable section \n");
 
-	auto file = "input/prob_4/400/00400_1";
+	auto file = "input/prob_4/100/00100_1";
 	graph.readEdges(file);
 
 	/*
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	}
 	user_deserializer(ss2, oGraph);
 */
-	cover.init(graph, 12, file, 4);
+	cover.init(graph, 1, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
 
