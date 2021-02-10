@@ -131,8 +131,12 @@ namespace library
 				int origin_count = 1;
 				int target_rank = 0;
 				MPI_Aint offset = 0;
-				MPI_Win &window = *win_refValueGlobal;					   // change to a reference to the window (&window, or *window)
+				MPI_Win &window = *win_refValueGlobal; // change to a reference to the window (&window, or *window)
+
+				//MPI::LOCK_SHARED
+				//MPI::LOCK_EXCLUSIVE
 				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+
 				printf("rank %d opened epoch to send best result \n", world_rank);
 				// this blocks access to this window
 				// this is the only place where this window is read or modified
@@ -144,33 +148,16 @@ namespace library
 
 				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
 				{
-					*this->refValueGlobal = refValueLocal; // updates global ref value, in this node
+					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
 
 					MPI_Accumulate(&refValueLocal, origin_count, MPI::INTEGER, target_rank, offset, 1, MPI::INTEGER, MPI::REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
 					auto ss = f_serial(result); // serialized result
 
-					int Bytes = ss.str().size();
-					//char *buffer = new char[Bytes];
+					bestRstream.first = refValueLocal;
+					bestRstream.second = std::move(ss);
 
-					//sending signal to center so this one turn into receiving best result mode
-					int signal = true;
-					customPut(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
-					//**************************************************************************
-
-					MPI_Ssend(&Bytes, 1, MPI::INTEGER, 0, 0, *world_Comm); // blocking send
-
-					MPI_Ssend(ss.str().data(), Bytes, MPI::CHARACTER, 0, 0, *world_Comm); // blocking send
-
-					printf("rank %d sent best result to rank 0 \n", world_rank);
-					/*
-					1. serialize result, and send it to center node
-					2. request center node to replace a better result
-						(this guarantees that only one process in the whole execution does it)
-					3. when signal received, send number of bytes
-					4. send buffer
-					*/
 					MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
 
 					return true;
@@ -264,6 +251,10 @@ namespace library
 		//TODO still missing some mutexes
 		int getRefValue()
 		{
+			//std::stringstream ss;
+			//ss << "refValueGlobal address : " << refValueGlobal << "\n";
+			//ss << "About to retrieve refValueGlobal \n";
+			//std::cout << ss.str();
 			return refValueGlobal[0];
 		}
 
@@ -273,11 +264,28 @@ namespace library
 			if (is_MPI_enable)
 			{
 				// since all processes pass by here, then MPI_Bcast is effective
-				this->refValueGlobal[0] = refValue; // linking in here
+				this->refValueGlobal[0] = refValue;
+#ifdef DEBUG_COMMENTS
+				printf("rank %d, refValueGlobal has been set : %d at %p \n", world_rank, refValueGlobal[0], refValueGlobal);
+#endif
 				if (world_rank == 0)
-					MPI_Bcast(&refValueGlobal, 1, MPI::INTEGER, 0, *world_Comm);
+				{
+					int err = MPI_Bcast(refValueGlobal, 1, MPI::INTEGER, 0, *world_Comm);
+					if (err != MPI::SUCCESS)
+						printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
+#ifdef DEBUG_COMMENTS
+					printf("refValueGlobal broadcasted: %d at %p \n", refValueGlobal[0], refValueGlobal);
+#endif
+				}
 				else
-					MPI_Bcast(&refValueGlobal, 1, MPI::INTEGER, 0, *world_Comm);
+				{
+					int err = MPI_Bcast(refValueGlobal, 1, MPI::INTEGER, 0, *world_Comm);
+					if (err != MPI::SUCCESS)
+						printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
+#ifdef DEBUG_COMMENTS
+					printf("rank %d, refValueGlobal received: %d at %p \n", refValueGlobal[0], refValueGlobal);
+#endif
+				}
 
 				MPI_Barrier(*world_Comm);
 			}
@@ -762,7 +770,7 @@ namespace library
 		int max_push_depth;
 		std::once_flag isDoneFlag;
 		std::any bestR;
-		std::any bestR2;
+		std::pair<int, std::stringstream> bestRstream;
 		bool is_LB = false;
 
 		/*Dequeue while using strategy myPool*/
@@ -1007,6 +1015,24 @@ namespace library
 		{
 			//this->waitResult(true);
 			_pool_default->wait();
+			sendBestResultToCenter();
+		}
+
+		// this should is supposed to be called only when all tasks are finished
+		void sendBestResultToCenter()
+		{
+			//sending signal to center so this one turn into receiving best result mode
+			int signal = true;
+			customPut(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
+
+			char *buffer = bestRstream.second.str().data();
+			int Bytes = bestRstream.second.str().size();
+			int refVal = bestRstream.first;
+
+			MPI_Ssend(&Bytes, 1, MPI::INTEGER, 0, 0, *world_Comm);
+
+			MPI_Ssend(buffer, Bytes, MPI::CHARACTER, 0, refVal, *world_Comm);
+			printf("rank %d sent best result", world_rank);
 		}
 
 		void accumulate(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)

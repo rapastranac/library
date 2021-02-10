@@ -15,6 +15,7 @@
 #include <sstream>
 #include <iterator>
 #include <string>
+#include <vector>
 
 int main(int argc, char *argv[])
 {
@@ -28,11 +29,15 @@ int main(int argc, char *argv[])
 	VertexCover cover;
 
 #ifndef MPI_ENABLE
+	printf("MPI disable section \n");
 
 	auto file = "input/prob_4/400/00400_1";
 	graph.readEdges(file);
 
-	/*auto ss = user_serializer(graph);
+	/*
+	graph.preprocessing();
+
+	auto ss = user_serializer(graph);
 	int SIZE = ss.str().size();
 	char buffer[SIZE];
 	std::memcpy(buffer, ss.str().data(), SIZE);
@@ -41,9 +46,8 @@ int main(int argc, char *argv[])
 	{
 		ss2 << buffer[i];
 	}
-	user_deserializer(ss2, oGraph); 
-	*/
-
+	user_deserializer(ss2, oGraph);
+*/
 	cover.init(graph, 12, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
@@ -52,6 +56,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef MPI_ENABLE
+	printf("MPI enable section \n");
 
 	auto mainAlgo = std::bind(&VertexCover::mvc, &cover, _1, _2, _3); // target algorithm [all arguments]
 	//graph.readEdges(file);
@@ -85,7 +90,6 @@ int main(int argc, char *argv[])
 	scheduler.setThreadsPerNode(1);
 	holder.holdArgs(depth, graph);
 	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
-	scheduler.finalize();
 
 	if (rank == 0)
 	{
@@ -94,7 +98,6 @@ int main(int argc, char *argv[])
 		auto result = scheduler.retrieveResult(); // returns a stringstream
 		user_deserializer(result, oGraph);
 		auto cv = oGraph.postProcessing();
-
 		printf("Cover size : %d \n", cv.size());
 
 		//std::cout << "first : " << sorted.front() << " ";
@@ -106,6 +109,8 @@ int main(int argc, char *argv[])
 		//}
 		std::cout << "\n";
 	}
+
+	scheduler.finalize();
 
 	return 0;
 #endif

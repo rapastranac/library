@@ -367,17 +367,19 @@ public:
 	void mvc(int id, int depth, Graph &graph)
 	//void mvc(int id, int depth, Graph &graph, HANDLER::ResultHolder *parent)
 	{
-		printf("Entered algorithm, depth : %d \n", depth);
-		printf("Graph size : %d \n", graph.size());
-		printf("Cover size : %d \n", graph.coverSize());
+		//printf("Entered algorithm, depth : %d \n", depth);
+		//printf("Graph size : %d \n", graph.size());
+		//printf("Cover size : %d \n", graph.coverSize());
 		size_t k1 = graph.min_k();
-		printf("k1 : %zu \n", k1);
+		//printf("k1 : %zu \n", k1);
 		size_t k2 = graph.max_k();
-		printf("k2 : %zu \n", k2);
+		//printf("k2 : %zu \n", k2);
 		size_t k = relaxation(k1, k2);
-		printf("k : %zu \n", k);
+		//printf("k : %zu \n", k);
 
-		printf("refValue : %d, depth : %d \n", branchHandler.getRefValue(), depth);
+		//int dummy = branchHandler.getRefValue();
+
+		//printf("refValue : %d, depth : %d \n", dummy, depth);
 		if (k + graph.coverSize() >= branchHandler.getRefValue())
 		{
 			size_t addition = k + graph.coverSize();

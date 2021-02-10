@@ -113,13 +113,22 @@ namespace library
 
 		void finalize()
 		{
+			printf("rank %d, before deallocate \n", world_rank);
 			win_deallocate();
+			printf("rank %d, after deallocate \n", world_rank);
 			MPI_Finalize();
+			printf("rank %d, after MPI_Finalize() \n", world_rank);
 		}
 
 		auto [[nodiscard("Move semantics need a recipient")]] retrieveResult()
 		{
-			return std::move(returnStream);
+			for (int rank = 0; rank < world_size; rank++)
+			{
+				if (bestResults[rank].first == refValueGlobal[0])
+					return std::move(bestResults[rank].second);
+			}
+
+			//return std::move(returnStream);
 		}
 
 		void printfStats()
@@ -248,7 +257,6 @@ namespace library
 					MPI_Status status;
 					int Bytes;
 					MPI_Recv(&Bytes, 1, MPI::INTEGER, rank, MPI::ANY_TAG, world_Comm, &status);
-
 					// sender would not need to send data size before hand **********************************************
 					//MPI_Probe(rank, 0, world_Comm, &status);		// receives status before receiving the message
 					//MPI_Get_count(&status, MPI::CHARACTER, &Bytes); // receives total number of datatype elements of the message
@@ -260,11 +268,17 @@ namespace library
 					char *buffer = new char[Bytes];
 					MPI_Recv(buffer, Bytes, MPI::CHARACTER, rank, MPI::ANY_TAG, world_Comm, &status);
 
+					printf("Center received a best result from %d", rank);
+
+					std::stringstream ss;
+
 					for (int i = 0; i < Bytes; i++)
 					{
-						returnStream2 << buffer[i];
+						ss << buffer[i];
 					}
 					delete[] buffer;
+					bestResults[rank].first = status.MPI_TAG; // reference value corresponding to result
+					bestResults[rank].second = std::move(ss); // best result so far from this rank
 
 					break; //break loop to ensure not broadcasting to src
 				}
@@ -456,6 +470,8 @@ namespace library
 		{
 			if (world_rank == 0)
 			{
+				bestResults.resize(world_size);
+
 				numAvailableNodes[0] = world_size - 1;
 				busyNodes[0] = 0;
 				finalFlag[0] = false;
@@ -504,6 +520,7 @@ namespace library
 
 		std::stringstream returnStream;
 		std::stringstream returnStream2; // for testing only, recipient of best result
+		std::vector<std::pair<int, std::stringstream>> bestResults;
 
 		size_t threadsPerNode = std::thread::hardware_concurrency(); // detects the number of logical processors in machine
 
