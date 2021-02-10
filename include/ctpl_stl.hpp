@@ -100,6 +100,7 @@ namespace ctpl
 					flag = true;
 				return flag;
 			});
+			printf("pool has finished its tasks \n");
 		}
 
 	protected:

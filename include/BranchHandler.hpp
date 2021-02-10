@@ -153,7 +153,14 @@ namespace library
 					MPI_Accumulate(&refValueLocal, origin_count, MPI::INTEGER, target_rank, offset, 1, MPI::INTEGER, MPI::REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
+					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
+
 					auto ss = f_serial(result); // serialized result
+
+					printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+
+					int SIZE = ss.str().size();
+					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
 
 					bestRstream.first = refValueLocal;
 					bestRstream.second = std::move(ss);
@@ -1025,14 +1032,14 @@ namespace library
 			int signal = true;
 			customPut(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
 
-			char *buffer = bestRstream.second.str().data();
+			void *buffer = bestRstream.second.str().data();
 			int Bytes = bestRstream.second.str().size();
 			int refVal = bestRstream.first;
 
 			MPI_Ssend(&Bytes, 1, MPI::INTEGER, 0, 0, *world_Comm);
 
 			MPI_Ssend(buffer, Bytes, MPI::CHARACTER, 0, refVal, *world_Comm);
-			printf("rank %d sent best result", world_rank);
+			printf("rank %d sent best result, Bytes : %d, refVal : %d\n", world_rank, Bytes, refVal);
 		}
 
 		void accumulate(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)

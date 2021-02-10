@@ -138,7 +138,7 @@ public:
 			this->output.open(outPath, std::ofstream::in | std::ofstream::out | std::ofstream::app);
 			if (!output.is_open())
 			{
-				printf("Error, output file not found !");
+				printf("Error, output file not found ! \n");
 			}
 			std::cout << "Exception caught : " << e.what() << '\n';
 			output << "Exception caught : " << e.what() << '\n';
@@ -560,6 +560,7 @@ private:
 	size_t measured_Depth = 0;
 
 	double factor = 0.0; /* k_lower_bound [0.0 - 1.0] k_upper_bound*/
+public:
 	ofstream output;
 	ofstream output_raw;
 	std::string outPath;

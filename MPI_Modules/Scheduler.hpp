@@ -120,12 +120,16 @@ namespace library
 			printf("rank %d, after MPI_Finalize() \n", world_rank);
 		}
 
-		auto [[nodiscard("Move semantics need a recipient")]] retrieveResult()
+		std::stringstream [[nodiscard("Move semantics need a recipient")]] retrieveResult()
 		{
 			for (int rank = 0; rank < world_size; rank++)
 			{
 				if (bestResults[rank].first == refValueGlobal[0])
+				{
+					int SIZE = bestResults[rank].second.str().size();
+					printf("Stream retrieved, size : %d", SIZE);
 					return std::move(bestResults[rank].second);
+				}
 			}
 
 			//return std::move(returnStream);
@@ -268,7 +272,7 @@ namespace library
 					char *buffer = new char[Bytes];
 					MPI_Recv(buffer, Bytes, MPI::CHARACTER, rank, MPI::ANY_TAG, world_Comm, &status);
 
-					printf("Center received a best result from %d", rank);
+					printf("Center received a best result from %d, Bytes : %d, refVal \n", rank, Bytes, status.MPI_TAG);
 
 					std::stringstream ss;
 

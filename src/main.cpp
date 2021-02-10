@@ -53,9 +53,9 @@ int main(int argc, char *argv[])
 	cover.printSolution();
 
 	return 0;
-#endif
-
-#ifdef MPI_ENABLE
+//#endif
+//#ifdef MPI_ENABLE
+#else
 	printf("MPI enable section \n");
 
 	auto mainAlgo = std::bind(&VertexCover::mvc, &cover, _1, _2, _3); // target algorithm [all arguments]
@@ -86,6 +86,8 @@ int main(int argc, char *argv[])
 	size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
 	//cover.setMVCSize(k_prime);
 	handler.setRefValue(k_prime);
+
+	cover.init(graph, 1, file, 4);
 
 	scheduler.setThreadsPerNode(1);
 	holder.holdArgs(depth, graph);
