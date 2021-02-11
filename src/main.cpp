@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 #ifndef MPI_ENABLE
 	printf("MPI disable section \n");
 
-	auto file = "input/prob_4/400/00400_1";
+	auto file = "input/prob_4/600/0600_93";
 	graph.readEdges(file);
 
 	//auto ss = user_serializer(graph);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	//}
 	//user_deserializer(ss2, oGraph);
 
-	cover.init(graph, 12, file, 4);
+	cover.init(graph, 40, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
 
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
 	cover.init(graph, 1, file, 4);
 
-	scheduler.setThreadsPerNode(2);
+	scheduler.setThreadsPerNode(1);
 	holder.holdArgs(depth, graph);
 	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
 

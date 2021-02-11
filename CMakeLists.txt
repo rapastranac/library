@@ -20,8 +20,10 @@ include_directories(${MPI_INCLUDE_PATH})
 add_definitions(-DMPI_ENABLE)
 add_definitions(-DDEBUG_COMMENTS)
 
-add_compile_options("-g" "-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
+add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
+#add_compile_options("-g" "-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
 
+#Here below for boost
 #add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
 #add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
 

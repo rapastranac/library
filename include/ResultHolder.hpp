@@ -212,9 +212,12 @@ namespace library
 
 				MPI_Status status;
 				int Bytes;
-				MPI_Recv(&Bytes, 1, MPI::INTEGER, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
+
+				MPI_Probe(dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI::CHAR, &Bytes);									  // receives total number of datatype elements of the message
+
 				char *in_buffer = new char[Bytes];
-				MPI_Recv(&in_buffer[0], Bytes, MPI::CHARACTER, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
+				MPI_Recv(in_buffer, Bytes, MPI::CHAR, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
 
 				std::stringstream ss;
 				for (int i = 0; i < Bytes; i++)

@@ -1,0 +1,1781 @@
+gcc (GCC) 9.3.0
+Copyright (C) 2019 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+mpirun (Open MPI) 4.0.3
+
+Report bugs to http://www.open-mpi.org/community/help/
+Current working directory: /gpfs/fs0/scratch/m/mlafond/pasr1602/library
+Starting run at: Thu Feb 11 15:51:26 EST 2021
+MPI enable section 
+The threading support level corresponds to that demanded.
+Process 1 of 5 is on nia0060.scinet.local
+rank 1, refValueGlobal has been set : 365 at 0x2b264ee8f000 
+rank 365, refValueGlobal received: 1323888640 at 0x4 
+About to start, 1 / 5!! 
+Pool size increased by one, thread : 0 
+Pool size increased by one, thread : 1 
+Pool size increased by one, thread : 2 
+Pool size increased by one, thread : 3 
+Pool size increased by one, thread : 4 
+Pool size increased by one, thread : 5 
+Pool size increased by one, thread : 6 
+Pool size increased by one, thread : 7 
+Pool size increased by one, thread : 8 
+Pool size increased by one, thread : 9 
+Pool size increased by one, thread : 10 
+Pool size increased by one, thread : 11 
+Pool size increased by one, thread : 12 
+Pool size increased by one, thread : 13 
+Pool size increased by one, thread : 14 
+Pool size increased by one, thread : 15 
+Pool size increased by one, thread : 16 
+Pool size increased by one, thread : 17 
+Pool size increased by one, thread : 18 
+Pool size increased by one, thread : 19 
+Pool size increased by one, thread : 20 
+Pool size increased by one, thread : 21 
+Pool size increased by one, thread : 22 
+Pool size increased by one, thread : 23 
+Pool size increased by one, thread : 24 
+Pool size increased by one, thread : 25 
+Pool size increased by one, thread : 26 
+Pool size increased by one, thread : 27 
+Pool size increased by one, thread : 28 
+Pool size increased by one, thread : 29 
+Pool size increased by one, thread : 30 
+Pool size increased by one, thread : 31 
+Pool size increased by one, thread : 32 
+Pool size increased by one, thread : 33 
+Pool size increased by one, thread : 34 
+Pool size increased by one, thread : 35 
+Pool size increased by one, thread : 36 
+Pool size increased by one, thread : 37 
+Pool size increased by one, thread : 38 
+Pool size increased by one, thread : 39 
+process 1 put flag [true] in process 0 
+Receiver called on process 1, avl processes 4 
+Receiver on 1 ready to receive 
+process 1 has rcvd from 0,1 times 
+Receiver on 1, received 16544 Bytes 
+1 about to accumulate on busyNodes++
+1 about to unlock RMA on 0 
+1 between flush and unlock 
+busyNodes++, by 1
+1 about to request center node to push
+process 1 requested to push 
+Leaf reached, depth : 27 
+Leaf reached, depth : 29 
+Leaf reached, depth : 32 
+Leaf reached, depth : 33 
+Leaf reached, depth : 34 
+Leaf reached, depth : 34 
+Leaf reached, depth : 32 
+Leaf reached, depth : 33 
+Leaf reached, depth : 36 
+Leaf reached, depth : 37 
+Leaf reached, depth : 35 
+Leaf reached, depth : 36 
+Leaf reached, depth : 39 
+Leaf reached, depth : 40 
+Leaf reached, depth : 38 
+Leaf reached, depth : 37 
+Leaf reached, depth : 40 
+Leaf reached, depth : 42 
+Leaf reached, depth : 41 
+Leaf reached, depth : 43 
+Leaf reached, depth : 43 
+Leaf reached, depth : 45 
+Leaf reached, depth : 44 
+Leaf reached, depth : 43 
+Leaf reached, depth : 42 
+Leaf reached, depth : 43 
+Leaf reached, depth : 43 
+Leaf reached, depth : 45 
+Leaf reached, depth : 46 
+Leaf reached, depth : 48 
+Leaf reached, depth : 49 
+Leaf reached, depth : 50 
+Leaf reached, depth : 51 
+Leaf reached, depth : 49 
+Leaf reached, depth : 50 
+Leaf reached, depth : 52 
+Leaf reached, depth : 54 
+Leaf reached, depth : 49 
+Leaf reached, depth : 58 
+process 1 received ID 3
+buffer sucessfully sent from rank 1 to rank 3! 
+process 1 forwarded to process 3 
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 365 
+rank 1 updated refValueGlobalAbsolute to 273 || 273 
+rank 1, cover size : 273 
+rank 1, buffer size to be sent : 2184 
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 273 
+rank 1 updated refValueGlobalAbsolute to 275 || 275 
+MVC found so far has 273 elements..................thread 21
+rank 1, cover size : 275 
+rank 1, buffer size to be sent : 2192 
+rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 275 elements...........rank 1 entered replaceIf(), acquired mutex 
+ ........thread 3
+rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 275 
+rank 1 updated refValueGlobalAbsolute to 274 || 274 
+rank 1, cover size : 274 
+rank 1, buffer size to be sent : 2188 
+rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 274 elementsrank 1 entered replaceIf(), acquired mutex 
+ ...................thread 6
+rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 274 
+rank 1 updated refValueGlobalAbsolute to 273 || 273 
+rank 1, cover size : 273 
+rank 1, buffer size to be sent : 2184 
+rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 273 elements...................thread 4
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 273 
+rank 1 updated refValueGlobalAbsolute to 279 || 279 
+rank 1, cover size : 279 
+rank 1, buffer size to be sent : 2208 
+rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 279 elementsrank 1 entered replaceIf(), acquired mutex 
+ ...................thread 1
+rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 279 
+rank 1 updated refValueGlobalAbsolute to 271 || 271 
+rank 1, cover size : 271 
+rank 1, buffer size to be sent : 2176 
+rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 271 elements..................thread 15
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 271 
+rank 1 updated refValueGlobalAbsolute to 271 || 271 
+rank 1, cover size : 271 
+rank 1, buffer size to be sent : 2176 
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 271 elements..................thread 17
+rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 271 
+rank 1 updated refValueGlobalAbsolute to 277 || 277 
+rank 1, cover size : 277 
+rank 1, buffer size to be sent : 2200 
+rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 277 elements..................thread 22
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 277 
+rank 1 updated refValueGlobalAbsolute to 276 || 276 
+rank 1, cover size : 276 
+rank 1, buffer size to be sent : 2196 
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 276 elements..................thread 13
+rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 276 
+rank 1 updated refValueGlobalAbsolute to 277 || 277 
+rank 1, cover size : 277 
+rank 1, buffer size to be sent : 2200 
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 277 elements...................thread 9
+rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 277 
+rank 1 updated refValueGlobalAbsolute to 272 || 272 
+rank 1, cover size : 272 
+rank 1, buffer size to be sent : 2180 
+rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 272 elements..................thread 36
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 272 
+rank 1 updated refValueGlobalAbsolute to 273 || 273 
+rank 1, cover size : 273 
+rank 1, buffer size to be sent : 2184 
+rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 273 elements..................thread 29
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 273 
+rank 1 updated refValueGlobalAbsolute to 273 || 273 
+rank 1, cover size : 273 
+rank 1, buffer size to be sent : 2184 
+1 about to request center node to push
+process 1 requested to push 
+Leaf reached, depth : 34 
+Leaf reached, depth : 36 
+Leaf reached, depth : 33 
+Leaf reached, depth : 36 
+Leaf reached, depth : 30 
+process 1 received ID 4
+buffer sucessfully sent from rank 1 to rank 4! 
+process 1 forwarded to process 4 
+rank 1 entered replaceIf(), acquired mutex 
+MPI enable section 
+The threading support level corresponds to that demanded.
+Process 3 of 5 is on nia0120.scinet.local
+rank 3, refValueGlobal has been set : 365 at 0x2b3bc863c000 
+rank 365, refValueGlobal received: -932986880 at 0x80 
+About to start, 3 / 5!! 
+Pool size increased by one, thread : 0 
+Pool size increased by one, thread : 1 
+Pool size increased by one, thread : 2 
+Pool size increased by one, thread : 3 
+Pool size increased by one, thread : 4 
+Pool size increased by one, thread : 5 
+Pool size increased by one, thread : 6 
+Pool size increased by one, thread : 7 
+Pool size increased by one, thread : 8 
+Pool size increased by one, thread : 9 
+Pool size increased by one, thread : 10 
+Pool size increased by one, thread : 11 
+Pool size increased by one, thread : 12 
+Pool size increased by one, thread : 13 
+Pool size increased by one, thread : 14 
+Pool size increased by one, thread : 15 
+Pool size increased by one, thread : 16 
+Pool size increased by one, thread : 17 
+Pool size increased by one, thread : 18 
+Pool size increased by one, thread : 19 
+Pool size increased by one, thread : 20 
+Pool size increased by one, thread : 21 
+Pool size increased by one, thread : 22 
+Pool size increased by one, thread : 23 
+Pool size increased by one, thread : 24 
+Pool size increased by one, thread : 25 
+Pool size increased by one, thread : 26 
+Pool size increased by one, thread : 27 
+Pool size increased by one, thread : 28 
+Pool size increased by one, thread : 29 
+Pool size increased by one, thread : 30 
+Pool size increased by one, thread : 31 
+Pool size increased by one, thread : 32 
+Pool size increased by one, thread : 33 
+Pool size increased by one, thread : 34 
+Pool size increased by one, thread : 35 
+Pool size increased by one, thread : 36 
+Pool size increased by one, thread : 37 
+Pool size increased by one, thread : 38 
+Pool size increased by one, thread : 39 
+process 3 put flag [true] in process 0 
+Receiver called on process 3, avl processes 4 
+Receiver on 3 ready to receive 
+process 3 has rcvd from 1,1 times 
+Receiver on 3, received 13980 Bytes 
+3 about to accumulate on busyNodes++
+3 about to unlock RMA on 0 
+3 between flush and unlock 
+busyNodes++, by 3
+3 about to request center node to push
+process 3 requested to push 
+Leaf reached, depth : 26 
+Leaf reached, depth : 28 
+Leaf reached, depth : 28 
+Leaf reached, depth : 29 
+Leaf reached, depth : 30 
+Leaf reached, depth : 30 
+Leaf reached, depth : 32 
+Leaf reached, depth : 33 
+Leaf reached, depth : 30 
+Leaf reached, depth : 32 
+Leaf reached, depth : 34 
+Leaf reached, depth : 35 
+Leaf reached, depth : 32 
+Leaf reached, depth : 34 
+Leaf reached, depth : 36 
+Leaf reached, depth : 36 
+Leaf reached, depth : 35 
+Leaf reached, depth : 37 
+Leaf reached, depth : 35 
+Leaf reached, depth : 34 
+Leaf reached, depth : 35 
+Leaf reached, depth : 36 
+Leaf reached, depth : 39 
+Leaf reached, depth : 37 
+Leaf reached, depth : 39 
+Leaf reached, depth : 37 
+Leaf reached, depth : 39 
+Leaf reached, depth : 38 
+Leaf reached, depth : 38 
+Leaf reached, depth : 40 
+Leaf reached, depth : 39 
+Leaf reached, depth : 42 
+Leaf reached, depth : 42 
+Leaf reached, depth : 43 
+Leaf reached, depth : 43 
+Leaf reached, depth : 45 
+Leaf reached, depth : 43 
+Leaf reached, depth : 46 
+Leaf reached, depth : 49 
+process 3 received ID 2
+buffer sucessfully sent from rank 3 to rank 2! 
+process 3 forwarded to process 2 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 273 
+rank 3 updated refValueGlobalAbsolute to 277 || 277 
+rank 3, cover size : 277 
+rank 3, buffer size to be sent : 2200 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 277 
+rank 3 updated refValueGlobalAbsolute to 281 || 281 
+MVC found so far has 277 elements...................thread 7
+rank 3, cover size : 281 
+rank 3, buffer size to be sent : 2216 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 281 elements...................thread 0
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 281 
+rank 3 updated refValueGlobalAbsolute to 279 || 279 
+rank 3, cover size : 279 
+rank 3, buffer size to be sent : 2208 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 279 elements...................thread 3
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 279 
+rank 3 updated refValueGlobalAbsolute to 277 || 277 
+rank 3, cover size : 277 
+rank 3, buffer size to be sent : 2200 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 277 elements..................thread 27
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 277 
+rank 3 updated refValueGlobalAbsolute to 275 || 275 
+rank 3, cover size : 275 
+rank 3, buffer size to be sent : 2192 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 275 elements...................thread 5
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 271 
+rank 3 updated refValueGlobalAbsolute to 276 || 276 
+rank 3, cover size : 276 
+rank 3, buffer size to be sent : 2196 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 276 elements..................thread 25
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 276 
+rank 3 updated refValueGlobalAbsolute to 276 || 276 
+rank 3, cover size : 276 
+rank 3, buffer size to be sent : 2196 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 276 elements..................thread 13
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 270 
+rank 3 updated refValueGlobalAbsolute to 280 || 280 
+rank 3, cover size : 280 
+rank 3, buffer size to be sent : 2212 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 280 elements..................thread 30
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 280 
+rank 3 updated refValueGlobalAbsolute to 278 || 278 
+rank 3, cover size : 278 
+rank 3, buffer size to be sent : 2204 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 278 elements...................thread 1
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 269 
+rank 3 updated refValueGlobalAbsolute to 278 || 278 
+rank 3, cover size : 278 
+rank 3, buffer size to be sent : 2204 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 278 elements..................thread 22
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 278 
+rank 3 updated refValueGlobalAbsolute to 278 || 278 
+rank 3, cover size : 278 
+rank 3, buffer size to be sent : 2204 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 278 elements..................thread 26
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 278 
+rank 3 updated refValueGlobalAbsolute to 283 || 283 
+rank 3, cover size : 283 
+rank 3, buffer size to be sent : 2224 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 283 elements..................thread 15
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 283 
+rank 3 updated refValueGlobalAbsolute to 278 || 278 
+rank 3, cover size : 278 
+rank 3, buffer size to be sent : 2204 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 278 elements..................thread 20
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 278 
+rank 3 updated refValueGlobalAbsolute to 275 || 275 
+rank 3, cover size : 275 
+rank 3, buffer size to be sent : 2192 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 275 elements..................thread 21
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 275 
+rank 3 updated refValueGlobalAbsolute to 277 || 277 
+rank 3, cover size : 277 
+rank 3, buffer size to be sent : 2200 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 277 elements....rank 3 entered replaceIf(), acquired mutex 
+ ..............thread 12
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 277 
+rank 3 updated refValueGlobalAbsolute to 276 || 276 
+rank 3, cover size : 276 
+rank 3, buffer size to be sent : 2196 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 276 elements..................thread 23
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 276 
+rank 3 updated refValueGlobalAbsolute to 276 || 276 
+rank 3, cover size : 276 
+rank 3, buffer size to be sent : 2196 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 276 elements...................thread 9
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 276 
+rank 3 updated refValueGlobalAbsolute to 276 || 276 
+rank 3, cover size : 276 
+rank 3, buffer size to be sent : 2196 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 276 elements..................thread 38
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 276 
+rank 3 updated refValueGlobalAbsolute to 277 || 277 
+rank 3, cover size : 277 
+rank 3, buffer size to be sent : 2200 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 277 elementsrank 3 entered replaceIf(), acquired mutex 
+ ...................thread 2
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 277 
+rank 3 updated refValueGlobalAbsolute to 273 || 273 
+rank 3, cover size : 273 
+rank 3, buffer size to be sent : 2184 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 273 elements...................thread 8
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 273 
+rank 3 updated refValueGlobalAbsolute to 275 || 275 
+rank 3, cover size : 275 
+rank 3, buffer size to be sent : 2192 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 275 elements..................thread 14
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 275 
+rank 3 updated refValueGlobalAbsolute to 280 || 280 
+rank 3, cover size : 280 
+rank 3, buffer size to be sent : 2212 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 280 elements..................thread 24
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 280 
+rank 3 updated refValueGlobalAbsolute to 275 || 275 
+rank 3, cover size : 275 
+rank 3, buffer size to be sent : 2192 
+rank 3 entered replaceIf(), acquired mutex 
+ MVC found so far has 275 elements..................thread 31
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 42 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 42 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 42 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 42 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 48 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 48 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 41 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 275 
+rank 1 updated refValueGlobalAbsolute to 271 || 271 
+rank 1, cover size : 271 
+rank 1, buffer size to be sent : 2176 
+MVC found so far has 271 elements..................thread 19
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 276 
+rank 1 updated refValueGlobalAbsolute to 270 || 270 
+rank 1, cover size : 270 
+rank 1, buffer size to be sent : 2172 
+MVC found so far has 270 elements..................thread 28
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 278 
+rank 1 updated refValueGlobalAbsolute to 269 || 269 
+rank 1, cover size : 269 
+rank 1, buffer size to be sent : 2168 
+MVC found so far has 269 elements..................thread 12
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ MVC found so far has 269 elements..................thread 11
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ Leaf reached, depth : 58 
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 opened epoch to send best result 
+rank 1 got refValueGlobalAbsolute : 275 
+rank 1 updated refValueGlobalAbsolute to 267 || 267 
+rank 1, cover size : 267 
+rank 1, buffer size to be sent : 2160 
+MVC found so far has 267 elements..................thread 18
+rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ rank 1 entered replaceIf(), acquired mutex 
+ Leaf reached, depth : 56 
+rank 1 entered replaceIf(), acquired mutex 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 41 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 41 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 267 
+Leaf reached, depth : 48 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 26 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 26 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 47 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 46 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 46 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 47 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 32 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 32 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 29 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 30 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 32 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 27 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 26 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 26 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 30 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ Leaf reached, depth : 41 
+rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+Leaf reached, depth : 30 
+rank 3 got refValueGlobalAbsolute : 266 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 41 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 29 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 29 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 44 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 46 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 24 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 21 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 32 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 32 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 31 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 26 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 48 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 48 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 47 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 47 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 48 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 46 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 32 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 46 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 27 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 44 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 35 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 34 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 33 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 27 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 40 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 28 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 38 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 37 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 39 
+rank 3 entered replaceIf(), acquired mutex 
+ rank 3 entered replaceIf(), acquired mutex 
+ rank 3 opened epoch to send best result 
+rank 3 got refValueGlobalAbsolute : 266 
+Leaf reached, depth : 36 
+ranksrun: error: nia0120: task 3: Segmentation fault (core dumped)
+MPI enable section 
+The threading support level corresponds to that demanded.
+Process 0 of 5 is on nia0009.scinet.local
+rank 0, refValueGlobal has been set : 365 at 0x2b3ae8ad8000 
+refValueGlobal broadcasted: 365 at 0x2b3ae8ad8000 
+About to start, 0 / 5!! 
+scheduler() launched!! 
+buffer sucessfully sent! 
+*** Busy nodes: 1 ***
+ Scheduler started!! 
+test, busyNodes = 1
+test, busyNodes = 2
+test, busyNodes = 4
+test, busyNodes = 4
+Center received a best result from 2, Bytes : 0, refVal 
+test, busyNodes = 3
+test, busyNodes = 3
+test, busyNodes = 3
+Center received a best result from 4, Bytes : 0, refVal 
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+test, busyNodes = 2
+[nia0009:45979:0:45979] ib_mlx5_log.c:132  Transport retry count exceeded on mlx5_0:1/IB (synd 0x15 vend 0x81 hw_synd 0/0)
+[nia0009:45979:0:45979] ib_mlx5_log.c:132  RC QP 0x2394 wqe[140]: CSWAP s-- [rva 0x2d1f220 rkey 0x46b8] [cmp 0 swap 4294967296] [va 0x2b3ae8ec1ef8 len 8 lkey 0x31133]
+==== backtrace (tid:  45979) ====
+ 0 0x000000000002078e ucs_debug_print_backtrace()  /tmp/ebuser/avx512/UCX/1.8.0/GCCcore-9.3.0/ucx-1.8.0/src/ucs/debug/debug.c:653
+ 1 0x000000000001e162 uct_ib_mlx5_completion_with_err()  /tmp/ebuser/avx512/UCX/1.8.0/GCCcore-9.3.0/ucx-1.8.0/src/uct/ib/mlx5/ib_mlx5_log.c:132
+ 2 0x0000000000038a84 uct_rc_mlx5_iface_handle_failure()  /tmp/ebuser/avx512/UCX/1.8.0/GCCcore-9.3.0/ucx-1.8.0/src/uct/ib/rc/accel/rc_mlx5_iface.c:217
+ 3 0x00000000000385a6 uct_ib_mlx5_poll_cq()  /tmp/ebuser/avx512/UCX/1.8.0/GCCcore-9.3.0/ucx-1.8.0/src/uct/ib/mlx5/ib_mlx5.inl:81
+ 4 0x00000000000385a6 uct_rc_mlx5_iface_progress()  /tmp/ebuser/avx512/UCX/1.8.0/GCCcore-9.3.0/ucx-1.8.0/src/uct/ib/rc/accel/rc_mlx5_iface.c:134
+ 5 0x00000000000265ea ucs_callbackq_dispatch()  /tmp/ebuser/avx512/UCX/1.8.0/GCCcore-9.3.0/ucx-1.8.0/src/ucs/datastruct/callbackq.h:211
+ 6 0x00000000000265ea uct_worker_progress()  /tmp/ebuser/avx512/UCX/1.8.0/GCCcore-9.3.0/ucx-1.8.0/src/uct/api/uct.h:2221
+ 7 0x00000000000265ea ucp_worker_progress()  /tmp/ebuser/avx512/UCX/1.8.0/GCCcore-9.3.0/ucx-1.8.0/src/ucp/core/ucp_worker.c:1951
+ 8 0x00000000000131fd ompi_osc_ucx_lock()  ???:0
+ 9 0x00000000000c77fd PMPI_Win_lock()  ???:0
+10 0x000000000041deec library::Scheduler::BcastPut()  /scratch/m/mlafond/pasr1602/library/src/../MPI_Modules/Scheduler.hpp:339
+11 0x000000000041de67 library::Scheduler::receiveCurrentResult()  /scratch/m/mlafond/pasr1602/library/src/../MPI_Modules/Scheduler.hpp:290
+12 0x000000000040ff1a _ZN7library9Scheduler8scheduleINS_12ResultHolderIvJi5GraphEEERUlDpRT_E_EEvRT_OT0_()  /scratch/m/mlafond/pasr1602/library/src/../MPI_Modules/Scheduler.hpp:209
+13 0x000000000040fb44 _ZN7library9Scheduler5startIvRSt5_BindIFM11VertexCoverFviiR5GraphEPS3_St12_PlaceholderILi1EES9_ILi2EES9_ILi3EEEENS_12ResultHolderIvJiS4_EEERUlDpRT_E_RUlRNSt7__cxx1118basic_stringstreamIcSt11char_traitsIcESaIcEEESK_E0_EEvOT0_RT1_OT2_OT3_()  /scratch/m/mlafond/pasr1602/library/src/../MPI_Modules/Scheduler.hpp:98
+14 0x000000000040f75e main()  /scratch/m/mlafond/pasr1602/library/src/main.cpp:106
+15 0x0000000000023e1b __libc_start_main()  /cvmfs/soft.computecanada.ca/gentoo/2020/usr/src/debug/sys-libs/glibc-2.30-r8/glibc-2.30/csu/../csu/libc-start.c:308
+16 0x000000000040f25a _start()  ???:0
+=================================
+[nia0009:45979] *** Process received signal ***
+[nia0009:45979] Signal: Aborted (6)
+[nia0009:45979] Signal code:  (-6)
+[nia0009:45979] [ 0] /cvmfs/soft.computecanada.ca/gentoo/2020/lib64/libpthread.so.0(+0x130f0)[0x2b3ae22740f0]
+[nia0009:45979] [ 1] /cvmfs/soft.computecanada.ca/gentoo/2020/lib64/libc.so.6(gsignal+0x141)[0x2b3ae297c901]
+[nia0009:45979] [ 2] /cvmfs/soft.computecanada.ca/gentoo/2020/lib64/libc.so.6(abort+0x127)[0x2b3ae296656b]
+[nia0009:45979] [ 3] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Core/ucx/1.8.0/lib/libucs.so.0(+0x1f475)[0x2b3ae8a75475]
+[nia0009:45979] [ 4] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Core/ucx/1.8.0/lib/libucs.so.0(+0x23735)[0x2b3ae8a79735]
+[nia0009:45979] [ 5] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Core/ucx/1.8.0/lib/libucs.so.0(ucs_log_dispatch+0xcb)[0x2b3ae8a7985b]
+[nia0009:45979] [ 6] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Core/ucx/1.8.0/lib/ucx/libuct_ib.so.0(uct_ib_mlx5_completion_with_err+0x542)[0x2b3ae8efd162]
+[nia0009:45979] [ 7] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Core/ucx/1.8.0/lib/ucx/libuct_ib.so.0(+0x38a84)[0x2b3ae8f17a84]
+[nia0009:45979] [ 8] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Core/ucx/1.8.0/lib/ucx/libuct_ib.so.0(uct_rc_mlx5_iface_progress+0x7f6)[0x2b3ae8f175a6]
+[nia0009:45979] [ 9] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Core/ucx/1.8.0/lib/libucp.so.0(ucp_worker_progress+0x6a)[0x2b3ae89b75ea]
+[nia0009:45979] [10] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Compiler/intel2020/openmpi/4.0.3/lib/openmpi/mca_osc_ucx.so(ompi_osc_ucx_lock+0x6ad)[0x2b3ae8ffb1fd]
+[nia0009:45979] [11] /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx512/Compiler/intel2020/openmpi/4.0.3/lib/libmpi.so.40(MPI_Win_lock+0x3d)[0x2b3ae23677fd]
+[nia0009:45979] [12] /gpfs/fs0/scratch/m/mlafond/pasr1602/library/./a.out[0x41deec]
+[nia0009:45979] [13] /gpfs/fs0/scratch/m/mlafond/pasr1602/library/./a.out[0x41de67]
+[nia0009:45979] [14] /gpfs/fs0/scratch/m/mlafond/pasr1602/library/./a.out[0x40ff1a]
+[nia0009:45979] [15] /gpfs/fs0/scratch/m/mlafond/pasr1602/library/./a.out[0x40fb44]
+[nia0009:45979] [16] /gpfs/fs0/scratch/m/mlafond/pasr1602/library/./a.out[0x40f75e]
+[nia0009:45979] [17] /cvmfs/soft.computecanada.ca/gentoo/2020/lib64/libc.so.6(__libc_start_main+0xeb)[0x2b3ae2967e1b]
+[nia0009:45979] [18] /gpfs/fs0/scratch/m/mlafond/pasr1602/library/./a.out[0x40f25a]
+[nia0009:45979] *** End of error message ***
+srun: error: nia0009: task 0: Aborted (core dumped)
+slurmstepd: error: *** JOB 4832979 ON nia0009 CANCELLED AT 2021-02-11T16:07:37 DUE TO TIME LIMIT ***
+srun: Job step aborted: Waiting up to 62 seconds for job step to finish.
+
+scontrol show jobid 4832979
+JobId=4832979 JobName=library
+   UserId=pasr1602(3102120) GroupId=mlafond(6054778) MCS_label=N/A
+   Priority=2849879 Nice=0 Account=def-mlafond QOS=normal
+   JobState=TIMEOUT Reason=TimeLimit Dependency=(null)
+   Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:15
+   RunTime=00:16:28 TimeLimit=00:16:00 TimeMin=N/A
+   SubmitTime=2021-02-11T15:51:07 EligibleTime=2021-02-11T15:51:07
+   AccrueTime=2021-02-11T15:51:07
+   StartTime=2021-02-11T15:51:09 EndTime=2021-02-11T16:07:37 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2021-02-11T15:51:09
+   Partition=compute AllocNode:Sid=nia-login06:61614
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=nia[0009,0060,0084,0120,0140]
+   BatchHost=nia0009
+   NumNodes=5 NumCPUs=400 NumTasks=5 CPUs/Task=40 ReqB:S:C:T=0:0:*:*
+   TRES=cpu=400,mem=875G,node=5,billing=200
+   Socks/Node=* NtasksPerN:B:S:C=1:0:*:* CoreSpec=*
+   MinCPUsNode=40 MinMemoryNode=175G MinTmpDiskNode=0
+   Features=[skylake|cascade] DelayBoot=00:00:00
+   OverSubscribe=NO Contiguous=0 Licenses=(null) Network=(null)
+   Command=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/job.sh
+   WorkDir=/gpfs/fs0/scratch/m/mlafond/pasr1602/library
+   StdErr=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/library-4832979.out
+   StdIn=/dev/null
+   StdOut=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/library-4832979.out
+   Power=
+   MailUser=pasr1602@usherbrooke.ca MailType=BEGIN,END,FAIL,REQUEUE
+
+sacct -j 4832979
+       JobID    JobName    Account    Elapsed  MaxVMSize     MaxRSS  SystemCPU    UserCPU ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- ---------- ---------- -------- 
+4832979         library def-mlafo+   00:16:28                        09:45.509   11:17:19      0:0 
+4832979.bat+      batch def-mlafo+   00:16:29    724624K      9340K  00:00.949  00:02.647     0:15 
+4832979.ext+     extern def-mlafo+   00:16:28    138360K       876K   00:00:00  00:00.004      0:0 
+4832979.0         a.out def-mlafo+   00:16:35   3235432K    432620K  09:44.560   11:17:16     0:11 
+
+kernel messages produced during job executions:
+[Feb11 15:51] a.out (45979): Using mlock ulimits for SHM_HUGETLB is deprecated
+[Feb11 15:52] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x2394

@@ -327,10 +327,6 @@ list
 /home/andres/Documents/github/library/include/VertexCover.hpp
 cereal/archives/binary.hpp
 -
-boost/archive/text_oarchive.hpp
--
-boost/archive/text_iarchive.hpp
--
 Graph.hpp
 /home/andres/Documents/github/library/include/Graph.hpp
 BranchHandler.hpp

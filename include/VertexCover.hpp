@@ -3,8 +3,8 @@
 
 #include <cereal/archives/binary.hpp>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+//#include <boost/archive/text_oarchive.hpp>
+//#include <boost/archive/text_iarchive.hpp>
 
 #include "Graph.hpp"
 #include "BranchHandler.hpp"
@@ -20,38 +20,10 @@ using namespace std::placeholders;
 
 namespace fs = std::filesystem;
 
-template <typename Archive, typename T>
-void expander1(Archive &archive, T &arg1)
-{
-	archive << arg1;
-}
-
-template <typename Archive, typename T, typename... Args>
-void expander1(Archive &archive, T &arg1, Args &...args)
-{
-	archive << arg1;
-	return expander1(archive, args...);
-}
-
-template <typename Archive, typename T>
-void expander2(Archive &archive, T &arg1)
-{
-	archive >> arg1;
-}
-
-template <typename Archive, typename T, typename... Args>
-void expander2(Archive &archive, T &arg1, Args &...args)
-{
-	archive >> arg1;
-	return expander2(archive, args...);
-}
-
 auto user_serializer = [](auto &...args) {
 	/* here inside, user can implement its favourite serialization method given the
 	arguments pack and it must return a std::stream */
 	std::stringstream ss;
-	//boost::archive::text_oarchive archive(ss);
-	//expander1(archive, args...);
 	cereal::BinaryOutputArchive archive(ss);
 	archive(args...);
 	return std::move(ss);
@@ -62,8 +34,6 @@ auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 	and the arguments pack*/
 	cereal::BinaryInputArchive archive(ss);
 	archive(args...);
-	//boost::archive::text_iarchive archive(ss);
-	//expander2(archive, args...);
 };
 
 class VertexCover

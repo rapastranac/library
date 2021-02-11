@@ -95,6 +95,7 @@
         "queue": "cpp",
         "stack": "cpp",
         "version": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "*.ipp": "cpp"
     }
 }

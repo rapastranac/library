@@ -168,7 +168,7 @@ namespace library
 										  // ... loop
 			updateNumAvNodes();
 			//BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
-			BcastPut(numAvailableNodes, 1, MPI::INTEGER, 0, 1, win_NumNodes, -1);
+			BcastPut(numAvailableNodes, 1, MPI::INT, 0, win_NumNodes);
 
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
 			printf("Scheduler started!! \n");
@@ -184,7 +184,7 @@ namespace library
 						{
 							--numAvailableNodes[0];
 							//BcastNumAvNodes();
-							BcastPut(numAvailableNodes, 1, MPI::INTEGER, 0, 1, win_NumNodes, -1);
+							BcastPut(numAvailableNodes, 1, MPI::INT, 0, win_NumNodes);
 
 							int k = findAvailableNode();						 // first available node in the list
 							inbox_boolean[rank] = false;						 // reset boolean to zero lest center node check it again, unless requested by nodes
@@ -216,13 +216,14 @@ namespace library
 		{
 			std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
 			printf("test, busyNodes = %d\n", busyNodes[0]);
+
 			if (busyNodes[0] == 0)
 			{
 				for (int dest = 1; dest < world_size; dest++)
 				{
-					int emptyBuffer;
+					char emptyBuffer{'a'};
 					int tag = 3;
-					MPI_Ssend(&emptyBuffer, 0, MPI::INTEGER, dest, tag, world_Comm);
+					MPI_Ssend(&emptyBuffer, 1, MPI::CHAR, dest, tag, world_Comm);
 				}
 				printf("BusyNodes = 0 achieved \n");
 				return true;
@@ -237,9 +238,12 @@ namespace library
 			{
 				MPI_Status status;
 				int Bytes;
-				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
+
+				MPI_Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI::CHAR, &Bytes);					   // receives total number of datatype elements of the message
+
 				char *in_buffer = new char[Bytes];
-				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
+				MPI_Recv(in_buffer, Bytes, MPI::CHAR, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
 
 				for (int i = 0; i < Bytes; i++)
 					this->returnStream << in_buffer[i];
@@ -251,7 +255,7 @@ namespace library
 
 		void receiveCurrentResult()
 		{
-			int src;
+			//int src;
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (inbox_bestResult[rank])
@@ -260,19 +264,18 @@ namespace library
 
 					MPI_Status status;
 					int Bytes;
-					//MPI_Recv(&Bytes, 1, MPI::INTEGER, rank, MPI::ANY_TAG, world_Comm, &status);
 					// sender would not need to send data size before hand **********************************************
 					MPI_Probe(rank, MPI::ANY_TAG, world_Comm, &status); // receives status before receiving the message
-					MPI_Get_count(&status, MPI::CHARACTER, &Bytes);		// receives total number of datatype elements of the message
+					MPI_Get_count(&status, MPI::CHAR, &Bytes);			// receives total number of datatype elements of the message
 					//***************************************************************************************************
-					src = rank; /* since best result is sent by other processes, then each process
-					 is in charge of updating its own value, therefore there's no need of broadcasting to the source 
-					 of this best result */
 
 					char *buffer = new char[Bytes];
-					MPI_Recv(buffer, Bytes, MPI::CHARACTER, rank, MPI::ANY_TAG, world_Comm, &status);
+					MPI_Recv(buffer, Bytes, MPI::CHAR, rank, MPI::ANY_TAG, world_Comm, &status);
 
-					printf("Center received a best result from %d, Bytes : %d, refVal \n", rank, Bytes, status.MPI_TAG);
+					//TODO .. avoid broadcasting to ranks that sent the above best results
+					BcastPut(refValueGlobal, 1, MPI::INT, 0, win_refValueGlobal); // broadcast the absolute global ref value
+
+					printf("Center received a best result from %d, Bytes : %d, refVal %d \n", rank, Bytes, status.MPI_TAG);
 
 					std::stringstream ss;
 
@@ -283,11 +286,8 @@ namespace library
 					delete[] buffer;
 					bestResults[rank].first = status.MPI_TAG; // reference value corresponding to result
 					bestResults[rank].second = std::move(ss); // best result so far from this rank
-
-					break; //break loop to ensure not broadcasting to src
 				}
 			}
-			BcastPut(refValueGlobal, 1, MPI::INTEGER, 0, 1, win_refValueGlobal, src); // broadcast the absolute global ref value
 		}
 
 		template <typename Holder, typename Serialize>
@@ -300,11 +300,11 @@ namespace library
 			std::memcpy(buffer, ss.str().data(), count);
 
 			int rcvrNode = 1;
-			int err = MPI_Ssend(&count, 1, MPI::INTEGER, rcvrNode, 0, world_Comm); // send buffer size
-			if (err != MPI::SUCCESS)
-				printf("count could not be sent! \n");
+			//int err = MPI_Ssend(&count, 1, MPI::INT, rcvrNode, 0, world_Comm); // send buffer size
+			//if (err != MPI::SUCCESS)
+			//	printf("count could not be sent! \n");
 
-			err = MPI_Ssend(buffer, count, MPI::CHARACTER, 1, 0, world_Comm); // send buffer
+			int err = MPI_Ssend(buffer, count, MPI::CHAR, 1, 0, world_Comm); // send buffer
 			if (err == MPI::SUCCESS)
 				printf("buffer sucessfully sent! \n");
 
@@ -317,29 +317,23 @@ namespace library
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, rank, 0, win_NumNodes);							 // open epoch
-				MPI_Put(numAvailableNodes, 1, MPI::INTEGER, rank, 0, 1, MPI::INTEGER, win_NumNodes); // put date through window
-				MPI_Win_flush(rank, win_NumNodes);													 // complete RMA operation
-				MPI_Win_unlock(rank, win_NumNodes);													 // close epoch
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, rank, 0, win_NumNodes);					 // open epoch
+				MPI_Put(numAvailableNodes, 1, MPI::INT, rank, 0, 1, MPI::INT, win_NumNodes); // put date through window
+				MPI_Win_flush(rank, win_NumNodes);											 // complete RMA operation
+				MPI_Win_unlock(rank, win_NumNodes);											 // close epoch
 			}
 		}
 
-		void BcastPut(const void *origin_addr,
-					  int origin_count,
-					  MPI_Datatype mpi_datatype,
-					  MPI_Aint offset,
-					  int target_count,
-					  MPI_Win &window, int except)
+		void BcastPut(const void *origin_addr, int count,
+					  MPI_Datatype mpi_datatype, MPI_Aint offset,
+					  MPI_Win &window)
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				if (rank == except)
-					continue;
-
-				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, rank, 0, window);													// open epoch
-				MPI_Put(origin_addr, origin_count, mpi_datatype, rank, offset, target_count, mpi_datatype, window); // put date through window
-				MPI_Win_flush(rank, window);																		// complete RMA operation
-				MPI_Win_unlock(rank, window);																		// close epoch
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, rank, 0, window);									  // open epoch
+				MPI_Put(origin_addr, count, mpi_datatype, rank, offset, count, mpi_datatype, window); // put date through window
+				MPI_Win_flush(rank, window);														  // complete RMA operation
+				MPI_Win_unlock(rank, window);														  // close epoch
 			}
 		}
 

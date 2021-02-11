@@ -141,7 +141,7 @@ namespace library
 				// this blocks access to this window
 				// this is the only place where this window is read or modified
 
-				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INTEGER, target_rank, offset, 1, MPI::INTEGER, window);
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
 				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
 
 				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
@@ -150,7 +150,7 @@ namespace library
 				{
 					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
 
-					MPI_Accumulate(&refValueLocal, origin_count, MPI::INTEGER, target_rank, offset, 1, MPI::INTEGER, MPI::REPLACE, window);
+					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
 					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
@@ -280,7 +280,7 @@ namespace library
 #endif
 				if (world_rank == 0)
 				{
-					int err = MPI_Bcast(refValueGlobal, 1, MPI::INTEGER, 0, *world_Comm);
+					int err = MPI_Bcast(refValueGlobal, 1, MPI::INT, 0, *world_Comm);
 					if (err != MPI::SUCCESS)
 						printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
 #ifdef DEBUG_COMMENTS
@@ -289,7 +289,7 @@ namespace library
 				}
 				else
 				{
-					int err = MPI_Bcast(refValueGlobal, 1, MPI::INTEGER, 0, *world_Comm);
+					int err = MPI_Bcast(refValueGlobal, 1, MPI::INT, 0, *world_Comm);
 					if (err != MPI::SUCCESS)
 						printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
 #ifdef DEBUG_COMMENTS
@@ -316,7 +316,7 @@ namespace library
 		}
 		/*--------------------------------------------------------end*/
 
-		void customPut(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
+		void put_mpi(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
 		{
 			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // opens epoch
 			MPI_Put(origin_addr, count, mpi_type, target_rank, offset, 1, mpi_type, window);
@@ -650,12 +650,15 @@ namespace library
 
 			if (mpi_lck.try_lock()) // center node is in charge of broadcasting this number
 			{
+				//printf("rank %d entered try_lock \n", world_rank);
+				//printf("rank %d, numAvailableNodes : %d \n", world_rank, numAvailableNodes[0]);
+
 				if (numAvailableNodes[0] > 0)
 				{
 
 					printf("%d about to request center node to push\n", world_rank);
 					bool buffer = true;
-					customPut(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
+					put_mpi(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
 					MPI_Status status;
 
 					printf("process %d requested to push \n", world_rank);
@@ -667,17 +670,11 @@ namespace library
 						holder.setMPISent(true, dest);
 						printf("process %d received ID %d\n", world_rank, dest);
 
-						//serializer::stream os;
-						//serializer::oarchive oa(os);
-						//Utils::unpack_tuple(oa, holder.getArgs());
 						std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
 
-						int count = ss.str().size();										// number of Bytes
-						int err = MPI_Ssend(&count, 1, MPI::INTEGER, dest, 0, *world_Comm); // send buffer size
-						if (err != MPI::SUCCESS)
-							printf("count could not be sent from rank %d to center! \n", world_rank);
+						int count = ss.str().size(); // number of Bytes
 
-						err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, dest, 0, *world_Comm); // send buffer
+						int err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, dest, 0, *world_Comm); // send buffer
 						if (err == MPI::SUCCESS)
 							printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
 
@@ -906,11 +903,13 @@ namespace library
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
 			bool flag = true;
-			customPut(&flag, 1, MPI::BOOL, 0, world_rank, *win_AvNodes);
-			printf("process %d put flag [true] in process 0 \n", world_rank);
 
 			while (true)
 			{
+
+				put_mpi(&flag, 1, MPI::BOOL, 0, world_rank, *win_AvNodes);
+				printf("process %d put flag [true] in process 0 \n", world_rank);
+
 				MPI_Status status;
 				/* if a thread passes succesfully this method, library gets ready to receive data*/
 
@@ -918,7 +917,13 @@ namespace library
 
 				printf("Receiver on %d ready to receive \n", world_rank);
 				int Bytes; // Bytes to be received
-				MPI_Recv(&Bytes, 1, MPI::INTEGER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
+
+				MPI_Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI::CHAR, &Bytes);						// receives total number of datatype elements of the message
+
+				char *in_buffer = new char[Bytes];
+				MPI_Recv(in_buffer, Bytes, MPI::CHAR, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
+
 				count_rcv++;
 				int src = status.MPI_SOURCE;
 				printf("process %d has rcvd from %d,%d times \n", world_rank, src, count_rcv);
@@ -929,9 +934,6 @@ namespace library
 				}
 				printf("Receiver on %d, received %d Bytes \n", world_rank, Bytes);
 
-				char *in_buffer = new char[Bytes];
-				MPI_Recv(in_buffer, Bytes, MPI::CHARACTER, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
-
 				Holder newHolder(*this); // copy types
 
 				std::stringstream ss;
@@ -940,7 +942,7 @@ namespace library
 
 				Utils::unpack_tuple(deserialize, ss, newHolder.getArgs());
 
-				accumulate(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
+				accumulate_mpi(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
 
 				delete[] in_buffer;
 				//for (size_t i = 0; i < std::get<0>(newHolder.getArgs()).size(); i++)
@@ -969,8 +971,8 @@ namespace library
 
 				printf("Passed on process %d \n", world_rank);
 				//				_pool.wait();
-				//accumulate(1, 0, world_rank, win_AvNodes, "availableNodes++");
-				accumulate(-1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes--");
+				//				accumulate(1, 1, MPI::INT, 0, world_rank, *win_AvNodes, "availableNodes++");
+				accumulate_mpi(-1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes--");
 			}
 		}
 
@@ -988,17 +990,13 @@ namespace library
 				std::unique_lock<std::mutex> lck(mtx_MPI); // in theory other threads should be are idle, TO DO ..
 				//this sends a signal so center node turns into receiving mode
 				bool buffer = true;
-				customPut(&buffer, 1, MPI::BOOL, src, 0, *win_finalFlag);
+				put_mpi(&buffer, 1, MPI::BOOL, src, 0, *win_finalFlag);
 				printf("rank %d put to finalFlag! \n", world_rank);
 
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
 
-				int err = MPI_Ssend(&count, 1, MPI::INTEGER, src, 0, *world_Comm);
-				if (err != MPI::SUCCESS)
-					printf("count could not be sent from rank %d to rank %d! \n", world_rank, src);
-
-				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *world_Comm);
+				int err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, src, 0, *world_Comm);
 				if (err != MPI::SUCCESS)
 					printf("final result could not be sent from rank %d to rank %d! \n", world_rank, src);
 			}
@@ -1009,11 +1007,7 @@ namespace library
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
 
-				int err = MPI_Ssend(&count, 1, MPI::INTEGER, src, 0, *world_Comm);
-				if (err != MPI::SUCCESS)
-					printf("count could not be sent from rank %d to rank %d! \n", world_rank, src);
-
-				err = MPI_Ssend(ss.str().data(), count, MPI::CHARACTER, src, 0, *world_Comm);
+				int err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, src, 0, *world_Comm);
 				if (err != MPI::SUCCESS)
 					printf("result could not be sent from rank %d to rank %d! \n", world_rank, src);
 			}
@@ -1033,19 +1027,17 @@ namespace library
 		{
 			//sending signal to center so this one turn into receiving best result mode
 			int signal = true;
-			customPut(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
+			put_mpi(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
 
-			char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT
+			//char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT
 			int Bytes = bestRstream.second.str().size();
 			int refVal = bestRstream.first;
 
-			//MPI_Ssend(&Bytes, 1, MPI::INTEGER, 0, 0, *world_Comm);
-
-			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI::CHARACTER, 0, refVal, *world_Comm);
+			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI::CHAR, 0, refVal, *world_Comm);
 			printf("rank %d sent best result, Bytes : %d, refVal : %d\n", world_rank, Bytes, refVal);
 		}
 
-		void accumulate(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
+		void accumulate_mpi(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
 		{
 			printf("%d about to accumulate on %s\n", world_rank, msg.c_str());
 			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window);
