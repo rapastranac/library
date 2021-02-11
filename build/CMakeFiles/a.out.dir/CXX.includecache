@@ -275,9 +275,11 @@ stdio.h
 /home/andres/Documents/github/library/include/Graph.hpp
 cereal/types/map.hpp
 -
+cereal/types/set.hpp
+-
 cereal/types/vector.hpp
 -
-cereal/types/set.hpp
+cereal/access.hpp
 -
 util.hpp
 /home/andres/Documents/github/library/include/util.hpp
@@ -324,6 +326,10 @@ list
 
 /home/andres/Documents/github/library/include/VertexCover.hpp
 cereal/archives/binary.hpp
+-
+boost/archive/text_oarchive.hpp
+-
+boost/archive/text_iarchive.hpp
 -
 Graph.hpp
 /home/andres/Documents/github/library/include/Graph.hpp

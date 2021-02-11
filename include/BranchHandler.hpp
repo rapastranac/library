@@ -158,6 +158,7 @@ namespace library
 					auto ss = f_serial(result); // serialized result
 
 					printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+					int sz_before = bestRstream.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
 					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
@@ -1034,13 +1035,13 @@ namespace library
 			int signal = true;
 			customPut(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
 
-			void *buffer = bestRstream.second.str().data();
+			char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT
 			int Bytes = bestRstream.second.str().size();
 			int refVal = bestRstream.first;
 
-			MPI_Ssend(&Bytes, 1, MPI::INTEGER, 0, 0, *world_Comm);
+			//MPI_Ssend(&Bytes, 1, MPI::INTEGER, 0, 0, *world_Comm);
 
-			MPI_Ssend(buffer, Bytes, MPI::CHARACTER, 0, refVal, *world_Comm);
+			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI::CHARACTER, 0, refVal, *world_Comm);
 			printf("rank %d sent best result, Bytes : %d, refVal : %d\n", world_rank, Bytes, refVal);
 		}
 

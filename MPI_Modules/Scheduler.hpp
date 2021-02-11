@@ -120,15 +120,15 @@ namespace library
 			printf("rank %d, after MPI_Finalize() \n", world_rank);
 		}
 
-		std::stringstream [[nodiscard("Move semantics need a recipient")]] retrieveResult()
+		std::stringstream &retrieveResult()
 		{
 			for (int rank = 0; rank < world_size; rank++)
 			{
 				if (bestResults[rank].first == refValueGlobal[0])
 				{
 					int SIZE = bestResults[rank].second.str().size();
-					printf("Stream retrieved, size : %d", SIZE);
-					return std::move(bestResults[rank].second);
+					printf("Stream retrieved, size : %d \n", SIZE);
+					return bestResults[rank].second;
 				}
 			}
 
@@ -260,10 +260,10 @@ namespace library
 
 					MPI_Status status;
 					int Bytes;
-					MPI_Recv(&Bytes, 1, MPI::INTEGER, rank, MPI::ANY_TAG, world_Comm, &status);
+					//MPI_Recv(&Bytes, 1, MPI::INTEGER, rank, MPI::ANY_TAG, world_Comm, &status);
 					// sender would not need to send data size before hand **********************************************
-					//MPI_Probe(rank, MPI::ANY_TAG, world_Comm, &status);		// receives status before receiving the message
-					//MPI_Get_count(&status, MPI::CHARACTER, &Bytes); // receives total number of datatype elements of the message
+					MPI_Probe(rank, MPI::ANY_TAG, world_Comm, &status); // receives status before receiving the message
+					MPI_Get_count(&status, MPI::CHARACTER, &Bytes);		// receives total number of datatype elements of the message
 					//***************************************************************************************************
 					src = rank; /* since best result is sent by other processes, then each process
 					 is in charge of updating its own value, therefore there's no need of broadcasting to the source 

@@ -4,8 +4,9 @@
 using namespace std;
 
 #include <cereal/types/map.hpp>
-#include <cereal/types/vector.hpp>
 #include <cereal/types/set.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/access.hpp>
 
 #include "util.hpp"
 
@@ -18,6 +19,8 @@ using namespace std;
 class Graph
 {
 private:
+	friend class cereal::access;
+
 	struct FoldedVertices
 	{
 		int u;
@@ -43,13 +46,14 @@ private:
 		}
 
 		template <class Archive>
-		void serialize(Archive &ar)
+		void serialize(Archive &ar, const unsigned int version)
 		{
 			ar(u, v, w);
 		}
 
 		~FoldedVertices() = default;
 	};
+
 	void _addRowToList(int vec0)
 	{
 		this->list.insert(pair<int, set<int>>(vec0, rows));
@@ -997,27 +1001,29 @@ public:
 		   idsMax,
 		   idsMin,
 		   list,
+		   rows,
 		   vertexDegree,
 		   _zeroVertexDegree,
 		   foldedVertices,
-		   _cover, numEdges,
+		   _cover,
+		   numEdges,
 		   numVertices);
 	}
 
 private:
-	int max;					/*Highest degree within graph*/
-	int min;					/*Lowest degree within graph*/
-	vector<int> idsMax;			/*Stores the positions of max degree
+	int max;						   /*Highest degree within graph*/
+	int min;						   /*Lowest degree within graph*/
+	std::vector<int> idsMax;		   /*Stores the positions of max degree
 									vertices within the adjacency list*/
-	vector<int> idsMin;			/*same as above but for min degree*/
-	map<int, set<int>> list;	/*Adjacency list*/
-	set<int> rows;				/*Temporary variable to store*/
-	map<int, int> vertexDegree; /*list of vertices with their corresponding
+	std::vector<int> idsMin;		   /*same as above but for min degree*/
+	std::map<int, std::set<int>> list; /*Adjacency list*/
+	std::set<int> rows;				   /*Temporary variable to store*/
+	std::map<int, int> vertexDegree;   /*list of vertices with their corresponding
 									number of edges*/
-	set<int> _zeroVertexDegree; /*List of vertices with zero degree*/
+	std::set<int> _zeroVertexDegree;   /*List of vertices with zero degree*/
 
-	map<int, FoldedVertices> foldedVertices;
-	set<int> _cover;
+	std::map<int, FoldedVertices> foldedVertices;
+	std::set<int> _cover;
 
 	int numEdges;	 //number of edges
 	int numVertices; //number of vertices

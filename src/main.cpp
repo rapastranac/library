@@ -31,13 +31,26 @@ int main(int argc, char *argv[])
 #ifndef MPI_ENABLE
 	printf("MPI disable section \n");
 
-	auto file = "input/prob_4/100/00100_1";
+	auto file = "input/prob_4/400/00400_1";
 	graph.readEdges(file);
 
-	/*
-	graph.preprocessing();
+	//auto ss = user_serializer(graph);
+	//int SIZE = ss.str().size();
+	//char buffer[SIZE];
+	//std::memcpy(buffer, ss.str().data(), SIZE);
+	//std::stringstream ss2;
+	//for (int i = 0; i < SIZE; i++)
+	//{
+	//	ss2 << buffer[i];
+	//}
+	//user_deserializer(ss2, oGraph);
 
-	auto ss = user_serializer(graph);
+	cover.init(graph, 12, file, 4);
+	cover.findCover(1);
+	cover.printSolution();
+
+	auto res = cover.getGraphRes();
+	auto ss = user_serializer(res);
 	int SIZE = ss.str().size();
 	char buffer[SIZE];
 	std::memcpy(buffer, ss.str().data(), SIZE);
@@ -47,14 +60,13 @@ int main(int argc, char *argv[])
 		ss2 << buffer[i];
 	}
 	user_deserializer(ss2, oGraph);
-*/
-	cover.init(graph, 1, file, 4);
-	cover.findCover(1);
-	cover.printSolution();
+
+	auto mvc = oGraph.postProcessing();
+	int mvc_size = mvc.size();
+
+	printf("mvc size : %d \n", mvc_size);
 
 	return 0;
-//#endif
-//#ifdef MPI_ENABLE
 #else
 	printf("MPI enable section \n");
 
@@ -69,7 +81,7 @@ int main(int argc, char *argv[])
 	thus, other nodes know the data type*/
 
 	//handler.functionIsVoid();
-	auto file = "input/prob_4/100/00100_1";
+	auto file = "input/prob_4/400/00400_1";
 
 	HolderType holder(handler); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
@@ -89,7 +101,7 @@ int main(int argc, char *argv[])
 
 	cover.init(graph, 1, file, 4);
 
-	scheduler.setThreadsPerNode(1);
+	scheduler.setThreadsPerNode(2);
 	holder.holdArgs(depth, graph);
 	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
 
@@ -97,7 +109,8 @@ int main(int argc, char *argv[])
 	{
 		scheduler.printfStats();
 
-		auto result = scheduler.retrieveResult(); // returns a stringstream
+		std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream
+		int SIZE = result.str().size();
 		user_deserializer(result, oGraph);
 		auto cv = oGraph.postProcessing();
 		printf("Cover size : %d \n", cv.size());
@@ -111,7 +124,6 @@ int main(int argc, char *argv[])
 		//}
 		std::cout << "\n";
 	}
-
 	scheduler.finalize();
 
 	return 0;

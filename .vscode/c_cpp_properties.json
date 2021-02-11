@@ -9,7 +9,7 @@
                 "${workspaceFolder}/cereal",
                 "${workspaceFolder}/fmt/include"
             ],
-            "defines": [],
+            "defines": ["MPI_ENABLE"],
             "compilerPath": "/usr/bin/mpicc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++20",

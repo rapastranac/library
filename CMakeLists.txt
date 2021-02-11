@@ -17,7 +17,7 @@ include_directories(${MPI_INCLUDE_PATH})
 #link_directories(${Boost_LIBRARY_DIRS})
 #include_directories(${Boost_INCLUDE_DIRS})
 
-#add_definitions(-DMPI_ENABLE)
+add_definitions(-DMPI_ENABLE)
 add_definitions(-DDEBUG_COMMENTS)
 
 add_compile_options("-g" "-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
@@ -44,10 +44,6 @@ set(Include
 
 set(MPI_inc
         MPI_Modules/Scheduler.hpp
-        MPI_Modules/serialize/archive.hpp
-        MPI_Modules/serialize/iarchive.hpp
-        MPI_Modules/serialize/oarchive.hpp        
-        MPI_Modules/serialize/stream.hpp        
         )
 
 set(Sources
