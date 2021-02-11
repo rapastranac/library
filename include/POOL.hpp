@@ -222,35 +222,27 @@ namespace POOL
 			or comparing results, then main thread will wait here until it gets the
 			signal that threadPool has gone totally idle, which means that
 			the job has finished	*/
-		virtual void wait() = 0;
-
-		virtual void clear_queue() = 0;
-
-		void setExternNumThreads(std::atomic<int> *externNumThreads)
+		void wait()
 		{
-			this->externNumThreads = externNumThreads;
+			/* There might be a lost wake up if main thread does not
+				solve at least a branch. To be checked out*/
+			std::unique_lock<std::mutex> lck(this->mtx2);
+			cv2.wait(lck, [this]() {
+				bool flag = false;
+
+				if (nWaiting.load() == size() && awake)
+				{
+					flag = true;   // this allows the waiting thread to exit when pool finishes its tasks
+					awake = false; // this allows to reused the pool after tasks have been finished
+				}
+
+				return flag;
+			});
+			printf("pool has finished its tasks \n");
 		}
+
 		/* If this method invoked, thread will return only when pool has no more tasks to execute,
 			this would apply before pushing the first task and right after finishing the last task */
-
-		//template <typename F>
-		//void wait_if_idle(F *f)
-		//{
-		//	std::unique_lock<std::mutex> lck(mtx2);
-		//	cv3.wait(lck, [this, &f]() {
-		//		if (this->size() == this->n_idle())
-		//		{
-		//			if (f)
-		//			{
-		//				(*f)(); //communicates to center node that this node just became available
-		//			}
-		//
-		//			return true;
-		//		}
-		//		return false;
-		//	});
-		//	x0r = !x0r;
-		//}
 
 		bool isAwake()
 		{
@@ -263,6 +255,13 @@ namespace POOL
 			{
 				return awake;
 			}
+		}
+
+		virtual void clear_queue() = 0;
+
+		void setExternNumThreads(std::atomic<int> *externNumThreads)
+		{
+			this->externNumThreads = externNumThreads;
 		}
 
 		double getIdleTime()
@@ -291,7 +290,6 @@ namespace POOL
 		/*It stores internal threadId so it is possible to ascertain
 			if a running thread belongs to this pool*/
 		std::atomic<int> nWaiting; // how many threads are waiting
-		bool x0r = true;
 		bool awake = false;
 
 		/*It stores threadIds in the order that they finis*/

@@ -137,7 +137,8 @@ public:
 
 			//************************************************
 
-			branchHandler.waitResult(true);
+			//branchHandler.wait_and_finish();
+			branchHandler.wait();
 			graph_res = branchHandler.retrieveResult<Graph>();
 			cover = graph_res.postProcessing();
 		}

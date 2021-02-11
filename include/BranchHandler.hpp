@@ -196,21 +196,23 @@ namespace library
 			this->max_push_depth = max_push_depth;
 		}
 
-		/* for void algorithms, whether main thread helps solving some branches 
-		or only pushes to solve in parallel. Main thread will sleep in here until
-		a result is ready I*/
-		void waitResult(bool isVoid = false)
+		/* for void algorithms, this also calls the destructor of the pool*/
+		void wait_and_finish()
 		{
-#ifdef DEBUG_COMMENTS
-			printf("Main thread waiting results \n");
-#endif
-			if (isVoid)
-				this->_pool_default->wait();
 
 #ifdef DEBUG_COMMENTS
 			printf("Main thread interrupting pool \n");
 #endif
-			//this->_pool_default->interrupt(true);
+			this->_pool_default->interrupt(true);
+		}
+
+		/* for void algorithms, this allows to reuse the pool*/
+		void wait()
+		{
+#ifdef DEBUG_COMMENTS
+			printf("Main thread waiting results \n");
+#endif
+			this->_pool_default->wait();
 		}
 
 		template <typename RESULT_TYPE>

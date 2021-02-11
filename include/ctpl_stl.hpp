@@ -88,21 +88,6 @@ namespace ctpl
 			return pck->get_future();
 		}
 
-		void wait()
-		{
-			/* There might be a lost wake up if main thread does not
-				solve at least a branch. To be checked out*/
-			std::unique_lock<std::mutex> lck(this->mtx2);
-			cv2.wait(lck, [this]() {
-				bool flag = false;
-
-				if (nWaiting.load() == size())
-					flag = true;
-				return flag;
-			});
-			printf("pool has finished its tasks \n");
-		}
-
 	protected:
 		void run(int threadId)
 		{
@@ -142,16 +127,21 @@ namespace ctpl
 					std::unique_lock<std::mutex> lock(this->mtx);
 					++this->nWaiting;
 
-					if (nWaiting.load() == this->size())
-						this->cv2.notify_one();
+					if (nWaiting.load() == this->size() && awake)
+						this->cv2.notify_one(); // this only happens when pool finishes all its tasks
 
-					this->cv.wait(lock, [this, &_f, &isPop, &_flag]() {
+					this->cv.wait(lock, [this, &_f, &isPop, &_flag]() { // all threads go into sleep mode when pool is launched
 						isPop = this->q.pop(_f);
 						return isPop || this->isDone || _flag;
 					});
 					end = std::chrono::steady_clock::now();
-					sumUpIdleTime(begin, end);
+
+					sumUpIdleTime(begin, end); // this only measures the threads idle time
 					--this->nWaiting;
+
+					if (!awake)
+						awake = true; // this helps blocking a main thread that launches the thread pool
+
 					if (!isPop)
 					{
 						this->kill_q.push(threadId); //It enqueues the order in which the threads return
@@ -174,8 +164,6 @@ namespace ctpl
 		}
 
 		Queue<std::function<void(int id)> *> q;
-
-		std::atomic<int> nWaiting; // how many threads are waiting
 	};
 
 } // namespace ctpl

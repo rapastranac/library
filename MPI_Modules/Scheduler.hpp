@@ -262,7 +262,7 @@ namespace library
 					int Bytes;
 					MPI_Recv(&Bytes, 1, MPI::INTEGER, rank, MPI::ANY_TAG, world_Comm, &status);
 					// sender would not need to send data size before hand **********************************************
-					//MPI_Probe(rank, 0, world_Comm, &status);		// receives status before receiving the message
+					//MPI_Probe(rank, MPI::ANY_TAG, world_Comm, &status);		// receives status before receiving the message
 					//MPI_Get_count(&status, MPI::CHARACTER, &Bytes); // receives total number of datatype elements of the message
 					//***************************************************************************************************
 					src = rank; /* since best result is sent by other processes, then each process
