@@ -453,8 +453,8 @@ private:
 	void
 	terminate_condition(Graph &graph, int id, int depth)
 	{
-		auto condition1 = [this](int, int) {
-			return leaves == 0 ? true : false;
+		auto condition1 = [this](int refValGlobal, int refValLocal) {
+			return (leaves == 0) && (refValLocal < refValGlobal) ? true : false;
 		};
 
 		auto condition2 = [](int refValGlobal, int refValLocal) {

@@ -12,6 +12,7 @@
 #include "pool_include.hpp"
 
 #include "../MPI_Modules/Utils.hpp"
+#include "../MPI_Modules/MPI_Mutex.hpp"
 
 #include <any>
 #include <atomic>
@@ -133,8 +134,8 @@ namespace library
 				MPI_Aint offset = 0;
 				MPI_Win &window = *win_refValueGlobal; // change to a reference to the window (&window, or *window)
 
-				//MPI::LOCK_SHARED
-				//MPI::LOCK_EXCLUSIVE
+				mpi_mutex->lock(world_rank); // critical section begins
+
 				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
 
 				printf("rank %d opened epoch to send best result \n", world_rank);
@@ -168,9 +169,11 @@ namespace library
 
 					MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
 
+					mpi_mutex->unlock(world_rank); // critical section ends
 					return true;
 				}
 				MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
+				mpi_mutex->unlock(world_rank);		 // critical section ends
 				return false;
 			}
 			else
@@ -830,6 +833,8 @@ namespace library
 		/*----------------Singleton----------------->>end*/
 	protected:
 		/* MPI parameters */
+		MPI_Mutex *mpi_mutex = nullptr;
+
 		std::function<std::any(std::any)> _serialize;
 		std::function<std::any(std::any)> _deserialize;
 
@@ -873,7 +878,8 @@ namespace library
 						 MPI_Comm *second_Comm,
 						 MPI_Comm *SendToNodes_Comm,
 						 MPI_Comm *SendToCenter_Comm,
-						 MPI_Comm *NodeToNode_Comm)
+						 MPI_Comm *NodeToNode_Comm,
+						 MPI_Mutex *mpi_mutex)
 		{
 			this->world_rank = world_rank;
 			this->world_size = world_size;
@@ -892,6 +898,10 @@ namespace library
 			this->SendToNodes_Comm = SendToNodes_Comm;
 			this->SendToCenter_Comm = SendToCenter_Comm;
 			this->NodeToNode_Comm = NodeToNode_Comm;
+
+			// mpi mutex *********************
+			this->mpi_mutex = mpi_mutex;
+			// *******************************
 		}
 
 		/* if method receives data, this node is supposed to be totally idle */

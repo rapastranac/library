@@ -2,6 +2,7 @@
 #ifndef SCHEDULER_HPP
 #define SCHEDULER_HPP
 
+#include "MPI_Mutex.hpp"
 #include "Utils.hpp"
 
 #include <random>
@@ -63,6 +64,11 @@ namespace library
 			//printf("About to create window, %d / %d!! \n", world_rank, world_size);
 			MPI_Barrier(world_Comm);
 			win_allocate();
+
+			// initiliaze MPI mutex *********************************************************
+			mpi_mutex.set(world_Comm, win_mutex);
+			// ******************************************************************************
+
 			MPI_Barrier(world_Comm);
 
 			this->_branchHandler.linkMPIargs(world_rank,
@@ -81,7 +87,8 @@ namespace library
 											 &second_Comm,
 											 &SendToNodes_Comm,
 											 &SendToCenter_Comm,
-											 &NodeToNode_Comm);
+											 &NodeToNode_Comm,
+											 &mpi_mutex);
 
 			return world_rank;
 		}
@@ -413,6 +420,10 @@ namespace library
 
 			if (world_rank == 0)
 			{
+				// mpi mutex **********************************************************************************************
+				MPI_Win_allocate(sizeof(bool), sizeof(bool), MPI::INFO_NULL, MPI_COMM_WORLD, &mpi_mutex.mutex, &win_mutex);
+				// ********************************************************************************************************
+
 				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 				MPI_Win_allocate(world_size * sizeof(bool), sizeof(bool), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
@@ -424,6 +435,11 @@ namespace library
 			else
 			{
 				// it is not required to allocate buffer memory for the other processes
+
+				// mpi mutex **********************************************************************************************
+				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, MPI_COMM_WORLD, &mpi_mutex.mutex, &win_mutex);
+				// ********************************************************************************************************
+
 				MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
 				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, SendToCenter_Comm, &inbox_boolean, &win_boolean);
 				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, world_Comm, &availableNodes, &win_AvNodes);
@@ -440,6 +456,9 @@ namespace library
 
 		void win_deallocate()
 		{
+			// mpi mutex ********************
+			MPI_Win_free(&win_mutex);
+			// ******************************
 
 			MPI_Win_free(&win_accumulator);
 			MPI_Win_free(&win_AvNodes);
@@ -468,6 +487,10 @@ namespace library
 		{
 			if (world_rank == 0)
 			{
+				// mpi mutex ********************
+				mpi_mutex.mutex[0] = false;
+				// ******************************
+
 				bestResults.resize(world_size);
 
 				numAvailableNodes[0] = world_size - 1;
@@ -490,7 +513,11 @@ namespace library
 		int world_rank;			  // get the rank of the process
 		int world_size;			  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
-		MPI_Win win_boolean;	  // window for pushing request from nodes
+
+		MPI_Mutex mpi_mutex;
+		MPI_Win win_mutex;
+
+		MPI_Win win_boolean; // window for pushing request from nodes
 		MPI_Win win_inbox_bestResult;
 		MPI_Win win_refValueGlobal;
 		MPI_Win win_finalFlag;

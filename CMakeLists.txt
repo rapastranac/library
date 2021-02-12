@@ -46,6 +46,7 @@ set(Include
 
 set(MPI_inc
         MPI_Modules/Scheduler.hpp
+        MPI_Modules/MPI_Mutex.hpp
         )
 
 set(Sources

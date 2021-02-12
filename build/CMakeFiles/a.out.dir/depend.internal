@@ -29,12 +29,9 @@ CMakeFiles/a.out.dir/src/main.cpp.o
  ../cereal/cereal/types/set.hpp
  ../cereal/cereal/types/vector.hpp
  ../fmt/include/fmt/core.h
+ /home/andres/Documents/github/library/MPI_Modules/MPI_Mutex.hpp
  /home/andres/Documents/github/library/MPI_Modules/Scheduler.hpp
  /home/andres/Documents/github/library/MPI_Modules/Utils.hpp
- /home/andres/Documents/github/library/MPI_Modules/serialize/archive.hpp
- /home/andres/Documents/github/library/MPI_Modules/serialize/iarchive.hpp
- /home/andres/Documents/github/library/MPI_Modules/serialize/oarchive.hpp
- /home/andres/Documents/github/library/MPI_Modules/serialize/stream.hpp
  /home/andres/Documents/github/library/include/BranchHandler.hpp
  /home/andres/Documents/github/library/include/Graph.hpp
  /home/andres/Documents/github/library/include/POOL.hpp
