@@ -123,10 +123,15 @@ namespace library
 		bool replaceIf(int refValueLocal, C1 &&Cond, T &&result, F_SERIAL &&f_serial)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
+#ifdef DEBUG_COMMENTS
 			printf("rank %d entered replaceIf(), acquired mutex \n ", world_rank);
+#endif
 
 			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
 			{
+#ifdef DEBUG_COMMENTS
+				printf("rank %d, local condition satisfied refValueGlobal : %d vs refValueLocal : %d \n", world_rank, refValueGlobal[0], refValueLocal);
+#endif
 				// then, absolute global is checked
 				int refValueGlobalAbsolute;
 				int origin_count = 1;
@@ -137,15 +142,18 @@ namespace library
 				mpi_mutex->lock(world_rank); // critical section begins
 
 				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
-
+#ifdef DEBUG_COMMENTS
 				printf("rank %d opened epoch to send best result \n", world_rank);
+#endif
 				// this blocks access to this window
 				// this is the only place where this window is read or modified
 
 				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
 				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
 
+#ifdef DEBUG_COMMENTS
 				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
+#endif
 
 				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
 				{
@@ -651,46 +659,54 @@ namespace library
 			lck.unlock();													// this allows to other threads to keep pushing in the pool
 			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
 
-			if (mpi_lck.try_lock()) // center node is in charge of broadcasting this number
+			if (mpi_lck.try_lock())
 			{
 				//printf("rank %d entered try_lock \n", world_rank);
 				//printf("rank %d, numAvailableNodes : %d \n", world_rank, numAvailableNodes[0]);
 
-				if (numAvailableNodes[0] > 0)
+				if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
 				{
-
+#ifdef DEBUG_COMMENTS
 					printf("%d about to request center node to push\n", world_rank);
+#endif
 					bool buffer = true;
 					put_mpi(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
 					MPI_Status status;
-
+#ifdef DEBUG_COMMENTS
 					printf("process %d requested to push \n", world_rank);
+#endif
 					MPI_Recv(&signal, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
 
 					if (signal)
 					{
-						int dest = status.MPI_TAG;
+						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
 						holder.setMPISent(true, dest);
+#ifdef DEBUG_COMMENTS
 						printf("process %d received ID %d\n", world_rank, dest);
+#endif
 
 						std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
 
-						int count = ss.str().size(); // number of Bytes
+						int Bytes = ss.str().size(); // number of Bytes
 
-						int err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, dest, 0, *world_Comm); // send buffer
+						int err = MPI_Ssend(ss.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
 						if (err == MPI::SUCCESS)
 							printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
 
 						//TODO how to retrieve result from destination rank?
 
 						mpi_lck.unlock();
+#ifdef DEBUG_COMMENTS
 						printf("process %d forwarded to process %d \n", world_rank, dest);
+#endif
 						return 2;
 					}
 					else // numAvailableNodes might have changed due to delay
 					{
 						mpi_lck.unlock();
+#ifdef DEBUG_COMMENTS
 						printf("process %d push request failed, forwarded!\n", world_rank);
+#endif
 						auto retVal = this->forward(f, id, holder);
 						holder.hold_actual_result(retVal);
 						return 0;
@@ -768,6 +784,8 @@ namespace library
 			this->max_push_depth = -1;
 			this->superFlag = false;
 			this->idCounter = 0;
+
+			this->bestRstream.first = -1; // this allows to avoid sending empty buffers
 		}
 
 		int appliedStrategy = -1;
@@ -846,7 +864,6 @@ namespace library
 		char processor_name[128]; // name of the node
 
 		MPI_Win *win_boolean = nullptr;
-		MPI_Win *win_NumNodes = nullptr;
 		MPI_Win *win_AvNodes = nullptr;
 		MPI_Win *win_finalFlag = nullptr;
 		MPI_Win *win_accumulator = nullptr;
@@ -859,7 +876,7 @@ namespace library
 		MPI_Comm *SendToCenter_Comm = nullptr;
 		MPI_Comm *NodeToNode_Comm = nullptr;
 
-		int *numAvailableNodes;
+		int *numAvailableNodes = nullptr;
 		bool request_response = false;
 
 		void linkMPIargs(int world_rank,
@@ -872,7 +889,6 @@ namespace library
 						 MPI_Win *win_AvNodes,
 						 MPI_Win *win_boolean,
 						 MPI_Win *win_inbox_bestResult,
-						 MPI_Win *win_NumNodes,
 						 MPI_Win *win_refValueGlobal,
 						 MPI_Comm *world_Comm,
 						 MPI_Comm *second_Comm,
@@ -891,7 +907,6 @@ namespace library
 			this->win_finalFlag = win_finalFlag;
 			this->win_boolean = win_boolean;
 			this->win_inbox_bestResult = win_inbox_bestResult;
-			this->win_NumNodes = win_NumNodes;
 			this->win_refValueGlobal = win_refValueGlobal;
 			this->world_Comm = world_Comm;
 			this->second_Comm = second_Comm;
@@ -955,12 +970,6 @@ namespace library
 				accumulate_mpi(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
 
 				delete[] in_buffer;
-				//for (size_t i = 0; i < std::get<0>(newHolder.getArgs()).size(); i++)
-				//{
-				//	printf("%d ", std::get<0>(newHolder.getArgs())[i]);
-				//}
-
-				//TODO Warning, probably call mtx_MPI in here
 
 				if (!onceFlag)
 				{
@@ -970,18 +979,11 @@ namespace library
 					onceFlag = true;
 				}
 
-				//auto retVal = pushSeed(f, -1, args...);
 				push(f, 0, newHolder); // first push, node is idle
-
-				//temporary
-				//std::vector<size_t> retVal;
-				//newHolder.get(retVal);
 
 				reply<Result>(serialize, newHolder, src);
 
 				printf("Passed on process %d \n", world_rank);
-				//				_pool.wait();
-				//				accumulate(1, 1, MPI::INT, 0, world_rank, *win_AvNodes, "availableNodes++");
 				accumulate_mpi(-1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes--");
 			}
 		}
@@ -1035,6 +1037,8 @@ namespace library
 		// this should is supposed to be called only when all tasks are finished
 		void sendBestResultToCenter()
 		{
+			if (bestRstream.first == -1)
+				return;
 			//sending signal to center so this one turn into receiving best result mode
 			int signal = true;
 			put_mpi(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
@@ -1045,6 +1049,10 @@ namespace library
 
 			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI::CHAR, 0, refVal, *world_Comm);
 			printf("rank %d sent best result, Bytes : %d, refVal : %d\n", world_rank, Bytes, refVal);
+
+			//reset bestRstream
+			bestRstream.first = -1;		// reset condition to avoid sending empty buffers
+			bestRstream.second.str(""); // clear stream, eventhough it's not necessary since this value is replaced when a better solution is found
 		}
 
 		void accumulate_mpi(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)

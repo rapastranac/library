@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 #ifndef MPI_ENABLE
 	printf("MPI disable section \n");
 
-	auto file = "input/prob_4/600/0600_93";
+	auto file = "input/prob_4/600/00600_1";
 	graph.readEdges(file);
 
 	//auto ss = user_serializer(graph);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	//}
 	//user_deserializer(ss2, oGraph);
 
-	cover.init(graph, 40, file, 4);
+	cover.init(graph, 6, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
 
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 	thus, other nodes know the data type*/
 
 	//handler.functionIsVoid();
-	auto file = "input/prob_4/400/00400_1";
+	auto file = "input/prob_4/600/00600_1";
 
 	HolderType holder(handler); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
@@ -107,6 +107,7 @@ int main(int argc, char *argv[])
 
 	if (rank == 0)
 	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(300)); // to let other processes to print
 		scheduler.printfStats();
 
 		std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream

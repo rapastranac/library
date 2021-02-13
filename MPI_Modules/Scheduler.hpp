@@ -81,7 +81,6 @@ namespace library
 											 &win_AvNodes,
 											 &win_boolean,
 											 &win_inbox_bestResult,
-											 &win_NumNodes,
 											 &win_refValueGlobal,
 											 &world_Comm,
 											 &second_Comm,
@@ -129,7 +128,7 @@ namespace library
 
 		std::stringstream &retrieveResult()
 		{
-			for (int rank = 0; rank < world_size; rank++)
+			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (bestResults[rank].first == refValueGlobal[0])
 				{
@@ -176,6 +175,8 @@ namespace library
 			updateNumAvNodes();
 			//BcastNumAvNodes(); // comunicate to all nodes the total number of available nodes
 			BcastPut(numAvailableNodes, 1, MPI::INT, 0, win_NumNodes);
+			refValueGlobal_old = refValueGlobal[0];
+			numAvailableNodes_old = numAvailableNodes[0];
 
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
 			printf("Scheduler started!! \n");
@@ -191,7 +192,7 @@ namespace library
 						{
 							--numAvailableNodes[0];
 							//BcastNumAvNodes();
-							BcastPut(numAvailableNodes, 1, MPI::INT, 0, win_NumNodes);
+							//BcastPut(numAvailableNodes[0], 1, MPI::INT, 0, win_NumNodes);
 
 							int k = findAvailableNode();						 // first available node in the list
 							inbox_boolean[rank] = false;						 // reset boolean to zero lest center node check it again, unless requested by nodes
@@ -221,8 +222,8 @@ namespace library
 		// this sends the termination signal
 		auto breakLoop()
 		{
-			std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
-			printf("test, busyNodes = %d\n", busyNodes[0]);
+			//std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
+			//printf("test, busyNodes = %d\n", busyNodes[0]);
 
 			if (busyNodes[0] == 0)
 			{
@@ -279,9 +280,6 @@ namespace library
 					char *buffer = new char[Bytes];
 					MPI_Recv(buffer, Bytes, MPI::CHAR, rank, MPI::ANY_TAG, world_Comm, &status);
 
-					//TODO .. avoid broadcasting to ranks that sent the above best results
-					BcastPut(refValueGlobal, 1, MPI::INT, 0, win_refValueGlobal); // broadcast the absolute global ref value
-
 					printf("Center received a best result from %d, Bytes : %d, refVal %d \n", rank, Bytes, status.MPI_TAG);
 
 					std::stringstream ss;
@@ -294,6 +292,12 @@ namespace library
 					bestResults[rank].first = status.MPI_TAG; // reference value corresponding to result
 					bestResults[rank].second = std::move(ss); // best result so far from this rank
 				}
+			}
+			//TODO .. avoid broadcasting to ranks that sent the above best results
+			if (refValueGlobal[0] != refValueGlobal_old)
+			{
+				BcastPut(refValueGlobal, 1, MPI::INT, 0, win_refValueGlobal); // broadcast the absolute global ref value
+				refValueGlobal_old = refValueGlobal[0];
 			}
 		}
 
@@ -317,18 +321,6 @@ namespace library
 
 			availableNodes[rcvrNode] = false; // becomes unavailable until it finishes
 			delete[] buffer;
-		}
-
-		/* this should be called only when the number of available nodes is modified */
-		void BcastNumAvNodes()
-		{
-			for (int rank = 1; rank < world_size; rank++)
-			{
-				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, rank, 0, win_NumNodes);					 // open epoch
-				MPI_Put(numAvailableNodes, 1, MPI::INT, rank, 0, 1, MPI::INT, win_NumNodes); // put date through window
-				MPI_Win_flush(rank, win_NumNodes);											 // complete RMA operation
-				MPI_Win_unlock(rank, win_NumNodes);											 // close epoch
-			}
 		}
 
 		void BcastPut(const void *origin_addr, int count,
@@ -377,6 +369,14 @@ namespace library
 					++count;
 			}
 			numAvailableNodes[0] = count;
+
+			//printf("numAvailableNodes up-to-date : %d \n", numAvailableNodes[0]);
+
+			if (numAvailableNodes[0] != numAvailableNodes_old)
+			{
+				numAvailableNodes_old = numAvailableNodes[0];
+				BcastPut(numAvailableNodes, 1, MPI::INT, 0, win_NumNodes); // this line broadcast to slave ranks
+			}
 		}
 
 		void communicators()
@@ -537,10 +537,12 @@ namespace library
 
 		bool *inbox_boolean = nullptr;	  // receives signal of a node attempting to put data [only center node has the list]
 		int *numAvailableNodes = nullptr; // Number of available nodes	[every node is aware of this number]
+		int numAvailableNodes_old;
 		bool *availableNodes = nullptr;	  // list of available nodes [only center node has the list]
 		int *busyNodes = nullptr;		  // number of nodes working at the time
 		bool *finalFlag = nullptr;		  // applicable only of waiting algorithms, it means that final result is ready
 		int *refValueGlobal = nullptr;	  // reference value to chose a best result
+		int refValueGlobal_old;			  // this help to avoid broadcasting if it hasn't changed
 		bool *inbox_bestResult = nullptr; // a process is requesting to update the best result
 
 		std::stringstream returnStream;
