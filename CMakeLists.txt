@@ -17,7 +17,7 @@ include_directories(${MPI_INCLUDE_PATH})
 #link_directories(${Boost_LIBRARY_DIRS})
 #include_directories(${Boost_INCLUDE_DIRS})
 
-#add_definitions(-DMPI_ENABLE)
+add_definitions(-DMPI_ENABLE)
 #add_definitions(-DDEBUG_COMMENTS)
 
 add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")

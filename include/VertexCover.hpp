@@ -309,7 +309,7 @@ public:
 
 		col1 = "Idle time:";
 		col2 = Util::ToString((double)(branchHandler.getIdleTime() * 1.0e-9));
-		string col3 = Util::ToString((double)(branchHandler.getIdleTime() * 100.0 / elapsed_secs)) + "%";
+		string col3 = Util::ToString((double)(branchHandler.getIdleTime() * 100.0 / (elapsed_secs * 1.0e-9))) + "%";
 
 		cout << std::left << std::setw(wide * 0.3)
 			 << col1
@@ -328,7 +328,7 @@ public:
 
 		col1 = "Pool idle time:";
 		col2 = Util::ToString((double)(branchHandler.getPoolIdleTime()));
-		col3 = Util::ToString((double)(branchHandler.getPoolIdleTime() * 100.0 / elapsed_secs)) + "%";
+		col3 = Util::ToString((double)(branchHandler.getPoolIdleTime() * 100.0 / (elapsed_secs * 1.0e-9))) + "%";
 
 		cout << std::left << std::setw(wide * 0.3)
 			 << col1

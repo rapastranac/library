@@ -139,7 +139,7 @@ namespace library
 				MPI_Aint offset = 0;
 				MPI_Win &window = *win_refValueGlobal; // change to a reference to the window (&window, or *window)
 
-				mpi_mutex->lock(world_rank); // critical section begins
+				//mpi_mutex->lock(world_rank); // critical section begins
 
 				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
 #ifdef DEBUG_COMMENTS
@@ -177,11 +177,11 @@ namespace library
 
 					MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
 
-					mpi_mutex->unlock(world_rank); // critical section ends
+					//mpi_mutex->unlock(world_rank); // critical section ends
 					return true;
 				}
 				MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
-				mpi_mutex->unlock(world_rank);		 // critical section ends
+				//mpi_mutex->unlock(world_rank);		 // critical section ends
 				return false;
 			}
 			else

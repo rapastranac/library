@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
 	thus, other nodes know the data type*/
 
 	//handler.functionIsVoid();
-	auto file = "input/prob_4/600/00600_1";
+	auto file = "input/prob_4/600/0600_93";
+	//auto file = "input/prob_4/600/00600_1";
 
 	HolderType holder(handler); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
