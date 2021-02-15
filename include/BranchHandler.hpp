@@ -64,11 +64,6 @@ namespace library
 			return appliedStrategy;
 		}
 
-		MPI_Comm &getCommunicator()
-		{
-			return *world_Comm;
-		}
-
 	public:
 		double getPoolIdleTime()
 		{
@@ -119,8 +114,9 @@ namespace library
 		global : best value within the same rank
 		global absolute: best value in the whole execution "There might be a delay"
 		*/
-		template <class C1, typename T, class F_SERIAL>
-		bool replaceIf(int refValueLocal, C1 &&Cond, T &&result, F_SERIAL &&f_serial)
+#ifdef MPI_ENABLED
+		template <class C1, class C2, typename T, class F_SERIAL>
+		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result, F_SERIAL &&f_serial)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 #ifdef DEBUG_COMMENTS
@@ -159,6 +155,9 @@ namespace library
 				{
 					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
 
+					if (ifCond)
+						(*ifCond)();
+
 					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
@@ -188,13 +187,23 @@ namespace library
 				return false;
 		}
 
-		template <class C1, typename T>
-		bool replaceIf(int refValueLocal, C1 &&Cond, T &&result)
+#endif
+
+		template <class C1, class C2, typename T>
+		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
 			if (Cond(refValueGlobal[0], refValueLocal))
 			{
 				this->refValueGlobal[0] = refValueLocal;
+				if (refValueLocal == 0)
+				{
+					int fgd = 3423;
+				}
+
+				if (ifCond)
+					(*ifCond)();
+
 				this->bestR = result; //it should move, this copy is only for testing
 				return true;
 			}
@@ -260,6 +269,8 @@ namespace library
 			this->mtx.unlock();
 		}
 
+#ifdef MPI_ENABLED
+
 		void lock_mpi()
 		{
 			this->mtx_MPI.lock();
@@ -268,6 +279,8 @@ namespace library
 		{
 			this->mtx_MPI.unlock();
 		}
+
+#endif
 
 		//TODO still missing some mutexes
 		int getRefValue()
@@ -282,39 +295,40 @@ namespace library
 		//if multi-processing, then every process should call this method
 		void setRefValue(int refValue)
 		{
-			if (is_MPI_enable)
-			{
-				// since all processes pass by here, then MPI_Bcast is effective
-				this->refValueGlobal[0] = refValue;
-#ifdef DEBUG_COMMENTS
-				printf("rank %d, refValueGlobal has been set : %d at %p \n", world_rank, refValueGlobal[0], refValueGlobal);
-#endif
-				if (world_rank == 0)
-				{
-					int err = MPI_Bcast(refValueGlobal, 1, MPI::INT, 0, *world_Comm);
-					if (err != MPI::SUCCESS)
-						printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
-#ifdef DEBUG_COMMENTS
-					printf("refValueGlobal broadcasted: %d at %p \n", refValueGlobal[0], refValueGlobal);
-#endif
-				}
-				else
-				{
-					int err = MPI_Bcast(refValueGlobal, 1, MPI::INT, 0, *world_Comm);
-					if (err != MPI::SUCCESS)
-						printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
-#ifdef DEBUG_COMMENTS
-					printf("rank %d, refValueGlobal received: %d at %p \n", refValueGlobal[0], refValueGlobal);
-#endif
-				}
 
-				MPI_Barrier(*world_Comm);
+#ifdef MPI_ENABLED
+
+			// since all processes pass by here, then MPI_Bcast is effective
+			this->refValueGlobal[0] = refValue;
+#ifdef DEBUG_COMMENTS
+			printf("rank %d, refValueGlobal has been set : %d at %p \n", world_rank, refValueGlobal[0], refValueGlobal);
+#endif
+			if (world_rank == 0)
+			{
+				int err = MPI_Bcast(refValueGlobal, 1, MPI::INT, 0, *world_Comm);
+				if (err != MPI::SUCCESS)
+					printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
+#ifdef DEBUG_COMMENTS
+				printf("refValueGlobal broadcasted: %d at %p \n", refValueGlobal[0], refValueGlobal);
+#endif
 			}
 			else
 			{
-				this->refValueGlobal = new int[1];
-				this->refValueGlobal[0] = refValue;
+				int err = MPI_Bcast(refValueGlobal, 1, MPI::INT, 0, *world_Comm);
+				if (err != MPI::SUCCESS)
+					printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
+#ifdef DEBUG_COMMENTS
+				printf("rank %d, refValueGlobal received: %d at %p \n", refValueGlobal[0], refValueGlobal);
+#endif
 			}
+
+			MPI_Barrier(*world_Comm);
+
+#else
+
+			this->refValueGlobal = new int[1];
+			this->refValueGlobal[0] = refValue;
+#endif
 		}
 
 		/*begin<<------casting strategies -------------------------*/
@@ -577,11 +591,15 @@ namespace library
 		template <typename F, typename Holder>
 		bool push_DLB(F &&f, int id, Holder &holder)
 		{
-			int flag = false;
 			/*This lock must be adquired before checking the condition,	
 			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			numAvailableNodes[0] = 1; //TESTING only
+
+			if (std::get<1>(holder.getArgs()).coverSize() == 0)
+			{
+				int g = 4534;
+			}
+
 			if (busyThreads < thread_pool.size())
 			{
 				if (is_DLB)
@@ -590,17 +608,11 @@ namespace library
 					if (upperHolder)
 					{
 						this->busyThreads++;
-
-						if (std::get<1>(upperHolder->tup).fetchCover().size() == 0)
-						{
-							int gfdg = 34; //just to create a break point
-						}
-
 						upperHolder->setPushStatus(true);
-
 						lck.unlock();
-						auto tmp = std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
-						upperHolder->hold_future(std::move(tmp));
+
+						auto ret = std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
+						upperHolder->hold_future(std::move(ret));
 						return false;
 					}
 
@@ -609,24 +621,17 @@ namespace library
 
 				this->busyThreads++;
 				holder.setPushStatus(true);
-
-				if (std::get<1>(holder.tup).fetchCover().size() == 0)
-				{
-					int gfdg = 34; //just to create a break point
-				}
-
 				lck.unlock();
 
-				auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
-				holder.hold_future(std::move(tmp));
+				auto ret = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
+				holder.hold_future(std::move(ret));
 				return true;
 			}
 			else
 			{
 				lck.unlock();
-
-				auto retVal = this->forward(f, id, holder, true);
-				holder.hold_actual_result(retVal);
+				auto ret = this->forward(f, id, holder, true);
+				holder.hold_actual_result(ret);
 				return true;
 			}
 			return false;
@@ -636,7 +641,6 @@ namespace library
 		template <typename F, typename Holder>
 		int push(F &&f, int id, Holder &holder)
 		{
-			//auto _pool = ctpl_casted(_pool);
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
@@ -646,40 +650,35 @@ namespace library
 				holder.setPushStatus(true);
 
 				lck.unlock();
-				auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
-				holder.hold_future(std::move(tmp));
+				auto ret = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
+				holder.hold_future(std::move(ret));
 				return 1;
 			}
 			else
 			{
 				lck.unlock();
-				auto r = this->forward(f, id, holder);
-				holder.hold_actual_result(r);
+				auto ret = this->forward(f, id, holder);
+				holder.hold_actual_result(ret);
 				return 0;
 			}
 		}
 
+		template <typename F, typename Holder>
+		bool push(F &&f, int id, Holder &holder, bool trackStack)
+		{
+			bool _flag = false;
+			while (!_flag)
+				_flag = push_DLB(f, id, holder);
+
+			return _flag;
+		}
+
+#ifdef MPI_ENABLED
 		template <typename F, typename Holder, typename F_SERIAL>
 		int push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
 		{
 			bool signal{false};
-			//auto _pool = ctpl_casted(_pool);
-			/*This lock must be performed before checking the condition,
-			even though numThread is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-			if (busyThreads < thread_pool.size())
-			{
-				busyThreads++;
-				holder.setPushStatus(true);
-
-				lck.unlock();
-				auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
-				holder.hold_future(std::move(tmp));
-				return 1;
-			}
-			lck.unlock();													// this allows to other threads to keep pushing in the pool
 			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
-
 			if (mpi_lck.try_lock())
 			{
 				//printf("rank %d entered try_lock \n", world_rank);
@@ -722,19 +721,34 @@ namespace library
 #endif
 						return 2;
 					}
-					else // numAvailableNodes might have changed due to delay
+					/*else // numAvailableNodes might have changed due to delay
 					{
 						mpi_lck.unlock();
-#ifdef DEBUG_COMMENTS
+						#ifdef DEBUG_COMMENTS
 						printf("process %d push request failed, forwarded!\n", world_rank);
-#endif
+						#endif
 						auto retVal = this->forward(f, id, holder);
 						holder.hold_actual_result(retVal);
 						return 0;
-					}
+					}*/
 				}
 				mpi_lck.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
 			}
+
+			/*This lock must be performed before checking the condition,
+			even though numThread is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+			if (busyThreads < thread_pool.size())
+			{
+				busyThreads++;
+				holder.setPushStatus(true);
+
+				lck.unlock();
+				auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
+				holder.hold_future(std::move(tmp));
+				return 1;
+			}
+			lck.unlock(); // this allows to other threads to keep pushing in the pool
 
 			//lck.unlock(); // unlocked already before mpi push
 			auto retVal = this->forward(f, id, holder);
@@ -742,17 +756,7 @@ namespace library
 			return 0;
 		}
 
-		template <typename F, typename Holder>
-		bool push(F &&f, int id, Holder &holder, bool trackStack)
-		{
-			bool _flag = false;
-
-			//ctpl::Pool *_pool = ctpl_casted(_pool);
-			while (!_flag)
-				_flag = push_DLB(f, id, holder);
-
-			return _flag;
-		}
+#endif
 
 		template <typename F, typename Holder>
 		auto forward(F &&f, int threadId, Holder &holder)
@@ -800,8 +804,6 @@ namespace library
 			this->busyThreads = 0;
 			this->idleTime = 0;
 			this->isDone = false;
-			//this->_pool = nullptr;
-			//this->_pool_2 = nullptr;
 			this->max_push_depth = -1;
 			this->superFlag = false;
 			this->idCounter = 0;
@@ -820,7 +822,7 @@ namespace library
 		std::once_flag isDoneFlag;
 		std::any bestR;
 		std::pair<int, std::stringstream> bestRstream;
-		bool is_DLB = false;
+		bool is_DLB = true;
 
 		/*Dequeue while using strategy myPool*/
 		bool isDequeueEnable = false;
@@ -833,14 +835,10 @@ namespace library
 		unsigned int processor_count;
 		std::atomic<long long> idleTime;
 		std::atomic<int> busyThreads;
-		std::mutex mtx;		//local mutex
-		std::mutex mtx_MPI; //local mutex
-		bool is_mtx_mpi_acquired = false;
+		std::mutex mtx; //local mutex
 		std::condition_variable cv;
 		std::atomic<bool> superFlag;
 		ctpl::Pool thread_pool;
-		//POOL::Pool *_pool = nullptr;
-		//POOL::Pool *_pool_2 = nullptr;
 
 		/*begin<<----------------Singleton----------------*/
 		static BranchHandler *INSTANCE;
@@ -872,15 +870,17 @@ namespace library
 
 		/*----------------Singleton----------------->>end*/
 	protected:
+		int *refValueGlobal = nullptr; // shared with MPI
+
+#ifdef MPI_ENABLED
+		std::mutex mtx_MPI; //local mutex
+
 		/* MPI parameters */
 		MPI_Mutex *mpi_mutex = nullptr;
 
 		std::function<std::any(std::any)> _serialize;
 		std::function<std::any(std::any)> _deserialize;
 
-		int *refValueGlobal = nullptr;
-
-		bool is_MPI_enable = false;
 		int world_rank = -1;	  // get the rank of the process
 		int world_size = -1;	  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
@@ -1103,7 +1103,15 @@ namespace library
 
 			printf("%s, by %d\n", msg.c_str(), world_rank);
 		}
+
+		MPI_Comm &getCommunicator()
+		{
+			return *world_Comm;
+		}
+
+#endif
 	};
+
 	BranchHandler *BranchHandler::INSTANCE = nullptr;
 	std::once_flag BranchHandler::initInstanceFlag;
 

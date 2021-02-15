@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#ifdef MPI_ENABLED
+
 namespace library
 {
 
@@ -40,7 +42,6 @@ namespace library
 
 		auto initMPI(int argc, char *argv[])
 		{
-			_branchHandler.is_MPI_enable = true;
 			// Initilialise MPI and ask for thread support
 			int provided;
 			MPI_Init_thread(&argc, &argv, MPI::THREAD_SERIALIZED, &provided);
@@ -569,4 +570,6 @@ namespace library
 		Scheduler(BranchHandler &branchHandler) : _branchHandler(branchHandler) {}
 	};
 } // namespace library
+
+#endif
 #endif

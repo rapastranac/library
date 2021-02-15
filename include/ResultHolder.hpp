@@ -32,11 +32,6 @@ namespace library
 		bool isPushed = false;			 // It was performed by another thread
 		bool isForwarded = false;		 // It was performed sequentially
 
-		// MPI attributes ******
-		bool isMPISent = false; // flag to check if was sent via MPI
-		int dest_rank = -1;		// rank destination
-		// **********************
-
 		size_t id;
 		size_t threadId = 0;
 
@@ -189,6 +184,28 @@ namespace library
 			return false;
 		}
 
+		bool is_forwarded()
+		{
+			return isPushed || isForwarded;
+		}
+
+		bool is_pushed()
+		{
+			return isPushed;
+		}
+
+		void setForwardStatus(bool val)
+		{
+			this->isForwarded = val;
+		}
+
+		void setPushStatus(bool val)
+		{
+			this->isPushed = val;
+		}
+
+#ifdef MPI_ENABLED
+
 		template <typename TYPE, typename F_deser>
 		bool get(TYPE &target, F_deser &&f_deser)
 		{
@@ -240,29 +257,9 @@ namespace library
 			return false;
 		}
 
-		bool is_forwarded()
-		{
-			return isPushed || isForwarded;
-		}
-
-		bool is_pushed()
-		{
-			return isPushed;
-		}
-
 		bool is_MPI_Sent()
 		{
 			return isMPISent;
-		}
-
-		void setForwardStatus(bool val)
-		{
-			this->isForwarded = val;
-		}
-
-		void setPushStatus(bool val)
-		{
-			this->isPushed = val;
 		}
 
 		void setMPISent(bool val, int dest_rank)
@@ -270,6 +267,15 @@ namespace library
 			this->isMPISent = val;
 			this->dest_rank = dest_rank;
 		}
+
+	protected:
+		// MPI attributes ******
+		bool isMPISent = false; // flag to check if was sent via MPI
+		int dest_rank = -1;		// rank destination
+
+		// **********************
+
+#endif
 	};
 
 } // namespace library

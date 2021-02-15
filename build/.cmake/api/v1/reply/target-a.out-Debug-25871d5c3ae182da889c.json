@@ -11,8 +11,6 @@
 		"commands" : 
 		[
 			"add_executable",
-			"add_compile_options",
-			"add_definitions",
 			"include_directories"
 		],
 		"files" : 
@@ -33,23 +31,11 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 23,
-				"parent" : 0
-			},
-			{
-				"command" : 2,
-				"file" : 0,
-				"line" : 20,
-				"parent" : 0
-			},
-			{
-				"command" : 3,
-				"file" : 0,
 				"line" : 15,
 				"parent" : 0
 			},
 			{
-				"command" : 3,
+				"command" : 1,
 				"file" : 0,
 				"line" : 33,
 				"parent" : 0
@@ -68,48 +54,25 @@
 					"fragment" : "-pthread"
 				},
 				{
-					"backtrace" : 2,
-					"fragment" : "-std=c++2a"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-fconcepts"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-Wall"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-Wextra"
-				},
-				{
 					"fragment" : "-std=gnu++2a"
-				}
-			],
-			"defines" : 
-			[
-				{
-					"backtrace" : 3,
-					"define" : "MPI_ENABLE"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 4,
+					"backtrace" : 2,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
 				},
 				{
-					"backtrace" : 4,
+					"backtrace" : 2,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
 				},
 				{
-					"backtrace" : 5,
+					"backtrace" : 3,
 					"path" : "/home/andres/Documents/github/library/cereal"
 				},
 				{
-					"backtrace" : 5,
+					"backtrace" : 3,
 					"path" : "/home/andres/Documents/github/library/fmt/include"
 				}
 			],

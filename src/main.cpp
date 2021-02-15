@@ -28,10 +28,10 @@ int main(int argc, char *argv[])
 	Graph oGraph;
 	VertexCover cover;
 
-#ifndef MPI_ENABLE
+#ifndef MPI_ENABLED
 	printf("MPI disable section \n");
 
-	auto file = "input/prob_4/600/00600_1";
+	auto file = "input/prob_4/400/00400_1";
 	graph.readEdges(file);
 
 	//auto ss = user_serializer(graph);
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
 	return 0;
 #else
-	printf("MPI enable section \n");
+	printf("MPI enabled section \n");
 
 	auto mainAlgo = std::bind(&VertexCover::mvc, &cover, _1, _2, _3); // target algorithm [all arguments]
 	//graph.readEdges(file);
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
 	//handler.functionIsVoid();
 	//auto file = "input/prob_4/600/0600_93";
-	auto file = "input/prob_4/400/00400_1";
+	auto file = "input/prob_4/600/00600_1";
 
 	HolderType holder(handler); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
