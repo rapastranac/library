@@ -70,36 +70,36 @@ namespace std
 		/*begin<----------	This unpacks tuple before pushing to pool -------------------*/
 		//tracking with a holder
 
-		template <typename P, typename F, typename... Args> //,  // typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type * = nullptr>
-		static auto ignore_holder(P *_pool, F &&f, Args &&...args)
+		template <typename F, typename... Args> //,  // typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type * = nullptr>
+		static auto ignore_holder(ctpl::Pool &pool, F &&f, Args &&...args)
 		{
 
 			int size = sizeof...(args); //testing
 			/* Maybe a flag to know if passing last argument or not,
 				for the cases when no holder is passed*/
-			auto fun = [f, _pool](int id, Args &...args, void *last) {
+			auto fun = [f, &pool](int id, Args &...args, void *last) {
 				//id is ignored due to ctpl stuff
 				//holder tracker (last parameter) is not passed when pushed
-				return _pool->push(f, args..., nullptr);
+				return pool.push(f, args..., nullptr);
 			};
 			return invoke_void(fun, 0, args..., nullptr);
 			//return Void();
 		}
 
-		template <typename P, typename F, typename Tuple, size_t... I>
-		static auto unpack_tuple(P *p, F &&f, Tuple &t, std::index_sequence<I...>, bool trackingStack)
+		template <typename F, typename Tuple, size_t... I>
+		static auto unpack_tuple(ctpl::Pool &pool, F &&f, Tuple &t, std::index_sequence<I...>, bool trackingStack)
 		{
-			return ignore_holder(p, f, std::get<I>(t)...);
+			return ignore_holder(pool, f, std::get<I>(t)...);
 			//return Void();
 		}
 
-		template <typename P, typename F, typename Tuple>
-		static auto unpack_tuple(P *p, F &&f, Tuple &t, bool trackingStack)
+		template <typename F, typename Tuple>
+		static auto unpack_tuple(ctpl::Pool &pool, F &&f, Tuple &t, bool trackingStack)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
 			static constexpr auto size = std::tuple_size<Tuple>::value;
 			//printf("tuple_size: %d\n", size);
-			return unpack_tuple(p, f, t, std::make_index_sequence<size>{}, trackingStack);
+			return unpack_tuple(pool, f, t, std::make_index_sequence<size>{}, trackingStack);
 		}
 
 		/*-------------	This unpacks tuple before pushing to pool ---------------->end*/
@@ -107,34 +107,34 @@ namespace std
 		/*begin<----------	This unpacks tuple before pushing to pool -------------------*/
 		//not tracking
 
-		template <typename P, typename F, typename... Args>
+		template <typename F, typename... Args>
 		//typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type* = nullptr>
-		static auto ignore_id(P *_pool, F &&f, Args &&...args)
+		static auto ignore_id(ctpl::Pool &pool, F &&f, Args &&...args)
 		{
 
 			//int size = sizeof...(args); //testing
 			/* Maybe a flag to know if passing last argument or not,
 				for the cases when no holder is passed*/
-			auto fun = [f, _pool](int, Args &&...args) {
+			auto fun = [f, &pool](int, Args &&...args) {
 				//id is ignored due to ctpl stuff
 				//holder tracker (last parameter) is not passed when pushed
-				return _pool->push(f, args...);
+				return pool.push(f, args...);
 			};
 			return invoke_void(fun, 0, args...);
 		}
 
-		template <typename P, typename F, typename Tuple, size_t... I>
-		static auto unpack_tuple(P *p, F &&f, Tuple &t, std::index_sequence<I...>)
+		template <typename F, typename Tuple, size_t... I>
+		static auto unpack_tuple(ctpl::Pool &pool, F &&f, Tuple &t, std::index_sequence<I...>)
 		{
-			return ignore_id(p, f, std::get<I>(t)...);
+			return ignore_id(pool, f, std::get<I>(t)...);
 		}
 
-		template <typename P, typename F, typename Tuple>
-		static auto unpack_tuple(P *p, F &&f, Tuple &t)
+		template <typename F, typename Tuple>
+		static auto unpack_tuple(ctpl::Pool &pool, F &&f, Tuple &t)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
 			static constexpr auto size = std::tuple_size<Tuple>::value;
-			return unpack_tuple(p, f, t, std::make_index_sequence<size>{});
+			return unpack_tuple(pool, f, t, std::make_index_sequence<size>{});
 		}
 
 		/*-------------	This unpacks tuple before pushing to pool ---------------->end*/

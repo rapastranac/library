@@ -72,12 +72,12 @@ namespace library
 	public:
 		double getPoolIdleTime()
 		{
-			return _pool_default->getIdleTime() / (double)processor_count;
+			return thread_pool.getIdleTime() / (double)processor_count;
 		}
 
 		int getMaxThreads() //ParBranchHandler::getInstance().MaxThreads() = 10;
 		{
-			return this->_pool_default->size();
+			return this->thread_pool.size();
 		}
 
 		void setMaxThreads(int poolSize)
@@ -85,8 +85,8 @@ namespace library
 			/*	I have not implemented yet the resize of other pool*/
 			//this->init();
 			this->processor_count = poolSize;
-			this->_pool_default = new ctpl::Pool(poolSize);
-			//this->_pool_default->setSize(n);
+			//this->_pool = new ctpl::Pool(poolSize);
+			this->thread_pool.setSize(poolSize);
 		}
 
 		//seconds
@@ -215,7 +215,7 @@ namespace library
 #ifdef DEBUG_COMMENTS
 			printf("Main thread interrupting pool \n");
 #endif
-			this->_pool_default->interrupt(true);
+			this->thread_pool.interrupt(true);
 		}
 
 		/* for void algorithms, this allows to reuse the pool*/
@@ -224,7 +224,7 @@ namespace library
 #ifdef DEBUG_COMMENTS
 			printf("Main thread waiting results \n");
 #endif
-			this->_pool_default->wait();
+			this->thread_pool.wait();
 		}
 
 		template <typename RESULT_TYPE>
@@ -321,10 +321,10 @@ namespace library
 		//https://stackoverflow.com/questions/15326186/how-to-call-child-method-from-a-parent-pointer-in-c
 		//https://stackoverflow.com/questions/3747066/c-cannot-convert-from-base-a-to-derived-type-b-via-virtual-base-a
 	private:
-		ctpl::Pool *ctpl_casted(POOL::Pool *item)
-		{
-			return dynamic_cast<ctpl::Pool *>(item);
-		}
+		//ctpl::Pool *ctpl_casted(POOL::Pool *item)
+		//{
+		//	return dynamic_cast<ctpl::Pool *>(item);
+		//}
 		/*--------------------------------------------------------end*/
 
 		void put_mpi(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
@@ -344,7 +344,6 @@ namespace library
 				Holder *newLeftMost = holder->parent->children.front();
 				if (holder->parent->children.size() == 1)
 				{
-					//(*holder->root)->itself = newLeftMost;
 					(*holder->root) = &(*newLeftMost);
 					(*holder->root)->parent = nullptr;
 				}
@@ -485,45 +484,10 @@ namespace library
 			}
 			else
 			{
-				/*
-				* this scenario would happen when a root has pushed all its children but one,
-				* also this remaining one has been probably forwarded, also, this remaining holder
-				* might have only one children due to the same reason as above. Then, root should
-				* be relocated to the lowest spot
-				*/
-				/*	Holder* uniqueChild = root->children.front();
-					if (uniqueChild->isForwarded) {
-
-						if (uniqueChild->children.size() == 2)
-
-							while (uniqueChild->isForwarded)
-							{
-
-							}
-					}*/
 
 				std::cout << "4 Testing, it's not supposed to happen" << std::endl;
 				return nullptr;
 			}
-
-			//		child->parent = nullptr;	//parent is pruned because it is no longer needed
-			//
-			//		if (parent->right->isBoundCond) {
-			//			/*Check if it's worth it to push this holder since bound condition might be ...
-			//			... crucial to decide whether to explore branch or not, and this bound condition...
-			//			...	could be linked to a global variable.
-			//			This is important because condition in the target function is not explore after thread passes by there,
-			//			and if this scope is used, it means that thread hasn't passed by there yet but it will eventually do */
-			//			bool temp = parent->right->boundCond();
-			//			if (temp)
-			//				return parent->right;
-			//			else
-			//				return nullptr;
-			//		}
-			//
-			//		return parent->right;		//holder right is returned
-			//
-			//	return parent;
 		}
 
 		template <typename Holder>
@@ -585,7 +549,7 @@ namespace library
 		}
 
 		template <typename Holder>
-		Holder *rootCorrecting(Holder *root) //->decltype(holder)
+		Holder *rootCorrecting(Holder *root)
 		{
 			Holder *_root = root;
 
@@ -600,40 +564,97 @@ namespace library
 			return _root;
 		}
 
-		template <typename F, typename... Rest>
-		auto pushSeed(F &&f, Rest &&...rest)
-		{
-			auto _pool = ctpl_casted(_pool_default);
-			this->busyThreads = 1;								// forces just in case
-			auto future = std::move(_pool->push(f, rest...));	// future type can handle void returns
-			auto lambda = [&future]() { return future.get(); }; // create lambda to pass to args_handler::invoke_void()
+		//template <typename F, typename... Rest>
+		//auto pushSeed(F &&f, Rest &&...rest)
+		//{
+		//	//auto _pool = ctpl_casted(_pool);
+		//	this->busyThreads = 1;								// forces just in case
+		//	auto future = std::move(thread_pool.push(f, rest...));	// future type can handle void returns
+		//	auto lambda = [&future]() { return future.get(); }; // create lambda to pass to args_handler::invoke_void()
+		//	return std::args_handler::invoke_void(lambda); //this guarantees to assign a non-void value
+		//}
 
-			return std::args_handler::invoke_void(lambda); //this guarantees to assign a non-void value
+		template <typename F, typename Holder>
+		bool push_DLB(F &&f, int id, Holder &holder)
+		{
+			int flag = false;
+			/*This lock must be adquired before checking the condition,	
+			even though busyThreads is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+			numAvailableNodes[0] = 1; //TESTING only
+			if (busyThreads < thread_pool.size())
+			{
+				if (is_DLB)
+				{
+					Holder *upperHolder = checkParent(&holder);
+					if (upperHolder)
+					{
+						this->busyThreads++;
+
+						if (std::get<1>(upperHolder->tup).fetchCover().size() == 0)
+						{
+							int gfdg = 34; //just to create a break point
+						}
+
+						upperHolder->setPushStatus(true);
+
+						lck.unlock();
+						auto tmp = std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
+						upperHolder->hold_future(std::move(tmp));
+						return false;
+					}
+
+					exclude(&holder);
+				}
+
+				this->busyThreads++;
+				holder.setPushStatus(true);
+
+				if (std::get<1>(holder.tup).fetchCover().size() == 0)
+				{
+					int gfdg = 34; //just to create a break point
+				}
+
+				lck.unlock();
+
+				auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
+				holder.hold_future(std::move(tmp));
+				return true;
+			}
+			else
+			{
+				lck.unlock();
+
+				auto retVal = this->forward(f, id, holder, true);
+				holder.hold_actual_result(retVal);
+				return true;
+			}
+			return false;
 		}
 
 	public:
 		template <typename F, typename Holder>
 		int push(F &&f, int id, Holder &holder)
 		{
-			auto _pool = ctpl_casted(_pool_default);
+			//auto _pool = ctpl_casted(_pool);
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			if (busyThreads < _pool->size())
+			if (busyThreads < thread_pool.size())
 			{
 				busyThreads++;
 				holder.setPushStatus(true);
 
 				lck.unlock();
-				auto tmp = std::args_handler::unpack_tuple(_pool, f, holder.getArgs());
+				auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
 				holder.hold_future(std::move(tmp));
 				return 1;
 			}
 			else
 			{
 				lck.unlock();
-				auto retVal = this->forward(f, id, holder);
-				holder.hold_actual_result(retVal);
+				auto r = this->forward(f, id, holder);
+				holder.hold_actual_result(r);
 				return 0;
 			}
 		}
@@ -642,17 +663,17 @@ namespace library
 		int push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
 		{
 			bool signal{false};
-			auto _pool = ctpl_casted(_pool_default);
+			//auto _pool = ctpl_casted(_pool);
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			if (busyThreads < _pool->size())
+			if (busyThreads < thread_pool.size())
 			{
 				busyThreads++;
 				holder.setPushStatus(true);
 
 				lck.unlock();
-				auto tmp = std::args_handler::unpack_tuple(_pool, f, holder.getArgs());
+				auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
 				holder.hold_future(std::move(tmp));
 				return 1;
 			}
@@ -726,9 +747,9 @@ namespace library
 		{
 			bool _flag = false;
 
-			ctpl::Pool *_pool = ctpl_casted(_pool_default);
+			//ctpl::Pool *_pool = ctpl_casted(_pool);
 			while (!_flag)
-				_flag = push_to_pool_ctpl(_pool, f, id, holder);
+				_flag = push_DLB(f, id, holder);
 
 			return _flag;
 		}
@@ -747,7 +768,7 @@ namespace library
 			//	//printf("Pushed already \n");
 			//	return std::args_handler::Void();
 			//}
-			if (is_LB)
+			if (is_DLB)
 			{
 				checkLeftSibling(&holder);
 			}
@@ -760,7 +781,7 @@ namespace library
 		//Not useful yet
 		void singal_interruption()
 		{
-			this->_pool_default->signal_interruption();
+			this->thread_pool.signal_interruption();
 		}
 
 		/*This syncronizes available threads in branchHandler with
@@ -769,7 +790,7 @@ namespace library
 			nevertheless this should be avoided when pushing void functions*/
 		void functionIsVoid()
 		{
-			this->_pool_default->setExternNumThreads(&this->busyThreads);
+			this->thread_pool.setExternNumThreads(&this->busyThreads);
 		}
 
 	private:
@@ -779,8 +800,8 @@ namespace library
 			this->busyThreads = 0;
 			this->idleTime = 0;
 			this->isDone = false;
-			this->_pool_default = nullptr;
-			this->_pool_2 = nullptr;
+			//this->_pool = nullptr;
+			//this->_pool_2 = nullptr;
 			this->max_push_depth = -1;
 			this->superFlag = false;
 			this->idCounter = 0;
@@ -799,7 +820,7 @@ namespace library
 		std::once_flag isDoneFlag;
 		std::any bestR;
 		std::pair<int, std::stringstream> bestRstream;
-		bool is_LB = false;
+		bool is_DLB = false;
 
 		/*Dequeue while using strategy myPool*/
 		bool isDequeueEnable = false;
@@ -817,8 +838,9 @@ namespace library
 		bool is_mtx_mpi_acquired = false;
 		std::condition_variable cv;
 		std::atomic<bool> superFlag;
-		POOL::Pool *_pool_default = nullptr;
-		POOL::Pool *_pool_2 = nullptr;
+		ctpl::Pool thread_pool;
+		//POOL::Pool *_pool = nullptr;
+		//POOL::Pool *_pool_2 = nullptr;
 
 		/*begin<<----------------Singleton----------------*/
 		static BranchHandler *INSTANCE;
@@ -1032,7 +1054,7 @@ namespace library
 		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
 			//this->waitResult(true);
-			_pool_default->wait();
+			thread_pool.wait();
 			//sendBestResultToCenter();
 		}
 
