@@ -954,8 +954,10 @@ namespace library
 				printf("process %d has rcvd from %d,%d times \n", world_rank, src, count_rcv);
 				if (status.MPI_TAG == 3)
 				{
+					printf("rank %d about to send best result to center \n", world_rank);
+					sendBestResultToCenter();
 					printf("Exit tag received on process %d \n", world_rank); // loop termination
-					return;
+					break;
 				}
 				printf("Receiver on %d, received %d Bytes \n", world_rank, Bytes);
 
@@ -1031,17 +1033,27 @@ namespace library
 		{
 			//this->waitResult(true);
 			_pool_default->wait();
-			sendBestResultToCenter();
+			//sendBestResultToCenter();
 		}
 
 		// this should is supposed to be called only when all tasks are finished
 		void sendBestResultToCenter()
 		{
 			if (bestRstream.first == -1)
+			{
+				printf("rank %d did not catch a best result \n", world_rank);
+				// if a solution was not found, processes will synchronise in here
+				MPI_Barrier(*world_Comm); // this guarantees that center nodes gets aware of prior signals
 				return;
+			}
+
 			//sending signal to center so this one turn into receiving best result mode
 			int signal = true;
 			put_mpi(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
+
+			printf("rank %d put signal in inbox to retrieve a best result \n", world_rank);
+
+			MPI_Barrier(*world_Comm); // this guarantees that center nodes gets aware of prior signals
 
 			//char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT
 			int Bytes = bestRstream.second.str().size();

@@ -158,10 +158,6 @@ namespace library
 			return end_time - start_time;
 		}
 
-		void setRefValueGlobal()
-		{
-		}
-
 	private:
 		template <typename Holder, typename Serialize>
 		void schedule(Holder &holder, Serialize &&serialize)
@@ -211,21 +207,33 @@ namespace library
 						++totalRequests;
 					}
 				}
+
 				if (breakLoop())
+				{
+					MPI_Barrier(world_Comm); //This is synchronised within sendBestResultToCenter() in BranchHandler.hpp
+					receiveCurrentResult();	 // non-waiting algorithms
 					break;
-				receiveResult();		// waiting algorithms
-				receiveCurrentResult(); // non-waiting algorithms
+				}
+
+				receiveResult(); // waiting algorithms
+
+				// refValueGlobal updated if changed
+				if (refValueGlobal[0] != refValueGlobal_old)
+				{
+					BcastPut(refValueGlobal, 1, MPI::INT, 0, win_refValueGlobal); // broadcast the absolute global ref value
+					refValueGlobal_old = refValueGlobal[0];
+				}
 
 			} while (true);
 		}
 
 		// this sends the termination signal
-		auto breakLoop()
+		bool breakLoop()
 		{
 			//std::this_thread::sleep_for(std::chrono::seconds(1)); // 4 testing
 			//printf("test, busyNodes = %d\n", busyNodes[0]);
 
-			if (busyNodes[0] == 0)
+			if (busyNodes[0] == 0 && (numAvailableNodes[0] == (world_size - 1)))
 			{
 				for (int dest = 1; dest < world_size; dest++)
 				{
@@ -263,7 +271,6 @@ namespace library
 
 		void receiveCurrentResult()
 		{
-			//int src;
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (inbox_bestResult[rank])
@@ -294,11 +301,11 @@ namespace library
 				}
 			}
 			//TODO .. avoid broadcasting to ranks that sent the above best results
-			if (refValueGlobal[0] != refValueGlobal_old)
-			{
-				BcastPut(refValueGlobal, 1, MPI::INT, 0, win_refValueGlobal); // broadcast the absolute global ref value
-				refValueGlobal_old = refValueGlobal[0];
-			}
+			//if (refValueGlobal[0] != refValueGlobal_old)
+			//{
+			//	BcastPut(refValueGlobal, 1, MPI::INT, 0, win_refValueGlobal); // broadcast the absolute global ref value
+			//	refValueGlobal_old = refValueGlobal[0];
+			//}
 		}
 
 		template <typename Holder, typename Serialize>
@@ -555,8 +562,8 @@ namespace library
 		size_t totalRequests = 0;
 		size_t approvedRequests = 0;
 		size_t failedRequests = 0;
-		double start_time;
-		double end_time;
+		double start_time = 0;
+		double end_time = 0;
 
 		/* singleton*/
 		Scheduler(BranchHandler &branchHandler) : _branchHandler(branchHandler) {}
