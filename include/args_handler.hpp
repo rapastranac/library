@@ -77,13 +77,25 @@ namespace std
 			int size = sizeof...(args); //testing
 			/* Maybe a flag to know if passing last argument or not,
 				for the cases when no holder is passed*/
-			auto fun = [f, &pool](int id, Args &...args, void *last) {
+			auto lambda = [&](int id, Args &&...args, void *last) {
 				//id is ignored due to ctpl stuff
 				//holder tracker (last parameter) is not passed when pushed
 				return pool.push(f, args..., nullptr);
 			};
-			return invoke_void(fun, 0, args..., nullptr);
+			//return invoke_void(lambda, 0, args..., nullptr);
 			//return Void();
+			return lambda(0, args..., nullptr);
+			//	return pool.push(f, args..., nullptr);
+		}
+
+		template <typename F, typename... Args> //,  // typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type * = nullptr>
+		static auto ending(ctpl::Pool &pool, F &&f, Args &&...args)
+		{
+			int size = sizeof...(args); //testing
+			auto lambda = [&](int id, Args &&...args, void *last) {
+				return pool.push(f, args..., nullptr);
+			};
+			return lambda(0, args..., nullptr);
 		}
 
 		template <typename F, typename Tuple, size_t... I>
@@ -100,6 +112,30 @@ namespace std
 			static constexpr auto size = std::tuple_size<Tuple>::value;
 			//printf("tuple_size: %d\n", size);
 			return unpack_tuple(pool, f, t, std::make_index_sequence<size>{}, trackingStack);
+		}
+
+		template <typename HOLDER, typename F, typename... Args>
+		static auto helper2(HOLDER *h, ctpl::Pool &pool, F &&f, Args &&...args)
+		{
+			int size = sizeof...(args); //testing
+
+			return pool.push(f, args..., h);
+		}
+
+		template <typename HOLDER, typename F, typename Tuple, size_t... I>
+		static auto helper1(HOLDER *h, ctpl::Pool &pool, F &&f, Tuple &t, std::index_sequence<I...>)
+		{
+			return helper2(h, pool, f, std::get<I>(t)...);
+		}
+
+		template <typename HOLDER, typename Function, typename Tuple>
+		static auto unpack_tuple(ctpl::Pool &pool, Function &&f, Tuple &t, HOLDER *h, bool trackingStack)
+		{
+			//https://stackoverflow.com/a/36656413/5248548
+			static constexpr auto size = std::tuple_size<Tuple>::value;
+			//std::cout << typeid(t).name() << "\n";
+			return helper1(h, pool, f, t, std::make_index_sequence<size>{});
+			//return Void();
 		}
 
 		/*-------------	This unpacks tuple before pushing to pool ---------------->end*/

@@ -96,6 +96,7 @@
         "stack": "cpp",
         "version": "cpp",
         "format": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "strstream": "cpp"
     }
 }

@@ -138,13 +138,11 @@ public:
 			int depth = 0;
 			initial.holdArgs(depth, graph);
 
-			branchHandler.push(_f, -1, initial, true);
-
-			//branchHandler.push(_f, -1, initial);
+			branchHandler.push<void>(_f, -1, initial, true);
+			//branchHandler.push<void>(_f, -1, initial);
 
 			//************************************************
 
-			//branchHandler.wait_and_finish();
 			branchHandler.wait();
 			graph_res = branchHandler.retrieveResult<Graph>();
 			graph_res2 = graph_res;
@@ -385,7 +383,7 @@ public:
 #ifdef MPI_ENABLED
 	void mvc(int id, int depth, Graph &graph)
 #else
-	void mvc(int id, int depth, Graph graph, HolderType *parent)
+	void mvc(int id, int depth, Graph &graph, HolderType *parent)
 #endif
 	{
 		size_t k1 = graph.min_k();
@@ -406,8 +404,8 @@ public:
 			terminate_condition(graph, id, depth);
 			return;
 		}
-		Graph gLeft = graph;  /*Let gLeft be a copy of graph*/
-		Graph gRight = graph; // graph;	/*Let gRight be a copy of graph*/
+		Graph gLeft = graph;			 /*Let gLeft be a copy of graph*/
+		Graph gRight = std::move(graph); // graph;	/*Let gRight be a copy of graph*/
 		int newDepth = depth + 1;
 
 		int v = gLeft.id_max(false);
@@ -419,7 +417,24 @@ public:
 
 		HolderType hol_l(branchHandler, parent);
 		HolderType hol_r(branchHandler, parent);
+
+		std::shared_ptr<HolderType> empty(nullptr);
+
+		auto parent_dummy = std::make_shared<HolderType>(branchHandler, empty);
+		parent_dummy->setDepth(0);
+
+		auto child1 = std::make_shared<HolderType>(branchHandler, parent_dummy);
+		child1->setDepth(1);
+		auto child2 = std::make_shared<HolderType>(branchHandler, parent_dummy);
+		child2->setDepth(1);
+		auto grandChild = std::make_shared<HolderType>(branchHandler, child1);
+		grandChild->setDepth(2);
+
+		branchHandler.push_test<void>(_f, id, grandChild, true);
+
 #endif
+
+		// elements for next recursion level should be handled before going forward ***************
 
 		hol_l.setDepth(depth);
 		hol_r.setDepth(depth);
@@ -428,33 +443,35 @@ public:
 		gLeft.clean_graph();
 		int C1Size = (int)gLeft.coverSize();
 
-		if (C1Size < branchHandler.getRefValue())
-		{
-			hol_l.holdArgs(newDepth, gLeft);
-#ifdef MPI_ENABLED
-			branchHandler.push(_f, id, hol_l, user_serializer);
-#else
-			if (std::get<1>(hol_l.getArgs()).coverSize() == 0)
-			{
-				int g = 4534;
-			}
-			branchHandler.push(_f, id, hol_l, true);
-			//branchHandler.push(_f, id, hol_l);
-#endif
-		}
-
 		gRight.removeNv(v);
 		gRight.clean_graph();
 
 		int C2Size = (int)gRight.coverSize();
 		hol_r.holdArgs(newDepth, gRight);
 
+		//*******************************************************************************************
+
+		if (C1Size < branchHandler.getRefValue())
+		{
+			hol_l.holdArgs(newDepth, gLeft);
+#ifdef MPI_ENABLED
+			branchHandler.push<void>(_f, id, hol_l, user_serializer);
+#else
+			if (std::get<1>(hol_l.getArgs()).coverSize() == 0)
+			{
+				int g = 4534;
+			}
+			branchHandler.push<void>(_f, id, hol_l, true);
+			//branchHandler.push(_f, id, hol_l);
+#endif
+		}
+
 		if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
 		{
 #ifdef MPI_ENABLED
-			branchHandler.forward(_f, id, hol_r);
+			branchHandler.forward<void>(_f, id, hol_r);
 #else
-			branchHandler.forward(_f, id, hol_r, true);
+			branchHandler.forward<void>(_f, id, hol_r, true);
 #endif
 		}
 		return;
@@ -467,13 +484,13 @@ private:
 	}
 
 	//const std::vector<int>& terminate_condition(std::vector<int>& visited, int id, int depth)
-	void
-	terminate_condition(Graph &graph, int id, int depth)
+	void terminate_condition(Graph &graph, int id, int depth)
 	{
 		auto condition1 = [this](int refValGlobal, int refValLocal) {
 			return (leaves == 0) && (refValLocal < refValGlobal) ? true : false;
 		};
 
+		//if condition1 complies, then ifCond1 is called
 		auto ifCond1 = [&]() {
 			foundAtDepth = depth;
 			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
@@ -513,49 +530,12 @@ private:
 		};
 
 #ifdef MPI_ENABLED
-		bool cond1 = branchHandler.replaceIf(graph.coverSize(), condition1, &ifCond1, graph, user_serializer); // thread/process safe
-		bool cond2 = branchHandler.replaceIf(graph.coverSize(), condition2, &ifCond2, graph, user_serializer);
+		branchHandler.replaceIf(graph.coverSize(), condition1, &ifCond1, graph, user_serializer); // thread/process safe
+		branchHandler.replaceIf(graph.coverSize(), condition2, &ifCond2, graph, user_serializer);
 #else
-		bool cond1 = branchHandler.replaceIf(graph.coverSize(), condition1, &ifCond1, graph); // thread/process safe
-		bool cond2 = branchHandler.replaceIf(graph.coverSize(), condition2, &ifCond2, graph);
-
+		branchHandler.replaceIf(graph.coverSize(), condition1, &ifCond1, graph); // thread safe
+		branchHandler.replaceIf(graph.coverSize(), condition2, &ifCond2, graph);
 #endif
-		/*
-		if (cond1)
-		{
-			//currentMVCSize = graph.coverSize();
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("thread {}", id);
-			cout << std::internal
-				 << std::setfill('.')
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
-		}
-		else if (cond2)
-		{
-			//currentMVCSize = graph.coverSize();
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("thread {}", id);
-			cout << std::internal
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
-			if (depth > measured_Depth)
-			{
-				measured_Depth = depth;
-			}
-		}
-		leaves++;
-*/
 		return;
 	}
 
@@ -612,7 +592,7 @@ private:
 #ifdef MPI_ENABLED
 	std::function<void(int, int, Graph &)> _f;
 #else
-	std::function<void(int, int, Graph, HolderType *)> _f;
+	std::function<void(int, int, Graph &, HolderType *)> _f;
 #endif
 
 	Graph graph;

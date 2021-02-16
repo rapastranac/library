@@ -17,16 +17,71 @@
 #include <string>
 #include <vector>
 
+struct S
+{
+	S(std::shared_ptr<S> parent)
+	{
+		itself.reset(this);
+
+		if (!parent.get())
+		{
+			root.reset(new std::shared_ptr<S>(itself));
+			return;
+		}
+		else
+		{
+			//root.reset(new std::shared_ptr<S>(*parent->root));
+			root = parent->root;
+		}
+		this->parent = parent;
+	}
+	void switch_root(std::shared_ptr<S> &new_root)
+	{
+		(*root) = new_root;
+	}
+
+	int val;
+	std::shared_ptr<std::shared_ptr<S>> root;
+	std::shared_ptr<S> parent;
+	std::shared_ptr<S> itself;
+};
+
+std::shared_ptr<int> ptr0(nullptr);
+std::shared_ptr<std::shared_ptr<int>> ptr2(nullptr);
+
+void foo(std::shared_ptr<int> &ptr)
+{
+	ptr2.reset(new std::shared_ptr<int>(ptr));
+}
+
 int main(int argc, char *argv[])
 {
+	auto s0 = std::make_shared<S>(nullptr);
+	s0->val = 0;
 
-	using HolderType = library::ResultHolder<void, int, Graph>;
+	auto s1 = std::make_shared<S>(s0);
+	s1->val = 1;
+
+	auto s2 = std::make_shared<S>(s1);
+	s2->val = 2;
+
+	auto s3 = std::make_shared<S>(s2);
+	s3->val = 3;
+
+	int val = (*s3->root)->val;
+
+	s1->switch_root(s2);
+
+	val = (*s1->root)->val;
+	val = (*s2->root)->val;
+	val = (*s3->root)->val;
 
 	auto &handler = library::BranchHandler::getInstance(); // parallel library
 
 	Graph graph;
 	Graph oGraph;
 	VertexCover cover;
+	std::vector<int> *vec;
 
 #ifndef MPI_ENABLED
 	printf("MPI disable section \n");
@@ -87,7 +142,7 @@ int main(int argc, char *argv[])
 	HolderType holder(handler); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
 
-	//if (rank == 0) //only center node will read input and printing resultscd 
+	//if (rank == 0) //only center node will read input and printing resultscd
 	//{
 	//}
 	graph.readEdges(file);

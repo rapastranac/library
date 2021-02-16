@@ -21,7 +21,7 @@ namespace library
 		friend class BranchHandler;
 
 	protected:
-		BranchHandler &branchHandler; // = library::BranchHandler();
+		BranchHandler &branchHandler;
 
 		std::unique_ptr<std::future<_Ret>> expectedFut; // Unique_ptr check it out
 		std::any expected;								// expected value
@@ -35,6 +35,11 @@ namespace library
 		size_t id;
 		size_t threadId = 0;
 
+		std::shared_ptr<std::shared_ptr<ResultHolder>> root_smrt;
+		std::shared_ptr<ResultHolder> parent_smrt;
+		std::shared_ptr<ResultHolder> itself_smrt;
+		std::list<std::shared_ptr<ResultHolder>> children_smrt;
+
 		ResultHolder **root = nullptr;
 		ResultHolder *parent = nullptr;
 		ResultHolder *itself = this;
@@ -43,24 +48,30 @@ namespace library
 		int depth;
 
 		//for future<void> when pushing void functions to the pool
-		template <class T,
-				  typename std::enable_if<std::is_same<T, std::future<void>>::value>::type * = nullptr>
-		void hold_future(T &&expectedFut) {}
+		//template <class T,
+		//		  typename std::enable_if<std::is_same<T, std::future<void>>::value>::type * = nullptr>
+		//void hold_future(T &&expectedFut) {}
 
-		template <class T,
-				  typename std::enable_if<!std::is_same<T, std::future<void>>::value>::type * = nullptr>
+		template <class T>
+		//		  typename std::enable_if<!std::is_same<T, std::future<void>>::value>::type * = nullptr>
 		void hold_future(T &&expectedFut)
 		{
 			*(this->expectedFut) = std::move(expectedFut);
 		}
 
 		//for void functions,
-		void hold_actual_result(std::args_handler::Void expected) {}
+		//void hold_actual_result(std::args_handler::Void expected) {}
 
 		template <class T>
 		void hold_actual_result(T &&expected)
 		{
 			this->expected = std::move(expected);
+		}
+
+		void reset()
+		{
+			this->root = &itself;
+			this->children.clear();
 		}
 
 	public:
@@ -86,12 +97,34 @@ namespace library
 			}
 		}
 
+		ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> &parent_smrt) : branchHandler(handler)
+		{
+			this->id = branchHandler.getUniqueId();
+			this->isPushed = false;
+			this->depth = -1;
+			this->expectedFut.reset(new std::future<_Ret>);
+
+			itself_smrt.reset(this);
+
+			if (!parent_smrt.get())
+			{
+				root_smrt.reset(new std::shared_ptr<ResultHolder>(itself_smrt));
+				return;
+			}
+			else
+			{
+				root_smrt = parent_smrt->root_smrt;
+			}
+			this->parent_smrt = parent_smrt;
+			this->parent_smrt->children_smrt.push_back(itself_smrt);
+		}
+
 		//For multiple recursion algorithms
 		ResultHolder(library::BranchHandler &handler, ResultHolder *parent) : branchHandler(handler)
 		{
 			this->id = branchHandler.getUniqueId();
 			this->isPushed = false;
-			this->depth = NULL; //TODO... check
+			this->depth = -1;
 			this->expectedFut.reset(new std::future<_Ret>);
 
 			if (!parent)
@@ -158,14 +191,14 @@ namespace library
 			return this->tup;
 		}
 
-		template <typename TYPE>
-		bool get(TYPE &target)
+		// if _Ret is void, then this should not be invoked
+		_Ret get()
 		{
 			if (isPushed)
 			{
-				std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-				expected = expectedFut->get();
-				std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+				auto begin = std::chrono::steady_clock::now();
+				this->expected = expectedFut->get();
+				auto end = std::chrono::steady_clock::now();
 				/*If a thread comes in this scope, then it is clear that numThread
 					must be decremented in one, also it should be locked before another thread
 					changes it, since it is atomic, this operation is already well defined*/
@@ -175,13 +208,17 @@ namespace library
 			}
 			/*	This condition is relevant due to some functions might return empty values
 				which are not stored in std::any types	*/
-			if (expected.has_value())
+			if (this->expected.has_value())
 			{
-				target = std::any_cast<TYPE>(expected);
-				return true;
+				//target = std::any_cast<TYPE>(expected);
+				//return true;
+				return std::any_cast<_Ret>(expected);
 			}
+			else
+				return {}; // returns empty object of type _Ret,
 
-			return false;
+			//return false;
+			//return expected;
 		}
 
 		bool is_forwarded()

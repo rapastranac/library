@@ -115,6 +115,9 @@ namespace library
 		global absolute: best value in the whole execution "There might be a delay"
 		*/
 #ifdef MPI_ENABLED
+		/* a reference value is replaced based on the user's conditions. 
+			ifCond is used when the user wants to print out results or any other thing thread safely
+			ifCond is optional, if not passed, then nullptr should be passed in instead*/
 		template <class C1, class C2, typename T, class F_SERIAL>
 		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result, F_SERIAL &&f_serial)
 		{
@@ -189,6 +192,9 @@ namespace library
 
 #endif
 
+		/* a reference value is replaced based on the user's conditions. 
+			ifCond is used when the user wants to print out results or any other thing thread safely
+			ifCond is optional, if not passed, then nullptr should be passed in instead*/
 		template <class C1, class C2, typename T>
 		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result)
 		{
@@ -198,7 +204,7 @@ namespace library
 				this->refValueGlobal[0] = refValueLocal;
 				if (refValueLocal == 0)
 				{
-					int fgd = 3423;
+					int fgd = 3423; // testing, debugging
 				}
 
 				if (ifCond)
@@ -349,6 +355,7 @@ namespace library
 			MPI_Win_unlock(target_rank, window); // closes epoch
 		}
 
+		//not sure what it does, it works fine with/without it
 		template <typename Holder>
 		void exclude(Holder *holder)
 		{
@@ -588,7 +595,200 @@ namespace library
 		//	return std::args_handler::invoke_void(lambda); //this guarantees to assign a non-void value
 		//}
 
-		template <typename F, typename Holder>
+		template <typename Holder>
+		Holder checkParent_smrt(Holder &holder)
+		{
+			Holder leftMost(nullptr); // this is the branch that led us to the root
+			Holder root_smrt(nullptr);	  // local pointer to root, to avoid "*" use
+
+			if (holder->parent_smrt.get())
+			{
+				if (holder->parent_smrt != *holder->root_smrt)
+				{
+					/* this condition complies if a branch has already
+					 been pushed, to ensure pushing leftMost first */
+					root_smrt = *holder->root_smrt; //no need to iterate
+
+					int tmp = root_smrt->children_smrt.size(); // this probable fix the following
+
+					// the following is not true, it could be also the right branch
+					// Unless root is guaranteed to have at least 2 children,
+					// TODO ... verify
+
+					leftMost = root_smrt->children_smrt.front(); //TODO ... check if branch has been pushed or forwarded
+				}
+				else
+					return nullptr;
+			}
+			else
+				return nullptr;
+
+			if (root_smrt->children_smrt.size() > 2)
+			{ //this condition is for multiple recursion
+
+				return nullptr;
+			}
+			else if (root_smrt->children_smrt.size() == 2)
+			{
+				/*	this scope is meant to push right branch which was put in waiting line
+					because there was no available thread to push leftMost branch, then leftMost
+					will be the new root since after this scope right branch will have been
+					already pushed*/
+
+				leftMost->parent_smrt = nullptr;					// parent no longer needed
+				root_smrt->children_smrt.pop_front();					// deletes leftMost from root's children
+				Holder right = root_smrt->children_smrt.front(); //The one to be pushed
+				root_smrt->children_smrt.clear();
+				right->parent_smrt = nullptr; //parent not needed since it'll be pushed
+				right->root_smrt = nullptr;
+
+				*leftMost->root_smrt = leftMost; // leftMost is the new root
+
+				//Holder *test = rootCorrecting(leftMost);
+
+				// next condition no really necessary, just for testing
+				//if (test != leftMost)
+				//{
+				//	int dfds = 3423;
+				//}
+
+				//(*leftMost->root)->parent = nullptr;	//root has no parent
+
+				if (right->isBoundCond)
+				{
+					bool temp = right->boundCond();
+					if (temp)
+						return right;
+					else
+						return nullptr;
+				}
+				return right;
+			}
+			else
+			{
+
+				std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+				return nullptr;
+			}
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		bool push_dummy(F &&f, int id, Holder &holder)
+		{
+			/*This lock must be adquired before checking the condition,	
+			even though busyThreads is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+
+			if (busyThreads < thread_pool.size())
+			{
+				if (is_DLB)
+				{
+					Holder upperHolder = checkParent_smrt(holder);
+					if (upperHolder.get())
+					{
+
+						this->busyThreads++;
+						upperHolder->setPushStatus(true);
+						lck.unlock();
+						// **************************************************
+						// if holder sent, then its parent and children info should be reseted
+						upperHolder->reset();
+						// **************************************************
+						// since it's void, no need to store a returned/future value
+						//std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
+						//std::args_handler::unpack_tuple(upperHolder, f, 0, upperHolder->getArgs(), true);
+						return false;
+					}
+					//exclude(&holder);
+				}
+
+				this->busyThreads++;
+				holder->setPushStatus(true);
+				lck.unlock();
+
+				// **************************************************
+				// if holder sent, then its parent and children info should be reseted
+				holder->reset();
+				// **************************************************
+
+				//std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
+				//std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), &holder, true);
+				return true;
+			}
+			else
+			{
+				lck.unlock();
+				//this->forward<_ret>(f, id, holder, true);
+				return true;
+			}
+			return false;
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		bool push_DLB(F &&f, int id, Holder &holder)
+		{
+			/*This lock must be adquired before checking the condition,	
+			even though busyThreads is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+
+			if (busyThreads < thread_pool.size())
+			{
+				if (is_DLB)
+				{
+					Holder *upperHolder = checkParent(&holder);
+					//Holder upperHolder_smrt = checkParent_smrt(holder);
+					if (upperHolder)
+					{
+						if (std::get<1>(upperHolder->getArgs()).coverSize() == 0)
+						{
+							int g = 4534;
+						}
+						this->busyThreads++;
+						upperHolder->setPushStatus(true);
+						lck.unlock();
+						// **************************************************
+						// if holder sent, then its parent and children info should be reseted
+						upperHolder->reset();
+						// **************************************************
+						// since it's void, no need to store a returned/future value
+						//std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
+						//std::args_handler::unpack_tuple(upperHolder, f, 0, upperHolder->getArgs(), true);
+						return false;
+					}
+					//exclude(&holder);
+				}
+
+				//if (std::get<1>(holder.getArgs()).coverSize() == 0)
+				//{
+				//	int g = 4534;
+				//}
+
+				this->busyThreads++;
+				holder.setPushStatus(true);
+				lck.unlock();
+
+				// **************************************************
+				// if holder sent, then its parent and children info should be reseted
+				holder.reset();
+				// **************************************************
+
+				std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
+				//std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), &holder, true);
+				return true;
+			}
+			else
+			{
+				lck.unlock();
+				this->forward<_ret>(f, id, holder, true);
+				return true;
+			}
+			return false;
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		bool push_DLB(F &&f, int id, Holder &holder)
 		{
 			/*This lock must be adquired before checking the condition,	
@@ -607,6 +807,12 @@ namespace library
 					Holder *upperHolder = checkParent(&holder);
 					if (upperHolder)
 					{
+
+						if (std::get<1>(upperHolder->getArgs()).coverSize() == 0)
+						{
+							int g = 4534;
+						}
+
 						this->busyThreads++;
 						upperHolder->setPushStatus(true);
 						lck.unlock();
@@ -616,7 +822,12 @@ namespace library
 						return false;
 					}
 
-					exclude(&holder);
+					//exclude(&holder);
+				}
+
+				if (std::get<1>(holder.getArgs()).coverSize() == 0)
+				{
+					int g = 4534;
 				}
 
 				this->busyThreads++;
@@ -638,7 +849,32 @@ namespace library
 		}
 
 	public:
-		template <typename F, typename Holder>
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		int push(F &&f, int id, Holder &holder)
+		{
+			/*This lock must be performed before checking the condition,
+			even though numThread is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+			if (busyThreads < thread_pool.size())
+			{
+				busyThreads++;
+				holder.setPushStatus(true);
+
+				lck.unlock();
+				std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
+				return 1;
+			}
+			else
+			{
+				lck.unlock();
+				this->forward<_ret>(f, id, holder);
+				return 0;
+			}
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		int push(F &&f, int id, Holder &holder)
 		{
 			/*This lock must be performed before checking the condition,
@@ -657,18 +893,28 @@ namespace library
 			else
 			{
 				lck.unlock();
-				auto ret = this->forward(f, id, holder);
+				auto ret = this->forward<_ret>(f, id, holder);
 				holder.hold_actual_result(ret);
 				return 0;
 			}
 		}
 
-		template <typename F, typename Holder>
+		template <typename _ret, typename F, typename Holder>
 		bool push(F &&f, int id, Holder &holder, bool trackStack)
 		{
 			bool _flag = false;
 			while (!_flag)
-				_flag = push_DLB(f, id, holder);
+				_flag = push_DLB<_ret>(f, id, holder);
+
+			return _flag;
+		}
+
+		template <typename _ret, typename F, typename Holder>
+		bool push_test(F &&f, int id, Holder &holder, bool trackStack)
+		{
+			bool _flag = false;
+			while (!_flag)
+				_flag = push_dummy<_ret>(f, id, holder);
 
 			return _flag;
 		}
@@ -757,21 +1003,47 @@ namespace library
 		}
 
 #endif
-
-		template <typename F, typename Holder>
-		auto forward(F &&f, int threadId, Holder &holder)
+		// no DLB begin **********************************************************************
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		_ret forward(F &&f, int threadId, Holder &holder)
 		{
-			//std::args_handler::unpack_tuple(f, threadId, holder.getArgs());
+			std::args_handler::unpack_tuple(f, threadId, holder.getArgs());
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		_ret forward(F &&f, int threadId, Holder &holder)
+		{
 			return std::args_handler::unpack_tuple(f, threadId, holder.getArgs());
 		}
 
-		template <typename F, typename Holder>
-		auto forward(F &&f, int threadId, Holder &holder, bool trackStack)
+		// no DLB ************************************************************************* end
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		_ret forward(F &&f, int threadId, Holder &holder, bool trackStack)
 		{
-			//if (holder.isPushed) {	//Fix this, it cannot always return Void()
-			//	//printf("Pushed already \n");
-			//	return std::args_handler::Void();
-			//}
+			if (holder.isPushed)
+				return;
+
+			if (is_DLB)
+				checkLeftSibling(&holder);
+
+			holder.setForwardStatus(true);
+			holder.threadId = threadId;
+			std::args_handler::unpack_tuple(&holder, f, threadId, holder.getArgs(), trackStack);
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		_ret forward(F &&f, int threadId, Holder &holder, bool trackStack)
+		{
+			if (holder.isPushed)
+			{
+				return holder.get();
+				return NULL; // nope, if it was pushed, then result should be retrieved in here
+			}
 			if (is_DLB)
 			{
 				checkLeftSibling(&holder);
