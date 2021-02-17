@@ -570,6 +570,76 @@ namespace library
 		}
 
 		template <typename Holder>
+		void checkLeftSibling_smrt(Holder *holder)
+		{
+			/* What does it do?. Having the following ilustration
+						  root == parent
+						  /  |  \   \  \
+						 /   |   \	 \	 \
+						/    |    \	  \	   \
+					  pb     cb    w1  w2 ... wk
+					  △ -->
+			pb	stands for previous branch
+			cb	stands for current branch
+			w_i	stands for waiting branch, or target holder i={1..k}
+
+			if pb is fully solved sequentially or w_i were pushed but there is at least
+				one w_i remaining, then thread will return to first level where the
+				parent is also the root, then lestMost child of the root should be
+				deleted of the list since it is already solved. Thus, pushing cb twice
+				is avoided because checkParent() pushes the second element of the children
+			*/
+
+			if (holder->parent) //this confirms the holder is not a root
+			{
+				if (holder->parent.get() == *(holder->root)) //this confirms that it's the first level of the root
+				{
+					Holder *leftMost = holder->parent->children.front();
+					if (leftMost != holder) //This confirms pb has already been solved
+					{
+						/* next conditional should always comply, there should not be required
+						* to use a loop, then this While is entitled to just a single loop. 4 testing!!
+						*/
+						while (leftMost != holder)
+						{
+							holder->parent->children.pop_front();		// removes pb from the parent's children
+							leftMost = holder->parent->children.front(); // it gets the second element from the parent's children
+						}
+						// after this line,this should be true leftMost == holder
+
+						// There might be more than one remaining sibling
+						if (holder->parent->children.size() > 1)
+							return; // root does not change
+
+						/* if holder is the only remaining child from parent then this means
+						that it will have to become a new root*/
+						holder->parent = nullptr;
+						holder->prune();
+					}
+				}
+				else if (holder->parent.get() != *holder->root) //any other level,
+				{
+					/* for testing, I believe this should never happen, because
+					checkParent() is correcting the root when this one ends up
+					holding only one child
+					*/
+					int gfdf = 453434; // just to have a break point
+
+					auto leftMost = holder->parent->children.front();
+					if (leftMost != holder) //This confirms pb has already been solved
+					{
+						/*this scope only deletes leftMost holder, which is already
+						* solved sequentially by here and leaves the parent with at
+						* least a child because an uppter holder still has a holder in
+						* the waiting list
+						*/
+						holder->parent->children.pop_front();
+					}
+				}
+			}
+		}
+
+		template <typename Holder>
 		Holder *rootCorrecting(Holder *root)
 		{
 			Holder *_root = root;
@@ -585,6 +655,46 @@ namespace library
 			return _root;
 		}
 
+		/* this is useful because at level zero of a root, there might be multiple
+		waiting nodes, though the leftMost branch (at zero level) might be at one of 
+		the very right sub branches deep down, which means that there is a line of
+		 multiple nodes with a single child.
+		 A node with a single child means that it has already been solved and 
+		 also its siblings, because children are unlinked from their parent node
+		 when these ones are pushed or fully solved (returned) 
+		 							
+							root == parent
+						  /  |  \   \  \
+						 /   |   \	 \	 \
+						/    |    \	  \	   \
+				leftMost     w1    w2  w3 ... wk
+						\
+						 *
+						  \
+						   *
+						   	\
+						current_level
+		
+		if there are available threads, and all waiting nodes at level zero are pushed,
+		then root should lower down where it finds a node with at least two children or
+		the deepest node
+		 */
+		template <typename Holder>
+		Holder rootCorrecting_smrt(Holder &root)
+		{
+			Holder _root = root;
+
+			while (_root->children.size() == 1) // lowering the root
+			{
+				_root = _root->children.front();
+				_root->parent->children.pop_front();
+				_root->lowerRoot();
+				//_root->parent = nullptr;
+				//*(_root->root) = &(*_root);
+			}
+			return _root;
+		}
+
 		//template <typename F, typename... Rest>
 		//auto pushSeed(F &&f, Rest &&...rest)
 		//{
@@ -596,26 +706,27 @@ namespace library
 		//}
 
 		template <typename Holder>
-		Holder checkParent_smrt(Holder &holder)
+		Holder *checkParent_smrt(Holder *holder)
 		{
-			Holder leftMost(nullptr); // this is the branch that led us to the root
-			Holder root_smrt(nullptr);	  // local pointer to root, to avoid "*" use
+			Holder *leftMost{nullptr}; // this is the branch that led us to the root
+			Holder *root{nullptr};	   // local pointer to root, to avoid "*" use
 
-			if (holder->parent_smrt.get())
+			if (holder->parent) //  this confirms holder is not a root
 			{
-				if (holder->parent_smrt != *holder->root_smrt)
+				if (holder->parent.get() != *holder->root)
 				{
-					/* this condition complies if a branch has already
-					 been pushed, to ensure pushing leftMost first */
-					root_smrt = *holder->root_smrt; //no need to iterate
+					/* this confirms, it's not the first level, because it is meant
+					to assist top sub trees of a branch that has started to run
+					sequentially */
+					root = *holder->root; //no need to iterate
 
-					int tmp = root_smrt->children_smrt.size(); // this probable fix the following
+					int tmp = root->children.size(); // this probable fix the following
 
 					// the following is not true, it could be also the right branch
 					// Unless root is guaranteed to have at least 2 children,
 					// TODO ... verify
 
-					leftMost = root_smrt->children_smrt.front(); //TODO ... check if branch has been pushed or forwarded
+					leftMost = root->children.front(); //TODO ... check if branch has been pushed or forwarded
 				}
 				else
 					return nullptr;
@@ -623,28 +734,30 @@ namespace library
 			else
 				return nullptr;
 
-			if (root_smrt->children_smrt.size() > 2)
+			if (root->children.size() > 2)
 			{ //this condition is for multiple recursion
 
 				return nullptr;
 			}
-			else if (root_smrt->children_smrt.size() == 2)
+			else if (root->children.size() == 2)
 			{
 				/*	this scope is meant to push right branch which was put in waiting line
 					because there was no available thread to push leftMost branch, then leftMost
-					will be the new root since after this scope right branch will have been
-					already pushed*/
+					will be the new root since after this scope right branch will have already been
+					pushed*/
 
-				leftMost->parent_smrt = nullptr;					// parent no longer needed
-				root_smrt->children_smrt.pop_front();					// deletes leftMost from root's children
-				Holder right = root_smrt->children_smrt.front(); //The one to be pushed
-				root_smrt->children_smrt.clear();
-				right->parent_smrt = nullptr; //parent not needed since it'll be pushed
-				right->root_smrt = nullptr;
+				root->children.pop_front();				// deletes leftMost from root's children
+				Holder *right = root->children.front(); // the one to be pushed
+				root->children.clear();					// just in case
+				//right->parent = nullptr;					 //parent not needed since it'll be pushed
+				//right->root = nullptr;
+				right->prune(); //it does the same than previous two lines
 
-				*leftMost->root_smrt = leftMost; // leftMost is the new root
+				//*leftMost->root = leftMost; // leftMost is the new root
 
-				//Holder *test = rootCorrecting(leftMost);
+				leftMost->lowerRoot(); // leftMost is the new root
+
+				Holder *test = rootCorrecting_smrt(leftMost);
 
 				// next condition no really necessary, just for testing
 				//if (test != leftMost)
@@ -654,7 +767,7 @@ namespace library
 
 				//(*leftMost->root)->parent = nullptr;	//root has no parent
 
-				if (right->isBoundCond)
+				if (right->isBound())
 				{
 					bool temp = right->boundCond();
 					if (temp)
@@ -674,8 +787,10 @@ namespace library
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_dummy(F &&f, int id, Holder &holder)
+		bool push_dummy(F &&f, int id, Holder &holder_smrt)
 		{
+			using RESULT_HOLDER = decltype(holder_smrt.get()); //actual ResultHolder type (pointer)
+			RESULT_HOLDER holder = holder_smrt.get();
 			/*This lock must be adquired before checking the condition,	
 			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
@@ -684,16 +799,16 @@ namespace library
 			{
 				if (is_DLB)
 				{
-					Holder upperHolder = checkParent_smrt(holder);
-					if (upperHolder.get())
+					RESULT_HOLDER upperHolder = checkParent_smrt(holder);
+					if (upperHolder)
 					{
 
 						this->busyThreads++;
 						upperHolder->setPushStatus(true);
 						lck.unlock();
 						// **************************************************
-						// if holder sent, then its parent and children info should be reseted
-						upperHolder->reset();
+						// if holder sent, then its parents should be
+						upperHolder->prune();
 						// **************************************************
 						// since it's void, no need to store a returned/future value
 						//std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
@@ -704,22 +819,23 @@ namespace library
 				}
 
 				this->busyThreads++;
-				holder->setPushStatus(true);
+				holder_smrt->setPushStatus(true);
 				lck.unlock();
 
 				// **************************************************
 				// if holder sent, then its parent and children info should be reseted
-				holder->reset();
+				holder_smrt->prune();
 				// **************************************************
 
 				//std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
 				//std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), &holder, true);
+				std::args_handler::unpack_and_send(holder_smrt, thread_pool, f, 0, holder_smrt->getArgs());
 				return true;
 			}
 			else
 			{
 				lck.unlock();
-				//this->forward<_ret>(f, id, holder, true);
+				forward_smrt<_ret>(f, id, holder_smrt, true);
 				return true;
 			}
 			return false;
@@ -750,7 +866,7 @@ namespace library
 						lck.unlock();
 						// **************************************************
 						// if holder sent, then its parent and children info should be reseted
-						upperHolder->reset();
+						upperHolder->unlink_parents();
 						// **************************************************
 						// since it's void, no need to store a returned/future value
 						//std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
@@ -771,7 +887,7 @@ namespace library
 
 				// **************************************************
 				// if holder sent, then its parent and children info should be reseted
-				holder.reset();
+				holder.unlink_parents();
 				// **************************************************
 
 				std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
@@ -1052,6 +1168,24 @@ namespace library
 			holder.setForwardStatus(true);
 			holder.threadId = threadId;
 			return std::args_handler::unpack_tuple(&holder, f, threadId, holder.getArgs(), trackStack);
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		_ret forward_smrt(F &&f, int threadId, Holder &holder, bool trackStack)
+		{
+			if (holder->is_pushed())
+				return;
+
+			if (is_DLB)
+			{
+				auto ptr = holder.get();
+				checkLeftSibling_smrt(ptr);
+			}
+
+			holder->setForwardStatus(true);
+			holder->threadId = threadId;
+			std::args_handler::unpack_and_send(holder, f, threadId, holder->getArgs());
 		}
 
 		//Not useful yet

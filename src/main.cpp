@@ -21,60 +21,69 @@ struct S
 {
 	S(std::shared_ptr<S> parent)
 	{
-		itself.reset(this);
-
-		if (!parent.get())
+		if (!parent)
 		{
-			root.reset(new std::shared_ptr<S>(itself));
+			this->root = &itself;
 			return;
 		}
 		else
 		{
-			//root.reset(new std::shared_ptr<S>(*parent->root));
-			root = parent->root;
+			this->parent = parent;
+			this->root = &(*parent->root);
+			this->parent->children.push_back(this);
 		}
-		this->parent = parent;
 	}
-	void switch_root(std::shared_ptr<S> &new_root)
+
+	void prune()
 	{
-		(*root) = new_root;
+		root = nullptr;
+		root = &itself;
+		parent = nullptr;
+	}
+
+	~S()
+	{
+		printf("Destructor called for : %d \n", val);
 	}
 
 	int val;
-	std::shared_ptr<std::shared_ptr<S>> root;
 	std::shared_ptr<S> parent;
-	std::shared_ptr<S> itself;
+	S **root = nullptr;
+	S *itself = this;
+	std::list<S *> children;
 };
 
-std::shared_ptr<int> ptr0(nullptr);
-std::shared_ptr<std::shared_ptr<int>> ptr2(nullptr);
+const int SIZE = 7;
+std::vector<std::thread> threads(SIZE);
 
-void foo(std::shared_ptr<int> &ptr)
+void foo(int depth, std::shared_ptr<S> parent)
 {
-	ptr2.reset(new std::shared_ptr<int>(ptr));
+	if (depth >= SIZE)
+		return;
+	auto s = std::make_shared<S>(parent);
+	s->val = depth;
+
+	if (depth == 3)
+		s->prune();
+
+	threads[depth] = std::thread(foo, depth + 1, s);
+
+	//std::this_thread::sleep_for(1s);
+
+	printf("Hello from level %d \n", depth);
 }
 
 int main(int argc, char *argv[])
 {
-	auto s0 = std::make_shared<S>(nullptr);
-	s0->val = 0;
+	{
+		threads[0] = std::thread(foo, 1, nullptr);
+	}
 
-	auto s1 = std::make_shared<S>(s0);
-	s1->val = 1;
-
-	auto s2 = std::make_shared<S>(s1);
-	s2->val = 2;
-
-	auto s3 = std::make_shared<S>(s2);
-	s3->val = 3;
-
-	int val = (*s3->root)->val;
-
-	s1->switch_root(s2);
-
-	val = (*s1->root)->val;
-	val = (*s2->root)->val;
-	val = (*s3->root)->val;
+	for (size_t i = 0; i < SIZE; i++)
+	{
+		if (threads[i].joinable())
+			threads[i].join();
+	}
 
 	auto &handler = library::BranchHandler::getInstance(); // parallel library
 
@@ -100,7 +109,7 @@ int main(int argc, char *argv[])
 	//}
 	//user_deserializer(ss2, oGraph);
 
-	cover.init(graph, 6, file, 4);
+	cover.init(graph, 12, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
 

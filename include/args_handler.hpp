@@ -228,6 +228,75 @@ namespace std
 			return unpack_tuple(f, t, std::make_index_sequence<size>{});
 		}
 		/*------- General unpack tuple and passes arguments to callable ----->end*/
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		//
+		// generic unpack tuple when forwarding, when using DLB
+		// since it is forwarding, it means it is sequential, then reference for holder are used
+		// because there is no risk that the memory get cleared while doing this
+
+		template <typename HOLDER, typename Function, typename... Args>
+		static auto unpack_and_send(HOLDER h, Function &&f, int id, Args... args)
+		{
+			int pack_size = sizeof...(args);
+			return f(id, args..., h);
+		}
+
+		template <typename HOLDER, typename Function, typename Tuple, size_t... I>
+		static auto unpack_and_send(HOLDER h, Function &&f, int id, Tuple &t, std::index_sequence<I...>)
+		{
+			return unpack_and_send(h, f, id, std::get<I>(t)...);
+		}
+
+		template <typename HOLDER, typename Function, typename Tuple>
+		static auto unpack_and_send(HOLDER h, Function &&f, int id, Tuple &t)
+		{
+			//https://stackoverflow.com/a/36656413/5248548
+			static constexpr auto size = std::tuple_size<Tuple>::value;
+			return unpack_and_send(h, f, id, t, std::make_index_sequence<size>{});
+			//return Void();
+		}
+		//**
+		//**
+		//**
+		//**
+		//**
+		//**
+
+		template <typename HOLDER, typename Function, typename... Args>
+		static auto unpack_and_send(HOLDER &h, ctpl::Pool &pool, Function &&f, int id, Args... args)
+		{
+			int pack_size = sizeof...(args);
+			return pool.push(f, args..., h);
+		}
+
+		template <typename HOLDER, typename Function, typename Tuple, size_t... I>
+		static auto unpack_and_send(HOLDER &h, ctpl::Pool &pool, Function &&f, int id, Tuple &t, std::index_sequence<I...>)
+		{
+			return unpack_and_send(h, pool, f, id, std::get<I>(t)...);
+		}
+
+		template <typename HOLDER, typename Function, typename Tuple>
+		static auto unpack_and_send(HOLDER &h, ctpl::Pool &pool, Function &&f, int id, Tuple &t)
+		{
+			//https://stackoverflow.com/a/36656413/5248548
+			static constexpr auto size = std::tuple_size<Tuple>::value;
+			return unpack_and_send(h, pool, f, id, t, std::make_index_sequence<size>{});
+			//return Void();
+		}
 	};
 
 } // namespace std

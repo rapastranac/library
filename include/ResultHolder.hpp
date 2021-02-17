@@ -35,13 +35,13 @@ namespace library
 		size_t id;
 		size_t threadId = 0;
 
-		std::shared_ptr<std::shared_ptr<ResultHolder>> root_smrt;
-		std::shared_ptr<ResultHolder> parent_smrt;
-		std::shared_ptr<ResultHolder> itself_smrt;
-		std::list<std::shared_ptr<ResultHolder>> children_smrt;
+		//std::shared_ptr<std::shared_ptr<ResultHolder>> root_smrt;
+		//std::shared_ptr<ResultHolder> parent_smrt;
+		//std::shared_ptr<ResultHolder> itself_smrt;
+		//std::list<std::shared_ptr<ResultHolder>> children_smrt;
 
 		ResultHolder **root = nullptr;
-		ResultHolder *parent = nullptr;
+		std::shared_ptr<ResultHolder> parent;
 		ResultHolder *itself = this;
 		std::list<ResultHolder *> children; // it keeps the order in which they were appended
 
@@ -68,10 +68,39 @@ namespace library
 			this->expected = std::move(expected);
 		}
 
-		void reset()
+		//void unlink_parents()
+		//{
+		//	this->root = &itself;
+		//	this->children.clear();
+		//}
+		/* this applies when this is the first instance of a new subtree 
+			before pushing it, it is equivalent to creating a new independent
+			instance, this does not affect any of the parent nodes*/
+		//void prune()
+		//{
+		//	root_smrt.reset(new std::shared_ptr<ResultHolder>(itself)); // it becomes its own root
+		//	parent_smrt = nullptr;										// since it is a root, then parent is not needed
+		//
+		//	if (!children_smrt.empty())
+		//		throw "This should not be happening";
+		//	//children_smrt.clear(); // this should be empty before this
+		//}
+
+		void prune()
 		{
-			this->root = &itself;
-			this->children.clear();
+			root = nullptr;
+			root = &itself;
+			parent = nullptr;
+		}
+
+		/* this changes the root of every descendant and ascendants nodes, however,
+		ascendants should have been already pruned and/or used*/
+		void lowerRoot()
+		{
+			//*root_smrt = itself_smrt;
+			//parent_smrt = nullptr; // parent no longer needed
+			*root = &*itself;
+			parent = nullptr;
 		}
 
 	public:
@@ -85,42 +114,60 @@ namespace library
 		{
 			/*To ensure that if this holder dies, then it should dissappear from
 				children's parent to avoid exceptions*/
-			if (!children.empty())
-			{
-				typename std::list<ResultHolder *>::iterator it = children.begin();
-
-				while (it != children.end())
-				{
-					(*it)->parent = nullptr;
-					it++;
-				}
-			}
+			//if (!children.empty())
+			//{
+			//	typename std::list<ResultHolder *>::iterator it = children.begin();
+			//	while (it != children.end())
+			//	{
+			//		(*it)->parent = nullptr;
+			//		it++;
+			//	}
+			//}
 		}
+		//~ResultHolder()
+		//{
+		//	root_smrt.reset();
+		//	parent_smrt.reset();
+		//	itself_smrt.reset();
+		//	/*To ensure that if this holder dies, then it should dissappear from
+		//		children's parent to avoid exceptions*/
+		//	if (!children_smrt.empty())
+		//	{
+		//		children_smrt.clear();
+		//		//auto it = children_smrt.begin();
+		//		//while (it != children_smrt.end())
+		//		//{
+		//		//	(*it)->parent_smrt.reset();
+		//		//	it++;
+		//		//}
+		//		int dgfdsg = 5434;
+		//	}
+		//}
 
-		ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> &parent_smrt) : branchHandler(handler)
-		{
-			this->id = branchHandler.getUniqueId();
-			this->isPushed = false;
-			this->depth = -1;
-			this->expectedFut.reset(new std::future<_Ret>);
-
-			itself_smrt.reset(this);
-
-			if (!parent_smrt.get())
-			{
-				root_smrt.reset(new std::shared_ptr<ResultHolder>(itself_smrt));
-				return;
-			}
-			else
-			{
-				root_smrt = parent_smrt->root_smrt;
-			}
-			this->parent_smrt = parent_smrt;
-			this->parent_smrt->children_smrt.push_back(itself_smrt);
-		}
+		//ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> &parent_smrt) : branchHandler(handler)
+		//{
+		//	this->id = branchHandler.getUniqueId();
+		//	this->isPushed = false;
+		//	this->depth = -1;
+		//	this->expectedFut.reset(new std::future<_Ret>);
+		//
+		//	itself_smrt.reset(this);
+		//
+		//	if (!parent_smrt.get())
+		//	{
+		//		root_smrt.reset(new std::shared_ptr<ResultHolder>(itself_smrt));
+		//		return;
+		//	}
+		//	else
+		//	{
+		//		root_smrt = parent_smrt->root_smrt;
+		//	}
+		//	this->parent_smrt = parent_smrt;
+		//	this->parent_smrt->children_smrt.push_back(itself_smrt);
+		//}
 
 		//For multiple recursion algorithms
-		ResultHolder(library::BranchHandler &handler, ResultHolder *parent) : branchHandler(handler)
+		ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> parent) : branchHandler(handler)
 		{
 			this->id = branchHandler.getUniqueId();
 			this->isPushed = false;
