@@ -110,7 +110,7 @@ namespace ctpl
 						if (this->externNumThreads)
 						{
 							std::unique_lock<std::mutex> lock(this->mtx);
-							--*this->externNumThreads;
+							--(*this->externNumThreads);
 						}
 
 						if (_flag)

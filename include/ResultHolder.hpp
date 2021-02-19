@@ -94,12 +94,13 @@ namespace library
 		}
 
 		/* this changes the root of every descendant and ascendants nodes, however,
-		ascendants should have been already pruned and/or used*/
+		ascendants should have already been pruned and/or used*/
 		void lowerRoot()
 		{
 			//*root_smrt = itself_smrt;
 			//parent_smrt = nullptr; // parent no longer needed
-			*root = &*itself;
+			*(this->root) = &(*this);
+			//*root = &*itself;
 			parent = nullptr;
 		}
 

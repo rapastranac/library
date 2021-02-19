@@ -17,73 +17,183 @@
 #include <string>
 #include <vector>
 
+static int id = 0;
+int createID()
+{
+	return ++id;
+}
+
 struct S
 {
 	S(std::shared_ptr<S> parent)
 	{
+		this->id = createID();
+
 		if (!parent)
 		{
-			this->root = &itself;
+			root = &self;
 			return;
 		}
 		else
 		{
 			this->parent = parent;
-			this->root = &(*parent->root);
-			this->parent->children.push_back(this);
+			//this->parent->children.emplace_back(std::make_shared<S>(*this));
+			root = &(*parent->root);
 		}
+	}
+
+	void lowerRoot()
+	{
+		*(this->root) = &(*this);
+		parent = nullptr;
 	}
 
 	void prune()
 	{
 		root = nullptr;
-		root = &itself;
+		//root = &itself;
+		root = &self;
 		parent = nullptr;
+	}
+
+	void addChildren(std::shared_ptr<S> &child)
+	{
+		children.push_back(child);
 	}
 
 	~S()
 	{
-		printf("Destructor called for : %d \n", val);
+		if (!children.empty())
+		{
+			children.clear();
+			//for (auto &child : children)
+			//{
+			//	int count = child.use_count();
+			//	child.reset();
+			//}
+		}
+		printf("Destructor called for  id : %d \n", id);
 	}
 
 	int val;
+	int id = -1;
 	std::shared_ptr<S> parent;
 	S **root = nullptr;
-	S *itself = this;
-	std::list<S *> children;
+	std::shared_ptr<S> itself;
+	S *self = this;
+	std::list<std::shared_ptr<S>> children;
 };
 
 const int SIZE = 7;
-std::vector<std::thread> threads(SIZE);
 
-void foo(int depth, std::shared_ptr<S> parent)
+ctpl::Pool ppool(SIZE);
+
+template <class F, class SMRT_PTR>
+void forwarder(F &&f, int depth, SMRT_PTR s)
+{
+	if (depth > 3)
+	{
+		auto *root = *s->root; //raw pointer
+		if (root->children.size() > 1)
+		{
+			auto leftMost = root->children.front(); // raw pointers
+			root->children.pop_front();
+			auto rightMost = root->children.front(); // raw pointers
+			root->children.pop_front();
+
+			rightMost->prune();
+			leftMost->lowerRoot();
+
+			int c1 = rightMost.use_count();
+			int c2 = leftMost.use_count();
+			int c3 = s.use_count();
+			ppool.push(f, depth + 1, rightMost);
+			return;
+		}
+	}
+	int count = s.use_count();
+	ppool.push(f, depth, s);
+}
+
+auto deleter = [](S *s) {
+	if (s)
+	{
+		printf("structure holding id = %d, deleted\n", s->id);
+		delete s;
+		return;
+	}
+	printf("structure holding id = %d, was already deleted\n", s->id);
+};
+
+void foo(int id, int depth, std::shared_ptr<S> parent)
 {
 	if (depth >= SIZE)
 		return;
-	auto s = std::make_shared<S>(parent);
-	s->val = depth;
+	std::shared_ptr<S> left(new S(parent), deleter);
+	std::shared_ptr<S> right(new S(parent), deleter);
+	if (parent)
+	{
+		parent->addChildren(left);
+		parent->addChildren(right);
+	}
+	left->val = depth;
+	right->val = depth;
 
-	if (depth == 3)
-		s->prune();
+	int c1 = left.use_count();
+	int c2 = right.use_count();
+	int count = parent.use_count();
 
-	threads[depth] = std::thread(foo, depth + 1, s);
+	//if (depth == 3)
+	//	left->prune();
 
-	//std::this_thread::sleep_for(1s);
+	forwarder(foo, depth + 1, left);
 
 	printf("Hello from level %d \n", depth);
+}
+
+std::list<std::shared_ptr<S>> objs;
+
+void bar(std::shared_ptr<S> dummy)
+{
+	int c = dummy.use_count();
+	return;
 }
 
 int main(int argc, char *argv[])
 {
 	{
-		threads[0] = std::thread(foo, 1, nullptr);
+		std::shared_ptr<S> mt;
+		{
+			std::shared_ptr<S> A(new S(nullptr), deleter);
+			//std::shared_ptr<S> B(new S(A), deleter);
+			//std::shared_ptr<S> C(new S(B), deleter);
+			S *ptr = A.get();
+			mt.reset(ptr, deleter);
+
+			//bar(C);
+			int c1 = A.use_count();
+			//int c2 = B.use_count();
+			//int c3 = C.use_count();
+			//objs.push_back(A);
+			//objs.push_back(B);
+			//objs.push_back(C);
+			c1 = A.use_count();
+			//c2 = B.use_count();
+			//c3 = C.use_count();
+		}
+		int c1 = mt.use_count();
+		int dfs = 4543;
+	}
+	objs.clear();
+	int dgf = 3453;
+	{
+		ppool.push(foo, 0, nullptr);
 	}
 
-	for (size_t i = 0; i < SIZE; i++)
-	{
-		if (threads[i].joinable())
-			threads[i].join();
-	}
+	//std::this_thread::sleep_for(2s);
+	ppool.interrupt(true);
+
+	return 0;
 
 	auto &handler = library::BranchHandler::getInstance(); // parallel library
 
@@ -109,7 +219,7 @@ int main(int argc, char *argv[])
 	//}
 	//user_deserializer(ss2, oGraph);
 
-	cover.init(graph, 12, file, 4);
+	cover.init(graph, 2, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
 

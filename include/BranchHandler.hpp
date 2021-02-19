@@ -602,7 +602,7 @@ namespace library
 						*/
 						while (leftMost != holder)
 						{
-							holder->parent->children.pop_front();		// removes pb from the parent's children
+							holder->parent->children.pop_front();		 // removes pb from the parent's children
 							leftMost = holder->parent->children.front(); // it gets the second element from the parent's children
 						}
 						// after this line,this should be true leftMost == holder
@@ -619,18 +619,21 @@ namespace library
 				}
 				else if (holder->parent.get() != *holder->root) //any other level,
 				{
-					/* for testing, I believe this should never happen, because
-					checkParent() is correcting the root when this one ends up
-					holding only one child
+					/* this is relevant, because eventhough the root still has some waiting nodes
+					the thread in charge of the tree might be deep down solving everything sequentially.
+					Every time a leftMost branch is solved sequentially, this one should be removed from 
+					the list to avoid failure attempts of solving a branch that has already been solved.
+
+					If a thread attempts to solve an already solved branch, this will throw an error
+					because the node won't have information anymore since it has already been passed
 					*/
-					int gfdf = 453434; // just to have a break point
 
 					auto leftMost = holder->parent->children.front();
 					if (leftMost != holder) //This confirms pb has already been solved
 					{
 						/*this scope only deletes leftMost holder, which is already
 						* solved sequentially by here and leaves the parent with at
-						* least a child because an uppter holder still has a holder in
+						* least a child because the root still has at least a holder in
 						* the waiting list
 						*/
 						holder->parent->children.pop_front();
@@ -680,9 +683,9 @@ namespace library
 		the deepest node
 		 */
 		template <typename Holder>
-		Holder rootCorrecting_smrt(Holder &root)
+		void rootCorrecting_smrt(Holder *root) //<-------------------------  raw pointers
 		{
-			Holder _root = root;
+			Holder *_root = root;
 
 			while (_root->children.size() == 1) // lowering the root
 			{
@@ -692,7 +695,7 @@ namespace library
 				//_root->parent = nullptr;
 				//*(_root->root) = &(*_root);
 			}
-			return _root;
+			//return _root;		//<-------------------------
 		}
 
 		//template <typename F, typename... Rest>
@@ -706,10 +709,12 @@ namespace library
 		//}
 
 		template <typename Holder>
-		Holder *checkParent_smrt(Holder *holder)
+		Holder checkParent_smrt(Holder &holder_smrt)
 		{
-			Holder *leftMost{nullptr}; // this is the branch that led us to the root
-			Holder *root{nullptr};	   // local pointer to root, to avoid "*" use
+			using RH = decltype(holder_smrt.get()); //raw pointer type to ResultHolder
+			RH holder = holder_smrt.get();
+			RH leftMost; // this is the branch that led us to the root
+			RH root;	 // local pointer to root, to avoid "*" use
 
 			if (holder->parent) //  this confirms holder is not a root
 			{
@@ -718,7 +723,8 @@ namespace library
 					/* this confirms, it's not the first level, because it is meant
 					to assist top sub trees of a branch that has started to run
 					sequentially */
-					root = *holder->root; //no need to iterate
+					root = *holder->root; //no need to iterate	<------------------
+					//root.reset(*holder->root);
 
 					int tmp = root->children.size(); // this probable fix the following
 
@@ -726,7 +732,8 @@ namespace library
 					// Unless root is guaranteed to have at least 2 children,
 					// TODO ... verify
 
-					leftMost = root->children.front(); //TODO ... check if branch has been pushed or forwarded
+					//leftMost.reset(root->children.front());
+					leftMost = root->children.front(); //TODO ... check if branch has been pushed or forwarded <------------------
 				}
 				else
 					return nullptr;
@@ -734,10 +741,59 @@ namespace library
 			else
 				return nullptr;
 
-			if (root->children.size() > 2)
-			{ //this condition is for multiple recursion
+			// if the above condition is succesfully met, then this method should never return a nullptr
 
-				return nullptr;
+			/*Here below, we check is left child was pushed to pool, then the pointer to parent is pruned
+							 parent
+						  /  |  \   \  \
+						 /   |   \	 \	 \
+						/    |    \	  \	   \
+					  p     cb    w1  w2 ... wk
+
+			p	stands for pushed branch
+			cb	stands for current branch
+			w	stands for waiting branch, or target holder
+			Following previous diagram
+			if "p" is already pushed, it won't be part of children list of "parent", then list = {cb,w1,w2}
+			leftMost = cb
+			nextElt = w1
+
+			There will never be fewer than two elements, asuming multiple recursion per scope,
+			because as long as it remains two elements, it means than rightMost element will be pushed to pool
+			and then leftMost element will no longer need a parent, which is the first condition to explore
+			this level of the tree*/
+
+			//TODO following lines applied to multiple recursion
+
+			auto worthPushing = [](Holder &holder) -> Holder {
+				if (holder->isBound())
+				{
+					bool isWorthPushing = holder->boundCond();
+					if (isWorthPushing)
+						return holder;
+					else
+						return nullptr;
+				}
+				return holder;
+			};
+
+			if (root->children.size() > 2)
+			{
+				/* this condition is for multiple recursion, the diference with the one below is that
+				the root does not move after returning one of the waiting nodes,
+				say we have the following root's childen
+
+				children =	{	cb	w1	w2	... wk}
+
+				the goal is to push w1, which is the inmmediate right node */
+
+				auto second = std::next(root->children.begin(), 1); // this is to access the 2nd element
+				//auto secondHolder = *second;						// catches the pointer of the node	<-------------------------
+				root->children.erase(second); // removes second node from the root's children
+
+				Holder secondHolder(*second);
+
+				return worthPushing(secondHolder);
 			}
 			else if (root->children.size() == 2)
 			{
@@ -746,40 +802,24 @@ namespace library
 					will be the new root since after this scope right branch will have already been
 					pushed*/
 
-				root->children.pop_front();				// deletes leftMost from root's children
-				Holder *right = root->children.front(); // the one to be pushed
-				root->children.clear();					// just in case
+				root->children.pop_front(); // deletes leftMost from root's children
+				//Holder *right = root->children.front(); // the one to be pushed		<-------------------------
+				Holder right(root->children.front());
+
+				root->children.clear(); // just in case
 				//right->parent = nullptr;					 //parent not needed since it'll be pushed
 				//right->root = nullptr;
 				right->prune(); //it does the same than previous two lines
 
-				//*leftMost->root = leftMost; // leftMost is the new root
+				leftMost->lowerRoot(); // leftMost is the new root IMPORTANT!!!!! this sets the new root
+				//Holder *test = rootCorrecting_smrt(leftMost); //IMPORTANT, this method receives a root	<-------------------------
 
-				leftMost->lowerRoot(); // leftMost is the new root
+				rootCorrecting_smrt(leftMost); //it passes the raw pointers
 
-				Holder *test = rootCorrecting_smrt(leftMost);
-
-				// next condition no really necessary, just for testing
-				//if (test != leftMost)
-				//{
-				//	int dfds = 3423;
-				//}
-
-				//(*leftMost->root)->parent = nullptr;	//root has no parent
-
-				if (right->isBound())
-				{
-					bool temp = right->boundCond();
-					if (temp)
-						return right;
-					else
-						return nullptr;
-				}
-				return right;
+				return worthPushing(right);
 			}
 			else
 			{
-
 				std::cout << "4 Testing, it's not supposed to happen" << std::endl;
 				return nullptr;
 			}
@@ -789,8 +829,8 @@ namespace library
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool push_dummy(F &&f, int id, Holder &holder_smrt)
 		{
-			using RESULT_HOLDER = decltype(holder_smrt.get()); //actual ResultHolder type (pointer)
-			RESULT_HOLDER holder = holder_smrt.get();
+			//using RESULT_HOLDER = decltype(holder_smrt.get()); //actual ResultHolder type (pointer)
+			//RESULT_HOLDER holder = holder_smrt.get();
 			/*This lock must be adquired before checking the condition,	
 			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
@@ -799,7 +839,7 @@ namespace library
 			{
 				if (is_DLB)
 				{
-					RESULT_HOLDER upperHolder = checkParent_smrt(holder);
+					Holder upperHolder = checkParent_smrt(holder_smrt); //this is creating a new share_ptr which is not the same as the existing ones
 					if (upperHolder)
 					{
 
@@ -813,6 +853,12 @@ namespace library
 						// since it's void, no need to store a returned/future value
 						//std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
 						//std::args_handler::unpack_tuple(upperHolder, f, 0, upperHolder->getArgs(), true);
+
+						//auto s_ptr = std::make_shared<RESULT_HOLDER>(upperHolder);
+						//Holder ptr(upperHolder);
+						int count = upperHolder.use_count();
+
+						std::args_handler::unpack_and_send(upperHolder, thread_pool, f, 0, upperHolder->getArgs());
 						return false;
 					}
 					//exclude(&holder);
