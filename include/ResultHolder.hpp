@@ -35,15 +35,10 @@ namespace library
 		size_t id;
 		size_t threadId = 0;
 
-		//std::shared_ptr<std::shared_ptr<ResultHolder>> root_smrt;
-		//std::shared_ptr<ResultHolder> parent_smrt;
-		//std::shared_ptr<ResultHolder> itself_smrt;
-		//std::list<std::shared_ptr<ResultHolder>> children_smrt;
-
-		ResultHolder **root = nullptr;
-		std::shared_ptr<ResultHolder> parent;
-		ResultHolder *itself = this;
-		std::list<ResultHolder *> children; // it keeps the order in which they were appended
+		ResultHolder **root = nullptr;					   // raw pointer
+		std::shared_ptr<ResultHolder> parent;			   // smart pointer
+		ResultHolder *itself = this;					   // raw pointer
+		std::list<std::shared_ptr<ResultHolder>> children; // smart pointer, it keeps the order in which they were appended
 
 		int depth;
 
@@ -111,39 +106,35 @@ namespace library
 			this->depth = 0;
 			this->expectedFut.reset(new std::future<_Ret>);
 		}
+		//~ResultHolder()
+		//{
+		/*To ensure that if this holder dies, then it should dissappear from
+				children's parent to avoid exceptions*/
+		//if (!children.empty())
+		//{
+		//	typename std::list<ResultHolder *>::iterator it = children.begin();
+		//	while (it != children.end())
+		//	{
+		//		(*it)->parent = nullptr;
+		//		it++;
+		//	}
+		//}
+		//}
 		~ResultHolder()
 		{
 			/*To ensure that if this holder dies, then it should dissappear from
 				children's parent to avoid exceptions*/
-			//if (!children.empty())
-			//{
-			//	typename std::list<ResultHolder *>::iterator it = children.begin();
-			//	while (it != children.end())
-			//	{
-			//		(*it)->parent = nullptr;
-			//		it++;
-			//	}
-			//}
+			if (!children.empty())
+			{
+				for (auto &child : children)
+				{
+					child->parent.reset();
+				}
+				children.clear();
+				int dgfdsg = 5434;
+			}
+			//printf("Holder deleted, id: %d \n", this->id);
 		}
-		//~ResultHolder()
-		//{
-		//	root_smrt.reset();
-		//	parent_smrt.reset();
-		//	itself_smrt.reset();
-		//	/*To ensure that if this holder dies, then it should dissappear from
-		//		children's parent to avoid exceptions*/
-		//	if (!children_smrt.empty())
-		//	{
-		//		children_smrt.clear();
-		//		//auto it = children_smrt.begin();
-		//		//while (it != children_smrt.end())
-		//		//{
-		//		//	(*it)->parent_smrt.reset();
-		//		//	it++;
-		//		//}
-		//		int dgfdsg = 5434;
-		//	}
-		//}
 
 		//ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> &parent_smrt) : branchHandler(handler)
 		//{
@@ -180,13 +171,10 @@ namespace library
 				this->root = &itself;
 				return;
 			}
-			else
-			{
-				this->root = &(*parent->root);
-			}
 
+			this->root = &(*parent->root);
 			this->parent = parent;
-			this->parent->children.push_back(this);
+			//this->parent->children.push_back(this);
 		}
 
 		ResultHolder(ResultHolder &&src) noexcept
@@ -196,6 +184,23 @@ namespace library
 			this->expectedFut = std::move(src.expectedFut); //https://stackoverflow.com/questions/16030081/copy-constructor-for-a-class-with-unique-ptr
 			this->isPushed = src.isPushed;
 			this->expected = src.expected;
+		}
+
+		void addChildren(std::shared_ptr<ResultHolder> &child)
+		{
+			children.push_back(child);
+		}
+
+		template <typename... Rest>
+		void addChildren(std::shared_ptr<ResultHolder> &child, Rest &...rest)
+		{
+			children.push_back(child);
+			addChildren(rest...);
+		}
+
+		void clearChildren()
+		{
+			children.clear();
 		}
 
 		void setDepth(int depth)

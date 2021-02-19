@@ -136,15 +136,16 @@ public:
 			//testing ****************************************
 			//HolderType initial(branchHandler, nullptr);
 			//auto nil = std::make_shared<HolderType>(nullptr);
-			auto initial = std::make_shared<HolderType>(branchHandler, nullptr);
-			int depth = 0;
-			//initial.holdArgs(depth, graph);
-			initial->holdArgs(depth, graph);
+			{
+				auto initial = std::make_shared<HolderType>(branchHandler, nullptr);
+				int depth = 0;
+				//initial.holdArgs(depth, graph);
+				initial->holdArgs(depth, graph);
 
-			branchHandler.push_test<void>(_f, -1, initial, true);
-			//branchHandler.push<void>(_f, -1, initial, true);
-			//branchHandler.push<void>(_f, -1, initial);
-
+				branchHandler.push_test<void>(_f, -1, initial, true);
+				//branchHandler.push<void>(_f, -1, initial, true);
+				//branchHandler.push<void>(_f, -1, initial);
+			}
 			//************************************************
 
 			branchHandler.wait();
@@ -421,9 +422,11 @@ public:
 
 		//HolderType hol_l(branchHandler, parent);
 		//HolderType hol_r(branchHandler, parent);
-		auto hol_l = std::make_shared<HolderType>(branchHandler, parent);
-		auto hol_r = std::make_shared<HolderType>(branchHandler, parent);
-
+		std::shared_ptr<HolderType> hol_l(new HolderType(branchHandler, parent));
+		std::shared_ptr<HolderType> hol_r(new HolderType(branchHandler, parent));
+		//auto hol_r = std::make_shared<HolderType>(branchHandler, parent);
+		parent->addChildren(hol_l, hol_r);
+		//parent->addChildren(hol_r);
 #endif
 		// elements for next recursion level should be handled before going forward ***************
 
@@ -475,6 +478,11 @@ public:
 			branchHandler.forward_smrt<void>(_f, id, hol_r, true);
 #endif
 		}
+		parent->clearChildren();
+		int c1 = parent.use_count();
+		int c2 = hol_l.use_count();
+		int c3 = hol_r.use_count();
+
 		return;
 	}
 

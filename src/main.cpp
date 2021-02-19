@@ -34,12 +34,8 @@ struct S
 			root = &self;
 			return;
 		}
-		else
-		{
-			this->parent = parent;
-			//this->parent->children.emplace_back(std::make_shared<S>(*this));
-			root = &(*parent->root);
-		}
+		this->parent = parent;
+		root = &(*parent->root);
 	}
 
 	void lowerRoot()
@@ -130,17 +126,17 @@ void foo(int id, int depth, std::shared_ptr<S> parent)
 	if (depth >= SIZE)
 		return;
 	std::shared_ptr<S> left(new S(parent), deleter);
-	std::shared_ptr<S> right(new S(parent), deleter);
+	//std::shared_ptr<S> right(new S(parent), deleter);
 	if (parent)
 	{
 		parent->addChildren(left);
-		parent->addChildren(right);
+		//parent->addChildren(right);
 	}
 	left->val = depth;
-	right->val = depth;
+	//right->val = depth;
 
 	int c1 = left.use_count();
-	int c2 = right.use_count();
+	//int c2 = right.use_count();
 	int count = parent.use_count();
 
 	//if (depth == 3)
@@ -161,39 +157,37 @@ void bar(std::shared_ptr<S> dummy)
 
 int main(int argc, char *argv[])
 {
-	{
-		std::shared_ptr<S> mt;
-		{
-			std::shared_ptr<S> A(new S(nullptr), deleter);
-			//std::shared_ptr<S> B(new S(A), deleter);
-			//std::shared_ptr<S> C(new S(B), deleter);
-			S *ptr = A.get();
-			mt.reset(ptr, deleter);
-
-			//bar(C);
-			int c1 = A.use_count();
-			//int c2 = B.use_count();
-			//int c3 = C.use_count();
-			//objs.push_back(A);
-			//objs.push_back(B);
-			//objs.push_back(C);
-			c1 = A.use_count();
-			//c2 = B.use_count();
-			//c3 = C.use_count();
-		}
-		int c1 = mt.use_count();
-		int dfs = 4543;
-	}
-	objs.clear();
-	int dgf = 3453;
-	{
-		ppool.push(foo, 0, nullptr);
-	}
-
-	//std::this_thread::sleep_for(2s);
-	ppool.interrupt(true);
-
-	return 0;
+	//{
+	//	std::shared_ptr<S> mt;
+	//	{
+	//		std::shared_ptr<S> A(new S(nullptr), deleter);
+	//		//std::shared_ptr<S> B(new S(A), deleter);
+	//		//std::shared_ptr<S> C(new S(B), deleter);
+	//		S *ptr = A.get();
+	//		mt.reset(ptr, deleter);
+	//
+	//		//bar(C);
+	//		int c1 = A.use_count();
+	//		//int c2 = B.use_count();
+	//		//int c3 = C.use_count();
+	//		//objs.push_back(A);
+	//		//objs.push_back(B);
+	//		//objs.push_back(C);
+	//		c1 = A.use_count();
+	//		//c2 = B.use_count();
+	//		//c3 = C.use_count();
+	//	}
+	//	int c1 = mt.use_count();
+	//	int dfs = 4543;
+	//}
+	//objs.clear();
+	//int dgf = 3453;
+	//{
+	//	ppool.push(foo, 0, nullptr);
+	//}
+	////std::this_thread::sleep_for(2s);
+	//ppool.interrupt(true);
+	//return 0;
 
 	auto &handler = library::BranchHandler::getInstance(); // parallel library
 
@@ -205,7 +199,7 @@ int main(int argc, char *argv[])
 #ifndef MPI_ENABLED
 	printf("MPI disable section \n");
 
-	auto file = "input/prob_4/400/00400_1";
+	auto file = "input/prob_4/500/00500_1";
 	graph.readEdges(file);
 
 	//auto ss = user_serializer(graph);
@@ -219,7 +213,7 @@ int main(int argc, char *argv[])
 	//}
 	//user_deserializer(ss2, oGraph);
 
-	cover.init(graph, 2, file, 4);
+	cover.init(graph, 100, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
 

@@ -93,6 +93,7 @@ namespace library
 
 		size_t getUniqueId()
 		{
+			std::unique_lock<std::mutex> lck(mtx);
 			++idCounter;
 			return idCounter;
 		}
@@ -570,7 +571,7 @@ namespace library
 		}
 
 		template <typename Holder>
-		void checkLeftSibling_smrt(Holder *holder)
+		void checkLeftSibling_smrt(Holder holder)
 		{
 			/* What does it do?. Having the following ilustration
 						  root == parent
@@ -594,7 +595,7 @@ namespace library
 			{
 				if (holder->parent.get() == *(holder->root)) //this confirms that it's the first level of the root
 				{
-					Holder *leftMost = holder->parent->children.front();
+					Holder leftMost = holder->parent->children.front();
 					if (leftMost != holder) //This confirms pb has already been solved
 					{
 						/* next conditional should always comply, there should not be required
@@ -628,7 +629,7 @@ namespace library
 					because the node won't have information anymore since it has already been passed
 					*/
 
-					auto leftMost = holder->parent->children.front();
+					Holder leftMost = holder->parent->children.front();
 					if (leftMost != holder) //This confirms pb has already been solved
 					{
 						/*this scope only deletes leftMost holder, which is already
@@ -683,9 +684,9 @@ namespace library
 		the deepest node
 		 */
 		template <typename Holder>
-		void rootCorrecting_smrt(Holder *root) //<-------------------------  raw pointers
+		void rootCorrecting_smrt(Holder root) //<-------------------------  raw pointers
 		{
-			Holder *_root = root;
+			Holder _root = root;
 
 			while (_root->children.size() == 1) // lowering the root
 			{
@@ -709,12 +710,12 @@ namespace library
 		//}
 
 		template <typename Holder>
-		Holder checkParent_smrt(Holder &holder_smrt)
+		Holder checkParent_smrt(Holder &holder)
 		{
-			using RH = decltype(holder_smrt.get()); //raw pointer type to ResultHolder
-			RH holder = holder_smrt.get();
-			RH leftMost; // this is the branch that led us to the root
-			RH root;	 // local pointer to root, to avoid "*" use
+			using RH = decltype(holder.get()); //raw pointer type to ResultHolder
+			//RH holder = holder_smrt.get();
+			Holder leftMost;   // this is the branch that led us to the root
+			RH root = nullptr; // local pointer to root, to avoid "*" use
 
 			if (holder->parent) //  this confirms holder is not a root
 			{
@@ -1225,8 +1226,8 @@ namespace library
 
 			if (is_DLB)
 			{
-				auto ptr = holder.get();
-				checkLeftSibling_smrt(ptr);
+				//auto ptr = holder.get();
+				checkLeftSibling_smrt(holder);
 			}
 
 			holder->setForwardStatus(true);
@@ -1274,7 +1275,7 @@ namespace library
 		std::once_flag isDoneFlag;
 		std::any bestR;
 		std::pair<int, std::stringstream> bestRstream;
-		bool is_DLB = true;
+		bool is_DLB = false;
 
 		/*Dequeue while using strategy myPool*/
 		bool isDequeueEnable = false;
