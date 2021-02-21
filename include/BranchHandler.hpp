@@ -104,6 +104,38 @@ namespace library
 			this->bestR = std::move(bestR);
 		}
 
+		template <typename Struct>
+		void linkParent(Struct *parent, Struct &child)
+		{
+			if (!parent)
+			{
+				Struct *virtualRoot = new Struct(*this);
+				child.parent = virtualRoot;
+				child.root = &virtualRoot->itself;
+				virtualRoot->children.push_back(&child);
+			}
+			else
+			{
+				child.parent = parent->itself;
+				child.root = parent->root;
+				parent->children.push_back(&child);
+			}
+		}
+
+		// it could be moved to another class
+		template <typename Struct, typename... Args>
+		void linkParent(Struct *parent, Struct &child, Args &...args)
+		{
+			if (!parent)
+			{
+				Struct *virtualRoot = new Struct(*this);
+				child.parent = virtualRoot->itself;
+				child.root = &virtualRoot->itself;
+				virtualRoot->children.push_back(&child);
+				linkParent(virtualRoot, args...);
+			}
+		}
+
 		/* POTENTIALLY TO REPLACE catchBestResult()
 		This is thread safe operation, user does not need  any mutex knowledge
 		refValueLocal is the value to compare with a global value, usually the result
@@ -390,8 +422,8 @@ namespace library
 				{
 					/* this condition complies if a branch has already
 					 been pushed, to ensure pushing leftMost first */
-					root = *holder->root;			 //no need to iterate
-					int tmp = root->children.size(); // this probable fix the following
+					root = *holder->root; //no need to iterate
+					//int tmp = root->children.size(); // this probable fix the following
 
 					// the following is not true, it could be also the right branch
 					// Unless root is guaranteed to have at least 2 children,
@@ -445,26 +477,26 @@ namespace library
 
 			//TODO following lines applied to multiple recursion
 
-			if (root->children.size() > 2)
-			{ //this condition is for multiple recursion
-
-				typename std::list<Holder *>::const_iterator leftMost = root->children.begin();				 //Where it came from
-				typename std::list<Holder *>::const_iterator nextElt = std::next(root->children.begin(), 1); //this is to access 2nd elt
-				//nextElt is the one to be pushed
-				auto *toBePushed = *nextElt;
-				root->children.erase(nextElt); /*it erases second element already pointed by nextElt,
-														instead of searching it using remove()*/
-				toBePushed->parent = nullptr;  /*It won't need a parent since it'll be pushed*/
-
-				if (toBePushed->isBoundCond)
+			auto worthPushing = [](Holder *holder) -> Holder * {
+				if (holder->isBound())
 				{
-					bool temp = toBePushed->boundCond();
-					if (temp)
-						return toBePushed;
+					bool isWorthPushing = holder->boundCond();
+					if (isWorthPushing)
+						return holder;
 					else
 						return nullptr;
 				}
-				return toBePushed;
+				return holder;
+			};
+
+			if (root->children.size() > 2)
+			{ //this condition is for multiple recursion
+
+				auto second = std::next(root->children.begin(), 1); // this is to access the 2nd element
+				auto secondHolder = *second;						// catches the pointer of the node	<-------------------------
+				root->children.erase(second);						// removes second node from the root's children
+
+				return worthPushing(secondHolder);
 			}
 			else if (root->children.size() == 2)
 			{
@@ -473,36 +505,14 @@ namespace library
 					will be the new root since after this scope right branch will have been
 					already pushed*/
 
-				//	Holder* leftMost = root->children.front();
-
-				leftMost->parent = nullptr;				// parent no longer needed
 				root->children.pop_front();				// deletes leftMost from root's children
 				Holder *right = root->children.front(); //The one to be pushed
 				root->children.clear();
-				right->parent = nullptr; //parent not needed since it'll be pushed
-				right->root = nullptr;
+				leftMost->lowerRoot();
 
-				*leftMost->root = &(*leftMost); // leftMost is the new root
+				rootCorrecting(leftMost);
 
-				Holder *test = rootCorrecting(leftMost);
-
-				// next condition no really necessary, just for testing
-				if (test != leftMost)
-				{
-					int dfds = 3423;
-				}
-
-				//(*leftMost->root)->parent = nullptr;	//root has no parent
-
-				if (right->isBoundCond)
-				{
-					bool temp = right->boundCond();
-					if (temp)
-						return right;
-					else
-						return nullptr;
-				}
-				return right;
+				return worthPushing(right);
 			}
 			else
 			{
@@ -546,22 +556,38 @@ namespace library
 						*/
 						while (leftMost != holder)
 						{
-							holder->parent->children.pop_front();
-							leftMost = holder->parent->children.front();
+							holder->parent->children.pop_front();		 // removes pb from the parent's children
+							leftMost = holder->parent->children.front(); // it gets the second element from the parent's children
 						}
-						// Then this remainting child will become a new root
-						leftMost->parent = nullptr;
-						*(leftMost->root) = &(*leftMost);
+						// after this line,this should be true leftMost == holder
+
+						// There might be more than one remaining sibling
+						if (holder->parent->children.size() > 1)
+							return; // root does not change
+
+						/* if holder is the only remaining child from parent then this means
+						that it will have to become a new root*/
+						holder->parent = nullptr;
+						holder->prune(); //not even required, nullptr is sent
 					}
 				}
 				else if (holder->parent != *holder->root) //any other level,
 				{
+					/* this is relevant, because eventhough the root still has some waiting nodes
+					the thread in charge of the tree might be deep down solving everything sequentially.
+					Every time a leftMost branch is solved sequentially, this one should be removed from 
+					the list to avoid failure attempts of solving a branch that has already been solved.
+
+					If a thread attempts to solve an already solved branch, this will throw an error
+					because the node won't have information anymore since it has already been passed
+					*/
+
 					Holder *leftMost = holder->parent->children.front();
 					if (leftMost != holder) //This confirms pb has already been solved
 					{
 						/*this scope only deletes leftMost holder, which is already
 						* solved sequentially by here and leaves the parent with at
-						* least a child because an uppter holder still has a holder in
+						* least a child because the root still has at least a holder in
 						* the waiting list
 						*/
 						holder->parent->children.pop_front();
@@ -727,7 +753,7 @@ namespace library
 					root = *holder->root; //no need to iterate	<------------------
 					//root.reset(*holder->root);
 
-					int tmp = root->children.size(); // this probable fix the following
+					//int tmp = root->children.size(); // this probable fix the following
 
 					// the following is not true, it could be also the right branch
 					// Unless root is guaranteed to have at least 2 children,
@@ -901,7 +927,6 @@ namespace library
 				if (is_DLB)
 				{
 					Holder *upperHolder = checkParent(&holder);
-					//Holder upperHolder_smrt = checkParent_smrt(holder);
 					if (upperHolder)
 					{
 						if (std::get<1>(upperHolder->getArgs()).coverSize() == 0)
@@ -913,10 +938,10 @@ namespace library
 						lck.unlock();
 						// **************************************************
 						// if holder sent, then its parent and children info should be reseted
-						upperHolder->unlink_parents();
+						//upperHolder->unlink_parents();
 						// **************************************************
 						// since it's void, no need to store a returned/future value
-						//std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
+						std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
 						//std::args_handler::unpack_tuple(upperHolder, f, 0, upperHolder->getArgs(), true);
 						return false;
 					}
@@ -934,7 +959,7 @@ namespace library
 
 				// **************************************************
 				// if holder sent, then its parent and children info should be reseted
-				holder.unlink_parents();
+				//holder.unlink_parents();
 				// **************************************************
 
 				std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
@@ -1275,7 +1300,7 @@ namespace library
 		std::once_flag isDoneFlag;
 		std::any bestR;
 		std::pair<int, std::stringstream> bestRstream;
-		bool is_DLB = false;
+		bool is_DLB = true;
 
 		/*Dequeue while using strategy myPool*/
 		bool isDequeueEnable = false;

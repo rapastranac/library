@@ -134,16 +134,16 @@ public:
 			branchHandler.setRefValue(currentMVCSize);
 			//mvc(-1, 0, graph);
 			//testing ****************************************
-			//HolderType initial(branchHandler, nullptr);
+			HolderType initial(branchHandler);
 			//auto nil = std::make_shared<HolderType>(nullptr);
 			{
-				auto initial = std::make_shared<HolderType>(branchHandler, nullptr);
+				//auto initial = std::make_shared<HolderType>(branchHandler, nullptr);
 				int depth = 0;
-				//initial.holdArgs(depth, graph);
-				initial->holdArgs(depth, graph);
+				initial.holdArgs(depth, graph);
+				//initial->holdArgs(depth, graph);
 
-				branchHandler.push_test<void>(_f, -1, initial, true);
-				//branchHandler.push<void>(_f, -1, initial, true);
+				//branchHandler.push_test<void>(_f, -1, initial, true);
+				branchHandler.push<void>(_f, -1, initial, true);
 				//branchHandler.push<void>(_f, -1, initial);
 			}
 			//************************************************
@@ -388,7 +388,7 @@ public:
 #ifdef MPI_ENABLED
 	void mvc(int id, int depth, Graph &graph)
 #else
-	void mvc(int id, int depth, Graph &graph, std::shared_ptr<HolderType> parent)
+	void mvc(int id, int depth, Graph &graph, HolderType *parent)
 #endif
 	{
 		size_t k1 = graph.min_k();
@@ -419,70 +419,42 @@ public:
 		HolderType hol_l(branchHandler);
 		HolderType hol_r(branchHandler);
 #else
+		HolderType hol_l(branchHandler, parent);
+		HolderType hol_r(branchHandler, parent);
+		branchHandler.linkParent(parent, hol_l, hol_r);
 
-		//HolderType hol_l(branchHandler, parent);
-		//HolderType hol_r(branchHandler, parent);
-		std::shared_ptr<HolderType> hol_l(new HolderType(branchHandler, parent));
-		std::shared_ptr<HolderType> hol_r(new HolderType(branchHandler, parent));
-		//auto hol_r = std::make_shared<HolderType>(branchHandler, parent);
-		parent->addChildren(hol_l, hol_r);
-		//parent->addChildren(hol_r);
 #endif
-		// elements for next recursion level should be handled before going forward ***************
 
-		//hol_l.setDepth(depth);
-		//hol_r.setDepth(depth);
-		//gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
-		//gLeft.clean_graph();
-		//int C1Size = (int)gLeft.coverSize();
-		//gRight.removeNv(v);
-		//gRight.clean_graph();
-		//int C2Size = (int)gRight.coverSize();
-		//hol_r.holdArgs(newDepth, gRight);
-
-		hol_l->setDepth(depth);
-		hol_r->setDepth(depth);
+		hol_l.setDepth(depth);
+		hol_r.setDepth(depth);
 		gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
 		gLeft.clean_graph();
 		int C1Size = (int)gLeft.coverSize();
 		gRight.removeNv(v);
 		gRight.clean_graph();
 		int C2Size = (int)gRight.coverSize();
-		hol_r->holdArgs(newDepth, gRight);
+		hol_r.holdArgs(newDepth, gRight);
 
 		//*******************************************************************************************
 
 		if (C1Size < branchHandler.getRefValue())
 		{
-			//hol_l.holdArgs(newDepth, gLeft);
-			hol_l->holdArgs(newDepth, gLeft);
+			hol_l.holdArgs(newDepth, gLeft);
 #ifdef MPI_ENABLED
 			branchHandler.push<void>(_f, id, hol_l, user_serializer);
 #else
-			if (std::get<1>(hol_l->getArgs()).coverSize() == 0)
-			{
-				int g = 4534;
-			}
-			//branchHandler.push<void>(_f, id, hol_l, true);
-			branchHandler.push_test<void>(_f, id, hol_l, true);
-			//branchHandler.push(_f, id, hol_l);
+			branchHandler.push<void>(_f, id, hol_l, true);
 #endif
 		}
 
-		if (C2Size < branchHandler.getRefValue() || hol_r->isBound())
+		if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
 		{
 #ifdef MPI_ENABLED
 			branchHandler.forward<void>(_f, id, hol_r);
 #else
-			//branchHandler.forward<void>(_f, id, hol_r, true);
-			branchHandler.forward_smrt<void>(_f, id, hol_r, true);
+			branchHandler.forward<void>(_f, id, hol_r, true);
 #endif
 		}
-		parent->clearChildren();
-		int c1 = parent.use_count();
-		int c2 = hol_l.use_count();
-		int c3 = hol_r.use_count();
-
 		return;
 	}
 
@@ -601,8 +573,8 @@ private:
 #ifdef MPI_ENABLED
 	std::function<void(int, int, Graph &)> _f;
 #else
-	//std::function<void(int, int, Graph &, HolderType *)> _f;
-	std::function<void(int, int, Graph &, std::shared_ptr<HolderType>)> _f;
+	std::function<void(int, int, Graph &, HolderType *)> _f;
+	//std::function<void(int, int, Graph &, std::shared_ptr<HolderType>)> _f;
 #endif
 
 	Graph graph;

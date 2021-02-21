@@ -11,7 +11,6 @@
 
 namespace library
 {
-
 	class BranchHandler;
 
 	template <typename _Ret, typename... Args>
@@ -19,6 +18,7 @@ namespace library
 	{
 
 		friend class BranchHandler;
+		friend class Linker;
 
 	protected:
 		BranchHandler &branchHandler;
@@ -35,12 +35,13 @@ namespace library
 		size_t id;
 		size_t threadId = 0;
 
-		ResultHolder **root = nullptr;					   // raw pointer
-		std::shared_ptr<ResultHolder> parent;			   // smart pointer
-		ResultHolder *itself = this;					   // raw pointer
-		std::list<std::shared_ptr<ResultHolder>> children; // smart pointer, it keeps the order in which they were appended
+		ResultHolder **root = nullptr;		// raw pointer
+		ResultHolder *parent = nullptr;		// smart pointer
+		ResultHolder *itself = nullptr;		// this;		// raw pointer
+		std::list<ResultHolder *> children; // smart pointer, it keeps the order in which they were appended
 
 		int depth;
+		bool isVirtual = false;
 
 		//for future<void> when pushing void functions to the pool
 		//template <class T,
@@ -92,11 +93,19 @@ namespace library
 		ascendants should have already been pruned and/or used*/
 		void lowerRoot()
 		{
-			//*root_smrt = itself_smrt;
-			//parent_smrt = nullptr; // parent no longer needed
-			*(this->root) = &(*this);
-			//*root = &*itself;
-			parent = nullptr;
+			auto root_cpy = *root; // cpy pointer to the current root
+			if (root_cpy->isVirtual)
+			{
+				*(this->root) = &(*this); //this changes the root for every node pointing to it
+				parent = nullptr;
+				// at this point nobody should be pointing to the prior root
+				delete root_cpy;
+			}
+			else
+			{
+				*(this->root) = &(*this); //this changes the root for every node pointing to it
+				parent = nullptr;
+			}
 		}
 
 	public:
@@ -105,7 +114,31 @@ namespace library
 			this->id = branchHandler.getUniqueId();
 			this->depth = 0;
 			this->expectedFut.reset(new std::future<_Ret>);
+
+			this->itself = this;
+			this->root = &itself;
+			this->isVirtual = true;
 		}
+
+		ResultHolder(library::BranchHandler &handler, ResultHolder *parent) : branchHandler(handler)
+		{
+			this->id = branchHandler.getUniqueId();
+			this->isPushed = false;
+			this->depth = -1;
+			this->expectedFut.reset(new std::future<_Ret>);
+
+			itself = this;
+
+			if (!parent)
+			{
+				return;
+			}
+
+			this->parent = parent;
+			this->root = &(*parent->root);
+			this->parent->children.push_back(this);
+		}
+
 		//~ResultHolder()
 		//{
 		/*To ensure that if this holder dies, then it should dissappear from
@@ -120,62 +153,36 @@ namespace library
 		//	}
 		//}
 		//}
+
 		~ResultHolder()
 		{
-			/*To ensure that if this holder dies, then it should dissappear from
-				children's parent to avoid exceptions*/
-			if (!children.empty())
-			{
-				for (auto &child : children)
-				{
-					child->parent.reset();
-				}
-				children.clear();
-				int dgfdsg = 5434;
-			}
-			//printf("Holder deleted, id: %d \n", this->id);
+
+			if (isVirtual)
+				printf("Destructor called for virtual root, id : %d, depth : %d \n", id, depth);
+			//else
+			//	printf("Destructor called for  id : %d \n", id);
+			//
 		}
 
-		//ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> &parent_smrt) : branchHandler(handler)
+		//For multiple recursion algorithms
+		//ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> parent) : branchHandler(handler)
 		//{
 		//	this->id = branchHandler.getUniqueId();
 		//	this->isPushed = false;
 		//	this->depth = -1;
 		//	this->expectedFut.reset(new std::future<_Ret>);
 		//
-		//	itself_smrt.reset(this);
 		//
-		//	if (!parent_smrt.get())
+		//	if (!parent)
 		//	{
-		//		root_smrt.reset(new std::shared_ptr<ResultHolder>(itself_smrt));
+		//		this->root = &itself;
 		//		return;
 		//	}
-		//	else
-		//	{
-		//		root_smrt = parent_smrt->root_smrt;
-		//	}
-		//	this->parent_smrt = parent_smrt;
-		//	this->parent_smrt->children_smrt.push_back(itself_smrt);
+		//
+		//	this->root = &(*parent->root);
+		//	this->parent = parent;
+		//	//this->parent->children.push_back(this);
 		//}
-
-		//For multiple recursion algorithms
-		ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> parent) : branchHandler(handler)
-		{
-			this->id = branchHandler.getUniqueId();
-			this->isPushed = false;
-			this->depth = -1;
-			this->expectedFut.reset(new std::future<_Ret>);
-
-			if (!parent)
-			{
-				this->root = &itself;
-				return;
-			}
-
-			this->root = &(*parent->root);
-			this->parent = parent;
-			//this->parent->children.push_back(this);
-		}
 
 		ResultHolder(ResultHolder &&src) noexcept
 		{
