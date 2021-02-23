@@ -129,6 +129,7 @@ namespace library
 			if (!parent)
 			{
 				Struct *virtualRoot = new Struct(*this);
+				virtualRoot->setDepth(child.depth);
 				child.parent = virtualRoot->itself;
 				child.root = &virtualRoot->itself;
 				virtualRoot->children.push_back(&child);
@@ -490,7 +491,14 @@ namespace library
 			};
 
 			if (root->children.size() > 2)
-			{ //this condition is for multiple recursion
+			{
+				/* this condition is for multiple recursion, the diference with the one below is that
+				the root does not move after returning one of the waiting nodes,
+				say we have the following root's childen
+
+				children =	{	cb	w1	w2	... wk}
+
+				the goal is to push w1, which is the inmmediate right node */
 
 				auto second = std::next(root->children.begin(), 1); // this is to access the 2nd element
 				auto secondHolder = *second;						// catches the pointer of the node	<-------------------------
@@ -508,6 +516,8 @@ namespace library
 				root->children.pop_front();				// deletes leftMost from root's children
 				Holder *right = root->children.front(); //The one to be pushed
 				root->children.clear();
+				right->prune();
+
 				leftMost->lowerRoot();
 
 				rootCorrecting(leftMost);
@@ -670,7 +680,7 @@ namespace library
 		}
 
 		template <typename Holder>
-		Holder *rootCorrecting(Holder *root)
+		void rootCorrecting(Holder *root)
 		{
 			Holder *_root = root;
 
@@ -678,11 +688,8 @@ namespace library
 			{
 				_root = _root->children.front();
 				_root->parent->children.pop_front();
-				_root->parent = nullptr;
-				*(_root->root) = &(*_root);
+				_root->lowerRoot();
 			}
-
-			return _root;
 		}
 
 		/* this is useful because at level zero of a root, there might be multiple
@@ -929,10 +936,6 @@ namespace library
 					Holder *upperHolder = checkParent(&holder);
 					if (upperHolder)
 					{
-						if (std::get<1>(upperHolder->getArgs()).coverSize() == 0)
-						{
-							int g = 4534;
-						}
 						this->busyThreads++;
 						upperHolder->setPushStatus(true);
 						lck.unlock();
@@ -948,14 +951,15 @@ namespace library
 					//exclude(&holder);
 				}
 
-				//if (std::get<1>(holder.getArgs()).coverSize() == 0)
-				//{
-				//	int g = 4534;
-				//}
+				//after this line, only leftMost holder should be pushed
+
+				checkRightSiblings(&holder);
 
 				this->busyThreads++;
 				holder.setPushStatus(true);
 				lck.unlock();
+
+				// here i'm pushing but not decrementing parent's children
 
 				// **************************************************
 				// if holder sent, then its parent and children info should be reseted
@@ -973,6 +977,40 @@ namespace library
 				return true;
 			}
 			return false;
+		}
+
+		template <typename Holder>
+		void removeLeftMost(Holder *holder)
+		{
+			if (holder->parent) // it should always complies, virtual parent is being created
+			{
+				if (holder->parent == *holder->root) //this confirms that it's the first level of the root
+				{
+				}
+			}
+		}
+
+		template <typename Holder>
+		void checkRightSiblings(Holder *holder)
+		{
+			auto *_parent = holder->parent;
+			if (_parent)						  // it should always complies, virtual parent is being created
+			{									  // it also confirms that holder is not a parent (applies for DLB)
+				if (_parent->children.size() > 2) // this is for more than two recursions per scope
+				{
+				}
+				else if (_parent->children.size() == 2) // this verifies that  it's binary and they rightMost will become a new root
+				{
+					_parent->children.pop_front();
+					auto right = _parent->children.front();
+					_parent->children.pop_front();
+					right->lowerRoot();
+				}
+				else
+				{
+					std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+				}
+			}
 		}
 
 		template <typename _ret, typename F, typename Holder,
@@ -1212,7 +1250,7 @@ namespace library
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder, bool trackStack)
 		{
-			if (holder.isPushed)
+			if (holder.is_pushed())
 				return;
 
 			if (is_DLB)

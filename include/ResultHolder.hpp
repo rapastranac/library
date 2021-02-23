@@ -93,19 +93,22 @@ namespace library
 		ascendants should have already been pruned and/or used*/
 		void lowerRoot()
 		{
-			auto root_cpy = *root; // cpy pointer to the current root
-			if (root_cpy->isVirtual)
-			{
-				*(this->root) = &(*this); //this changes the root for every node pointing to it
-				parent = nullptr;
-				// at this point nobody should be pointing to the prior root
-				delete root_cpy;
-			}
-			else
-			{
-				*(this->root) = &(*this); //this changes the root for every node pointing to it
-				parent = nullptr;
-			}
+			//auto root_cpy = *root; // cpy pointer to the current root
+			//if (root_cpy->isVirtual)
+			//{
+			//	*(this->root) = this; //this changes the root for every node pointing to it
+			//	//this->root = &itself;
+			//	parent = nullptr;
+			//			
+			//	// at this point nobody should be pointing to the prior root
+			//	delete root_cpy;
+			//}
+			//else
+			//{
+			*(this->root) = this; //this changes the root for every node pointing to it
+			//this->root = &itself;
+			parent = nullptr;
+			//}
 		}
 
 	public:
@@ -135,7 +138,7 @@ namespace library
 			}
 
 			this->parent = parent;
-			this->root = &(*parent->root);
+			this->root = parent->root;
 			this->parent->children.push_back(this);
 		}
 
@@ -157,8 +160,8 @@ namespace library
 		~ResultHolder()
 		{
 
-			if (isVirtual)
-				printf("Destructor called for virtual root, id : %d, depth : %d \n", id, depth);
+			//if (isVirtual)
+			//	printf("Destructor called for virtual root, id : %d, depth : %d \n", id, depth);
 			//else
 			//	printf("Destructor called for  id : %d \n", id);
 			//

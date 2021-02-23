@@ -421,12 +421,11 @@ public:
 #else
 		HolderType hol_l(branchHandler, parent);
 		HolderType hol_r(branchHandler, parent);
+		hol_l.setDepth(depth);
+		hol_r.setDepth(depth);
 		branchHandler.linkParent(parent, hol_l, hol_r);
 
 #endif
-
-		hol_l.setDepth(depth);
-		hol_r.setDepth(depth);
 		gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
 		gLeft.clean_graph();
 		int C1Size = (int)gLeft.coverSize();
