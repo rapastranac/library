@@ -30,7 +30,7 @@ add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
 #sets the executable in main folder
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
-include_directories("cereal" "fmt/include")
+include_directories("cereal" "fmt/include" )
 
 set(Include
     include/args_handler.hpp

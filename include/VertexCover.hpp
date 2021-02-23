@@ -134,7 +134,7 @@ public:
 			branchHandler.setRefValue(currentMVCSize);
 			//mvc(-1, 0, graph);
 			//testing ****************************************
-			HolderType initial(branchHandler);
+			HolderType initial(branchHandler, -1);
 			//auto nil = std::make_shared<HolderType>(nullptr);
 			{
 				//auto initial = std::make_shared<HolderType>(branchHandler, nullptr);
@@ -419,11 +419,11 @@ public:
 		HolderType hol_l(branchHandler);
 		HolderType hol_r(branchHandler);
 #else
-		HolderType hol_l(branchHandler, parent);
-		HolderType hol_r(branchHandler, parent);
+		HolderType hol_l(branchHandler, id, parent);
+		HolderType hol_r(branchHandler, id, parent);
 		hol_l.setDepth(depth);
 		hol_r.setDepth(depth);
-		branchHandler.linkParent(parent, hol_l, hol_r);
+		branchHandler.linkParent(id, parent, hol_l, hol_r);
 
 #endif
 		gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch

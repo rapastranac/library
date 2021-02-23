@@ -82,6 +82,7 @@ namespace library
 			this->processor_count = poolSize;
 			//this->_pool = new ctpl::Pool(poolSize);
 			this->thread_pool.setSize(poolSize);
+			//this->roots.resize(poolSize, nullptr);
 		}
 
 		//seconds
@@ -105,13 +106,18 @@ namespace library
 		}
 
 		template <typename Struct>
-		void linkParent(Struct *parent, Struct &child)
+		void linkParent(int threadId, Struct *parent, Struct &child)
 		{
 			if (!parent)
 			{
-				Struct *virtualRoot = new Struct(*this);
-				child.parent = virtualRoot;
-				child.root = &virtualRoot->itself;
+				Struct *virtualRoot = new Struct(*this, threadId);
+
+				child.parent = static_cast<Struct *>(roots[threadId]);
+				child.root = &roots[threadId];
+
+				//child.parent = virtualRoot;
+				//child.root = &virtualRoot->itself;
+
 				virtualRoot->children.push_back(&child);
 			}
 			else
@@ -124,16 +130,21 @@ namespace library
 
 		// it could be moved to another class
 		template <typename Struct, typename... Args>
-		void linkParent(Struct *parent, Struct &child, Args &...args)
+		void linkParent(int threadId, Struct *parent, Struct &child, Args &...args)
 		{
 			if (!parent)
 			{
-				Struct *virtualRoot = new Struct(*this);
+				Struct *virtualRoot = new Struct(*this, threadId);
 				virtualRoot->setDepth(child.depth);
-				child.parent = virtualRoot->itself;
-				child.root = &virtualRoot->itself;
+
+				child.parent = static_cast<Struct *>(roots[threadId]);
+				child.root = &roots[threadId];
+
+				//child.parent = virtualRoot->itself;
+				//child.root = &virtualRoot->itself;
+
 				virtualRoot->children.push_back(&child);
-				linkParent(virtualRoot, args...);
+				linkParent(threadId, virtualRoot, args...);
 			}
 		}
 
@@ -423,7 +434,7 @@ namespace library
 				{
 					/* this condition complies if a branch has already
 					 been pushed, to ensure pushing leftMost first */
-					root = *holder->root; //no need to iterate
+					root = static_cast<Holder *>(*holder->root); //no need to iterate
 					//int tmp = root->children.size(); // this probable fix the following
 
 					// the following is not true, it could be also the right branch
@@ -577,8 +588,10 @@ namespace library
 
 						/* if holder is the only remaining child from parent then this means
 						that it will have to become a new root*/
-						holder->parent = nullptr;
-						holder->prune(); //not even required, nullptr is sent
+
+						holder->lowerRoot();
+						//holder->parent = nullptr;
+						//holder->prune(); //not even required, nullptr is sent
 					}
 				}
 				else if (holder->parent != *holder->root) //any other level,
@@ -1324,12 +1337,16 @@ namespace library
 			this->superFlag = false;
 			this->idCounter = 0;
 
+			//this->roots.resize(processor_count, nullptr);
+
 			this->bestRstream.first = -1; // this allows to avoid sending empty buffers
 		}
 
 		int appliedStrategy = -1;
 		//size_t idCounter;
 		std::atomic<size_t> idCounter;
+
+		std::map<int, void *> roots; // every thread will be solving a sub tree, this point to their roots
 
 		/*This section refers to the strategy wrapping a function
 			then pruning data to be use by the wrapped function<<---*/
@@ -1339,10 +1356,6 @@ namespace library
 		std::any bestR;
 		std::pair<int, std::stringstream> bestRstream;
 		bool is_DLB = true;
-
-		/*Dequeue while using strategy myPool*/
-		bool isDequeueEnable = false;
-		int targetArg;
 
 		/*------------------------------------------------------>>end*/
 		/* "processor_count" would allow to set by default the maximum number of threads

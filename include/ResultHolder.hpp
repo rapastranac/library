@@ -33,9 +33,9 @@ namespace library
 		bool isForwarded = false;		 // It was performed sequentially
 
 		size_t id;
-		size_t threadId = 0;
+		size_t threadId = -1;
 
-		ResultHolder **root = nullptr;		// raw pointer
+		void **root = nullptr;				// raw pointer
 		ResultHolder *parent = nullptr;		// smart pointer
 		ResultHolder *itself = nullptr;		// this;		// raw pointer
 		std::list<ResultHolder *> children; // smart pointer, it keeps the order in which they were appended
@@ -85,7 +85,8 @@ namespace library
 		void prune()
 		{
 			root = nullptr;
-			root = &itself;
+			//root = &itself;
+			root = nullptr;
 			parent = nullptr;
 		}
 
@@ -99,31 +100,41 @@ namespace library
 			//	*(this->root) = this; //this changes the root for every node pointing to it
 			//	//this->root = &itself;
 			//	parent = nullptr;
-			//			
+			//
 			//	// at this point nobody should be pointing to the prior root
 			//	delete root_cpy;
 			//}
 			//else
 			//{
-			*(this->root) = this; //this changes the root for every node pointing to it
+
+			branchHandler.roots[threadId] = this;		 // this changes the root
+			this->root = &branchHandler.roots[threadId]; // this points to that root
+
+			//*(this->root) = this; //this changes the root for every node pointing to it
+
 			//this->root = &itself;
 			parent = nullptr;
 			//}
 		}
 
 	public:
-		ResultHolder(library::BranchHandler &handler) : branchHandler(handler)
+		// default constructor, it has no parent, used for virtual roots
+		ResultHolder(library::BranchHandler &handler, int threadId) : branchHandler(handler)
 		{
+			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
 			this->depth = 0;
 			this->expectedFut.reset(new std::future<_Ret>);
 
+			branchHandler.roots[threadId] = this;
+			this->root = &branchHandler.roots[threadId];
+
 			this->itself = this;
-			this->root = &itself;
+			//this->root = &itself;
 			this->isVirtual = true;
 		}
 
-		ResultHolder(library::BranchHandler &handler, ResultHolder *parent) : branchHandler(handler)
+		ResultHolder(library::BranchHandler &handler, int threadId, ResultHolder *parent) : branchHandler(handler)
 		{
 			this->id = branchHandler.getUniqueId();
 			this->isPushed = false;
@@ -134,11 +145,19 @@ namespace library
 
 			if (!parent)
 			{
+				// if there is no parent, it means the thread just took another subtree
+				// thefore, root in handler.roots[threadId] should change since
+				// no one else is supposed to be using it
+
+				//branchHandler.roots[threadId] = this; //
+				//this->root = &branchHandler.roots[threadId];
 				return;
 			}
 
+			this->root = &branchHandler.roots[threadId];
+
 			this->parent = parent;
-			this->root = parent->root;
+			//this->root = parent->root;
 			this->parent->children.push_back(this);
 		}
 
