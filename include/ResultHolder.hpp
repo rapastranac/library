@@ -84,7 +84,7 @@ namespace library
 
 		void prune()
 		{
-			root = nullptr;
+			//root = nullptr;
 			//root = &itself;
 			root = nullptr;
 			parent = nullptr;
@@ -94,27 +94,44 @@ namespace library
 		ascendants should have already been pruned and/or used*/
 		void lowerRoot()
 		{
-			//auto root_cpy = *root; // cpy pointer to the current root
-			//if (root_cpy->isVirtual)
-			//{
-			//	*(this->root) = this; //this changes the root for every node pointing to it
-			//	//this->root = &itself;
-			//	parent = nullptr;
-			//
-			//	// at this point nobody should be pointing to the prior root
-			//	delete root_cpy;
-			//}
-			//else
-			//{
+			auto root_cpy = static_cast<ResultHolder *>(*root); // cpy pointer to the current root
+			if (root_cpy->isVirtual)
+			{
+				//branchHandler.roots[threadId] = this; // this changes the root
+				branchHandler.assign_root(threadId, this);
+				//*(this->root) = this;
+				//this->root = &itself;
+				parent = nullptr;
 
-			branchHandler.roots[threadId] = this;		 // this changes the root
-			this->root = &branchHandler.roots[threadId]; // this points to that root
+				// at this point nobody should be pointing to the prior root
+				// this should be safe since every member (**root) is pointing to
+				// the container cell instead of a cell within the VirtualRoot
+				delete root_cpy;
+			}
+			else
+			{
 
-			//*(this->root) = this; //this changes the root for every node pointing to it
+				//branchHandler.roots[threadId] = this; // this changes the root
+				branchHandler.assign_root(threadId, this);
 
-			//this->root = &itself;
-			parent = nullptr;
-			//}
+				// **************************************************************
+				// **************************************************************
+				// **************************************************************
+				// I believe this is duplication of somethin that has already happened
+				// if a thread reach this point of a holder,
+				// the holder should have already been assigned a root in branchHandler.roots[threadId]
+				//then "this->root" is already pointing to branchHandler.roots[threadId]
+
+				//this->root = &branchHandler.roots[threadId];
+				// **************************************************************
+				// **************************************************************
+				// **************************************************************
+
+				//*(this->root) = this; //this changes the root for every node pointing to it
+
+				//this->root = &itself;
+				parent = nullptr;
+			}
 		}
 
 	public:
@@ -126,7 +143,8 @@ namespace library
 			this->depth = 0;
 			this->expectedFut.reset(new std::future<_Ret>);
 
-			branchHandler.roots[threadId] = this;
+			//branchHandler.roots[threadId] = this;
+			branchHandler.assign_root(threadId, this);
 			this->root = &branchHandler.roots[threadId];
 
 			this->itself = this;
@@ -136,6 +154,7 @@ namespace library
 
 		ResultHolder(library::BranchHandler &handler, int threadId, ResultHolder *parent) : branchHandler(handler)
 		{
+			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
 			this->isPushed = false;
 			this->depth = -1;

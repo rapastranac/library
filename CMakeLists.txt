@@ -17,6 +17,7 @@ include_directories(${MPI_INCLUDE_PATH})
 #link_directories(${Boost_LIBRARY_DIRS})
 #include_directories(${Boost_INCLUDE_DIRS})
 
+add_definitions(-DDLB)
 #add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
 

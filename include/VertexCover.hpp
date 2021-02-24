@@ -353,6 +353,18 @@ public:
 			   << col3
 			   << "\n";
 
+		col1 = "Successful requests:";
+		col2 = std::to_string(branchHandler.getNumberRequests());
+		cout << std::internal
+			 << col1
+			 << std::setfill(' ')
+			 << std::setw(wide - col1.size()) << col2
+			 << "\n";
+		output << std::internal
+			   << col1
+			   << std::setw(wide - col1.size()) << col2
+			   << "\n";
+
 		std::cout << "!" << fmt::format("{:-^{}}", "", wide - 2) << "!"
 				  << "\n";
 		output << "!" << fmt::format("{:-^{}}", "", wide - 2) << "!"

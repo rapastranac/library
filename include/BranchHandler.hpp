@@ -105,47 +105,49 @@ namespace library
 			this->bestR = std::move(bestR);
 		}
 
-		template <typename Struct>
-		void linkParent(int threadId, Struct *parent, Struct &child)
+		template <typename Holder>
+		void linkParent(int threadId, Holder *parent, Holder &child)
 		{
-			if (!parent)
-			{
-				Struct *virtualRoot = new Struct(*this, threadId);
+			if (is_DLB)
+				if (!parent)
+				{
+					Holder *virtualRoot = new Holder(*this, threadId);
 
-				child.parent = static_cast<Struct *>(roots[threadId]);
-				child.root = &roots[threadId];
+					child.parent = static_cast<Holder *>(roots[threadId]);
+					child.root = &roots[threadId];
 
-				//child.parent = virtualRoot;
-				//child.root = &virtualRoot->itself;
+					//child.parent = virtualRoot;
+					//child.root = &virtualRoot->itself;
 
-				virtualRoot->children.push_back(&child);
-			}
-			else
-			{
-				child.parent = parent->itself;
-				child.root = parent->root;
-				parent->children.push_back(&child);
-			}
+					virtualRoot->children.push_back(&child);
+				}
+				else
+				{
+					child.parent = parent->itself;
+					child.root = parent->root;
+					parent->children.push_back(&child);
+				}
 		}
 
 		// it could be moved to another class
-		template <typename Struct, typename... Args>
-		void linkParent(int threadId, Struct *parent, Struct &child, Args &...args)
+		template <typename Holder, typename... Args>
+		void linkParent(int threadId, Holder *parent, Holder &child, Args &...args)
 		{
-			if (!parent)
-			{
-				Struct *virtualRoot = new Struct(*this, threadId);
-				virtualRoot->setDepth(child.depth);
+			if (is_DLB)
+				if (!parent)
+				{
+					Holder *virtualRoot = new Holder(*this, threadId);
+					virtualRoot->setDepth(child.depth);
 
-				child.parent = static_cast<Struct *>(roots[threadId]);
-				child.root = &roots[threadId];
+					child.parent = static_cast<Holder *>(roots[threadId]);
+					child.root = &roots[threadId];
 
-				//child.parent = virtualRoot->itself;
-				//child.root = &virtualRoot->itself;
+					//child.parent = virtualRoot->itself;
+					//child.root = &virtualRoot->itself;
 
-				virtualRoot->children.push_back(&child);
-				linkParent(threadId, virtualRoot, args...);
-			}
+					virtualRoot->children.push_back(&child);
+					linkParent(threadId, virtualRoot, args...);
+				}
 		}
 
 		/* POTENTIALLY TO REPLACE catchBestResult()
@@ -266,6 +268,11 @@ namespace library
 		void setMaxDepth(int max_push_depth)
 		{
 			this->max_push_depth = max_push_depth;
+		}
+
+		size_t getNumberRequests()
+		{
+			return requests.load();
 		}
 
 		/* for void algorithms, this also calls the destructor of the pool*/
@@ -539,6 +546,7 @@ namespace library
 			{
 
 				std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+				throw "Error";
 				return nullptr;
 			}
 		}
@@ -868,6 +876,7 @@ namespace library
 			else
 			{
 				std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+				throw "Error";
 				return nullptr;
 			}
 		}
@@ -949,6 +958,7 @@ namespace library
 					Holder *upperHolder = checkParent(&holder);
 					if (upperHolder)
 					{
+						this->requests++;
 						this->busyThreads++;
 						upperHolder->setPushStatus(true);
 						lck.unlock();
@@ -962,12 +972,13 @@ namespace library
 						return false;
 					}
 					//exclude(&holder);
+
+					checkRightSiblings(&holder);
 				}
 
 				//after this line, only leftMost holder should be pushed
 
-				checkRightSiblings(&holder);
-
+				this->requests++;
 				this->busyThreads++;
 				holder.setPushStatus(true);
 				lck.unlock();
@@ -1022,6 +1033,7 @@ namespace library
 				else
 				{
 					std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+					throw "Error";
 				}
 			}
 		}
@@ -1270,7 +1282,7 @@ namespace library
 				checkLeftSibling(&holder);
 
 			holder.setForwardStatus(true);
-			holder.threadId = threadId;
+			//holder.threadId = threadId;
 			std::args_handler::unpack_tuple(&holder, f, threadId, holder.getArgs(), trackStack);
 		}
 
@@ -1327,6 +1339,13 @@ namespace library
 		}
 
 	private:
+		// thread safe creation of roots
+		void assign_root(int threadId, void *root)
+		{
+			std::unique_lock<std::mutex> lck(root_mtx);
+			roots[threadId] = root;
+		}
+
 		void init()
 		{
 			this->processor_count = std::thread::hardware_concurrency();
@@ -1336,6 +1355,7 @@ namespace library
 			this->max_push_depth = -1;
 			this->superFlag = false;
 			this->idCounter = 0;
+			this->requests = 0;
 
 			//this->roots.resize(processor_count, nullptr);
 
@@ -1345,8 +1365,10 @@ namespace library
 		int appliedStrategy = -1;
 		//size_t idCounter;
 		std::atomic<size_t> idCounter;
+		std::atomic<size_t> requests;
 
 		std::map<int, void *> roots; // every thread will be solving a sub tree, this point to their roots
+		std::mutex root_mtx;
 
 		/*This section refers to the strategy wrapping a function
 			then pruning data to be use by the wrapped function<<---*/
@@ -1355,7 +1377,11 @@ namespace library
 		std::once_flag isDoneFlag;
 		std::any bestR;
 		std::pair<int, std::stringstream> bestRstream;
+#ifdef DLB
 		bool is_DLB = true;
+#else
+		bool is_DLB = false;
+#endif
 
 		/*------------------------------------------------------>>end*/
 		/* "processor_count" would allow to set by default the maximum number of threads
