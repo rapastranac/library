@@ -537,6 +537,20 @@ private:
 	}
 
 public:
+	bool empty()
+	{
+		if (list.empty())
+		{
+			if (_cover.empty())
+				return true;
+			else
+				return false;
+		}
+		else
+		{
+			return false;
+		}
+	}
 	//Default constructor
 	Graph()
 	{

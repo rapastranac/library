@@ -5,6 +5,7 @@
 #include "MPI_Mutex.hpp"
 #include "Utils.hpp"
 
+#include <cstring>
 #include <random>
 #include <stdlib.h> /* srand, rand */
 #include <fstream>
@@ -14,8 +15,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <time.h>
-
-#ifdef MPI_ENABLED
+#include <thread>
 
 namespace library
 {
@@ -40,7 +40,8 @@ namespace library
 			this->threadsPerNode = threadsPerNode;
 		}
 
-		auto initMPI(int argc, char *argv[])
+		auto initMPI(int argc, char *argv[]);
+		/*
 		{
 			// Initilialise MPI and ask for thread support
 			int provided;
@@ -72,29 +73,30 @@ namespace library
 
 			MPI_Barrier(world_Comm);
 
-			this->_branchHandler.linkMPIargs(world_rank,
-											 world_size,
-											 processor_name,
-											 numAvailableNodes,
-											 refValueGlobal,
-											 &win_accumulator,
-											 &win_finalFlag,
-											 &win_AvNodes,
-											 &win_boolean,
-											 &win_inbox_bestResult,
-											 &win_refValueGlobal,
-											 &world_Comm,
-											 &second_Comm,
-											 &SendToNodes_Comm,
-											 &SendToCenter_Comm,
-											 &NodeToNode_Comm,
-											 &mpi_mutex);
+			_branchHandler.linkMPIargs(world_rank,
+									   world_size,
+									   processor_name,
+									   numAvailableNodes,
+									   refValueGlobal,
+									   &win_accumulator,
+									   &win_finalFlag,
+									   &win_AvNodes,
+									   &win_boolean,
+									   &win_inbox_bestResult,
+									   &win_refValueGlobal,
+									   &world_Comm,
+									   &second_Comm,
+									   &SendToNodes_Comm,
+									   &SendToCenter_Comm,
+									   &NodeToNode_Comm,
+									   &mpi_mutex);
 
 			return world_rank;
-		}
+		} */
 
-		template <typename Result, typename F, typename Holder, typename Serialize, typename Deserialize>
-		void start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
+		template <typename _ret, typename F, typename Holder, typename Serialize, typename Deserialize>
+		void start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize);
+		/*
 		{
 			printf("About to start, %d / %d!! \n", world_rank, world_size);
 
@@ -107,16 +109,16 @@ namespace library
 			}
 			else
 			{
-				this->_branchHandler.setMaxThreads(threadsPerNode);
-				if (std::is_void<Result>::value)
-					this->_branchHandler.functionIsVoid();
+				_branchHandler.setMaxThreads(threadsPerNode);
+				if (std::is_void<RET>::value)
+					_branchHandler.functionIsVoid();
 
-				this->_branchHandler.receiveSeed<Result>(f, serialize, deserialize, holder);
+				_branchHandler.receiveSeed<RET>(f, serialize, deserialize, holder);
 			}
 			printf("process %d waiting at barrier \n", world_rank);
 			MPI_Barrier(world_Comm);
 			printf("process %d passed barrier \n", world_rank);
-		}
+		} */
 
 		void finalize()
 		{
@@ -312,7 +314,8 @@ namespace library
 		template <typename Holder, typename Serialize>
 		void sendSeed(Holder &holder, Serialize &&serialize)
 		{
-			std::stringstream ss = std::args_handler::unpack_tuple(serialize, holder.getArgs());
+			//std::stringstream ss = std::args_handler::unpack_tuple(serialize, holder.getArgs());
+			auto ss = std::apply(serialize, holder.getArgs());
 
 			int count = ss.str().size(); // number of Bytes
 			char *buffer = new char[count];
@@ -569,7 +572,7 @@ namespace library
 		/* singleton*/
 		Scheduler(BranchHandler &branchHandler) : _branchHandler(branchHandler) {}
 	};
+
 } // namespace library
 
-#endif
 #endif

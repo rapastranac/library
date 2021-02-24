@@ -165,7 +165,8 @@ namespace library
 		/* a reference value is replaced based on the user's conditions. 
 			ifCond is used when the user wants to print out results or any other thing thread safely
 			ifCond is optional, if not passed, then nullptr should be passed in instead*/
-		template <class C1, class C2, typename T, class F_SERIAL>
+		template <typename _ret, class C1, class C2, typename T, class F_SERIAL,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result, F_SERIAL &&f_serial)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
@@ -242,7 +243,8 @@ namespace library
 		/* a reference value is replaced based on the user's conditions. 
 			ifCond is used when the user wants to print out results or any other thing thread safely
 			ifCond is optional, if not passed, then nullptr should be passed in instead*/
-		template <class C1, class C2, typename T>
+		template <typename _ret, class C1, class C2, typename T,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
@@ -258,6 +260,26 @@ namespace library
 					(*ifCond)();
 
 				this->bestR = result; //it should move, this copy is only for testing
+				return true;
+			}
+			else
+				return false;
+		}
+
+		/* a reference value is replaced based on the user's conditions. 
+			ifCond is used when the user wants to print out results or any other thing thread safely
+			ifCond is optional, if not passed, then nullptr should be passed in instead*/
+		template <typename _ret, class C1, class C2, typename T,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result)
+		{
+			std::unique_lock<std::mutex> lck(mtx);
+			if (Cond(refValueGlobal[0], refValueLocal))
+			{
+				this->refValueGlobal[0] = refValueLocal;
+
+				if (ifCond)
+					(*ifCond)();
 				return true;
 			}
 			else
@@ -407,27 +429,6 @@ namespace library
 			MPI_Win_unlock(target_rank, window); // closes epoch
 		}
 
-		//not sure what it does, it works fine with/without it
-		template <typename Holder>
-		void exclude(Holder *holder)
-		{
-			if (holder->parent)
-			{
-				holder->parent->children.pop_front();
-				Holder *newLeftMost = holder->parent->children.front();
-				if (holder->parent->children.size() == 1)
-				{
-					(*holder->root) = &(*newLeftMost);
-					(*holder->root)->parent = nullptr;
-				}
-				else
-				{
-					//this case should not happen
-					int fds = 54345;
-				}
-			}
-		}
-
 		template <typename Holder>
 		Holder *checkParent(Holder *holder)
 		{
@@ -546,6 +547,8 @@ namespace library
 			{
 
 				std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+				//auto s =std::source_location::current();
+				//fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
 				throw "Error";
 				return nullptr;
 			}
@@ -627,92 +630,6 @@ namespace library
 			}
 		}
 
-		template <typename Holder>
-		void checkLeftSibling_smrt(Holder holder)
-		{
-			/* What does it do?. Having the following ilustration
-						  root == parent
-						  /  |  \   \  \
-						 /   |   \	 \	 \
-						/    |    \	  \	   \
-					  pb     cb    w1  w2 ... wk
-					  △ -->
-			pb	stands for previous branch
-			cb	stands for current branch
-			w_i	stands for waiting branch, or target holder i={1..k}
-
-			if pb is fully solved sequentially or w_i were pushed but there is at least
-				one w_i remaining, then thread will return to first level where the
-				parent is also the root, then lestMost child of the root should be
-				deleted of the list since it is already solved. Thus, pushing cb twice
-				is avoided because checkParent() pushes the second element of the children
-			*/
-
-			if (holder->parent) //this confirms the holder is not a root
-			{
-				if (holder->parent.get() == *(holder->root)) //this confirms that it's the first level of the root
-				{
-					Holder leftMost = holder->parent->children.front();
-					if (leftMost != holder) //This confirms pb has already been solved
-					{
-						/* next conditional should always comply, there should not be required
-						* to use a loop, then this While is entitled to just a single loop. 4 testing!!
-						*/
-						while (leftMost != holder)
-						{
-							holder->parent->children.pop_front();		 // removes pb from the parent's children
-							leftMost = holder->parent->children.front(); // it gets the second element from the parent's children
-						}
-						// after this line,this should be true leftMost == holder
-
-						// There might be more than one remaining sibling
-						if (holder->parent->children.size() > 1)
-							return; // root does not change
-
-						/* if holder is the only remaining child from parent then this means
-						that it will have to become a new root*/
-						holder->parent = nullptr;
-						holder->prune();
-					}
-				}
-				else if (holder->parent.get() != *holder->root) //any other level,
-				{
-					/* this is relevant, because eventhough the root still has some waiting nodes
-					the thread in charge of the tree might be deep down solving everything sequentially.
-					Every time a leftMost branch is solved sequentially, this one should be removed from 
-					the list to avoid failure attempts of solving a branch that has already been solved.
-
-					If a thread attempts to solve an already solved branch, this will throw an error
-					because the node won't have information anymore since it has already been passed
-					*/
-
-					Holder leftMost = holder->parent->children.front();
-					if (leftMost != holder) //This confirms pb has already been solved
-					{
-						/*this scope only deletes leftMost holder, which is already
-						* solved sequentially by here and leaves the parent with at
-						* least a child because the root still has at least a holder in
-						* the waiting list
-						*/
-						holder->parent->children.pop_front();
-					}
-				}
-			}
-		}
-
-		template <typename Holder>
-		void rootCorrecting(Holder *root)
-		{
-			Holder *_root = root;
-
-			while (_root->children.size() == 1) // lowering the root
-			{
-				_root = _root->children.front();
-				_root->parent->children.pop_front();
-				_root->lowerRoot();
-			}
-		}
-
 		/* this is useful because at level zero of a root, there might be multiple
 		waiting nodes, though the leftMost branch (at zero level) might be at one of 
 		the very right sub branches deep down, which means that there is a line of
@@ -738,209 +655,16 @@ namespace library
 		the deepest node
 		 */
 		template <typename Holder>
-		void rootCorrecting_smrt(Holder root) //<-------------------------  raw pointers
+		void rootCorrecting(Holder *root)
 		{
-			Holder _root = root;
+			Holder *_root = root;
 
 			while (_root->children.size() == 1) // lowering the root
 			{
 				_root = _root->children.front();
 				_root->parent->children.pop_front();
 				_root->lowerRoot();
-				//_root->parent = nullptr;
-				//*(_root->root) = &(*_root);
 			}
-			//return _root;		//<-------------------------
-		}
-
-		//template <typename F, typename... Rest>
-		//auto pushSeed(F &&f, Rest &&...rest)
-		//{
-		//	//auto _pool = ctpl_casted(_pool);
-		//	this->busyThreads = 1;								// forces just in case
-		//	auto future = std::move(thread_pool.push(f, rest...));	// future type can handle void returns
-		//	auto lambda = [&future]() { return future.get(); }; // create lambda to pass to args_handler::invoke_void()
-		//	return std::args_handler::invoke_void(lambda); //this guarantees to assign a non-void value
-		//}
-
-		template <typename Holder>
-		Holder checkParent_smrt(Holder &holder)
-		{
-			using RH = decltype(holder.get()); //raw pointer type to ResultHolder
-			//RH holder = holder_smrt.get();
-			Holder leftMost;   // this is the branch that led us to the root
-			RH root = nullptr; // local pointer to root, to avoid "*" use
-
-			if (holder->parent) //  this confirms holder is not a root
-			{
-				if (holder->parent.get() != *holder->root)
-				{
-					/* this confirms, it's not the first level, because it is meant
-					to assist top sub trees of a branch that has started to run
-					sequentially */
-					root = *holder->root; //no need to iterate	<------------------
-					//root.reset(*holder->root);
-
-					//int tmp = root->children.size(); // this probable fix the following
-
-					// the following is not true, it could be also the right branch
-					// Unless root is guaranteed to have at least 2 children,
-					// TODO ... verify
-
-					//leftMost.reset(root->children.front());
-					leftMost = root->children.front(); //TODO ... check if branch has been pushed or forwarded <------------------
-				}
-				else
-					return nullptr;
-			}
-			else
-				return nullptr;
-
-			// if the above condition is succesfully met, then this method should never return a nullptr
-
-			/*Here below, we check is left child was pushed to pool, then the pointer to parent is pruned
-							 parent
-						  /  |  \   \  \
-						 /   |   \	 \	 \
-						/    |    \	  \	   \
-					  p     cb    w1  w2 ... wk
-
-			p	stands for pushed branch
-			cb	stands for current branch
-			w	stands for waiting branch, or target holder
-			Following previous diagram
-			if "p" is already pushed, it won't be part of children list of "parent", then list = {cb,w1,w2}
-			leftMost = cb
-			nextElt = w1
-
-			There will never be fewer than two elements, asuming multiple recursion per scope,
-			because as long as it remains two elements, it means than rightMost element will be pushed to pool
-			and then leftMost element will no longer need a parent, which is the first condition to explore
-			this level of the tree*/
-
-			//TODO following lines applied to multiple recursion
-
-			auto worthPushing = [](Holder &holder) -> Holder {
-				if (holder->isBound())
-				{
-					bool isWorthPushing = holder->boundCond();
-					if (isWorthPushing)
-						return holder;
-					else
-						return nullptr;
-				}
-				return holder;
-			};
-
-			if (root->children.size() > 2)
-			{
-				/* this condition is for multiple recursion, the diference with the one below is that
-				the root does not move after returning one of the waiting nodes,
-				say we have the following root's childen
-
-				children =	{	cb	w1	w2	... wk}
-
-				the goal is to push w1, which is the inmmediate right node */
-
-				auto second = std::next(root->children.begin(), 1); // this is to access the 2nd element
-				//auto secondHolder = *second;						// catches the pointer of the node	<-------------------------
-				root->children.erase(second); // removes second node from the root's children
-
-				Holder secondHolder(*second);
-
-				return worthPushing(secondHolder);
-			}
-			else if (root->children.size() == 2)
-			{
-				/*	this scope is meant to push right branch which was put in waiting line
-					because there was no available thread to push leftMost branch, then leftMost
-					will be the new root since after this scope right branch will have already been
-					pushed*/
-
-				root->children.pop_front(); // deletes leftMost from root's children
-				//Holder *right = root->children.front(); // the one to be pushed		<-------------------------
-				Holder right(root->children.front());
-
-				root->children.clear(); // just in case
-				//right->parent = nullptr;					 //parent not needed since it'll be pushed
-				//right->root = nullptr;
-				right->prune(); //it does the same than previous two lines
-
-				leftMost->lowerRoot(); // leftMost is the new root IMPORTANT!!!!! this sets the new root
-				//Holder *test = rootCorrecting_smrt(leftMost); //IMPORTANT, this method receives a root	<-------------------------
-
-				rootCorrecting_smrt(leftMost); //it passes the raw pointers
-
-				return worthPushing(right);
-			}
-			else
-			{
-				std::cout << "4 Testing, it's not supposed to happen" << std::endl;
-				throw "Error";
-				return nullptr;
-			}
-		}
-
-		template <typename _ret, typename F, typename Holder,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_dummy(F &&f, int id, Holder &holder_smrt)
-		{
-			//using RESULT_HOLDER = decltype(holder_smrt.get()); //actual ResultHolder type (pointer)
-			//RESULT_HOLDER holder = holder_smrt.get();
-			/*This lock must be adquired before checking the condition,	
-			even though busyThreads is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-
-			if (busyThreads < thread_pool.size())
-			{
-				if (is_DLB)
-				{
-					Holder upperHolder = checkParent_smrt(holder_smrt); //this is creating a new share_ptr which is not the same as the existing ones
-					if (upperHolder)
-					{
-
-						this->busyThreads++;
-						upperHolder->setPushStatus(true);
-						lck.unlock();
-						// **************************************************
-						// if holder sent, then its parents should be
-						upperHolder->prune();
-						// **************************************************
-						// since it's void, no need to store a returned/future value
-						//std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
-						//std::args_handler::unpack_tuple(upperHolder, f, 0, upperHolder->getArgs(), true);
-
-						//auto s_ptr = std::make_shared<RESULT_HOLDER>(upperHolder);
-						//Holder ptr(upperHolder);
-						int count = upperHolder.use_count();
-
-						std::args_handler::unpack_and_send(upperHolder, thread_pool, f, 0, upperHolder->getArgs());
-						return false;
-					}
-					//exclude(&holder);
-				}
-
-				this->busyThreads++;
-				holder_smrt->setPushStatus(true);
-				lck.unlock();
-
-				// **************************************************
-				// if holder sent, then its parent and children info should be reseted
-				holder_smrt->prune();
-				// **************************************************
-
-				//std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
-				//std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), &holder, true);
-				std::args_handler::unpack_and_send(holder_smrt, thread_pool, f, 0, holder_smrt->getArgs());
-				return true;
-			}
-			else
-			{
-				lck.unlock();
-				forward_smrt<_ret>(f, id, holder_smrt, true);
-				return true;
-			}
-			return false;
 		}
 
 		template <typename _ret, typename F, typename Holder,
@@ -967,12 +691,9 @@ namespace library
 						//upperHolder->unlink_parents();
 						// **************************************************
 						// since it's void, no need to store a returned/future value
-						std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
-						//std::args_handler::unpack_tuple(upperHolder, f, 0, upperHolder->getArgs(), true);
+						std::args_handler::unpack_and_push_void(thread_pool, f, upperHolder->getArgs());
 						return false;
 					}
-					//exclude(&holder);
-
 					checkRightSiblings(&holder);
 				}
 
@@ -990,8 +711,7 @@ namespace library
 				//holder.unlink_parents();
 				// **************************************************
 
-				std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
-				//std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), &holder, true);
+				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
 				return true;
 			}
 			else
@@ -1033,6 +753,8 @@ namespace library
 				else
 				{
 					std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+					//auto s =std::source_location::current();
+					//fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
 					throw "Error";
 				}
 			}
@@ -1046,11 +768,6 @@ namespace library
 			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
 
-			if (std::get<1>(holder.getArgs()).coverSize() == 0)
-			{
-				int g = 4534;
-			}
-
 			if (busyThreads < thread_pool.size())
 			{
 				if (is_DLB)
@@ -1058,41 +775,33 @@ namespace library
 					Holder *upperHolder = checkParent(&holder);
 					if (upperHolder)
 					{
-
-						if (std::get<1>(upperHolder->getArgs()).coverSize() == 0)
-						{
-							int g = 4534;
-						}
-
+						this->requests++;
 						this->busyThreads++;
 						upperHolder->setPushStatus(true);
 						lck.unlock();
 
-						auto ret = std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
+						//auto ret = std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
+						auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
 						upperHolder->hold_future(std::move(ret));
 						return false;
 					}
 
-					//exclude(&holder);
+					checkRightSiblings(&holder);
 				}
-
-				if (std::get<1>(holder.getArgs()).coverSize() == 0)
-				{
-					int g = 4534;
-				}
-
+				this->requests++;
 				this->busyThreads++;
 				holder.setPushStatus(true);
 				lck.unlock();
 
-				auto ret = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
+				//auto ret = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
+				auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
 				holder.hold_future(std::move(ret));
 				return true;
 			}
 			else
 			{
 				lck.unlock();
-				auto ret = this->forward(f, id, holder, true);
+				auto ret = this->forward<_ret>(f, id, holder, true);
 				holder.hold_actual_result(ret);
 				return true;
 			}
@@ -1102,7 +811,7 @@ namespace library
 	public:
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		int push(F &&f, int id, Holder &holder)
+		bool push(F &&f, int id, Holder &holder)
 		{
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
@@ -1113,20 +822,20 @@ namespace library
 				holder.setPushStatus(true);
 
 				lck.unlock();
-				std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
-				return 1;
+				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
+				return true;
 			}
 			else
 			{
 				lck.unlock();
 				this->forward<_ret>(f, id, holder);
-				return 0;
+				return false;
 			}
 		}
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		int push(F &&f, int id, Holder &holder)
+		bool push(F &&f, int id, Holder &holder)
 		{
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
@@ -1137,16 +846,16 @@ namespace library
 				holder.setPushStatus(true);
 
 				lck.unlock();
-				auto ret = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
+				auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
 				holder.hold_future(std::move(ret));
-				return 1;
+				return true;
 			}
 			else
 			{
 				lck.unlock();
 				auto ret = this->forward<_ret>(f, id, holder);
 				holder.hold_actual_result(ret);
-				return 0;
+				return false;
 			}
 		}
 
@@ -1160,19 +869,11 @@ namespace library
 			return _flag;
 		}
 
-		template <typename _ret, typename F, typename Holder>
-		bool push_test(F &&f, int id, Holder &holder, bool trackStack)
-		{
-			bool _flag = false;
-			while (!_flag)
-				_flag = push_dummy<_ret>(f, id, holder);
-
-			return _flag;
-		}
-
 #ifdef MPI_ENABLED
-		template <typename F, typename Holder, typename F_SERIAL>
-		int push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+
+		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		bool push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
 		{
 			bool signal{false};
 			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
@@ -1202,7 +903,8 @@ namespace library
 						printf("process %d received ID %d\n", world_rank, dest);
 #endif
 
-						std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
+						//std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
+						std::stringstream ss = std::apply(f_serial, holder.getArgs());
 
 						int Bytes = ss.str().size(); // number of Bytes
 
@@ -1216,7 +918,7 @@ namespace library
 #ifdef DEBUG_COMMENTS
 						printf("process %d forwarded to process %d \n", world_rank, dest);
 #endif
-						return 2;
+						return true;
 					}
 					/*else // numAvailableNodes might have changed due to delay
 					{
@@ -1241,39 +943,129 @@ namespace library
 				holder.setPushStatus(true);
 
 				lck.unlock();
-				auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
-				holder.hold_future(std::move(tmp));
-				return 1;
+				//auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
+				//holder.hold_future(std::move(tmp));
+				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
+
+				return true;
 			}
 			lck.unlock(); // this allows to other threads to keep pushing in the pool
 
 			//lck.unlock(); // unlocked already before mpi push
-			auto retVal = this->forward(f, id, holder);
-			holder.hold_actual_result(retVal);
-			return 0;
+			this->forward<_ret>(f, id, holder);
+			//auto retVal = this->forward<_ret>(f, id, holder);
+			//holder.hold_actual_result(retVal);
+			return false;
 		}
 
+		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		{
+			bool signal{false};
+			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
+			if (mpi_lck.try_lock())
+			{
+				//printf("rank %d entered try_lock \n", world_rank);
+				//printf("rank %d, numAvailableNodes : %d \n", world_rank, numAvailableNodes[0]);
+
+				if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+				{
+#ifdef DEBUG_COMMENTS
+					printf("%d about to request center node to push\n", world_rank);
+#endif
+					bool buffer = true;
+					put_mpi(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
+					MPI_Status status;
+#ifdef DEBUG_COMMENTS
+					printf("process %d requested to push \n", world_rank);
+#endif
+					MPI_Recv(&signal, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+
+					if (signal)
+					{
+						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
+						holder.setMPISent(true, dest);
+#ifdef DEBUG_COMMENTS
+						printf("process %d received ID %d\n", world_rank, dest);
+#endif
+
+						//std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
+						std::stringstream ss = std::apply(f_serial, holder.getArgs());
+
+						int Bytes = ss.str().size(); // number of Bytes
+
+						int err = MPI_Ssend(ss.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
+						if (err == MPI::SUCCESS)
+							printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
+
+						//TODO how to retrieve result from destination rank?
+
+						mpi_lck.unlock();
+#ifdef DEBUG_COMMENTS
+						printf("process %d forwarded to process %d \n", world_rank, dest);
+#endif
+						return true;
+					}
+				}
+				mpi_lck.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
+			}
+
+			/*This lock must be performed before checking the condition,
+			even though numThread is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+			if (busyThreads < thread_pool.size())
+			{
+				busyThreads++;
+				holder.setPushStatus(true);
+
+				lck.unlock();
+				//auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
+				//holder.hold_future(std::move(tmp));
+				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
+
+				return true;
+			}
+			lck.unlock(); // this allows to other threads to keep pushing in the pool
+
+			this->forward<_ret>(f, id, holder);
+			return false;
+		}
+
+		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
+		bool push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial, bool)
+		{
+			bool _flag = false;
+			while (!_flag)
+				_flag = push<_ret>(f, id, holder, f_serial);
+
+			return _flag;
+		}
 #endif
 		// no DLB begin **********************************************************************
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder)
 		{
-			std::args_handler::unpack_tuple(f, threadId, holder.getArgs());
+			holder.setForwardStatus(true);
+			holder.threadId = threadId;
+			std::args_handler::unpack_and_forward_void(f, threadId, holder.getArgs(), &holder);
 		}
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder)
 		{
-			return std::args_handler::unpack_tuple(f, threadId, holder.getArgs());
+			holder.setForwardStatus(true);
+			holder.threadId = threadId;
+			return std::args_handler::unpack_and_forward_non_void(f, threadId, holder.getArgs(), &holder);
 		}
 
 		// no DLB ************************************************************************* end
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		_ret forward(F &&f, int threadId, Holder &holder, bool trackStack)
+		_ret forward(F &&f, int threadId, Holder &holder, bool)
 		{
 			if (holder.is_pushed())
 				return;
@@ -1281,46 +1073,27 @@ namespace library
 			if (is_DLB)
 				checkLeftSibling(&holder);
 
-			holder.setForwardStatus(true);
+			forward<_ret>(f, threadId, holder);
+			//holder.setForwardStatus(true);
 			//holder.threadId = threadId;
-			std::args_handler::unpack_tuple(&holder, f, threadId, holder.getArgs(), trackStack);
+			//std::args_handler::unpack_and_forward_void(f, threadId, holder.getArgs(), &holder);
 		}
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		_ret forward(F &&f, int threadId, Holder &holder, bool trackStack)
+		_ret forward(F &&f, int threadId, Holder &holder, bool)
 		{
-			if (holder.isPushed)
-			{
-				return holder.get();
-				return NULL; // nope, if it was pushed, then result should be retrieved in here
-			}
+			if (holder.is_pushed())
+				return holder.get(); //return {}; // nope, if it was pushed, then result should be retrieved in here
+
 			if (is_DLB)
-			{
 				checkLeftSibling(&holder);
-			}
 
-			holder.setForwardStatus(true);
-			holder.threadId = threadId;
-			return std::args_handler::unpack_tuple(&holder, f, threadId, holder.getArgs(), trackStack);
-		}
+			return forward<_ret>(f, threadId, holder);
 
-		template <typename _ret, typename F, typename Holder,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		_ret forward_smrt(F &&f, int threadId, Holder &holder, bool trackStack)
-		{
-			if (holder->is_pushed())
-				return;
-
-			if (is_DLB)
-			{
-				//auto ptr = holder.get();
-				checkLeftSibling_smrt(holder);
-			}
-
-			holder->setForwardStatus(true);
-			holder->threadId = threadId;
-			std::args_handler::unpack_and_send(holder, f, threadId, holder->getArgs());
+			//holder.setForwardStatus(true);
+			//holder.threadId = threadId;
+			//return std::args_handler::unpack_and_forward_non_void(f, threadId, holder.getArgs(), &holder);
 		}
 
 		//Not useful yet
@@ -1396,13 +1169,12 @@ namespace library
 		ctpl::Pool thread_pool;
 
 		/*begin<<----------------Singleton----------------*/
-		static BranchHandler *INSTANCE;
-		static std::once_flag initInstanceFlag;
-
-		static void initSingleton()
-		{
-			INSTANCE = new BranchHandler();
-		}
+		//static BranchHandler *INSTANCE;
+		//static std::once_flag initInstanceFlag;
+		//static void initSingleton()
+		//{
+		//	INSTANCE = new BranchHandler();
+		//}
 
 		BranchHandler()
 		{
@@ -1410,10 +1182,16 @@ namespace library
 		}
 
 	public:
+		//static BranchHandler &getInstance()
+		//{
+		//	std::call_once(initInstanceFlag, &BranchHandler::initSingleton);
+		//	return *INSTANCE;
+		//}
+
 		static BranchHandler &getInstance()
 		{
-			std::call_once(initInstanceFlag, &BranchHandler::initSingleton);
-			return *INSTANCE;
+			static BranchHandler instance;
+			return instance;
 		}
 
 	public:
@@ -1432,9 +1210,6 @@ namespace library
 
 		/* MPI parameters */
 		MPI_Mutex *mpi_mutex = nullptr;
-
-		std::function<std::any(std::any)> _serialize;
-		std::function<std::any(std::any)> _deserialize;
 
 		int world_rank = -1;	  // get the rank of the process
 		int world_size = -1;	  // get the number of processes/nodes
@@ -1497,7 +1272,7 @@ namespace library
 		}
 
 		/* if method receives data, this node is supposed to be totally idle */
-		template <typename Result, typename F, typename Serialize, typename Deserialize, typename Holder>
+		template <typename _ret, typename F, typename Serialize, typename Deserialize, typename Holder>
 		void receiveSeed(F &&f, Serialize &&serialize, Deserialize &&deserialize, Holder &holder)
 		{
 			bool onceFlag = false;
@@ -1538,7 +1313,7 @@ namespace library
 				}
 				printf("Receiver on %d, received %d Bytes \n", world_rank, Bytes);
 
-				Holder newHolder(*this); // copy types
+				Holder newHolder(*this, -1); // copy types
 
 				std::stringstream ss;
 				for (int i = 0; i < Bytes; i++)
@@ -1558,20 +1333,20 @@ namespace library
 					onceFlag = true;
 				}
 
-				push(f, 0, newHolder); // first push, node is idle
+				push<_ret>(f, 0, newHolder); // first push, node is idle
 
-				reply<Result>(serialize, newHolder, src);
+				reply<_ret>(serialize, newHolder, src);
 
 				printf("Passed on process %d \n", world_rank);
 				accumulate_mpi(-1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes--");
 			}
 		}
 
-		template <typename Result, typename Holder, typename Serialize,
-				  std::enable_if_t<!std::is_void_v<Result>, int> = 0>
+		template <typename _ret, typename Holder, typename Serialize,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
-			Result res;
+			_ret res;
 			printf("rank %d entered reply! \n", world_rank);
 			holder.get(res);
 			printf("rank %d about to reply to %d! \n", world_rank, src);
@@ -1604,8 +1379,8 @@ namespace library
 			}
 		}
 
-		template <typename Result, typename Holder, typename Serialize,
-				  std::enable_if_t<std::is_void_v<Result>, int> = 0>
+		template <typename _ret, typename Holder, typename Serialize,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
 			//this->waitResult(true);
@@ -1667,8 +1442,86 @@ namespace library
 #endif
 	};
 
-	BranchHandler *BranchHandler::INSTANCE = nullptr;
-	std::once_flag BranchHandler::initInstanceFlag;
+	auto Scheduler::initMPI(int argc, char *argv[])
+	{
+		// Initilialise MPI and ask for thread support
+		int provided;
+		MPI_Init_thread(&argc, &argv, MPI::THREAD_SERIALIZED, &provided);
+		if (provided < MPI::THREAD_SERIALIZED)
+		{
+			printf("The threading support level is lesser than that demanded.\n");
+			MPI_Abort(MPI::COMM_WORLD, EXIT_FAILURE);
+		}
+		else
+		{
+			printf("The threading support level corresponds to that demanded.\n");
+		}
+
+		communicators();
+
+		int namelen;
+		MPI_Get_processor_name(processor_name, &namelen);
+
+		printf("Process %d of %d is on %s\n", world_rank, world_size, processor_name);
+		MPI_Barrier(world_Comm);
+		//printf("About to create window, %d / %d!! \n", world_rank, world_size);
+		MPI_Barrier(world_Comm);
+		win_allocate();
+
+		// initiliaze MPI mutex *********************************************************
+		mpi_mutex.set(world_Comm, win_mutex);
+		// ******************************************************************************
+
+		MPI_Barrier(world_Comm);
+
+		_branchHandler.linkMPIargs(world_rank,
+								   world_size,
+								   processor_name,
+								   numAvailableNodes,
+								   refValueGlobal,
+								   &win_accumulator,
+								   &win_finalFlag,
+								   &win_AvNodes,
+								   &win_boolean,
+								   &win_inbox_bestResult,
+								   &win_refValueGlobal,
+								   &world_Comm,
+								   &second_Comm,
+								   &SendToNodes_Comm,
+								   &SendToCenter_Comm,
+								   &NodeToNode_Comm,
+								   &mpi_mutex);
+
+		return world_rank;
+	}
+
+	template <typename _ret, typename F, typename Holder, typename Serialize, typename Deserialize>
+	void Scheduler::start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
+	{
+		printf("About to start, %d / %d!! \n", world_rank, world_size);
+
+		if (world_rank == 0)
+		{
+			start_time = MPI_Wtime();
+			printf("scheduler() launched!! \n");
+			this->schedule(holder, serialize);
+			end_time = MPI_Wtime();
+		}
+		else
+		{
+			_branchHandler.setMaxThreads(threadsPerNode);
+			if (std::is_void<_ret>::value)
+				_branchHandler.functionIsVoid();
+
+			_branchHandler.receiveSeed<_ret>(f, serialize, deserialize, holder);
+		}
+		printf("process %d waiting at barrier \n", world_rank);
+		MPI_Barrier(world_Comm);
+		printf("process %d passed barrier \n", world_rank);
+	}
+
+	//BranchHandler *BranchHandler::INSTANCE = nullptr;
+	//std::once_flag BranchHandler::initInstanceFlag;
 
 } // namespace library
 

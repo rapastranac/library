@@ -16,10 +16,15 @@ include_directories(${MPI_INCLUDE_PATH})
 
 #link_directories(${Boost_LIBRARY_DIRS})
 #include_directories(${Boost_INCLUDE_DIRS})
+add_definitions(-DTEST=false)
 
-add_definitions(-DDLB)
-#add_definitions(-DMPI_ENABLED)
+add_definitions(-DDLB=false)
+add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
+#add_definitions(-DVC_VOID)
+add_definitions(-DVC_VOID_MPI)
+#add_definitions(-DVC_NON_VOID)
+#add_definitions(-DVC_NON_VOID_MPI)
 
 add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
 #add_compile_options("-g" "-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
@@ -32,6 +37,7 @@ add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
 include_directories("cereal" "fmt/include" )
+include_directories("include")
 
 set(Include
     include/args_handler.hpp
@@ -52,11 +58,15 @@ set(MPI_inc
 
 set(Sources
     src/main.cpp
+    src/main_non_void_MPI.cpp
+    src/main_non_void.cpp
+    src/main_void_MPI.cpp
+    src/main_void.cpp
     src/read_graphs.cpp
 )
 
-
-add_executable(a.out  ${Sources} ${Include}
+#${Include}
+add_executable(a.out  ${Sources} 
                     ${CMAKE_CURRENT_SOURCE_DIR}/fmt/src/format.cc
                     ${CMAKE_CURRENT_SOURCE_DIR}/fmt/src/os.cc)
 

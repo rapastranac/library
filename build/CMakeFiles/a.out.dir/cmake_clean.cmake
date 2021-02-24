@@ -4,6 +4,10 @@ file(REMOVE_RECURSE
   "CMakeFiles/a.out.dir/fmt/src/format.cc.o"
   "CMakeFiles/a.out.dir/fmt/src/os.cc.o"
   "CMakeFiles/a.out.dir/src/main.cpp.o"
+  "CMakeFiles/a.out.dir/src/main_non_void.cpp.o"
+  "CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o"
+  "CMakeFiles/a.out.dir/src/main_void.cpp.o"
+  "CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
   "CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
 )
 

@@ -204,6 +204,114 @@ src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/main_non_void.o: src/main_non_void.cpp.o
+
+.PHONY : src/main_non_void.o
+
+# target to build an object file
+src/main_non_void.cpp.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_non_void.cpp.o
+.PHONY : src/main_non_void.cpp.o
+
+src/main_non_void.i: src/main_non_void.cpp.i
+
+.PHONY : src/main_non_void.i
+
+# target to preprocess a source file
+src/main_non_void.cpp.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_non_void.cpp.i
+.PHONY : src/main_non_void.cpp.i
+
+src/main_non_void.s: src/main_non_void.cpp.s
+
+.PHONY : src/main_non_void.s
+
+# target to generate assembly for a file
+src/main_non_void.cpp.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_non_void.cpp.s
+.PHONY : src/main_non_void.cpp.s
+
+src/main_non_void_MPI.o: src/main_non_void_MPI.cpp.o
+
+.PHONY : src/main_non_void_MPI.o
+
+# target to build an object file
+src/main_non_void_MPI.cpp.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
+.PHONY : src/main_non_void_MPI.cpp.o
+
+src/main_non_void_MPI.i: src/main_non_void_MPI.cpp.i
+
+.PHONY : src/main_non_void_MPI.i
+
+# target to preprocess a source file
+src/main_non_void_MPI.cpp.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i
+.PHONY : src/main_non_void_MPI.cpp.i
+
+src/main_non_void_MPI.s: src/main_non_void_MPI.cpp.s
+
+.PHONY : src/main_non_void_MPI.s
+
+# target to generate assembly for a file
+src/main_non_void_MPI.cpp.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s
+.PHONY : src/main_non_void_MPI.cpp.s
+
+src/main_void.o: src/main_void.cpp.o
+
+.PHONY : src/main_void.o
+
+# target to build an object file
+src/main_void.cpp.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void.cpp.o
+.PHONY : src/main_void.cpp.o
+
+src/main_void.i: src/main_void.cpp.i
+
+.PHONY : src/main_void.i
+
+# target to preprocess a source file
+src/main_void.cpp.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void.cpp.i
+.PHONY : src/main_void.cpp.i
+
+src/main_void.s: src/main_void.cpp.s
+
+.PHONY : src/main_void.s
+
+# target to generate assembly for a file
+src/main_void.cpp.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void.cpp.s
+.PHONY : src/main_void.cpp.s
+
+src/main_void_MPI.o: src/main_void_MPI.cpp.o
+
+.PHONY : src/main_void_MPI.o
+
+# target to build an object file
+src/main_void_MPI.cpp.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
+.PHONY : src/main_void_MPI.cpp.o
+
+src/main_void_MPI.i: src/main_void_MPI.cpp.i
+
+.PHONY : src/main_void_MPI.i
+
+# target to preprocess a source file
+src/main_void_MPI.cpp.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i
+.PHONY : src/main_void_MPI.cpp.i
+
+src/main_void_MPI.s: src/main_void_MPI.cpp.s
+
+.PHONY : src/main_void_MPI.s
+
+# target to generate assembly for a file
+src/main_void_MPI.cpp.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s
+.PHONY : src/main_void_MPI.cpp.s
+
 src/read_graphs.o: src/read_graphs.cpp.o
 
 .PHONY : src/read_graphs.o
@@ -249,6 +357,18 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/main_non_void.o"
+	@echo "... src/main_non_void.i"
+	@echo "... src/main_non_void.s"
+	@echo "... src/main_non_void_MPI.o"
+	@echo "... src/main_non_void_MPI.i"
+	@echo "... src/main_non_void_MPI.s"
+	@echo "... src/main_void.o"
+	@echo "... src/main_void.i"
+	@echo "... src/main_void.s"
+	@echo "... src/main_void_MPI.o"
+	@echo "... src/main_void_MPI.i"
+	@echo "... src/main_void_MPI.s"
 	@echo "... src/read_graphs.o"
 	@echo "... src/read_graphs.i"
 	@echo "... src/read_graphs.s"
