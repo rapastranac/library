@@ -51,7 +51,7 @@ public:
             {
                 int depth = 0;
                 initial.holdArgs(depth, graph);
-                branchHandler.push<void>(_f, -1, initial);
+                branchHandler.push_multithreading<void>(_f, -1, initial);
             }
             //************************************************
 
@@ -124,9 +124,9 @@ public:
         {
             hol_l.holdArgs(newDepth, gLeft);
 #ifdef DLB
-            branchHandler.push<void>(_f, id, hol_l, true);
+            branchHandler.push_multithreading<void>(_f, id, hol_l, true);
 #else
-            branchHandler.push<void>(_f, id, hol_l);
+            branchHandler.push_multithreading<void>(_f, id, hol_l);
 #endif
         }
 

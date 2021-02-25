@@ -78,9 +78,9 @@ public:
 		{
 			hol_l.holdArgs(newDepth, gLeft);
 #ifdef DLB
-			branchHandler.push<void>(_f, id, hol_l, user_serializer, true);
+			branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer, true);
 #else
-			branchHandler.push<void>(_f, id, hol_l, user_serializer);
+			branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer);
 #endif
 		}
 

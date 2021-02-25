@@ -28,7 +28,7 @@ int main_void(int argc, char *argv[])
 	Graph oGraph;
 	VC_void cover;
 
-	auto file = "input/prob_4/400/00400_1";
+	auto file = "input/prob_4/600/00600_1";
 	graph.readEdges(file);
 
 	cover.init(graph, 6, file, 4);

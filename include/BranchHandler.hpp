@@ -669,7 +669,7 @@ namespace library
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_DLB(F &&f, int id, Holder &holder)
+		bool push_multithreading_DLB(F &&f, int id, Holder &holder)
 		{
 			/*This lock must be adquired before checking the condition,	
 			even though busyThreads is atomic*/
@@ -762,7 +762,7 @@ namespace library
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool push_DLB(F &&f, int id, Holder &holder)
+		bool push_multithreading_DLB(F &&f, int id, Holder &holder)
 		{
 			/*This lock must be adquired before checking the condition,	
 			even though busyThreads is atomic*/
@@ -811,13 +811,14 @@ namespace library
 	public:
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push(F &&f, int id, Holder &holder)
+		bool push_multithreading(F &&f, int id, Holder &holder)
 		{
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
 			if (busyThreads < thread_pool.size())
 			{
+				this->requests++;
 				busyThreads++;
 				holder.setPushStatus(true);
 
@@ -835,13 +836,14 @@ namespace library
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool push(F &&f, int id, Holder &holder)
+		bool push_multithreading(F &&f, int id, Holder &holder)
 		{
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
 			if (busyThreads < thread_pool.size())
 			{
+				this->requests++;
 				busyThreads++;
 				holder.setPushStatus(true);
 
@@ -860,20 +862,19 @@ namespace library
 		}
 
 		template <typename _ret, typename F, typename Holder>
-		bool push(F &&f, int id, Holder &holder, bool trackStack)
+		bool push_multithreading(F &&f, int id, Holder &holder, bool trackStack)
 		{
 			bool _flag = false;
 			while (!_flag)
-				_flag = push_DLB<_ret>(f, id, holder);
+				_flag = push_multithreading_DLB<_ret>(f, id, holder);
 
 			return _flag;
 		}
 
 #ifdef MPI_ENABLED
 
-		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		template <typename Holder, typename F_SERIAL>
+		bool try_another_process(Holder &holder, F_SERIAL &&f_serial)
 		{
 			bool signal{false};
 			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
@@ -920,19 +921,18 @@ namespace library
 #endif
 						return true;
 					}
-					/*else // numAvailableNodes might have changed due to delay
-					{
-						mpi_lck.unlock();
-						#ifdef DEBUG_COMMENTS
-						printf("process %d push request failed, forwarded!\n", world_rank);
-						#endif
-						auto retVal = this->forward(f, id, holder);
-						holder.hold_actual_result(retVal);
-						return 0;
-					}*/
 				}
 				mpi_lck.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
 			}
+			return false; //this return is necessary only due to function extraction
+		}
+
+		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		{
+			if (try_another_process(holder, f_serial))
+				return true;
 
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
@@ -943,8 +943,6 @@ namespace library
 				holder.setPushStatus(true);
 
 				lck.unlock();
-				//auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
-				//holder.hold_future(std::move(tmp));
 				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
 
 				return true;
@@ -953,91 +951,16 @@ namespace library
 
 			//lck.unlock(); // unlocked already before mpi push
 			this->forward<_ret>(f, id, holder);
-			//auto retVal = this->forward<_ret>(f, id, holder);
-			//holder.hold_actual_result(retVal);
 			return false;
 		}
 
-		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
-		{
-			bool signal{false};
-			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
-			if (mpi_lck.try_lock())
-			{
-				//printf("rank %d entered try_lock \n", world_rank);
-				//printf("rank %d, numAvailableNodes : %d \n", world_rank, numAvailableNodes[0]);
-
-				if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
-				{
-#ifdef DEBUG_COMMENTS
-					printf("%d about to request center node to push\n", world_rank);
-#endif
-					bool buffer = true;
-					put_mpi(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
-					MPI_Status status;
-#ifdef DEBUG_COMMENTS
-					printf("process %d requested to push \n", world_rank);
-#endif
-					MPI_Recv(&signal, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
-
-					if (signal)
-					{
-						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
-						holder.setMPISent(true, dest);
-#ifdef DEBUG_COMMENTS
-						printf("process %d received ID %d\n", world_rank, dest);
-#endif
-
-						//std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
-						std::stringstream ss = std::apply(f_serial, holder.getArgs());
-
-						int Bytes = ss.str().size(); // number of Bytes
-
-						int err = MPI_Ssend(ss.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
-						if (err == MPI::SUCCESS)
-							printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
-
-						//TODO how to retrieve result from destination rank?
-
-						mpi_lck.unlock();
-#ifdef DEBUG_COMMENTS
-						printf("process %d forwarded to process %d \n", world_rank, dest);
-#endif
-						return true;
-					}
-				}
-				mpi_lck.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
-			}
-
-			/*This lock must be performed before checking the condition,
-			even though numThread is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-			if (busyThreads < thread_pool.size())
-			{
-				busyThreads++;
-				holder.setPushStatus(true);
-
-				lck.unlock();
-				//auto tmp = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs());
-				//holder.hold_future(std::move(tmp));
-				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
-
-				return true;
-			}
-			lck.unlock(); // this allows to other threads to keep pushing in the pool
-
-			this->forward<_ret>(f, id, holder);
-			return false;
-		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
-		bool push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial, bool)
+		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial, bool)
 		{
 			bool _flag = false;
 			while (!_flag)
-				_flag = push<_ret>(f, id, holder, f_serial);
+				_flag = push_multiprocess<_ret>(f, id, holder, f_serial);
 
 			return _flag;
 		}

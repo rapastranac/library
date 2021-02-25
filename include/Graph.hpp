@@ -10,6 +10,7 @@ using namespace std;
 
 #include "util.hpp"
 
+#include <climits>
 #include <cmath> /* floor, ceil */
 #include <cassert>
 #include <mutex>
@@ -539,17 +540,7 @@ private:
 public:
 	bool empty()
 	{
-		if (list.empty())
-		{
-			if (_cover.empty())
-				return true;
-			else
-				return false;
-		}
-		else
-		{
-			return false;
-		}
+		return _cover.empty();
 	}
 	//Default constructor
 	Graph()

@@ -96,7 +96,9 @@ public:
         HolderType hol_r(branchHandler, id, parent);
         hol_l.setDepth(depth);
         hol_r.setDepth(depth);
+#ifdef DLB
         branchHandler.linkParent(id, parent, hol_l, hol_r);
+#endif
 
         gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
         gLeft.clean_graph();
@@ -113,12 +115,20 @@ public:
         if (C1Size < branchHandler.getRefValue())
         {
             hol_l.holdArgs(newDepth, gLeft);
-            branchHandler.push<Graph>(_f, id, hol_l, true);
+#ifdef DLB
+            branchHandler.push_multithreading<Graph>(_f, id, hol_l, true);
+#else
+            branchHandler.push_multithreading<Graph>(_f, id, hol_l);
+#endif
         }
 
         if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
         {
+#ifdef DLB
             r_right = branchHandler.forward<Graph>(_f, id, hol_r, true);
+#else
+            r_right = branchHandler.forward<Graph>(_f, id, hol_r);
+#endif
         }
 
         if (hol_l.is_pushed() || hol_l.is_forwarded())
@@ -188,7 +198,7 @@ public:
     {
         if (!left.empty() && !right.empty())
         {
-            if (left.size() >= right.size())
+            if (left.coverSize() >= right.coverSize())
                 return right;
             else
                 return left;
