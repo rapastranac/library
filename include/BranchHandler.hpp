@@ -420,7 +420,7 @@ namespace library
 		//	return dynamic_cast<ctpl::Pool *>(item);
 		//}
 		/*--------------------------------------------------------end*/
-
+#ifdef MPI_ENABLED
 		void put_mpi(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
 		{
 			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // opens epoch
@@ -428,7 +428,7 @@ namespace library
 			MPI_Win_flush(target_rank, window);
 			MPI_Win_unlock(target_rank, window); // closes epoch
 		}
-
+#endif
 		template <typename Holder>
 		Holder *checkParent(Holder *holder)
 		{
@@ -1442,6 +1442,8 @@ namespace library
 #endif
 	};
 
+#ifdef MPI_ENABLED
+
 	auto Scheduler::initMPI(int argc, char *argv[])
 	{
 		// Initilialise MPI and ask for thread support
@@ -1520,8 +1522,7 @@ namespace library
 		printf("process %d passed barrier \n", world_rank);
 	}
 
-	//BranchHandler *BranchHandler::INSTANCE = nullptr;
-	//std::once_flag BranchHandler::initInstanceFlag;
+#endif
 
 } // namespace library
 

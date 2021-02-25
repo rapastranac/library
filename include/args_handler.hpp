@@ -152,25 +152,25 @@ namespace std
 		/*------- This unpacks tuple before forwarding it through the function ----->end*/
 
 		/*begin<--- General unpack tuple and passes arguments to callable -----*/
-		template <typename Function, typename... Args>
-		static auto unpack_tuple(Function &&f, Args &...args)
-		{
-			return f(args...);
-		}
-
-		template <typename Function, typename Tuple, size_t... I>
-		static auto unpack_tuple(Function &&f, Tuple &t, std::index_sequence<I...>)
-		{
-			return unpack_tuple(f, std::get<I>(t)...);
-		}
-
-		template <typename Function, typename Tuple>
-		static auto unpack_tuple(Function &&f, Tuple &t)
-		{
-			//https://stackoverflow.com/a/36656413/5248548
-			static constexpr auto size = std::tuple_size<Tuple>::value;
-			return unpack_tuple(f, t, std::make_index_sequence<size>{});
-		}
+		//template <typename Function, typename... Args>
+		//static auto unpack_tuple(Function &&f, Args &...args)
+		//{
+		//	return f(args...);
+		//}
+		//
+		//template <typename Function, typename Tuple, size_t... I>
+		//static auto unpack_tuple(Function &&f, Tuple &t, std::index_sequence<I...>)
+		//{
+		//	return unpack_tuple(f, std::get<I>(t)...);
+		//}
+		//
+		//template <typename Function, typename Tuple>
+		//static auto unpack_tuple(Function &&f, Tuple &t)
+		//{
+		//	//https://stackoverflow.com/a/36656413/5248548
+		//	static constexpr auto size = std::tuple_size<Tuple>::value;
+		//	return unpack_tuple(f, t, std::make_index_sequence<size>{});
+		//}
 		/*------- General unpack tuple and passes arguments to callable ----->end*/
 	};
 

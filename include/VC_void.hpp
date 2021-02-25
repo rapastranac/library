@@ -123,12 +123,20 @@ public:
         if (C1Size < branchHandler.getRefValue())
         {
             hol_l.holdArgs(newDepth, gLeft);
+#ifdef DLB
             branchHandler.push<void>(_f, id, hol_l, true);
+#else
+            branchHandler.push<void>(_f, id, hol_l);
+#endif
         }
 
         if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
         {
+#ifdef DLB
             branchHandler.forward<void>(_f, id, hol_r, true);
+#else
+            branchHandler.forward<void>(_f, id, hol_r);
+#endif
         }
 
         return;

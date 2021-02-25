@@ -18,7 +18,7 @@ include_directories(${MPI_INCLUDE_PATH})
 #include_directories(${Boost_INCLUDE_DIRS})
 add_definitions(-DTEST=false)
 
-add_definitions(-DDLB=false)
+#add_definitions(-DDLB=true)
 add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
 #add_definitions(-DVC_VOID)

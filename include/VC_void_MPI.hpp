@@ -62,8 +62,9 @@ public:
 		HolderType hol_r(branchHandler, id, parent);
 		hol_l.setDepth(depth);
 		hol_r.setDepth(depth);
+#ifdef DLB
 		branchHandler.linkParent(id, parent, hol_l, hol_r);
-
+#endif
 		gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
 		gLeft.clean_graph();
 		int C1Size = (int)gLeft.coverSize();
@@ -85,7 +86,11 @@ public:
 
 		if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
 		{
+#ifdef DLB
+			branchHandler.forward<void>(_f, id, hol_r, true);
+#else
 			branchHandler.forward<void>(_f, id, hol_r);
+#endif
 		}
 
 		return;
