@@ -143,20 +143,20 @@ namespace library
 			this->depth = 0;
 			this->expectedFut.reset(new std::future<_Ret>);
 
+			this->itself = this;
+
 			//branchHandler.roots[threadId] = this;
 			branchHandler.assign_root(threadId, this);
 			this->root = &branchHandler.roots[threadId];
 
-			this->itself = this;
 			//this->root = &itself;
 			this->isVirtual = true;
 		}
 
-		ResultHolder(library::BranchHandler &handler, int threadId, ResultHolder *parent) : branchHandler(handler)
+		ResultHolder(library::BranchHandler &handler, int threadId, void *parent) : branchHandler(handler)
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
-			this->isPushed = false;
 			this->depth = -1;
 			this->expectedFut.reset(new std::future<_Ret>);
 
@@ -174,26 +174,9 @@ namespace library
 			}
 
 			this->root = &branchHandler.roots[threadId];
-
-			this->parent = parent;
-			//this->root = parent->root;
+			this->parent = static_cast<ResultHolder *>(parent);
 			this->parent->children.push_back(this);
 		}
-
-		//~ResultHolder()
-		//{
-		/*To ensure that if this holder dies, then it should dissappear from
-				children's parent to avoid exceptions*/
-		//if (!children.empty())
-		//{
-		//	typename std::list<ResultHolder *>::iterator it = children.begin();
-		//	while (it != children.end())
-		//	{
-		//		(*it)->parent = nullptr;
-		//		it++;
-		//	}
-		//}
-		//}
 
 		~ResultHolder()
 		{
@@ -204,26 +187,6 @@ namespace library
 			//	printf("Destructor called for  id : %d \n", id);
 			//
 		}
-
-		//For multiple recursion algorithms
-		//ResultHolder(library::BranchHandler &handler, std::shared_ptr<ResultHolder> parent) : branchHandler(handler)
-		//{
-		//	this->id = branchHandler.getUniqueId();
-		//	this->isPushed = false;
-		//	this->depth = -1;
-		//	this->expectedFut.reset(new std::future<_Ret>);
-		//
-		//
-		//	if (!parent)
-		//	{
-		//		this->root = &itself;
-		//		return;
-		//	}
-		//
-		//	this->root = &(*parent->root);
-		//	this->parent = parent;
-		//	//this->parent->children.push_back(this);
-		//}
 
 		ResultHolder(ResultHolder &&src) noexcept
 		{

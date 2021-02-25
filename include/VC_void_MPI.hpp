@@ -23,7 +23,7 @@ class VC_void_MPI : public VertexCover
 	using HolderType = library::ResultHolder<void, int, Graph>;
 
 private:
-	std::function<void(int, int, Graph &, HolderType *)> _f;
+	std::function<void(int, int, Graph &, void *)> _f;
 
 public:
 	VC_void_MPI()
@@ -32,7 +32,7 @@ public:
 	}
 	~VC_void_MPI() {}
 
-	void mvc(int id, int depth, Graph &graph, HolderType *parent)
+	void mvc(int id, int depth, Graph &graph, void *parent)
 	{
 		size_t k1 = graph.min_k();
 		size_t k2 = graph.max_k();

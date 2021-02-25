@@ -18,11 +18,11 @@ include_directories(${MPI_INCLUDE_PATH})
 #include_directories(${Boost_INCLUDE_DIRS})
 
 add_definitions(-DDLB=true)
-#add_definitions(-DMPI_ENABLED)
+add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
 #add_definitions(-DVC_VOID)
-#add_definitions(-DVC_VOID_MPI)
-add_definitions(-DVC_NON_VOID)
+add_definitions(-DVC_VOID_MPI)
+#add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
 
 add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
@@ -38,17 +38,17 @@ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 include_directories("cereal" "fmt/include" )
 include_directories("include")
 
-set(Include
-    include/args_handler.hpp
-    include/BranchHandler.hpp
-    include/ctpl_stl.hpp
-    include/fwPool.hpp
-    include/main.h
-    include/POOL.hpp
-    include/pool_include.hpp
-    include/ResultHolder.hpp
-    include/Sort.h
-)
+#set(Include
+#    include/args_handler.hpp
+#    include/BranchHandler.hpp
+#    include/ctpl_stl.hpp
+#    include/fwPool.hpp
+#    include/main.h
+#    include/POOL.hpp
+#    include/pool_include.hpp
+#    include/ResultHolder.hpp
+#    include/Sort.h
+#)
 
 set(MPI_inc
         MPI_Modules/Scheduler.hpp

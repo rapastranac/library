@@ -7,7 +7,7 @@ class VC_void : public VertexCover
     using HolderType = library::ResultHolder<void, int, Graph>;
 
 private:
-    std::function<void(int, int, Graph &, HolderType *)> _f;
+    std::function<void(int, int, Graph &, void *)> _f;
 
 public:
     VC_void()
@@ -80,7 +80,7 @@ public:
         return true;
     }
 
-    void mvc(int id, int depth, Graph &graph, HolderType *parent)
+    void mvc(int id, int depth, Graph &graph, void *parent)
     {
         size_t k1 = graph.min_k();
         size_t k2 = graph.max_k();
@@ -109,8 +109,9 @@ public:
         HolderType hol_r(branchHandler, id, parent);
         hol_l.setDepth(depth);
         hol_r.setDepth(depth);
+#ifdef DLB
         branchHandler.linkParent(id, parent, hol_l, hol_r);
-
+#endif
         gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
         gLeft.clean_graph();
         int C1Size = (int)gLeft.coverSize();

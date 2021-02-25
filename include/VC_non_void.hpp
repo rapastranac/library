@@ -7,7 +7,7 @@ class VC_non_void : public VertexCover
     using HolderType = library::ResultHolder<Graph, int, Graph>;
 
 private:
-    std::function<Graph(int, int, Graph &, HolderType *)> _f;
+    std::function<Graph(int, int, Graph &, void *)> _f;
 
 public:
     VC_non_void()
@@ -65,7 +65,7 @@ public:
         return true;
     }
 
-    Graph mvc(int id, int depth, Graph &graph, HolderType *parent)
+    Graph mvc(int id, int depth, Graph &graph, void *parent)
     {
         size_t k1 = graph.min_k();
         size_t k2 = graph.max_k();

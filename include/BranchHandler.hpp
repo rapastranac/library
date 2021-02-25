@@ -106,7 +106,7 @@ namespace library
 		}
 
 		template <typename Holder>
-		void linkParent(int threadId, Holder *parent, Holder &child)
+		void linkParent(int threadId, void *parent, Holder &child)
 		{
 			if (is_DLB)
 				if (!parent)
@@ -123,15 +123,16 @@ namespace library
 				}
 				else
 				{
-					child.parent = parent->itself;
-					child.root = parent->root;
-					parent->children.push_back(&child);
+					auto* _parent = static_cast<Holder*>(parent);
+					child.parent = _parent->itself;
+					child.root = _parent->root;
+					_parent->children.push_back(&child);
 				}
 		}
 
 		// it could be moved to another class
 		template <typename Holder, typename... Args>
-		void linkParent(int threadId, Holder *parent, Holder &child, Args &...args)
+		void linkParent(int threadId, void *parent, Holder &child, Args &...args)
 		{
 			if (is_DLB)
 				if (!parent)
@@ -954,7 +955,6 @@ namespace library
 			return false;
 		}
 
-
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
 		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial, bool)
 		{
@@ -1256,7 +1256,7 @@ namespace library
 					onceFlag = true;
 				}
 
-				push<_ret>(f, 0, newHolder); // first push, node is idle
+				push_multithreading<_ret>(f, 0, newHolder); // first push, node is idle
 
 				reply<_ret>(serialize, newHolder, src);
 

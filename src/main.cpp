@@ -1,9 +1,28 @@
 #include "../include/main.h"
 
 #include <iostream>
+
+int global = 0;
+
+struct S
+{
+	S(void *ptr)
+	{
+		this->ptr = static_cast<S *>(ptr);
+		val = (++global);
+	}
+
+	S *ptr = nullptr;
+	int val;
+};
+
 //#include <mpi.h>
 int main(int argc, char *argv[])
 {
+	S obj(nullptr);
+	void *ptr = &obj;
+
+	S obj2(ptr);
 
 	//MPI_Init(NULL, NULL);
 	//int size;

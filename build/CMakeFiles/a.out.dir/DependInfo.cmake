@@ -18,7 +18,8 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_CXX
   "DLB=true"
-  "VC_NON_VOID"
+  "MPI_ENABLED"
+  "VC_VOID_MPI"
   )
 
 # The include file search paths:
