@@ -745,58 +745,39 @@ namespace library
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_multithreading_DLB(F &&f, int id, Holder &holder)
+		bool try_top_holder(std::unique_lock<std::mutex> &lck, F &&f, Holder &holder)
 		{
-			/*This lock must be adquired before checking the condition,	
-			even though busyThreads is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-
-			if (busyThreads < thread_pool.size())
+			Holder *upperHolder = checkParent(&holder);
+			if (upperHolder)
 			{
-				if (is_DLB)
-				{
-					Holder *upperHolder = checkParent(&holder);
-					if (upperHolder)
-					{
-						this->requests++;
-						this->busyThreads++;
-						upperHolder->setPushStatus(true);
-						lck.unlock();
-						// **************************************************
-						// if holder sent, then its parent and children info should be reseted
-						//upperHolder->unlink_parents();
-						// **************************************************
-						// since it's void, no need to store a returned/future value
-						std::args_handler::unpack_and_push_void(thread_pool, f, upperHolder->getArgs());
-						return false;
-					}
-					checkRightSiblings(&holder);
-				}
-
-				//after this line, only leftMost holder should be pushed
-
 				this->requests++;
 				this->busyThreads++;
-				holder.setPushStatus(true);
+				upperHolder->setPushStatus(true);
 				lck.unlock();
-
-				// here i'm pushing but not decrementing parent's children
-
-				// **************************************************
-				// if holder sent, then its parent and children info should be reseted
-				//holder.unlink_parents();
-				// **************************************************
-
-				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
-				return true;
+				std::args_handler::unpack_and_push_void(thread_pool, f, upperHolder->getArgs());
+				return true; // top holder found
 			}
-			else
+			checkRightSiblings(&holder); // this decrements parent's children
+			return false;				 // top holder not found
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool try_top_holder(std::unique_lock<std::mutex> &lck, F &&f, Holder &holder)
+		{
+			Holder *upperHolder = checkParent(&holder);
+			if (upperHolder)
 			{
+				this->requests++;
+				this->busyThreads++;
+				upperHolder->setPushStatus(true);
 				lck.unlock();
-				this->forward<_ret>(f, id, holder, true);
-				return true;
+				auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
+				upperHolder->hold_future(std::move(ret));
+				return true; // top holder found
 			}
-			return false;
+			checkRightSiblings(&holder); // this decrements parent's children
+			return false;				 // top holder not found
 		}
 
 		/* this method is invoked when DLB is enable and the method checkParent() was not able to find
@@ -829,77 +810,43 @@ namespace library
 			}
 		}
 
-		template <typename _ret, typename F, typename Holder,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool push_multithreading_DLB(F &&f, int id, Holder &holder)
-		{
-			/*This lock must be adquired before checking the condition,	
-			even though busyThreads is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-
-			if (busyThreads < thread_pool.size())
-			{
-				if (is_DLB)
-				{
-					Holder *upperHolder = checkParent(&holder);
-					if (upperHolder)
-					{
-						this->requests++;
-						this->busyThreads++;
-						upperHolder->setPushStatus(true);
-						lck.unlock();
-
-						//auto ret = std::args_handler::unpack_tuple(thread_pool, f, upperHolder->getArgs(), true);
-						auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
-						upperHolder->hold_future(std::move(ret));
-						return false;
-					}
-
-					checkRightSiblings(&holder);
-				}
-				this->requests++;
-				this->busyThreads++;
-				holder.setPushStatus(true);
-				lck.unlock();
-
-				//auto ret = std::args_handler::unpack_tuple(thread_pool, f, holder.getArgs(), true);
-				auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
-				holder.hold_future(std::move(ret));
-				return true;
-			}
-			else
-			{
-				lck.unlock();
-				auto ret = this->forward<_ret>(f, id, holder, true);
-				holder.hold_actual_result(ret);
-				return true;
-			}
-			return false;
-		}
-
 	public:
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool push_multithreading(F &&f, int id, Holder &holder)
 		{
-			/*This lock must be performed before checking the condition,
-			even though numThread is atomic*/
+			/*This lock must be adquired before checking the condition,	
+			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
 			if (busyThreads < thread_pool.size())
 			{
+				if (is_DLB)
+				{
+					bool res = try_top_holder<_ret>(lck, f, holder);
+					if (res)
+						return false; //if top holder found, then it should return false to keep trying
+				}
+				//after this line, only leftMost holder should be pushed
 				this->requests++;
-				busyThreads++;
+				this->busyThreads++;
 				holder.setPushStatus(true);
-
 				lck.unlock();
+
 				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
 				return true;
 			}
 			else
 			{
 				lck.unlock();
-				this->forward<_ret>(f, id, holder);
-				return false;
+				if (is_DLB)
+				{
+					this->forward<_ret>(f, id, holder, true);
+				}
+				else
+				{
+					this->forward<_ret>(f, id, holder);
+				}
+				return true;
 			}
 		}
 
@@ -912,6 +859,12 @@ namespace library
 			std::unique_lock<std::mutex> lck(mtx);
 			if (busyThreads < thread_pool.size())
 			{
+				if (is_DLB)
+				{
+					bool res = try_top_holder<_ret>(lck, f, holder);
+					if (res)
+						return false; //if top holder found, then it should return false to keep trying
+				}
 				this->requests++;
 				busyThreads++;
 				holder.setPushStatus(true);
@@ -924,9 +877,17 @@ namespace library
 			else
 			{
 				lck.unlock();
-				auto ret = this->forward<_ret>(f, id, holder);
-				holder.hold_actual_result(ret);
-				return false;
+				if (is_DLB)
+				{
+					auto ret = this->forward<_ret>(f, id, holder, true);
+					holder.hold_actual_result(ret);
+				}
+				else
+				{
+					auto ret = this->forward<_ret>(f, id, holder);
+					holder.hold_actual_result(ret);
+				}
+				return true;
 			}
 		}
 
@@ -934,10 +895,14 @@ namespace library
 		bool push_multithreading(F &&f, int id, Holder &holder, bool trackStack)
 		{
 			bool _flag = false;
+			/* false means that current holder was not able to be pushed 
+				because a top holder was pushed instead, this false allows
+				to keep trying to find a top holder in the case of an
+				available thread*/
 			while (!_flag)
-				_flag = push_multithreading_DLB<_ret>(f, id, holder);
+				_flag = push_multithreading<_ret>(f, id, holder);
 
-			return _flag;
+			return _flag; // this is for user's tracking pursposes if applicable
 		}
 
 #ifdef MPI_ENABLED
@@ -948,6 +913,61 @@ namespace library
  		return 2, for failure with no available process*/
 		template <typename Holder, typename F_SERIAL>
 		int try_another_process(Holder &holder, F_SERIAL &&f_serial)
+		{
+			bool signal{false};
+			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
+			if (mpi_lck.try_lock())
+			{
+				//printf("rank %d entered try_lock \n", world_rank);
+				//printf("rank %d, numAvailableNodes : %d \n", world_rank, numAvailableNodes[0]);
+
+				if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+				{
+#ifdef DEBUG_COMMENTS
+					printf("%d about to request center node to push\n", world_rank);
+#endif
+					bool buffer = true;
+					put_mpi(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
+					MPI_Status status;
+#ifdef DEBUG_COMMENTS
+					printf("process %d requested to push \n", world_rank);
+#endif
+					MPI_Recv(&signal, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+
+					if (signal)
+					{
+						printf("process %d received positive signal from center \n", world_rank);
+
+						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
+						holder.setMPISent(true, dest);
+#ifdef DEBUG_COMMENTS
+						printf("process %d received ID %d\n", world_rank, dest);
+#endif
+						auto _stream = std::apply(f_serial, holder.getArgs());
+						int Bytes = _stream.str().size(); // number of Bytes
+
+						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
+						if (err == MPI::SUCCESS)
+							printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
+
+						mpi_lck.unlock();
+#ifdef DEBUG_COMMENTS
+						printf("process %d forwarded to process %d \n", world_rank, dest);
+#endif
+						return 0;
+					}
+				}
+				mpi_lck.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
+			}
+			return 1; //this return is necessary only due to function extraction
+		}
+
+		/*
+ 		return 0, for normal success with an available process
+ 		return 1, for DLB succes with an available process
+ 		return 2, for failure with no available process*/
+		template <typename Holder, typename F_SERIAL>
+		int try_another_process_DLB(Holder &holder, F_SERIAL &&f_serial)
 		{
 			bool signal{false};
 			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
@@ -1027,6 +1047,28 @@ namespace library
 			int r = try_another_process(holder, f_serial);
 			if (r == 0)
 				return true;
+
+			return push_multithreading<_ret>(f, id, holder);
+		}
+
+		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		{
+			int r = try_another_process(holder, f_serial);
+			if (r == 0)
+				return true;
+
+			return push_multithreading<_ret>(f, id, holder);
+		}
+
+		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		bool push_multiprocess_DLB(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		{
+			int r = try_another_process(holder, f_serial);
+			if (r == 0)
+				return true;
 			else if (r == 1)
 				return false;
 
@@ -1052,7 +1094,7 @@ namespace library
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		bool push_multiprocess_DLB(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
 		{
 			int r = try_another_process(holder, f_serial);
 			if (r == 0)
@@ -1086,7 +1128,7 @@ namespace library
 		{
 			bool _flag = false;
 			while (!_flag)
-				_flag = push_multiprocess<_ret>(f, id, holder, f_serial);
+				_flag = push_multiprocess_DLB<_ret>(f, id, holder, f_serial);
 
 			return _flag;
 		}
@@ -1216,7 +1258,6 @@ namespace library
 		}
 
 	public:
-
 		static BranchHandler &getInstance()
 		{
 			static BranchHandler instance;
@@ -1479,7 +1520,7 @@ namespace library
 
 #ifdef MPI_ENABLED
 
-	auto Scheduler::initMPI(int argc, char *argv[])
+	int Scheduler::initMPI(int argc, char *argv[])
 	{
 		// Initilialise MPI and ask for thread support
 		int provided;

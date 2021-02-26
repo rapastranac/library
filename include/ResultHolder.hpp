@@ -37,7 +37,7 @@ namespace library
 		bool isRetrieved = false;
 
 		size_t id;
-		size_t threadId = -1;
+		int threadId = -1;
 
 		void **root = nullptr;				// raw pointer
 		ResultHolder *parent = nullptr;		// smart pointer

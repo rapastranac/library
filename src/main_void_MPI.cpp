@@ -42,7 +42,7 @@ int main_void_MPI(int argc, char *argv[])
 
 	//handler.functionIsVoid();
 	//auto file = "input/prob_4/600/0600_93";
-	auto file = "input/prob_4/400/00400_1";
+	auto file = "input/prob_4/600/00600_1";
 
 	HolderType holder(handler, -1); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
@@ -75,7 +75,7 @@ int main_void_MPI(int argc, char *argv[])
 		int SIZE = result.str().size();
 		user_deserializer(result, oGraph);
 		auto cv = oGraph.postProcessing();
-		printf("Cover size : %d \n", cv.size());
+		printf("Cover size : %zu \n", cv.size());
 
 		//std::cout << "first : " << sorted.front() << " ";
 		//std::cout << "last : " << sorted.back() << " ";

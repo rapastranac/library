@@ -30,7 +30,7 @@ int main_non_void(int argc, char *argv[])
 	auto file = "input/prob_4/400/00400_1";
 	graph.readEdges(file);
 
-	cover.init(graph, 5, file, 4);
+	cover.init(graph, 100, file, 4);
 	cover.findCover(1);
 	cover.printSolution();
 

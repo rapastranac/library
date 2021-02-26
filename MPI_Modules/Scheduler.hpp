@@ -40,7 +40,7 @@ namespace library
 			this->threadsPerNode = threadsPerNode;
 		}
 
-		auto initMPI(int argc, char *argv[]);
+		int initMPI(int argc, char *argv[]);
 
 		template <typename _ret, typename F, typename Holder, typename Serialize, typename Deserialize>
 		void start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize);
@@ -56,24 +56,26 @@ namespace library
 
 		std::stringstream &retrieveResult()
 		{
+			int pos;
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (bestResults[rank].first == refValueGlobal[0])
 				{
 					int SIZE = bestResults[rank].second.str().size();
 					printf("Stream retrieved, size : %d \n", SIZE);
-					return bestResults[rank].second;
+					pos = rank;
+					break;
 				}
 			}
 
-			//return std::move(returnStream);
+			return bestResults[pos].second;
 		}
 
 		void printfStats()
 		{
 			printf("\n \n \n");
 			printf("*****************************************************\n");
-			printf("Elapsed time : %3.2f \n", elapsedTime());
+			printf("Elapsed time : %4.3f \n", elapsedTime());
 			printf("Total number of requests : %zu \n", totalRequests);
 			printf("Number of approved requests : %zu \n", approvedRequests);
 			printf("Number of failed requests : %zu \n", failedRequests);

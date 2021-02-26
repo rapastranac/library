@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	//MPI_Type_size(MPI::BOOL, &size);
 	//std::cout << "sizeof(MPI::BOOL) : " << size << std::endl;
 	//MPI_Finalize();
-	//return 0;
+	//return 0; 
 
 #ifdef VC_VOID
 	return main_void(argc, argv);

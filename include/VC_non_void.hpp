@@ -134,7 +134,7 @@ public:
         if (hol_l.isFetchable())
             r_left = hol_l.get();
 
-        if (hol_r.isFetchable())
+        if (hol_r.is_pushed())
             r_right = hol_l.get();
 
         return returnRes(r_left, r_right);
