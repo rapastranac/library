@@ -962,84 +962,6 @@ namespace library
 			return 1; //this return is necessary only due to function extraction
 		}
 
-		/*
- 		return 0, for normal success with an available process
- 		return 1, for DLB succes with an available process
- 		return 2, for failure with no available process*/
-		template <typename Holder, typename F_SERIAL>
-		int try_another_process_DLB(Holder &holder, F_SERIAL &&f_serial)
-		{
-			bool signal{false};
-			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
-			if (mpi_lck.try_lock())
-			{
-				//printf("rank %d entered try_lock \n", world_rank);
-				//printf("rank %d, numAvailableNodes : %d \n", world_rank, numAvailableNodes[0]);
-
-				if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
-				{
-#ifdef DEBUG_COMMENTS
-					printf("%d about to request center node to push\n", world_rank);
-#endif
-					bool buffer = true;
-					put_mpi(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
-					MPI_Status status;
-#ifdef DEBUG_COMMENTS
-					printf("process %d requested to push \n", world_rank);
-#endif
-					MPI_Recv(&signal, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
-
-					if (signal)
-					{
-						printf("process %d received positive signal from center \n", world_rank, status.MPI_TAG);
-						if (is_DLB)
-						{
-							Holder *upperHolder = checkParent(&holder);
-							printf("rank %d, upperHolder address: %p \n", world_rank, upperHolder);
-							if (upperHolder)
-							{
-								int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
-								upperHolder->setMPISent(true, dest);
-
-								auto _stream = std::apply(f_serial, upperHolder->getArgs());
-
-								int Bytes = _stream.str().size(); // number of Bytes
-
-								int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
-								if (err == MPI::SUCCESS)
-									printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
-
-								mpi_lck.unlock();
-
-								return 1;
-							}
-							checkRightSiblings(&holder);
-						}
-
-						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
-						holder.setMPISent(true, dest);
-#ifdef DEBUG_COMMENTS
-						printf("process %d received ID %d\n", world_rank, dest);
-#endif
-						auto _stream = std::apply(f_serial, holder.getArgs());
-						int Bytes = _stream.str().size(); // number of Bytes
-
-						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
-						if (err == MPI::SUCCESS)
-							printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
-
-						mpi_lck.unlock();
-#ifdef DEBUG_COMMENTS
-						printf("process %d forwarded to process %d \n", world_rank, dest);
-#endif
-						return 0;
-					}
-				}
-				mpi_lck.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
-			}
-			return 2; //this return is necessary only due to function extraction
-		}
-
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
@@ -1128,7 +1050,7 @@ namespace library
 		{
 			bool _flag = false;
 			while (!_flag)
-				_flag = push_multiprocess_DLB<_ret>(f, id, holder, f_serial);
+				_flag = push_multiprocess<_ret>(f, id, holder, f_serial);
 
 			return _flag;
 		}

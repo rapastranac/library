@@ -6,15 +6,3 @@
 
 #IncludeRegexTransform: 
 
-/home/andres/Documents/github/library/include/main.h
-string
--
-vector
--
-
-/home/andres/Documents/github/library/src/main.cpp
-../include/main.h
-/home/andres/Documents/github/library/include/main.h
-iostream
--
-

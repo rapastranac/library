@@ -10,6 +10,7 @@
                 "${workspaceFolder}/fmt/include"
             ],
             "defines": [
+                "DLB",
                 "MPI_ENABLE",
                 "VC_VOID",
                 "VC_NON_VOID",
