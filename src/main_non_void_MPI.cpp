@@ -1,12 +1,13 @@
 #ifdef VC_NON_VOID_MPI
 
 #include "../include/main.h"
-#include "../include/VertexCover.hpp"
 #include "../include/Graph.hpp"
 #include "../MPI_Modules/Scheduler.hpp"
 
 #include "../include/ResultHolder.hpp"
 #include "../include/BranchHandler.hpp"
+
+#include "../include/VC_non_void_MPI.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -21,57 +22,15 @@
 
 int main_non_void_MPI(int argc, char *argv[])
 {
+	using HolderType = library::ResultHolder<Graph, int, Graph>;
 
 	auto &handler = library::BranchHandler::getInstance(); // parallel library
 
 	Graph graph;
 	Graph oGraph;
-	VertexCover cover;
-	std::vector<int> *vec;
+	VC_non_void_MPI cover;
 
-#ifndef MPI_ENABLED
-	printf("MPI disable section \n");
-
-	auto file = "input/prob_4/600/00600_1";
-	graph.readEdges(file);
-
-	//auto ss = user_serializer(graph);
-	//int SIZE = ss.str().size();
-	//char buffer[SIZE];
-	//std::memcpy(buffer, ss.str().data(), SIZE);
-	//std::stringstream ss2;
-	//for (int i = 0; i < SIZE; i++)
-	//{
-	//	ss2 << buffer[i];
-	//}
-	//user_deserializer(ss2, oGraph);
-
-	cover.init(graph, 6, file, 4);
-	cover.findCover(1);
-	cover.printSolution();
-
-	auto res = cover.getGraphRes();
-	auto ss = user_serializer(res);
-	int SIZE = ss.str().size();
-	char buffer[SIZE];
-	std::memcpy(buffer, ss.str().data(), SIZE);
-	std::stringstream ss2;
-	for (int i = 0; i < SIZE; i++)
-	{
-		ss2 << buffer[i];
-	}
-	user_deserializer(ss2, oGraph);
-
-	auto mvc = oGraph.postProcessing();
-	int mvc_size = mvc.size();
-
-	printf("mvc size : %d \n", mvc_size);
-
-	return 0;
-#else
-	printf("MPI enabled section \n");
-
-	auto mainAlgo = std::bind(&VertexCover::mvc, &cover, _1, _2, _3); // target algorithm [all arguments]
+	auto mainAlgo = std::bind(&VC_non_void_MPI::mvc, &cover, _1, _2, _3, _4); // target algorithm [all arguments]
 	//graph.readEdges(file);
 
 	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
@@ -85,7 +44,7 @@ int main_non_void_MPI(int argc, char *argv[])
 	//auto file = "input/prob_4/600/0600_93";
 	auto file = "input/prob_4/600/00600_1";
 
-	HolderType holder(handler); //it creates a ResultHolder, required to retrive result
+	HolderType holder(handler, -1); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
 
 	//if (rank == 0) //only center node will read input and printing resultscd
@@ -105,7 +64,7 @@ int main_non_void_MPI(int argc, char *argv[])
 
 	scheduler.setThreadsPerNode(1);
 	holder.holdArgs(depth, graph);
-	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
+	scheduler.start<Graph>(mainAlgo, holder, user_serializer, user_deserializer);
 
 	if (rank == 0)
 	{
@@ -130,7 +89,6 @@ int main_non_void_MPI(int argc, char *argv[])
 	scheduler.finalize();
 
 	return 0;
-#endif
 }
 
 #endif

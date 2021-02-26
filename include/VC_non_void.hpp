@@ -131,10 +131,10 @@ public:
 #endif
         }
 
-        if (hol_l.is_pushed() || hol_l.is_forwarded())
+        if (hol_l.isFetchable())
             r_left = hol_l.get();
 
-        if (hol_r.is_pushed())
+        if (hol_r.isFetchable())
             r_right = hol_l.get();
 
         return returnRes(r_left, r_right);

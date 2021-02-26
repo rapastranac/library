@@ -41,84 +41,9 @@ namespace library
 		}
 
 		auto initMPI(int argc, char *argv[]);
-		/*
-		{
-			// Initilialise MPI and ask for thread support
-			int provided;
-			MPI_Init_thread(&argc, &argv, MPI::THREAD_SERIALIZED, &provided);
-			if (provided < MPI::THREAD_SERIALIZED)
-			{
-				printf("The threading support level is lesser than that demanded.\n");
-				MPI_Abort(MPI::COMM_WORLD, EXIT_FAILURE);
-			}
-			else
-			{
-				printf("The threading support level corresponds to that demanded.\n");
-			}
-
-			communicators();
-
-			int namelen;
-			MPI_Get_processor_name(processor_name, &namelen);
-
-			printf("Process %d of %d is on %s\n", world_rank, world_size, processor_name);
-			MPI_Barrier(world_Comm);
-			//printf("About to create window, %d / %d!! \n", world_rank, world_size);
-			MPI_Barrier(world_Comm);
-			win_allocate();
-
-			// initiliaze MPI mutex *********************************************************
-			mpi_mutex.set(world_Comm, win_mutex);
-			// ******************************************************************************
-
-			MPI_Barrier(world_Comm);
-
-			_branchHandler.linkMPIargs(world_rank,
-									   world_size,
-									   processor_name,
-									   numAvailableNodes,
-									   refValueGlobal,
-									   &win_accumulator,
-									   &win_finalFlag,
-									   &win_AvNodes,
-									   &win_boolean,
-									   &win_inbox_bestResult,
-									   &win_refValueGlobal,
-									   &world_Comm,
-									   &second_Comm,
-									   &SendToNodes_Comm,
-									   &SendToCenter_Comm,
-									   &NodeToNode_Comm,
-									   &mpi_mutex);
-
-			return world_rank;
-		} */
 
 		template <typename _ret, typename F, typename Holder, typename Serialize, typename Deserialize>
 		void start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize);
-		/*
-		{
-			printf("About to start, %d / %d!! \n", world_rank, world_size);
-
-			if (world_rank == 0)
-			{
-				start_time = MPI_Wtime();
-				printf("scheduler() launched!! \n");
-				this->schedule(holder, serialize);
-				end_time = MPI_Wtime();
-			}
-			else
-			{
-				_branchHandler.setMaxThreads(threadsPerNode);
-				if (std::is_void<RET>::value)
-					_branchHandler.functionIsVoid();
-
-				_branchHandler.receiveSeed<RET>(f, serialize, deserialize, holder);
-			}
-			printf("process %d waiting at barrier \n", world_rank);
-			MPI_Barrier(world_Comm);
-			printf("process %d passed barrier \n", world_rank);
-		} */
 
 		void finalize()
 		{
@@ -261,14 +186,22 @@ namespace library
 				MPI_Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status); // receives status before receiving the message
 				MPI_Get_count(&status, MPI::CHAR, &Bytes);					   // receives total number of datatype elements of the message
 
-				char *in_buffer = new char[Bytes];
-				MPI_Recv(in_buffer, Bytes, MPI::CHAR, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
+				char *buffer = new char[Bytes];
+				MPI_Recv(buffer, Bytes, MPI::CHAR, MPI::ANY_SOURCE, MPI::ANY_TAG, world_Comm, &status);
+
+				int src = status.MPI_SOURCE;
+				std::stringstream ss;
 
 				for (int i = 0; i < Bytes; i++)
-					this->returnStream << in_buffer[i];
+				{
+					ss << buffer[i];
+				}
 
 				finalFlag[0] = false; // this should happen only once, thus breakLoop() will end the execution
-				delete[] in_buffer;
+				delete[] buffer;
+
+				bestResults[src].first = status.MPI_TAG; // reference value corresponding to result
+				bestResults[src].second = std::move(ss); // best result so far from this rank
 			}
 		}
 

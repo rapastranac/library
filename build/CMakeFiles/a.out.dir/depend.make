@@ -103,6 +103,7 @@ CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/BranchHandler.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/Graph.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/POOL.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/ResultHolder.hpp
+CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/VC_non_void_MPI.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/VertexCover.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/args_handler.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/ctpl_stl.hpp

@@ -7,7 +7,10 @@
 * rapastranac@gmail.com
 */
 
+#include <any>
 #include <list>
+#include <future>
+#include <memory>
 
 namespace library
 {
@@ -31,6 +34,7 @@ namespace library
 		bool isBoundCond = false;		 // is there a condition before running this branch?
 		bool isPushed = false;			 // It was performed by another thread
 		bool isForwarded = false;		 // It was performed sequentially
+		bool isRetrieved = false;
 
 		size_t id;
 		size_t threadId = -1;
@@ -40,16 +44,10 @@ namespace library
 		ResultHolder *itself = nullptr;		// this;		// raw pointer
 		std::list<ResultHolder *> children; // smart pointer, it keeps the order in which they were appended
 
-		int depth;
+		int depth = -1;
 		bool isVirtual = false;
 
-		//for future<void> when pushing void functions to the pool
-		//template <class T,
-		//		  typename std::enable_if<std::is_same<T, std::future<void>>::value>::type * = nullptr>
-		//void hold_future(T &&expectedFut) {}
-
 		template <class T>
-		//		  typename std::enable_if<!std::is_same<T, std::future<void>>::value>::type * = nullptr>
 		void hold_future(T &&expectedFut)
 		{
 			*(this->expectedFut) = std::move(expectedFut);
@@ -64,28 +62,8 @@ namespace library
 			this->expected = std::move(expected);
 		}
 
-		//void unlink_parents()
-		//{
-		//	this->root = &itself;
-		//	this->children.clear();
-		//}
-		/* this applies when this is the first instance of a new subtree 
-			before pushing it, it is equivalent to creating a new independent
-			instance, this does not affect any of the parent nodes*/
-		//void prune()
-		//{
-		//	root_smrt.reset(new std::shared_ptr<ResultHolder>(itself)); // it becomes its own root
-		//	parent_smrt = nullptr;										// since it is a root, then parent is not needed
-		//
-		//	if (!children_smrt.empty())
-		//		throw "This should not be happening";
-		//	//children_smrt.clear(); // this should be empty before this
-		//}
-
 		void prune()
 		{
-			//root = nullptr;
-			//root = &itself;
 			root = nullptr;
 			parent = nullptr;
 		}
@@ -99,13 +77,11 @@ namespace library
 			{
 				//branchHandler.roots[threadId] = this; // this changes the root
 				branchHandler.assign_root(threadId, this);
-				//*(this->root) = this;
-				//this->root = &itself;
 				parent = nullptr;
 
 				// at this point nobody should be pointing to the prior root
 				// this should be safe since every member (**root) is pointing to
-				// the container cell instead of a cell within the VirtualRoot
+				// the container cell instead of a cell within a VirtualRoot
 				delete root_cpy;
 			}
 			else
@@ -140,16 +116,12 @@ namespace library
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
-			this->depth = 0;
 			this->expectedFut.reset(new std::future<_Ret>);
-
 			this->itself = this;
 
-			//branchHandler.roots[threadId] = this;
 			branchHandler.assign_root(threadId, this);
 			this->root = &branchHandler.roots[threadId];
 
-			//this->root = &itself;
 			this->isVirtual = true;
 		}
 
@@ -157,25 +129,25 @@ namespace library
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
-			this->depth = -1;
 			this->expectedFut.reset(new std::future<_Ret>);
-
 			itself = this;
 
-			if (!parent)
+			if (parent)
+			{
+				this->root = &branchHandler.roots[threadId];
+				this->parent = static_cast<ResultHolder *>(parent);
+				this->parent->children.push_back(this);
+			}
+			else
 			{
 				// if there is no parent, it means the thread just took another subtree
-				// thefore, root in handler.roots[threadId] should change since
+				// therefore, root in handler.roots[threadId] should change since
 				// no one else is supposed to be using it
 
 				//branchHandler.roots[threadId] = this; //
 				//this->root = &branchHandler.roots[threadId];
 				return;
 			}
-
-			this->root = &branchHandler.roots[threadId];
-			this->parent = static_cast<ResultHolder *>(parent);
-			this->parent->children.push_back(this);
 		}
 
 		~ResultHolder()
@@ -274,8 +246,7 @@ namespace library
 				which are not stored in std::any types	*/
 			if (this->expected.has_value())
 			{
-				//target = std::any_cast<TYPE>(expected);
-				//return true;
+				this->isRetrieved = true;
 				return std::any_cast<_Ret>(expected);
 			}
 			else
@@ -283,6 +254,15 @@ namespace library
 
 			//return false;
 			//return expected;
+		}
+
+		bool isFetchable()
+		{
+#ifdef MPI_ENABLED
+			return (isPushed || isForwarded || isMPISent) && !isRetrieved;
+#else
+			return (isPushed || isForwarded) && !isRetrieved;
+#endif
 		}
 
 		bool is_forwarded()
@@ -307,8 +287,8 @@ namespace library
 
 #ifdef MPI_ENABLED
 
-		template <typename TYPE, typename F_deser>
-		bool get(TYPE &target, F_deser &&f_deser)
+		template <typename F_deser>
+		_Ret get(F_deser &&f_deser)
 		{
 			if (isPushed)
 			{
@@ -341,21 +321,24 @@ namespace library
 				for (int i = 0; i < Bytes; i++)
 					ss << in_buffer[i];
 
-				f_deser(ss, target);
+				_Ret temp;
+				f_deser(ss, temp);
 				delete[] in_buffer;
 
+				this->isRetrieved = true;
+
 				branchHandler.unlock_mpi(); /* release mpi mutex, thus, other threads are able to push to other nodes*/
-				return true;
+				return temp;
 			}
 			/*	This condition is relevant due to some functions might return empty values
 				which are not stored in std::any types	*/
-			if (expected.has_value())
+			if (this->expected.has_value())
 			{
-				target = std::any_cast<TYPE>(expected);
-				return true;
+				this->isRetrieved = true;
+				return std::any_cast<_Ret>(expected);
 			}
-
-			return false;
+			else
+				return {}; // returns empty object of type _Ret,
 		}
 
 		bool is_MPI_Sent()

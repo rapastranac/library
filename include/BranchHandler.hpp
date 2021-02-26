@@ -105,37 +105,30 @@ namespace library
 			this->bestR = std::move(bestR);
 		}
 
+	private:
 		template <typename Holder>
-		void linkParent(int threadId, void *parent, Holder &child)
+		void helper(Holder *parent, Holder &child)
 		{
-			if (is_DLB)
-				if (!parent)
-				{
-					Holder *virtualRoot = new Holder(*this, threadId);
-
-					child.parent = static_cast<Holder *>(roots[threadId]);
-					child.root = &roots[threadId];
-
-					//child.parent = virtualRoot;
-					//child.root = &virtualRoot->itself;
-
-					virtualRoot->children.push_back(&child);
-				}
-				else
-				{
-					auto* _parent = static_cast<Holder*>(parent);
-					child.parent = _parent->itself;
-					child.root = _parent->root;
-					_parent->children.push_back(&child);
-				}
+			child.parent = parent->itself;
+			child.root = parent->root;
+			parent->children.push_back(&child);
 		}
 
-		// it could be moved to another class
+		template <typename Holder, typename... Args>
+		void helper(Holder *parent, Holder &child, Args &...args)
+		{
+			child.parent = parent->itself;
+			child.root = parent->root;
+			parent->children.push_back(&child);
+		}
+
+	public:
 		template <typename Holder, typename... Args>
 		void linkParent(int threadId, void *parent, Holder &child, Args &...args)
 		{
 			if (is_DLB)
-				if (!parent)
+			{
+				if (!parent) // this should only happen when parent was nullptr at children's construction time
 				{
 					Holder *virtualRoot = new Holder(*this, threadId);
 					virtualRoot->setDepth(child.depth);
@@ -143,12 +136,10 @@ namespace library
 					child.parent = static_cast<Holder *>(roots[threadId]);
 					child.root = &roots[threadId];
 
-					//child.parent = virtualRoot->itself;
-					//child.root = &virtualRoot->itself;
-
 					virtualRoot->children.push_back(&child);
-					linkParent(threadId, virtualRoot, args...);
+					helper(virtualRoot, args...);
 				}
+			}
 		}
 
 		/* POTENTIALLY TO REPLACE catchBestResult()
@@ -172,7 +163,7 @@ namespace library
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 #ifdef DEBUG_COMMENTS
-			printf("rank %d entered replaceIf(), acquired mutex \n ", world_rank);
+			printf("rank %d entered replaceIf(), acquired mutex \n", world_rank);
 #endif
 
 			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
@@ -225,6 +216,79 @@ namespace library
 
 					bestRstream.first = refValueLocal;
 					bestRstream.second = std::move(ss);
+
+					MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
+
+					//mpi_mutex->unlock(world_rank); // critical section ends
+					return true;
+				}
+				MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
+				//mpi_mutex->unlock(world_rank);		 // critical section ends
+				return false;
+			}
+			else
+				return false;
+		}
+
+		template <typename _ret, class C1, class C2, typename T, class F_SERIAL,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result, F_SERIAL &&f_serial)
+		{
+			std::unique_lock<std::mutex> lck(mtx_MPI);
+#ifdef DEBUG_COMMENTS
+			printf("rank %d entered replaceIf(), acquired mutex \n", world_rank);
+#endif
+
+			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
+			{
+#ifdef DEBUG_COMMENTS
+				printf("rank %d, local condition satisfied refValueGlobal : %d vs refValueLocal : %d \n", world_rank, refValueGlobal[0], refValueLocal);
+#endif
+				// then, absolute global is checked
+				int refValueGlobalAbsolute;
+				int origin_count = 1;
+				int target_rank = 0;
+				MPI_Aint offset = 0;
+				MPI_Win &window = *win_refValueGlobal; // change to a reference to the window (&window, or *window)
+
+				//mpi_mutex->lock(world_rank); // critical section begins
+
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+#ifdef DEBUG_COMMENTS
+				printf("rank %d opened epoch to send best result \n", world_rank);
+#endif
+				// this blocks access to this window
+				// this is the only place where this window is read or modified
+
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
+				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
+
+#ifdef DEBUG_COMMENTS
+				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
+#endif
+
+				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
+				{
+					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
+
+					if (ifCond)
+						(*ifCond)();
+
+					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
+					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
+
+					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
+
+					auto ss = f_serial(result); // serialized result
+
+					printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+					int sz_before = bestRstream.second.str().size(); //testing only
+
+					int SIZE = ss.str().size();
+					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
+
+					//bestRstream.first = refValueLocal;
+					//bestRstream.second = std::move(ss);
 
 					MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
 
@@ -399,7 +463,7 @@ namespace library
 				if (err != MPI::SUCCESS)
 					printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
 #ifdef DEBUG_COMMENTS
-				printf("rank %d, refValueGlobal received: %d at %p \n", refValueGlobal[0], refValueGlobal);
+				printf("rank %d, refValueGlobal received: %d at %p \n", world_rank, refValueGlobal[0], refValueGlobal);
 #endif
 			}
 
@@ -458,6 +522,14 @@ namespace library
 			else
 				return nullptr;
 
+#ifdef DEBUG_COMMENTS
+			printf("rankd %d, likely to get an upperHolder \n", world_rank);
+#endif
+			int N_children = root->children.size();
+
+#ifdef DEBUG_COMMENTS
+			printf("rankd %d, root->children.size() = %d \n", world_rank, N_children);
+#endif
 			//while (parent->parent) {
 			//	leftMost = parent;
 			//	parent = parent->parent;
@@ -528,6 +600,9 @@ namespace library
 			}
 			else if (root->children.size() == 2)
 			{
+#ifdef DEBUG_COMMENTS
+				printf("rankd %d, about to choose an upperHolder \n", world_rank);
+#endif
 				/*	this scope is meant to push right branch which was put in waiting line
 					because there was no available thread to push leftMost branch, then leftMost
 					will be the new root since after this scope right branch will have been
@@ -724,17 +799,10 @@ namespace library
 			return false;
 		}
 
-		template <typename Holder>
-		void removeLeftMost(Holder *holder)
-		{
-			if (holder->parent) // it should always complies, virtual parent is being created
-			{
-				if (holder->parent == *holder->root) //this confirms that it's the first level of the root
-				{
-				}
-			}
-		}
-
+		/* this method is invoked when DLB is enable and the method checkParent() was not able to find
+		a top branch to push, because it means the next right sibling will become a root(for binary recursion)
+		or just the leftMost will be unlisted from the parent's children. This method is invoked if and only if 
+		an available worker is available*/
 		template <typename Holder>
 		void checkRightSiblings(Holder *holder)
 		{
@@ -744,7 +812,7 @@ namespace library
 				if (_parent->children.size() > 2) // this is for more than two recursions per scope
 				{
 				}
-				else if (_parent->children.size() == 2) // this verifies that  it's binary and they rightMost will become a new root
+				else if (_parent->children.size() == 2) // this verifies that  it's binary and the rightMost will become a new root
 				{
 					_parent->children.pop_front();
 					auto right = _parent->children.front();
@@ -874,8 +942,12 @@ namespace library
 
 #ifdef MPI_ENABLED
 
+		/*
+ 		return 0, for normal success with an available process
+ 		return 1, for DLB succes with an available process
+ 		return 2, for failure with no available process*/
 		template <typename Holder, typename F_SERIAL>
-		bool try_another_process(Holder &holder, F_SERIAL &&f_serial)
+		int try_another_process(Holder &holder, F_SERIAL &&f_serial)
 		{
 			bool signal{false};
 			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
@@ -899,43 +971,66 @@ namespace library
 
 					if (signal)
 					{
+						printf("process %d received positive signal from center \n", world_rank, status.MPI_TAG);
+						if (is_DLB)
+						{
+							Holder *upperHolder = checkParent(&holder);
+							printf("rank %d, upperHolder address: %p \n", world_rank, upperHolder);
+							if (upperHolder)
+							{
+								int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
+								upperHolder->setMPISent(true, dest);
+
+								auto _stream = std::apply(f_serial, upperHolder->getArgs());
+
+								int Bytes = _stream.str().size(); // number of Bytes
+
+								int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
+								if (err == MPI::SUCCESS)
+									printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
+
+								mpi_lck.unlock();
+
+								return 1;
+							}
+							checkRightSiblings(&holder);
+						}
+
 						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
 						holder.setMPISent(true, dest);
 #ifdef DEBUG_COMMENTS
 						printf("process %d received ID %d\n", world_rank, dest);
 #endif
+						auto _stream = std::apply(f_serial, holder.getArgs());
+						int Bytes = _stream.str().size(); // number of Bytes
 
-						//std::stringstream ss = std::args_handler::unpack_tuple(f_serial, holder.getArgs());
-						std::stringstream ss = std::apply(f_serial, holder.getArgs());
-
-						int Bytes = ss.str().size(); // number of Bytes
-
-						int err = MPI_Ssend(ss.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
+						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
 						if (err == MPI::SUCCESS)
 							printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
-
-						//TODO how to retrieve result from destination rank?
 
 						mpi_lck.unlock();
 #ifdef DEBUG_COMMENTS
 						printf("process %d forwarded to process %d \n", world_rank, dest);
 #endif
-						return true;
+						return 0;
 					}
 				}
 				mpi_lck.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
 			}
-			return false; //this return is necessary only due to function extraction
+			return 2; //this return is necessary only due to function extraction
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
 		{
-			if (try_another_process(holder, f_serial))
+			int r = try_another_process(holder, f_serial);
+			if (r == 0)
 				return true;
+			else if (r == 1)
+				return false;
 
-			/*This lock must be performed before checking the condition,
+			/*This lock must be called before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
 			if (busyThreads < thread_pool.size())
@@ -952,7 +1047,38 @@ namespace library
 
 			//lck.unlock(); // unlocked already before mpi push
 			this->forward<_ret>(f, id, holder);
-			return false;
+			return true;
+		}
+
+		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		{
+			int r = try_another_process(holder, f_serial);
+			if (r == 0)
+				return true;
+			else if (r == 1)
+				return false;
+
+			/*This lock must be called before checking the condition,
+			even though numThread is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+			if (busyThreads < thread_pool.size())
+			{
+				busyThreads++;
+				holder.setPushStatus(true);
+
+				lck.unlock();
+				auto ret = std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
+				holder.hold_future(std::move(ret));
+				return true;
+			}
+			lck.unlock(); // this allows to other threads to keep pushing in the pool
+
+			//lck.unlock(); // unlocked already before mpi push
+			auto ret = this->forward<_ret>(f, id, holder);
+			holder.hold_actual_result(ret);
+			return true;
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
@@ -997,26 +1123,19 @@ namespace library
 				checkLeftSibling(&holder);
 
 			forward<_ret>(f, threadId, holder);
-			//holder.setForwardStatus(true);
-			//holder.threadId = threadId;
-			//std::args_handler::unpack_and_forward_void(f, threadId, holder.getArgs(), &holder);
 		}
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder, bool)
 		{
-			if (holder.is_pushed())
+			if (holder.is_pushed())	 //TODO.. this should be considered when using DLB and pushing to another processsI
 				return holder.get(); //return {}; // nope, if it was pushed, then result should be retrieved in here
 
 			if (is_DLB)
 				checkLeftSibling(&holder);
 
 			return forward<_ret>(f, threadId, holder);
-
-			//holder.setForwardStatus(true);
-			//holder.threadId = threadId;
-			//return std::args_handler::unpack_and_forward_non_void(f, threadId, holder.getArgs(), &holder);
 		}
 
 		//Not useful yet
@@ -1091,25 +1210,12 @@ namespace library
 		std::atomic<bool> superFlag;
 		ctpl::Pool thread_pool;
 
-		/*begin<<----------------Singleton----------------*/
-		//static BranchHandler *INSTANCE;
-		//static std::once_flag initInstanceFlag;
-		//static void initSingleton()
-		//{
-		//	INSTANCE = new BranchHandler();
-		//}
-
 		BranchHandler()
 		{
 			init();
 		}
 
 	public:
-		//static BranchHandler &getInstance()
-		//{
-		//	std::call_once(initInstanceFlag, &BranchHandler::initSingleton);
-		//	return *INSTANCE;
-		//}
 
 		static BranchHandler &getInstance()
 		{
@@ -1234,7 +1340,7 @@ namespace library
 					printf("Exit tag received on process %d \n", world_rank); // loop termination
 					break;
 				}
-				printf("Receiver on %d, received %d Bytes \n", world_rank, Bytes);
+				printf("Receiver on %d, received %d Bytes from %d \n", world_rank, Bytes, src);
 
 				Holder newHolder(*this, -1); // copy types
 
@@ -1269,9 +1375,15 @@ namespace library
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
+			//thread_pool.wait();
+
 			_ret res;
 			printf("rank %d entered reply! \n", world_rank);
-			holder.get(res);
+			//holder.get(res);
+			res = holder.get();
+
+			printf("Cover size() :%d, sending to center \n", res.coverSize());
+
 			printf("rank %d about to reply to %d! \n", world_rank, src);
 
 			if (src == 0) // termination, since all recursions return to center node
@@ -1285,7 +1397,7 @@ namespace library
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
 
-				int err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, src, 0, *world_Comm);
+				int err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, src, refValueGlobal[0], *world_Comm);
 				if (err != MPI::SUCCESS)
 					printf("final result could not be sent from rank %d to rank %d! \n", world_rank, src);
 			}

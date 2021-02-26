@@ -104,6 +104,7 @@ CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
  /home/andres/Documents/github/library/include/Graph.hpp
  /home/andres/Documents/github/library/include/POOL.hpp
  /home/andres/Documents/github/library/include/ResultHolder.hpp
+ /home/andres/Documents/github/library/include/VC_non_void_MPI.hpp
  /home/andres/Documents/github/library/include/VertexCover.hpp
  /home/andres/Documents/github/library/include/args_handler.hpp
  /home/andres/Documents/github/library/include/ctpl_stl.hpp
