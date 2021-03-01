@@ -824,7 +824,7 @@ namespace library
 				{
 					bool res = try_top_holder<_ret>(lck, f, holder);
 					if (res)
-						return false; //if top holder found, then it should return false to keep trying
+						return false; // if top holder found, then it should return false to keep trying
 				}
 				//after this line, only leftMost holder should be pushed
 				this->requests++;
@@ -909,8 +909,8 @@ namespace library
 
 		/*
  		return 0, for normal success with an available process
- 		return 1, for DLB succes with an available process
- 		return 2, for failure with no available process*/
+ 		return 1, for failure with no available process
+ 		return 2, for DLB succes with an available process*/
 		template <typename Holder, typename F_SERIAL>
 		int try_another_process(Holder &holder, F_SERIAL &&f_serial)
 		{
@@ -937,12 +937,38 @@ namespace library
 					if (signal)
 					{
 						printf("process %d received positive signal from center \n", world_rank);
-
 						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
-						holder.setMPISent(true, dest);
 #ifdef DEBUG_COMMENTS
 						printf("process %d received ID %d\n", world_rank, dest);
 #endif
+
+						///****************************
+						if (is_DLB)
+						{
+							Holder *upperHolder = checkParent(&holder);
+							if (upperHolder)
+							{
+								upperHolder->setMPISent(true, dest);
+
+								auto _stream = std::apply(f_serial, upperHolder->getArgs());
+								int Bytes = _stream.str().size(); // number of Bytes
+
+								int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
+								if (err != MPI::SUCCESS)
+									printf("buffer failed to sent from rank %d to rank %d! \n", world_rank, dest);
+
+								mpi_lck.unlock();
+#ifdef DEBUG_COMMENTS
+								printf("process %d forwarded top-holder to process %d \n", world_rank, dest);
+#endif
+								return 2;
+							}
+							checkRightSiblings(&holder); // this decrements parent's children
+						}
+						///****************************
+
+						holder.setMPISent(true, dest);
+
 						auto _stream = std::apply(f_serial, holder.getArgs());
 						int Bytes = _stream.str().size(); // number of Bytes
 
@@ -969,6 +995,8 @@ namespace library
 			int r = try_another_process(holder, f_serial);
 			if (r == 0)
 				return true;
+			if (r == 2)
+				return false;
 
 			return push_multithreading<_ret>(f, id, holder);
 		}
@@ -980,69 +1008,10 @@ namespace library
 			int r = try_another_process(holder, f_serial);
 			if (r == 0)
 				return true;
+			if (r == 2)
+				return false;
 
 			return push_multithreading<_ret>(f, id, holder);
-		}
-
-		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_multiprocess_DLB(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
-		{
-			int r = try_another_process(holder, f_serial);
-			if (r == 0)
-				return true;
-			else if (r == 1)
-				return false;
-
-			/*This lock must be called before checking the condition,
-			even though numThread is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-			if (busyThreads < thread_pool.size())
-			{
-				busyThreads++;
-				holder.setPushStatus(true);
-
-				lck.unlock();
-				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
-
-				return true;
-			}
-			lck.unlock(); // this allows to other threads to keep pushing in the pool
-
-			//lck.unlock(); // unlocked already before mpi push
-			this->forward<_ret>(f, id, holder);
-			return true;
-		}
-
-		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool push_multiprocess_DLB(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
-		{
-			int r = try_another_process(holder, f_serial);
-			if (r == 0)
-				return true;
-			else if (r == 1)
-				return false;
-
-			/*This lock must be called before checking the condition,
-			even though numThread is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-			if (busyThreads < thread_pool.size())
-			{
-				busyThreads++;
-				holder.setPushStatus(true);
-
-				lck.unlock();
-				auto ret = std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
-				holder.hold_future(std::move(ret));
-				return true;
-			}
-			lck.unlock(); // this allows to other threads to keep pushing in the pool
-
-			//lck.unlock(); // unlocked already before mpi push
-			auto ret = this->forward<_ret>(f, id, holder);
-			holder.hold_actual_result(ret);
-			return true;
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
@@ -1080,8 +1049,13 @@ namespace library
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder, bool)
 		{
+#ifdef MPI_ENABLED
+			if (holder.is_pushed() || holder.is_MPI_Sent())
+				return;
+#else
 			if (holder.is_pushed())
 				return;
+#endif
 
 			if (is_DLB)
 				checkLeftSibling(&holder);
@@ -1093,8 +1067,21 @@ namespace library
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder, bool)
 		{
-			if (holder.is_pushed())	 //TODO.. this should be considered when using DLB and pushing to another processsI
-				return holder.get(); //return {}; // nope, if it was pushed, then result should be retrieved in here
+			if (holder.is_pushed())
+				return holder.get();
+
+			if (is_DLB)
+				checkLeftSibling(&holder);
+
+			return forward<_ret>(f, threadId, holder);
+		}
+
+		template <typename _ret, typename F, typename Holder, typename F_DESER,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		_ret forward(F &&f, int threadId, Holder &holder, F_DESER &&f_deser, bool)
+		{
+			if (holder.is_pushed() || holder.is_MPI_Sent()) //TODO.. this should be considered when using DLB and pushing to another processsI
+				return holder.get(f_deser);					//return {}; // nope, if it was pushed, then result should be retrieved in here
 
 			if (is_DLB)
 				checkLeftSibling(&holder);

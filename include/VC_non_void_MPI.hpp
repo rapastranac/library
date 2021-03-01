@@ -132,7 +132,7 @@ public:
 		{
 			hol_l.holdArgs(newDepth, gLeft);
 #ifdef DLB
-			branchHandler.push_multithreading<Graph>(_f, id, hol_l, true);
+			branchHandler.push_multiprocess<Graph>(_f, id, hol_l, user_serializer, true);
 #else
 			branchHandler.push_multiprocess<Graph>(_f, id, hol_l, user_serializer);
 #endif
@@ -141,7 +141,7 @@ public:
 		if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
 		{
 #ifdef DLB
-			r_right = branchHandler.forward<Graph>(_f, id, hol_r, true);
+			r_right = branchHandler.forward<Graph>(_f, id, hol_r, user_deserializer, true);
 #else
 			r_right = branchHandler.forward<Graph>(_f, id, hol_r);
 #endif
