@@ -12,6 +12,9 @@ CMakeFiles/a.out.dir/fmt/src/os.cc.o: ../fmt/include/fmt/format.h
 CMakeFiles/a.out.dir/fmt/src/os.cc.o: ../fmt/include/fmt/os.h
 CMakeFiles/a.out.dir/fmt/src/os.cc.o: ../fmt/src/os.cc
 
+CMakeFiles/a.out.dir/src/main.cpp.o: ../fmt/include/fmt/core.h
+CMakeFiles/a.out.dir/src/main.cpp.o: ../fmt/include/fmt/format-inl.h
+CMakeFiles/a.out.dir/src/main.cpp.o: ../fmt/include/fmt/format.h
 CMakeFiles/a.out.dir/src/main.cpp.o: ../include/main.h
 CMakeFiles/a.out.dir/src/main.cpp.o: ../src/main.cpp
 

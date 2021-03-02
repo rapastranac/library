@@ -13,6 +13,9 @@ CMakeFiles/a.out.dir/fmt/src/os.cc.o
  ../fmt/include/fmt/os.h
  /home/andres/Documents/github/library/fmt/src/os.cc
 CMakeFiles/a.out.dir/src/main.cpp.o
+ ../fmt/include/fmt/core.h
+ ../fmt/include/fmt/format-inl.h
+ ../fmt/include/fmt/format.h
  /home/andres/Documents/github/library/include/main.h
  /home/andres/Documents/github/library/src/main.cpp
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o

@@ -281,8 +281,8 @@ namespace library
 
 					auto ss = f_serial(result); // serialized result
 
-					printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
-					int sz_before = bestRstream.second.str().size(); //testing only
+					//printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+					//int sz_before = bestRstream.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
 					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
@@ -936,7 +936,9 @@ namespace library
 
 					if (signal)
 					{
+#ifdef DEBUG_COMMENTS
 						printf("process %d received positive signal from center \n", world_rank);
+#endif
 						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
 #ifdef DEBUG_COMMENTS
 						printf("process %d received ID %d\n", world_rank, dest);
@@ -973,8 +975,8 @@ namespace library
 						int Bytes = _stream.str().size(); // number of Bytes
 
 						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
-						if (err == MPI::SUCCESS)
-							printf("buffer sucessfully sent from rank %d to rank %d! \n", world_rank, dest);
+						if (err != MPI::SUCCESS)
+							printf("buffer failed to send from rank %d to rank %d! \n", world_rank, dest);
 
 						mpi_lck.unlock();
 #ifdef DEBUG_COMMENTS
@@ -1067,6 +1069,7 @@ namespace library
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder, bool)
 		{
+
 			if (holder.is_pushed())
 				return holder.get();
 
@@ -1264,14 +1267,16 @@ namespace library
 			{
 
 				put_mpi(&flag, 1, MPI::BOOL, 0, world_rank, *win_AvNodes);
+#ifdef DEBUG_COMMENTS
 				printf("process %d put flag [true] in process 0 \n", world_rank);
+#endif
 
 				MPI_Status status;
 				/* if a thread passes succesfully this method, library gets ready to receive data*/
-
+#ifdef DEBUG_COMMENTS
 				printf("Receiver called on process %d, avl processes %d \n", world_rank, numAvailableNodes[0]);
-
 				printf("Receiver on %d ready to receive \n", world_rank);
+#endif
 				int Bytes; // Bytes to be received
 
 				MPI_Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status); // receives status before receiving the message
@@ -1282,7 +1287,10 @@ namespace library
 
 				count_rcv++;
 				int src = status.MPI_SOURCE;
+#ifdef DEBUG_COMMENTS
 				printf("process %d has rcvd from %d,%d times \n", world_rank, src, count_rcv);
+				printf("Receiver on %d, received %d Bytes from %d \n", world_rank, Bytes, src);
+#endif
 				if (status.MPI_TAG == 3)
 				{
 					printf("rank %d about to send best result to center \n", world_rank);
@@ -1290,7 +1298,6 @@ namespace library
 					printf("Exit tag received on process %d \n", world_rank); // loop termination
 					break;
 				}
-				printf("Receiver on %d, received %d Bytes from %d \n", world_rank, Bytes, src);
 
 				Holder newHolder(*this, -1); // copy types
 
@@ -1315,8 +1322,9 @@ namespace library
 				push_multithreading<_ret>(f, 0, newHolder); // first push, node is idle
 
 				reply<_ret>(serialize, newHolder, src);
-
+#ifdef DEBUG_COMMENTS
 				printf("Passed on process %d \n", world_rank);
+#endif
 				accumulate_mpi(-1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes--");
 			}
 		}
@@ -1328,21 +1336,25 @@ namespace library
 			//thread_pool.wait();
 
 			_ret res;
+#ifdef DEBUG_COMMENTS
 			printf("rank %d entered reply! \n", world_rank);
+#endif
 			//holder.get(res);
 			res = holder.get();
 
-			printf("Cover size() :%d, sending to center \n", res.coverSize());
-
-			printf("rank %d about to reply to %d! \n", world_rank, src);
-
 			if (src == 0) // termination, since all recursions return to center node
 			{
+#ifdef DEBUG_COMMENTS
+				printf("Cover size() :%d, sending to center \n", res.coverSize());
+#endif
+
 				std::unique_lock<std::mutex> lck(mtx_MPI); // in theory other threads should be are idle, TO DO ..
 				//this sends a signal so center node turns into receiving mode
 				bool buffer = true;
 				put_mpi(&buffer, 1, MPI::BOOL, src, 0, *win_finalFlag);
+#ifdef DEBUG_COMMENTS
 				printf("rank %d put to finalFlag! \n", world_rank);
+#endif
 
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
@@ -1353,6 +1365,10 @@ namespace library
 			}
 			else // some other node requested help and it is surely waiting for the result
 			{
+
+#ifdef DEBUG_COMMENTS
+				printf("rank %d about to reply to %d! \n", world_rank, src);
+#endif
 				std::unique_lock<std::mutex> lck(mtx_MPI); //no other thread can retrieve nor send via MPI
 
 				std::stringstream ss = serialize(res);
@@ -1406,17 +1422,23 @@ namespace library
 
 		void accumulate_mpi(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
 		{
+#ifdef DEBUG_COMMENTS
 			printf("%d about to accumulate on %s\n", world_rank, msg.c_str());
+#endif
 			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window);
 
 			MPI_Accumulate(&buffer, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, MPI::SUM, window);
-
+#ifdef DEBUG_COMMENTS
 			printf("%d about to unlock RMA on %d \n", world_rank, target_rank);
+#endif
 			MPI_Win_flush(target_rank, window);
+#ifdef DEBUG_COMMENTS
 			printf("%d between flush and unlock \n", world_rank);
+#endif
 			MPI_Win_unlock(target_rank, window);
-
+#ifdef DEBUG_COMMENTS
 			printf("%s, by %d\n", msg.c_str(), world_rank);
+#endif
 		}
 
 		MPI_Comm &getCommunicator()

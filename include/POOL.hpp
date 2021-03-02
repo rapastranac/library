@@ -238,7 +238,9 @@ namespace POOL
 
 				return flag;
 			});
+#ifdef DEBUG_COMMENTS
 			printf("pool has finished its tasks \n");
+#endif
 		}
 
 		/* If this method invoked, thread will return only when pool has no more tasks to execute,

@@ -150,9 +150,6 @@ public:
 		if (hol_l.isFetchable())
 			r_left = hol_l.get(user_deserializer);
 
-		if (hol_r.is_pushed())
-			r_right = hol_l.get(user_deserializer);
-
 		return returnRes(r_left, r_right);
 	}
 

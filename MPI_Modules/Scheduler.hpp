@@ -88,6 +88,17 @@ namespace library
 			return end_time - start_time;
 		}
 
+		void allgather(void *recvbuf, void *sendbuf)
+		{
+			MPI_Allgather(sendbuf, 1, MPI::DOUBLE, recvbuf, 1, MPI::DOUBLE, world_Comm);
+			MPI_Barrier(world_Comm);
+		}
+
+		int getWorldSize()
+		{
+			return world_size;
+		}
+
 	private:
 		template <typename Holder, typename Serialize>
 		void schedule(Holder &holder, Serialize &&serialize)

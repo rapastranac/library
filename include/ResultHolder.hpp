@@ -250,10 +250,10 @@ namespace library
 				return std::any_cast<_Ret>(expected);
 			}
 			else
+			{
+				this->isRetrieved = true;
 				return {}; // returns empty object of type _Ret,
-
-			//return false;
-			//return expected;
+			}
 		}
 
 		bool isFetchable()
@@ -306,7 +306,9 @@ namespace library
 			{
 				branchHandler.lock_mpi(); /* this blocks any other thread to use an MPI function since MPI_Recv is blocking
 												thus, mpi_thread_serialized is guaranteed */
+#ifdef DEBUG_COMMENTS
 				printf("rank %d entered get() to retrieve from %d! \n", branchHandler.world_rank, dest_rank);
+#endif
 
 				MPI_Status status;
 				int Bytes;
@@ -316,6 +318,10 @@ namespace library
 
 				char *in_buffer = new char[Bytes];
 				MPI_Recv(in_buffer, Bytes, MPI::CHAR, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
+
+#ifdef DEBUG_COMMENTS
+				printf("rank %d received %d Bytes from %d! \n", branchHandler.world_rank, Bytes, dest_rank);
+#endif
 
 				std::stringstream ss;
 				for (int i = 0; i < Bytes; i++)
@@ -338,7 +344,11 @@ namespace library
 				return std::any_cast<_Ret>(expected);
 			}
 			else
+			{
+				//throw "This should not happen\n";
+				this->isRetrieved = true;
 				return {}; // returns empty object of type _Ret,
+			}
 		}
 
 		bool is_MPI_Sent()

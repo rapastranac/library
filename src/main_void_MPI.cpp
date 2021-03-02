@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-int main_void_MPI(int argc, char *argv[])
+int main_void_MPI(int numThreads, std::string filename)
 {
 	using HolderType = library::ResultHolder<void, int, Graph>;
 
@@ -34,15 +34,11 @@ int main_void_MPI(int argc, char *argv[])
 	//graph.readEdges(file);
 
 	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
-	int rank = scheduler.initMPI(argc, argv);					// initialize MPI and member variable linkin
+	int rank = scheduler.initMPI(NULL, NULL);					// initialize MPI and member variable linkin
 																//HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
 
 	/* previous input and output required before following condition
 	thus, other nodes know the data type*/
-
-	//handler.functionIsVoid();
-	//auto file = "input/prob_4/600/0600_93";
-	auto file = "input/prob_4/600/00600_1";
 
 	HolderType holder(handler, -1); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
@@ -50,7 +46,7 @@ int main_void_MPI(int argc, char *argv[])
 	//if (rank == 0) //only center node will read input and printing resultscd
 	//{
 	//}
-	graph.readEdges(file);
+	graph.readEdges(filename);
 
 	int preSize = graph.preprocessing();
 
@@ -60,11 +56,20 @@ int main_void_MPI(int argc, char *argv[])
 	//cover.setMVCSize(k_prime);
 	handler.setRefValue(k_prime);
 
-	cover.init(graph, 1, file, 4);
+	cover.init(graph, numThreads, filename, 4);
 
-	scheduler.setThreadsPerNode(1);
+	scheduler.setThreadsPerNode(numThreads);
 	holder.holdArgs(depth, graph);
 	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
+
+	auto world_size = scheduler.getWorldSize();
+	std::vector<double> idleTime(world_size);
+	double idl_tm = 0;
+
+	if (rank != 0)
+		idl_tm = handler.getPoolIdleTime();
+
+	scheduler.allgather(idleTime.data(), &idl_tm);
 
 	if (rank == 0)
 	{
@@ -77,14 +82,13 @@ int main_void_MPI(int argc, char *argv[])
 		auto cv = oGraph.postProcessing();
 		printf("Cover size : %zu \n", cv.size());
 
-		//std::cout << "first : " << sorted.front() << " ";
-		//std::cout << "last : " << sorted.back() << " ";
-
-		//for (size_t i = 0; i < sorted.size(); i++)
-		//{
-		//	std::cout << sorted[i] << " ";
-		//}
-		std::cout << "\n";
+		double sum = 0;
+		for (size_t i = 0; i < idleTime.size(); i++)
+		{
+			//fmt::print("idleTime[{}]: {} \n", i, idleTime[i]);
+			sum += idleTime[i];
+		}
+		fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", sum);
 	}
 	scheduler.finalize();
 

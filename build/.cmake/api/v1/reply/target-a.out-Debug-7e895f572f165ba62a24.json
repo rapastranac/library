@@ -45,7 +45,13 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 25,
+				"line" : 21,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 26,
 				"parent" : 0
 			},
 			{
@@ -111,29 +117,33 @@
 				},
 				{
 					"backtrace" : 4,
-					"define" : "VC_NON_VOID"
+					"define" : "MPI_ENABLED"
+				},
+				{
+					"backtrace" : 5,
+					"define" : "VC_NON_VOID_MPI"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 5,
+					"backtrace" : 6,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
 				},
 				{
-					"backtrace" : 5,
+					"backtrace" : 6,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 7,
 					"path" : "/home/andres/Documents/github/library/cereal"
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 7,
 					"path" : "/home/andres/Documents/github/library/fmt/include"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 8,
 					"path" : "/home/andres/Documents/github/library/include"
 				}
 			],

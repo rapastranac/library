@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-int main_void(int argc, char *argv[])
+int main_void(int numThreads, std::string filename)
 {
 
 	auto &handler = library::BranchHandler::getInstance(); // parallel library
@@ -28,10 +28,9 @@ int main_void(int argc, char *argv[])
 	Graph oGraph;
 	VC_void cover;
 
-	auto file = "input/prob_4/600/00600_1";
-	graph.readEdges(file);
+	graph.readEdges(filename);
 
-	cover.init(graph, 5, file, 4);
+	cover.init(graph, numThreads, filename, 4);
 	cover.findCover(1);
 	cover.printSolution();
 
