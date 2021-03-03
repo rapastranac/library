@@ -1403,9 +1403,9 @@ namespace library
 			//sending signal to center so this one turn into receiving best result mode
 			int signal = true;
 			put_mpi(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
-
+#ifdef DEBUG_COMMENTS
 			printf("rank %d put signal in inbox to retrieve a best result \n", world_rank);
-
+#endif
 			MPI_Barrier(*world_Comm); // this guarantees that center nodes gets aware of prior signals
 
 			//char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT

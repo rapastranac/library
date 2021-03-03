@@ -47,11 +47,17 @@ namespace library
 
 		void finalize()
 		{
+#ifdef DEBUG_COMMENTS
 			printf("rank %d, before deallocate \n", world_rank);
+#endif
 			win_deallocate();
+#ifdef DEBUG_COMMENTS
 			printf("rank %d, after deallocate \n", world_rank);
+#endif
 			MPI_Finalize();
+#ifdef DEBUG_COMMENTS
 			printf("rank %d, after MPI_Finalize() \n", world_rank);
+#endif
 		}
 
 		std::stringstream &retrieveResult()
