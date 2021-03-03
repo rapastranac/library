@@ -19,7 +19,7 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 set(CMAKE_TARGET_DEFINITIONS_CXX
   "DLB=true"
   "MPI_ENABLED"
-  "VC_NON_VOID"
+  "VC_VOID_MPI"
   )
 
 # The include file search paths:

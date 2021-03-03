@@ -43,9 +43,6 @@ int main_void_MPI(int numThreads, std::string filename)
 	HolderType holder(handler, -1); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
 
-	//if (rank == 0) //only center node will read input and printing resultscd
-	//{
-	//}
 	graph.readEdges(filename);
 
 	int preSize = graph.preprocessing();
@@ -62,14 +59,20 @@ int main_void_MPI(int numThreads, std::string filename)
 	holder.holdArgs(depth, graph);
 	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
 
+	// *****************************************************************************************
+	// this is a generic way of getting information of all the other processes after execution retuns
 	auto world_size = scheduler.getWorldSize();
 	std::vector<double> idleTime(world_size);
 	double idl_tm = 0;
 
 	if (rank != 0)
-		idl_tm = handler.getPoolIdleTime();
+		idl_tm = handler.getPoolIdleTime(); //rank 0 does not run an instance of BranchHandler
 
+	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in
+	// a contiguos array
 	scheduler.allgather(idleTime.data(), &idl_tm);
+
+	// *****************************************************************************************
 
 	if (rank == 0)
 	{

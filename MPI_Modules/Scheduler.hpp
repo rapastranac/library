@@ -40,7 +40,7 @@ namespace library
 			this->threadsPerNode = threadsPerNode;
 		}
 
-		int initMPI(int argc, char *argv[]);
+		int initMPI(int *argc, char *argv[]);
 
 		template <typename _ret, typename F, typename Holder, typename Serialize, typename Deserialize>
 		void start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize);
@@ -120,8 +120,9 @@ namespace library
 			BcastPut(numAvailableNodes, 1, MPI::INT, 0, win_NumNodes);
 			refValueGlobal_old = refValueGlobal[0];
 			numAvailableNodes_old = numAvailableNodes[0];
-
+#ifdef DEBUG_COMMENTS
 			printf("*** Busy nodes: %d ***\n ", busyNodes[0]);
+#endif
 			printf("Scheduler started!! \n");
 
 			do
@@ -255,18 +256,11 @@ namespace library
 					bestResults[rank].second = std::move(ss); // best result so far from this rank
 				}
 			}
-			//TODO .. avoid broadcasting to ranks that sent the above best results
-			//if (refValueGlobal[0] != refValueGlobal_old)
-			//{
-			//	BcastPut(refValueGlobal, 1, MPI::INT, 0, win_refValueGlobal); // broadcast the absolute global ref value
-			//	refValueGlobal_old = refValueGlobal[0];
-			//}
 		}
 
 		template <typename Holder, typename Serialize>
 		void sendSeed(Holder &holder, Serialize &&serialize)
 		{
-			//std::stringstream ss = std::args_handler::unpack_tuple(serialize, holder.getArgs());
 			auto ss = std::apply(serialize, holder.getArgs());
 
 			int count = ss.str().size(); // number of Bytes
@@ -274,18 +268,16 @@ namespace library
 			std::memcpy(buffer, ss.str().data(), count);
 
 			int rcvrNode = 1;
-			//int err = MPI_Ssend(&count, 1, MPI::INT, rcvrNode, 0, world_Comm); // send buffer size
-			//if (err != MPI::SUCCESS)
-			//	printf("count could not be sent! \n");
 
 			int err = MPI_Ssend(buffer, count, MPI::CHAR, 1, 0, world_Comm); // send buffer
-			if (err == MPI::SUCCESS)
-				printf("buffer sucessfully sent! \n");
+			if (err != MPI::SUCCESS)
+				printf("buffer failed to send! \n");
 
 			availableNodes[rcvrNode] = false; // becomes unavailable until it finishes
 			delete[] buffer;
 		}
 
+		//generic put blocking RMA
 		void BcastPut(const void *origin_addr, int count,
 					  MPI_Datatype mpi_datatype, MPI_Aint offset,
 					  MPI_Win &window)

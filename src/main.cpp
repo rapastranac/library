@@ -6,10 +6,10 @@
 //#include <mpi.h>
 int main(int argc, char *argv[])
 {
-	int numThreads = 1;
+	int numThreads = 5;
 	//auto filename = "input/prob_4/400/00400_1";
 	//auto filename = "input/prob_4/600/00600_1";
-	auto filename = "/home/andres/Downloads/vc_graphs/graphs_200_0.1/10000_200/prob_0.1/0";
+	auto filename = "/home/andres/Downloads/vc_graphs/graphs_200_0.1/10000_200/prob_0.1/42";
 
 	if (argc > 1)
 	{

@@ -4,7 +4,7 @@
 # compile CXX with /bin/c++
 CXX_FLAGS = -g   -pthread -std=gnu++2a
 
-CXX_DEFINES = -DDLB=true -DMPI_ENABLED -DVC_NON_VOID
+CXX_DEFINES = -DDLB=true -DMPI_ENABLED -DVC_VOID_MPI
 
 CXX_INCLUDES = -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -I/home/andres/Documents/github/library/cereal -I/home/andres/Documents/github/library/fmt/include -I/home/andres/Documents/github/library/include 
 

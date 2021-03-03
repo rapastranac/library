@@ -1,0 +1,476 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/10.2.0".
+
+
+Inactive Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.3     3) ucx/1.8.0
+
+The following have been reloaded with a version change:
+  1) gcccore/.9.3.0 => gcccore/.10.2.0
+
+
+Activating Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.5     3) ucx/1.9.0
+
+
+Currently Loaded Modules:
+  1) CCconfig                 5) gcccore/.10.2.0 (H)   9) libfabric/1.10.1
+  2) gentoo/2020     (S)      6) gcc/10.2.0      (t)  10) openmpi/4.0.5    (m)
+  3) imkl/2020.1.217 (math)   7) ucx/1.9.0
+  4) StdEnv/2020     (S)      8) pmix/3.1.5
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /lustre03/project/6054778/pasr1602/git/library
+Starting run at: Wed Mar  3 10:28:41 EST 2021
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 4 of 41 is on blg4614.int.ets1.calculquebec.ca
+About to start, 4 / 41!! 
+MVC found so far has 280 elements...................thread 0
+rank 4 updated refValueGlobalAbsolute to 280 || 280 
+rank 4, cover size : 280 
+rank 4, buffer size to be sent : 2212 
+MVC found so far has 275 elements..................thread 30
+rank 4 updated refValueGlobalAbsolute to 275 || 275 
+rank 4, cover size : 275 
+rank 4, buffer size to be sent : 2192 
+rank 4 about to send best result to center 
+rank 4 sent best result, Bytes : 2192, refVal : 275
+Exit tag received on process 4 
+process 4 waiting at barrier 
+process 4 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 11 of 41 is on blg4621.int.ets1.calculquebec.ca
+About to start, 11 / 41!! 
+rank 11 about to send best result to center 
+rank 11 did not catch a best result 
+Exit tag received on process 11 
+process 11 waiting at barrier 
+process 11 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 0 of 41 is on blg4610.int.ets1.calculquebec.ca
+About to start, 0 / 41!! 
+scheduler() launched!! 
+buffer sucessfully sent! 
+*** Busy nodes: 1 ***
+ Scheduler started!! 
+BusyNodes = 0 achieved 
+Center received a best result from 4, Bytes : 2192, refVal 275 
+Center received a best result from 16, Bytes : 2176, refVal 271 
+Center received a best result from 18, Bytes : 2204, refVal 278 
+Center received a best result from 21, Bytes : 2164, refVal 268 
+Center received a best result from 24, Bytes : 2152, refVal 265 
+Center received a best result from 32, Bytes : 2228, refVal 284 
+process 0 waiting at barrier 
+process 0 passed barrier 
+
+ 
+ 
+*****************************************************
+Elapsed time : 138.828 
+Total number of requests : 781289 
+Number of approved requests : 33586 
+Number of failed requests : 747703 
+*****************************************************
+
+ 
+ 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 9 of 41 is on blg4619.int.ets1.calculquebec.ca
+About to start, 9 / 41!! 
+rank 9 about to send best result to center 
+rank 9 did not catch a best result 
+Exit tag received on process 9 
+process 9 waiting at barrier 
+process 9 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 2 of 41 is on blg4612.int.ets1.calculquebec.ca
+About to start, 2 / 41!! 
+rank 2 about to send best result to center 
+rank 2 did not catch a best result 
+Exit tag received on process 2 
+process 2 waiting at barrier 
+process 2 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 6 of 41 is on blg4616.int.ets1.calculquebec.ca
+About to start, 6 / 41!! 
+rank 6 about to send best result to center 
+rank 6 did not catch a best result 
+Exit tag received on process 6 
+process 6 waiting at barrier 
+process 6 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 3 of 41 is on blg4613.int.ets1.calculquebec.ca
+About to start, 3 / 41!! 
+rank 3 about to send best result to center 
+rank 3 did not catch a best result 
+Exit tag received on process 3 
+process 3 waiting at barrier 
+process 3 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 12 of 41 is on blg4710.int.ets1.calculquebec.ca
+About to start, 12 / 41!! 
+rank 12 about to send best result to center 
+rank 12 did not catch a best result 
+Exit tag received on process 12 
+process 12 waiting at barrier 
+process 12 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 13 of 41 is on blg4711.int.ets1.calculquebec.ca
+About to start, 13 / 41!! 
+rank 13 about to send best result to center 
+rank 13 did not catch a best result 
+Exit tag received on process 13 
+process 13 waiting at barrier 
+process 13 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 10 of 41 is on blg4620.int.ets1.calculquebec.ca
+About to start, 10 / 41!! 
+rank 10 about to send best result to center 
+rank 10 did not catch a best result 
+Exit tag received on process 10 
+process 10 waiting at barrier 
+process 10 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 17 of 41 is on blg4715.int.ets1.calculquebec.ca
+About to start, 17 / 41!! 
+rank 17 about to send best result to center 
+rank 17 did not catch a best result 
+Exit tag received on process 17 
+process 17 waiting at barrier 
+process 17 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 15 of 41 is on blg4713.int.ets1.calculquebec.ca
+About to start, 15 / 41!! 
+rank 15 about to send best result to center 
+rank 15 did not catch a best result 
+Exit tag received on process 15 
+process 15 waiting at barrier 
+process 15 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 8 of 41 is on blg4618.int.ets1.calculquebec.ca
+About to start, 8 / 41!! 
+rank 8 about to send best result to center 
+rank 8 did not catch a best result 
+Exit tag received on process 8 
+process 8 waiting at barrier 
+process 8 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 5 of 41 is on blg4615.int.ets1.calculquebec.ca
+About to start, 5 / 41!! 
+rank 5 about to send best result to center 
+rank 5 did not catch a best result 
+Exit tag received on process 5 
+process 5 waiting at barrier 
+process 5 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 19 of 41 is on blg4717.int.ets1.calculquebec.ca
+About to start, 19 / 41!! 
+rank 19 about to send best result to center 
+rank 19 did not catch a best result 
+Exit tag received on process 19 
+process 19 waiting at barrier 
+process 19 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 16 of 41 is on blg4714.int.ets1.calculquebec.ca
+About to start, 16 / 41!! 
+MVC found so far has 271 elements..................thread 38
+rank 16 updated refValueGlobalAbsolute to 271 || 271 
+rank 16, cover size : 271 
+rank 16, buffer size to be sent : 2176 
+rank 16 about to send best result to center 
+rank 16 sent best result, Bytes : 2176, refVal : 271
+Exit tag received on process 16 
+process 16 waiting at barrier 
+process 16 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 18 of 41 is on blg4716.int.ets1.calculquebec.ca
+About to start, 18 / 41!! 
+MVC found so far has 278 elements...................thread 4
+rank 18 updated refValueGlobalAbsolute to 278 || 278 
+rank 18, cover size : 278 
+rank 18, buffer size to be sent : 2204 
+rank 18 about to send best result to center 
+rank 18 sent best result, Bytes : 2204, refVal : 278
+Exit tag received on process 18 
+process 18 waiting at barrier 
+process 18 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 21 of 41 is on blg4719.int.ets1.calculquebec.ca
+About to start, 21 / 41!! 
+MVC found so far has 274 elements..................thread 10
+rank 21 updated refValueGlobalAbsolute to 274 || 274 
+rank 21, cover size : 274 
+rank 21, buffer size to be sent : 2188 
+MVC found so far has 272 elements..................thread 37
+rank 21 updated refValueGlobalAbsolute to 272 || 272 
+rank 21, cover size : 272 
+rank 21, buffer size to be sent : 2180 
+MVC found so far has 270 elements...................thread 9
+rank 21 updated refValueGlobalAbsolute to 270 || 270 
+rank 21, cover size : 270 
+rank 21, buffer size to be sent : 2172 
+MVC found so far has 269 elements..................thread 30
+rank 21 updated refValueGlobalAbsolute to 269 || 269 
+rank 21, cover size : 269 
+rank 21, buffer size to be sent : 2168 
+MVC found so far has 268 elements..................thread 15
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 20 of 41 is on blg4718.int.ets1.calculquebec.ca
+About to start, 20 / 41!! 
+rank 20 about to send best result to center 
+rank 20 did not catch a best result 
+Exit tag received on process 20 
+process 20 waiting at barrier 
+process 20 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 24 of 41 is on blg4821.int.ets1.calculquebec.ca
+About to start, 24 / 41!! 
+MVC found so far has 266 elements..................thread 30
+rank 24 updated refValueGlobalAbsolute to 266 || 266 
+rank 24, cover size : 266 
+rank 24, buffer size to be sent : 2156 
+MVC found so far has 265 elements..................thread 25
+rank 24 updated refValueGlobalAbsolute to 265 || 265 
+rank 24, cover size : 265 
+rank 24, buffer size to be sent : 2152 
+rank 24 about to send best result to center 
+rank 24 sent best result, Bytes : 2152, refVal : 265
+Exit tag received on process 24 
+process 24 waiting at barrier 
+process 24 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 22 of 41 is on blg4720.int.ets1.calculquebec.ca
+About to start, 22 / 41!! 
+rank 22 about to send best result to center 
+rank 22 did not catch a best result 
+Exit tag received on process 22 
+process 22 waiting at barrier 
+process 22 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 27 of 41 is on blg7248.int.ets1.calculquebec.ca
+About to start, 27 / 41!! 
+rank 27 about to send best result to center 
+rank 27 did not catch a best result 
+Exit tag received on process 27 
+process 27 waiting at barrier 
+process 27 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 28 of 41 is on blg7249.int.ets1.calculquebec.ca
+About to start, 28 / 41!! 
+rank 28 about to send best result to center 
+rank 28 did not catch a best result 
+Exit tag received on process 28 
+process 28 waiting at barrier 
+process 28 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 25 of 41 is on blg7221.int.ets1.calculquebec.ca
+About to start, 25 / 41!! 
+rank 25 about to send best result to center 
+rank 25 did not catch a best result 
+Exit tag received on process 25 
+process 25 waiting at barrier 
+process 25 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 23 of 41 is on blg4721.int.ets1.calculquebec.ca
+About to start, 23 / 41!! 
+rank 23 about to send best result to center 
+rank 23 did not catch a best result 
+Exit tag received on process 23 
+process 23 waiting at barrier 
+process 23 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 31 of 41 is on blg8326.int.ets1.calculquebec.ca
+About to start, 31 / 41!! 
+rank 31 about to send best result to center 
+rank 31 did not catch a best result 
+Exit tag received on process 31 
+process 31 waiting at barrier 
+process 31 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 32 of 41 is on blg8427.int.ets1.calculquebec.ca
+About to start, 32 / 41!! 
+MVC found so far has 284 elements...................thread 1
+rank 32 updated refValueGlobalAbsolute to 284 || 284 
+rank 32, cover size : 284 
+rank 32, buffer size to be sent : 2228 
+rank 32 about to send best result to center 
+rank 32 sent best result, Bytes : 2228, refVal : 284
+Exit tag received on process 32 
+process 32 waiting at barrier 
+process 32 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 37 of 41 is on blg8432.int.ets1.calculquebec.ca
+About to start, 37 / 41!! 
+rank 37 about to send best result to center 
+rank 37 did not catch a best result 
+Exit tag received on process 37 
+process 37 waiting at barrier 
+process 37 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 1 of 41 is on blg4611.int.ets1.calculquebec.ca
+About to start, 1 / 41!! 
+rank 1 about to send best result to center 
+rank 1 did not catch a best result 
+Exit tag received on process 1 
+process 1 waiting at barrier 
+process 1 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 29 of 41 is on blg7250.int.ets1.calculquebec.ca
+About to start, 29 / 41!! 
+rank 29 about to send best result to center 
+rank 29 did not catch a best result 
+Exit tag received on process 29 
+process 29 waiting at barrier 
+process 29 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 33 of 41 is on blg8428.int.ets1.calculquebec.ca
+About to start, 33 / 41!! 
+rank 33 about to send best result to center 
+rank 33 did not catch a best result 
+Exit tag received on process 33 
+process 33 waiting at barrier 
+process 33 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 26 of 41 is on blg7222.int.ets1.calculquebec.ca
+About to start, 26 / 41!! 
+rank 26 about to send best result to center 
+rank 26 did not catch a best result 
+Exit tag received on process 26 
+process 26 waiting at barrier 
+process 26 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 38 of 41 is on blg8443.int.ets1.calculquebec.ca
+About to start, 38 / 41!! 
+rank 38 about to send best result to center 
+rank 38 did not catch a best result 
+Exit tag received on process 38 
+process 38 waiting at barrier 
+process 38 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 35 of 41 is on blg8430.int.ets1.calculquebec.ca
+About to start, 35 / 41!! 
+rank 35 about to send best result to center 
+rank 35 did not catch a best result 
+Exit tag received on process 35 
+process 35 waiting at barrier 
+process 35 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 34 of 41 is on blg8429.int.ets1.calculquebec.ca
+About to start, 34 / 41!! 
+rank 34 about to send best result to center 
+rank 34 did not catch a best result 
+Exit tag received on process 34 
+process 34 waiting at barrier 
+process 34 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 40 of 41 is on blg8525.int.ets1.calculquebec.ca
+About to start, 40 / 41!! 
+rank 40 about to send best result to center 
+rank 40 did not catch a best result 
+Exit tag received on process 40 
+process 40 waiting at barrier 
+process 40 passed barrier 
+Stream retrieved, size : 2152 
+Cover size : 328 
+
+Global pool idle time: 1518.640437 seconds
+
+
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 39 of 41 is on blg8524.int.ets1.calculquebec.ca
+About to start, 39 / 41!! 
+rank 39 about to send best result to center 
+rank 39 did not catch a best result 
+Exit tag received on process 39 
+process 39 waiting at barrier 
+process 39 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 30 of 41 is on blg7251.int.ets1.calculquebec.ca
+About to start, 30 / 41!! 
+rank 30 about to send best result to center 
+rank 30 did not catch a best result 
+Exit tag received on process 30 
+process 30 waiting at barrier 
+process 30 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 36 of 41 is on blg8431.int.ets1.calculquebec.ca
+About to start, 36 / 41!! 
+rank 36 about to send best result to center 
+rank 36 did not catch a best result 
+Exit tag received on process 36 
+process 36 waiting at barrier 
+process 36 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 7 of 41 is on blg4617.int.ets1.calculquebec.ca
+About to start, 7 / 41!! 
+rank 7 about to send best result to center 
+rank 7 did not catch a best result 
+Exit tag received on process 7 
+process 7 waiting at barrier 
+process 7 passed barrier 
+rank 21 updated refValueGlobalAbsolute to 268 || 268 
+rank 21, cover size : 268 
+rank 21, buffer size to be sent : 2164 
+rank 21 about to send best result to center 
+rank 21 sent best result, Bytes : 2164, refVal : 268
+Exit tag received on process 21 
+process 21 waiting at barrier 
+process 21 passed barrier 
+argc: 3, threads: 40, filename: input/prob_4/600/0600_93 
+The threading support level corresponds to that demanded.
+Process 14 of 41 is on blg4712.int.ets1.calculquebec.ca
+About to start, 14 / 41!! 
+rank 14 about to send best result to center 
+rank 14 did not catch a best result 
+Exit tag received on process 14 
+process 14 waiting at barrier 
+process 14 passed barrier 
+Finishing run at: Wed Mar  3 10:31:25 EST 2021

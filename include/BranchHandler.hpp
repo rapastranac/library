@@ -207,9 +207,10 @@ namespace library
 					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
 
 					auto ss = f_serial(result); // serialized result
-
+#ifdef DEBUG_COMMENTS
 					printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
-					int sz_before = bestRstream.second.str().size(); //testing only
+#endif
+					//int sz_before = bestRstream.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
 					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
@@ -1293,7 +1294,9 @@ namespace library
 #endif
 				if (status.MPI_TAG == 3)
 				{
+#ifdef DEBUG_COMMENTS
 					printf("rank %d about to send best result to center \n", world_rank);
+#endif
 					sendBestResultToCenter();
 					printf("Exit tag received on process %d \n", world_rank); // loop termination
 					break;
@@ -1394,7 +1397,9 @@ namespace library
 		{
 			if (bestRstream.first == -1)
 			{
+#ifdef DEBUG_COMMENTS
 				printf("rank %d did not catch a best result \n", world_rank);
+#endif
 				// if a solution was not found, processes will synchronise in here
 				MPI_Barrier(*world_Comm); // this guarantees that center nodes gets aware of prior signals
 				return;
@@ -1451,11 +1456,11 @@ namespace library
 
 #ifdef MPI_ENABLED
 
-	int Scheduler::initMPI(int argc, char *argv[])
+	int Scheduler::initMPI(int *argc, char *argv[])
 	{
 		// Initilialise MPI and ask for thread support
 		int provided;
-		MPI_Init_thread(&argc, &argv, MPI::THREAD_SERIALIZED, &provided);
+		MPI_Init_thread(argc, &argv, MPI::THREAD_SERIALIZED, &provided);
 		if (provided < MPI::THREAD_SERIALIZED)
 		{
 			printf("The threading support level is lesser than that demanded.\n");
@@ -1463,15 +1468,18 @@ namespace library
 		}
 		else
 		{
+#ifdef DEBUG_COMMENTS
 			printf("The threading support level corresponds to that demanded.\n");
+#endif
 		}
 
 		communicators();
 
 		int namelen;
 		MPI_Get_processor_name(processor_name, &namelen);
-
+#ifdef DEBUG_COMMENTS
 		printf("Process %d of %d is on %s\n", world_rank, world_size, processor_name);
+#endif
 		MPI_Barrier(world_Comm);
 		//printf("About to create window, %d / %d!! \n", world_rank, world_size);
 		MPI_Barrier(world_Comm);
@@ -1507,12 +1515,16 @@ namespace library
 	template <typename _ret, typename F, typename Holder, typename Serialize, typename Deserialize>
 	void Scheduler::start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
 	{
+#ifdef DEBUG_COMMENTS
 		printf("About to start, %d / %d!! \n", world_rank, world_size);
+#endif
 
 		if (world_rank == 0)
 		{
 			start_time = MPI_Wtime();
+#ifdef DEBUG_COMMENTS
 			printf("scheduler() launched!! \n");
+#endif
 			this->schedule(holder, serialize);
 			end_time = MPI_Wtime();
 		}
@@ -1524,9 +1536,13 @@ namespace library
 
 			_branchHandler.receiveSeed<_ret>(f, serialize, deserialize, holder);
 		}
+#ifdef DEBUG_COMMENTS
 		printf("process %d waiting at barrier \n", world_rank);
+#endif
 		MPI_Barrier(world_Comm);
+#ifdef DEBUG_COMMENTS
 		printf("process %d passed barrier \n", world_rank);
+#endif
 	}
 
 #endif
