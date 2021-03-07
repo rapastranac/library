@@ -163,7 +163,7 @@ public:
 		auto ifCond1 = [&]() {
 			foundAtDepth = depth;
 			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("thread {}", id);
+			string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
 			cout << std::internal
 				 << std::setfill('.')
 				 << col1
@@ -182,7 +182,7 @@ public:
 		auto ifCond2 = [&]() {
 			foundAtDepth = depth;
 			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("thread {}", id);
+			string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
 			cout << std::internal
 				 << col1
 				 << std::setw(wide - col1.size())

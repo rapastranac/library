@@ -40,6 +40,8 @@ public:
         size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
         currentMVCSize = k_prime;
 
+        // currentMVCSize = graph.size();
+
         begin = std::chrono::steady_clock::now();
 
         try
@@ -92,7 +94,7 @@ public:
             return;
         }
 
-        if (graph.size() == 0)
+        if (graph.size() <= 0)
         {
 #ifdef DEBUG_COMMENTS
             printf("Leaf reached, depth : %d \n", depth);
@@ -153,7 +155,7 @@ private:
         auto ifCond1 = [&]() {
             foundAtDepth = depth;
             string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-            string col2 = fmt::format("thread {}", id);
+            string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
             cout << std::internal
                  << std::setfill('.')
                  << col1
@@ -172,7 +174,7 @@ private:
         auto ifCond2 = [&]() {
             foundAtDepth = depth;
             string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-            string col2 = fmt::format("thread {}", id);
+            string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
             cout << std::internal
                  << col1
                  << std::setw(wide - col1.size())

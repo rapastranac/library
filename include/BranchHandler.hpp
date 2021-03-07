@@ -363,6 +363,15 @@ namespace library
 			return requests.load();
 		}
 
+		int getRankID()
+		{
+#ifdef MPI_ENABLED
+			return world_rank;
+#else
+			return -1;
+#endif
+		}
+
 		/* for void algorithms, this also calls the destructor of the pool*/
 		void wait_and_finish()
 		{

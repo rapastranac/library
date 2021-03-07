@@ -656,10 +656,10 @@ public:
 		}
 	}
 
-	void removeNv(int v)
+	[[nodiscard]] auto removeNv(int v)
 	{
 		std::set<int> neighboursOfv(list[v]); //copy of neigbours of vertex v
-
+		int nNeighours = neighboursOfv.size();
 		for (auto i : neighboursOfv)
 		{
 			if (list.contains(i))
@@ -668,6 +668,7 @@ public:
 				removeVertex(i);
 			}
 		}
+		return nNeighours;
 	}
 
 	void readGraph(string NameOfFile, string directory)

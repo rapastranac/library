@@ -21,6 +21,7 @@ add_definitions(-DDLB=true)
 add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
 #add_definitions(-DVC_VOID)
+#add_definitions(-DVC_FPT_VOID)
 add_definitions(-DVC_VOID_MPI)
 #add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
@@ -61,6 +62,7 @@ set(Sources
     src/main_non_void.cpp
     src/main_void_MPI.cpp
     src/main_void.cpp
+    src/main_FPT_void.cpp
     src/read_graphs.cpp
 )
 

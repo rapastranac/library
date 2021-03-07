@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-int main_void_MPI(int numThreads, std::string filename)
+int main_void_MPI(int numThreads,int prob, std::string filename)
 {
 	using HolderType = library::ResultHolder<void, int, Graph>;
 
@@ -53,7 +53,7 @@ int main_void_MPI(int numThreads, std::string filename)
 	//cover.setMVCSize(k_prime);
 	handler.setRefValue(k_prime);
 
-	cover.init(graph, numThreads, filename, 4);
+	cover.init(graph, numThreads, filename, prob);
 
 	scheduler.setThreadsPerNode(numThreads);
 	holder.holdArgs(depth, graph);

@@ -26,6 +26,11 @@
 },
 {
   "directory": "/home/andres/Documents/github/library/build",
+  "command": "/bin/c++  -DDLB=true -DMPI_ENABLED -DVC_VOID_MPI -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -I/home/andres/Documents/github/library/cereal -I/home/andres/Documents/github/library/fmt/include -I/home/andres/Documents/github/library/include  -g   -pthread -std=gnu++2a -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o -c /home/andres/Documents/github/library/src/main_FPT_void.cpp",
+  "file": "/home/andres/Documents/github/library/src/main_FPT_void.cpp"
+},
+{
+  "directory": "/home/andres/Documents/github/library/build",
   "command": "/bin/c++  -DDLB=true -DMPI_ENABLED -DVC_VOID_MPI -I/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi -I/usr/lib/x86_64-linux-gnu/openmpi/include -I/home/andres/Documents/github/library/cereal -I/home/andres/Documents/github/library/fmt/include -I/home/andres/Documents/github/library/include  -g   -pthread -std=gnu++2a -o CMakeFiles/a.out.dir/src/read_graphs.cpp.o -c /home/andres/Documents/github/library/src/read_graphs.cpp",
   "file": "/home/andres/Documents/github/library/src/read_graphs.cpp"
 },

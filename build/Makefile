@@ -204,6 +204,33 @@ src/main.cpp.s:
 	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+src/main_FPT_void.o: src/main_FPT_void.cpp.o
+
+.PHONY : src/main_FPT_void.o
+
+# target to build an object file
+src/main_FPT_void.cpp.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o
+.PHONY : src/main_FPT_void.cpp.o
+
+src/main_FPT_void.i: src/main_FPT_void.cpp.i
+
+.PHONY : src/main_FPT_void.i
+
+# target to preprocess a source file
+src/main_FPT_void.cpp.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i
+.PHONY : src/main_FPT_void.cpp.i
+
+src/main_FPT_void.s: src/main_FPT_void.cpp.s
+
+.PHONY : src/main_FPT_void.s
+
+# target to generate assembly for a file
+src/main_FPT_void.cpp.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s
+.PHONY : src/main_FPT_void.cpp.s
+
 src/main_non_void.o: src/main_non_void.cpp.o
 
 .PHONY : src/main_non_void.o
@@ -357,6 +384,9 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/main_FPT_void.o"
+	@echo "... src/main_FPT_void.i"
+	@echo "... src/main_FPT_void.s"
 	@echo "... src/main_non_void.o"
 	@echo "... src/main_non_void.i"
 	@echo "... src/main_non_void.s"

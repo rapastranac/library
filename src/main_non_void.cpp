@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-int main_non_void(int numThreads, std::string filename)
+int main_non_void(int numThreads,int prob, std::string filename)
 {
 	auto &handler = library::BranchHandler::getInstance(); // parallel library
 
@@ -29,7 +29,7 @@ int main_non_void(int numThreads, std::string filename)
 
 	graph.readEdges(filename);
 
-	cover.init(graph, numThreads, filename, 4);
+	cover.init(graph, numThreads, filename, prob);
 	cover.findCover(1);
 	cover.printSolution();
 

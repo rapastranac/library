@@ -306,133 +306,6 @@ protected:
 	{
 		return floor(((1.0 - factor) * (double)k1 + factor * (double)k2));
 	}
-	/*
-	void terminate_condition(Graph &graph, int id, int depth)
-	{
-		auto condition1 = [this](int refValGlobal, int refValLocal) {
-			return (leaves == 0) && (refValLocal < refValGlobal) ? true : false;
-		};
-
-		//if condition1 complies, then ifCond1 is called
-		auto ifCond1 = [&]() {
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("thread {}", id);
-			cout << std::internal
-				 << std::setfill('.')
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
-			++leaves;
-		};
-
-		auto condition2 = [](int refValGlobal, int refValLocal) {
-			return refValLocal < refValGlobal ? true : false;
-		};
-
-		auto ifCond2 = [&]() {
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("thread {}", id);
-			cout << std::internal
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
-			if (depth > measured_Depth)
-			{
-				measured_Depth = depth;
-			}
-
-			++leaves;
-		};
-
-#ifdef MPI_ENABLED
-		branchHandler.replaceIf<void>(graph.coverSize(), condition1, &ifCond1, graph, user_serializer); // thread/process safe
-		branchHandler.replaceIf<void>(graph.coverSize(), condition2, &ifCond2, graph, user_serializer);
-#else
-		branchHandler.replaceIf<void>(graph.coverSize(), condition1, &ifCond1, graph); // thread safe
-		branchHandler.replaceIf<void>(graph.coverSize(), condition2, &ifCond2, graph);
-#endif
-		return;
-	}
-
-	Graph termination(Graph &graph, int id, int depth)
-	{
-		auto condition1 = [this](int refValGlobal, int refValLocal) {
-			return (leaves == 0) && (refValLocal < refValGlobal) ? true : false;
-		};
-
-		//if condition1 complies, then ifCond1 is called
-		auto ifCond1 = [&]() {
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("thread {}", id);
-			cout << std::internal
-				 << std::setfill('.')
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
-			++leaves;
-		};
-
-		auto condition2 = [](int refValGlobal, int refValLocal) {
-			return refValLocal < refValGlobal ? true : false;
-		};
-
-		auto ifCond2 = [&]() {
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("thread {}", id);
-			cout << std::internal
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
-			if (depth > measured_Depth)
-			{
-				measured_Depth = depth;
-			}
-
-			++leaves;
-		};
-
-		bool rcnd1 = branchHandler.replaceIf<Graph>(graph.coverSize(), condition1, &ifCond1, graph); // thread safe
-		bool rcnd2 = branchHandler.replaceIf<Graph>(graph.coverSize(), condition2, &ifCond2, graph);
-
-		if (rcnd1 || rcnd2)
-			return graph;
-		else
-			return {};
-	}
-
-	Graph returnRes(Graph &left, Graph &right)
-	{
-		if (!left.empty() && !right.empty())
-		{
-			if (left.size() >= right.size())
-				return right;
-			else
-				return left;
-		}
-		else if (!left.empty() && right.empty())
-			return left;
-		else if (left.empty() && !right.empty())
-			return right;
-		else
-			return {};
-	}
-	*/
 
 public:
 	size_t maximum_matching(Graph g)
@@ -449,6 +322,7 @@ public:
 			{
 				g.removeVertex(v);
 				g.removeVertex(w);
+				//				g.clean_graph(); //stupid thing
 			}
 			catch (std::string e)
 			{

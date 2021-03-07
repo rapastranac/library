@@ -14,6 +14,7 @@
                 "MPI_ENABLE",
                 "VC_VOID",
                 "VC_NON_VOID",
+                "VC_FPT_VOID",
                 "VC_VOID_MPI",
                 "VC_NON_VOID_MPI"
             ],
