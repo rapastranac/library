@@ -34,7 +34,7 @@ public:
         size_t k_uBound = graph.max_k();
         size_t k_lBound = graph.min_k();
         int k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
-        k_prime = 174;
+        //k_prime = 60;
         currentMVCSize = k_prime;
 
         begin = std::chrono::steady_clock::now();
@@ -58,11 +58,12 @@ public:
                 if (branchHandler.has_result())
                 {
                     graph_res = branchHandler.retrieveResult<Graph>();
+                    branchHandler.clear_result();
                     cover = graph_res.postProcessing();
-                    fmt::print("MVC {} found for k = {}, {} \n", cover.size(), k, true);
+                    fmt::print("MVC {} found for k = {}, {}\n", cover.size(), k, true);
                 }
                 else
-                    fmt::print("MVC not found for k = {}, {}", k, false);
+                    fmt::print("MVC not found for k = {}, {}\n", k, false);
                 //graph_res2 = graph_res;
                 //cover = graph_res.postProcessing();
             }
@@ -153,23 +154,6 @@ private:
         auto condition = [this](int refValGlobal, int refValLocal) {
             return refValLocal != refValGlobal ? true : false;
         };
-        //if condition is met, then ifCond is called
-        /*auto ifCond = [&]() {
-            foundAtDepth = depth;
-            auto res = graph.postProcessing();
-            string col1 = fmt::format("MVC found so far has {} elements", res.size());
-            string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
-            cout << std::internal
-                 << std::setfill('.')
-                 << col1
-                 << std::setw(wide - col1.size())
-                 << col2
-                 << "\n";
-
-            outFile(col1, col2);
-            ++leaves;
-        }; */
-
         branchHandler.replace_refValGlobal_If<void>(1, condition, nullptr, graph); // thread safe
 
         return;

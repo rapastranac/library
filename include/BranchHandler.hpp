@@ -563,9 +563,15 @@ namespace library
 			return bestR.has_value();
 		}
 
+		void clear_result()
+		{
+			bestR.reset();
+		}
+
 		template <typename RESULT_TYPE>
-		auto retrieveResult()
+		[[nodiscard]] auto retrieveResult() -> RESULT_TYPE
 		{ // fetching results caught by the library=
+
 			return std::any_cast<RESULT_TYPE>(bestR);
 		}
 
