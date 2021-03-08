@@ -36,7 +36,7 @@ auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 };
 
 auto condition = [](int refValGlobal, int refValLocal) {
-	/*replaceIf receives this callable, thought the 
+	/*replace_refValGlobal_If receives this callable, thought the 
 	 user is free to define its own condition */
 	return refValLocal > refValGlobal ? true : false;
 };
@@ -133,7 +133,7 @@ public:
 
 		if (section.size() <= 1)
 		{
-			//branchHandler.replaceIf(4, condition, section, user_serializer); // testing compiling errors only, not functional for this algorithm
+			//branchHandler.replace_refValGlobal_If(4, condition, section, user_serializer); // testing compiling errors only, not functional for this algorithm
 			return section;
 		}
 

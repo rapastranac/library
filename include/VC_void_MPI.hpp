@@ -140,8 +140,8 @@ public:
 			++leaves;
 		};
 
-		branchHandler.replaceIf<void>(graph.coverSize(), condition1, &ifCond1, graph, user_serializer); // thread safe
-		branchHandler.replaceIf<void>(graph.coverSize(), condition2, &ifCond2, graph, user_serializer);
+		branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition1, ifCond1, graph, user_serializer); // thread safe
+		branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition2, ifCond2, graph, user_serializer);
 
 		return;
 	}

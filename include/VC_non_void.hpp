@@ -182,8 +182,8 @@ public:
             ++leaves;
         };
 
-        bool rcnd1 = branchHandler.replaceIf<Graph>(graph.coverSize(), condition1, &ifCond1, graph); // thread safe
-        bool rcnd2 = branchHandler.replaceIf<Graph>(graph.coverSize(), condition2, &ifCond2, graph);
+        bool rcnd1 = branchHandler.replace_refValGlobal_If<Graph>(graph.coverSize(), condition1, ifCond1, graph); // thread safe
+        bool rcnd2 = branchHandler.replace_refValGlobal_If<Graph>(graph.coverSize(), condition2, ifCond2, graph);
 
         if (rcnd1 || rcnd2)
             return graph;

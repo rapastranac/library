@@ -154,16 +154,15 @@ namespace library
 		global absolute: best value in the whole execution "There might be a delay"
 		*/
 #ifdef MPI_ENABLED
-		/* a reference value is replaced based on the user's conditions. 
-			ifCond is used when the user wants to print out results or any other thing thread safely
-			ifCond is optional, if not passed, then nullptr should be passed in instead*/
-		template <typename _ret, class C1, class C2, typename T, class F_SERIAL,
+
+		// overload to ignore second condition, nullptr must be passed
+		template <typename _ret, class C1, typename T, class F_SERIAL,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result, F_SERIAL &&f_serial)
+		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, std::nullptr_t, T &&result, F_SERIAL &&f_serial)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 #ifdef DEBUG_COMMENTS
-			printf("rank %d entered replaceIf(), acquired mutex \n", world_rank);
+			printf("rank %d entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
 #endif
 
 			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
@@ -197,9 +196,6 @@ namespace library
 				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
 				{
 					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
-
-					if (ifCond)
-						(*ifCond)();
 
 					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
@@ -231,13 +227,16 @@ namespace library
 				return false;
 		}
 
+		/* a reference value is replaced based on the user's conditions. 
+			ifCond is used when the user wants to print out results or any other thing thread safely
+			ifCond is optional, if not passed, then nullptr should be passed in instead*/
 		template <typename _ret, class C1, class C2, typename T, class F_SERIAL,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result, F_SERIAL &&f_serial)
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result, F_SERIAL &&f_serial)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 #ifdef DEBUG_COMMENTS
-			printf("rank %d entered replaceIf(), acquired mutex \n", world_rank);
+			printf("rank %d entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
 #endif
 
 			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
@@ -272,8 +271,150 @@ namespace library
 				{
 					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
 
-					if (ifCond)
-						(*ifCond)();
+					ifCond();
+
+					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
+					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
+
+					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
+
+					auto ss = f_serial(result); // serialized result
+#ifdef DEBUG_COMMENTS
+					printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+#endif
+					//int sz_before = bestRstream.second.str().size(); //testing only
+
+					int SIZE = ss.str().size();
+					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
+
+					bestRstream.first = refValueLocal;
+					bestRstream.second = std::move(ss);
+
+					MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
+
+					//mpi_mutex->unlock(world_rank); // critical section ends
+					return true;
+				}
+				MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
+				//mpi_mutex->unlock(world_rank);		 // critical section ends
+				return false;
+			}
+			else
+				return false;
+		}
+		// overload to ignore second condition, nullptr must be passed
+		template <typename _ret, class C1, typename T, class F_SERIAL,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, std::nullptr_t, T &&result, F_SERIAL &&f_serial)
+		{
+			std::unique_lock<std::mutex> lck(mtx_MPI);
+#ifdef DEBUG_COMMENTS
+			printf("rank %d entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
+#endif
+
+			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
+			{
+#ifdef DEBUG_COMMENTS
+				printf("rank %d, local condition satisfied refValueGlobal : %d vs refValueLocal : %d \n", world_rank, refValueGlobal[0], refValueLocal);
+#endif
+				// then, absolute global is checked
+				int refValueGlobalAbsolute;
+				int origin_count = 1;
+				int target_rank = 0;
+				MPI_Aint offset = 0;
+				MPI_Win &window = *win_refValueGlobal; // change to a reference to the window (&window, or *window)
+
+				//mpi_mutex->lock(world_rank); // critical section begins
+
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+#ifdef DEBUG_COMMENTS
+				printf("rank %d opened epoch to send best result \n", world_rank);
+#endif
+				// this blocks access to this window
+				// this is the only place where this window is read or modified
+
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
+				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
+
+#ifdef DEBUG_COMMENTS
+				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
+#endif
+
+				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
+				{
+					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
+
+					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
+					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
+
+					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
+
+					auto ss = f_serial(result); // serialized result
+
+					//printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+					//int sz_before = bestRstream.second.str().size(); //testing only
+
+					int SIZE = ss.str().size();
+					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
+
+					//bestRstream.first = refValueLocal;
+					//bestRstream.second = std::move(ss);
+
+					MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
+
+					//mpi_mutex->unlock(world_rank); // critical section ends
+					return true;
+				}
+				MPI_Win_unlock(target_rank, window); // after this line, other processes can access the window
+				//mpi_mutex->unlock(world_rank);		 // critical section ends
+				return false;
+			}
+			else
+				return false;
+		}
+
+		template <typename _ret, class C1, class C2, typename T, class F_SERIAL,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result, F_SERIAL &&f_serial)
+		{
+			std::unique_lock<std::mutex> lck(mtx_MPI);
+#ifdef DEBUG_COMMENTS
+			printf("rank %d entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
+#endif
+
+			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
+			{
+#ifdef DEBUG_COMMENTS
+				printf("rank %d, local condition satisfied refValueGlobal : %d vs refValueLocal : %d \n", world_rank, refValueGlobal[0], refValueLocal);
+#endif
+				// then, absolute global is checked
+				int refValueGlobalAbsolute;
+				int origin_count = 1;
+				int target_rank = 0;
+				MPI_Aint offset = 0;
+				MPI_Win &window = *win_refValueGlobal; // change to a reference to the window (&window, or *window)
+
+				//mpi_mutex->lock(world_rank); // critical section begins
+
+				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+#ifdef DEBUG_COMMENTS
+				printf("rank %d opened epoch to send best result \n", world_rank);
+#endif
+				// this blocks access to this window
+				// this is the only place where this window is read or modified
+
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
+				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
+
+#ifdef DEBUG_COMMENTS
+				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
+#endif
+
+				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
+				{
+					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
+
+					ifCond();
 
 					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
@@ -306,26 +447,16 @@ namespace library
 
 #endif
 
-		/* a reference value is replaced based on the user's conditions. 
-			ifCond is used when the user wants to print out results or any other thing thread safely
-			ifCond is optional, if not passed, then nullptr should be passed in instead*/
-		template <typename _ret, class C1, class C2, typename T,
+		// overload to ignore second condition, nullptr must be passed
+		template <typename _ret, class C1, typename T,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result)
+		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, std::nullptr_t, T &&result)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
 			if (Cond(refValueGlobal[0], refValueLocal))
 			{
 				this->refValueGlobal[0] = refValueLocal;
-				if (refValueLocal == 0)
-				{
-					int fgd = 3423; // testing, debugging
-				}
-
-				if (ifCond)
-					(*ifCond)();
-
-				this->bestR = result; //it should move, this copy is only for testing
+				this->bestR = result;
 				return true;
 			}
 			else
@@ -336,16 +467,52 @@ namespace library
 			ifCond is used when the user wants to print out results or any other thing thread safely
 			ifCond is optional, if not passed, then nullptr should be passed in instead*/
 		template <typename _ret, class C1, class C2, typename T,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool replaceIf(int refValueLocal, C1 &&Cond, C2 *ifCond, T &&result)
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
 			if (Cond(refValueGlobal[0], refValueLocal))
 			{
 				this->refValueGlobal[0] = refValueLocal;
+				if (refValueLocal == 0)
+				{
+					int fgd = 3423; // testing, debugging
+				}
+				ifCond();
 
-				if (ifCond)
-					(*ifCond)();
+				this->bestR = result; //it should move, this copy is only for testing
+				return true;
+			}
+			else
+				return false;
+		}
+
+		// overload to ignore second condition, nullptr must be passed
+		template <typename _ret, class C1, typename T,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, std::nullptr_t, T &&result)
+		{
+			std::unique_lock<std::mutex> lck(mtx);
+			if (Cond(refValueGlobal[0], refValueLocal))
+			{
+				this->refValueGlobal[0] = refValueLocal;
+				return true;
+			}
+			else
+				return false;
+		}
+		/* a reference value is replaced based on the user's conditions. 
+			ifCond is used when the user wants to print out results or any other thing thread safely
+			ifCond is optional, if not passed, then nullptr should be passed in instead*/
+		template <typename _ret, class C1, class C2, typename T,
+				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result)
+		{
+			std::unique_lock<std::mutex> lck(mtx);
+			if (Cond(refValueGlobal[0], refValueLocal))
+			{
+				this->refValueGlobal[0] = refValueLocal;
+				ifCond();
 				return true;
 			}
 			else
@@ -391,9 +558,14 @@ namespace library
 			this->thread_pool.wait();
 		}
 
+		bool has_result()
+		{
+			return bestR.has_value();
+		}
+
 		template <typename RESULT_TYPE>
 		auto retrieveResult()
-		{ // fetching results caught by the library
+		{ // fetching results caught by the library=
 			return std::any_cast<RESULT_TYPE>(bestR);
 		}
 

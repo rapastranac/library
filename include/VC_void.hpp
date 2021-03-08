@@ -190,8 +190,8 @@ private:
             ++leaves;
         };
 
-        branchHandler.replaceIf<void>(graph.coverSize(), condition1, &ifCond1, graph); // thread safe
-        branchHandler.replaceIf<void>(graph.coverSize(), condition2, &ifCond2, graph);
+        branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition1, ifCond1, graph); // thread safe
+        branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition2, ifCond2, graph);
 
         return;
     }

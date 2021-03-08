@@ -6,6 +6,8 @@ class VC_FPT_void : public VertexCover
 {
     using HolderType = library::ResultHolder<void, int, int, Graph>;
 
+    int FPT_init = -1;
+
 private:
     std::function<void(int, int, int, Graph &, void *)> _f;
 
@@ -32,26 +34,38 @@ public:
         size_t k_uBound = graph.max_k();
         size_t k_lBound = graph.min_k();
         int k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
+        k_prime = 174;
         currentMVCSize = k_prime;
 
         begin = std::chrono::steady_clock::now();
 
         try
         {
-            branchHandler.setRefValue(0);
-            //testing ****************************************
-            HolderType initial(branchHandler, -1);
+            for (int k = k_prime; k > k_lBound; k--)
             {
-                int depth = 0;
-                initial.holdArgs(k_prime, depth, graph);
-                branchHandler.push_multithreading<void>(_f, -1, initial);
-            }
-            //************************************************
+                FPT_init = k;
+                branchHandler.setRefValue(0); // resets flag to 0
+                auto g = graph;
+                HolderType initial(branchHandler, -1);
+                {
+                    int depth = 0;
+                    initial.holdArgs(k, depth, g);
+                    branchHandler.push_multithreading<void>(_f, -1, initial);
+                }
+                //************************************************
 
-            branchHandler.wait();
-            graph_res = branchHandler.retrieveResult<Graph>();
-            graph_res2 = graph_res;
-            cover = graph_res.postProcessing();
+                branchHandler.wait(); // acts like a barrier
+                if (branchHandler.has_result())
+                {
+                    graph_res = branchHandler.retrieveResult<Graph>();
+                    cover = graph_res.postProcessing();
+                    fmt::print("MVC {} found for k = {}, {} \n", cover.size(), k, true);
+                }
+                else
+                    fmt::print("MVC not found for k = {}, {}", k, false);
+                //graph_res2 = graph_res;
+                //cover = graph_res.postProcessing();
+            }
         }
         catch (std::exception &e)
         {
@@ -77,20 +91,18 @@ public:
     {
 
         if (k < 0 || branchHandler.getRefValue() == 1)
-        {
-            size_t addition = k + graph.coverSize();
             return;
-        }
-
-        if (graph.size() == 0 && k == 0)
+        if (graph.coverSize() == FPT_init && graph.getNumEdges() == 0)
         {
-            //valid
 #ifdef DEBUG_COMMENTS
             printf("Leaf reached, depth : %d \n", depth);
 #endif
-            terminate_condition(graph, id, depth);
+            terminate_condition(graph, id, k, depth);
             return;
         }
+        if (graph.getNumEdges() == 0)
+            return;
+
         Graph gLeft = graph;             /*Let gLeft be a copy of graph*/
         Graph gRight = std::move(graph); // graph;	/*Let gRight be a copy of graph*/
         int newDepth = depth + 1;
@@ -104,47 +116,48 @@ public:
         branchHandler.linkParent(id, parent, hol_l, hol_r);
 #endif
         gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
+        gLeft.removeZeroVertexDegree();
         int k_l = k - 1;
-        gLeft.clean_graph();
-        int C1Size = (int)gLeft.coverSize();
-        int k_r = gRight.removeNv(v);
-        gRight.clean_graph();
-        int C2Size = (int)gRight.coverSize();
+        //gLeft.clean_graph();
+        //int C1Size = (int)gLeft.coverSize();
+        int k_r = k - gRight.removeNv(v);
+        gRight.removeZeroVertexDegree();
+        //gRight.clean_graph();
+        //int C2Size = (int)gRight.coverSize();
         hol_r.holdArgs(k_r, newDepth, gRight);
         //*******************************************************************************************
 
-        if (C1Size < branchHandler.getRefValue())
-        {
-            hol_l.holdArgs(k_l, newDepth, gLeft);
+        // left recursion ***************************************************************************
+        hol_l.holdArgs(k_l, newDepth, gLeft);
 #ifdef DLB
-            branchHandler.push_multithreading<void>(_f, id, hol_l, true);
+        branchHandler.push_multithreading<void>(_f, id, hol_l, true);
 #else
-            branchHandler.push_multithreading<void>(_f, id, hol_l);
+        branchHandler.push_multithreading<void>(_f, id, hol_l);
 #endif
-        }
+        //*******************************************************************************************
 
-        if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
-        {
+        // right recursion **************************************************************************
 #ifdef DLB
-            branchHandler.forward<void>(_f, id, hol_r, true);
+        branchHandler.forward<void>(_f, id, hol_r, true);
 #else
-            branchHandler.forward<void>(_f, id, hol_r);
+        branchHandler.forward<void>(_f, id, hol_r);
 #endif
-        }
+        //*******************************************************************************************
 
         return;
     }
 
 private:
-    void terminate_condition(Graph &graph, int id, int depth)
+    void terminate_condition(Graph &graph, int id, int k, int depth)
     {
-        auto condition1 = [this](int refValGlobal, int refValLocal) {
-            return (leaves == 0) && (refValLocal < refValGlobal) ? true : false;
+        auto condition = [this](int refValGlobal, int refValLocal) {
+            return refValLocal != refValGlobal ? true : false;
         };
-        //if condition1 complies, then ifCond1 is called
-        auto ifCond1 = [&]() {
+        //if condition is met, then ifCond is called
+        /*auto ifCond = [&]() {
             foundAtDepth = depth;
-            string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
+            auto res = graph.postProcessing();
+            string col1 = fmt::format("MVC found so far has {} elements", res.size());
             string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
             cout << std::internal
                  << std::setfill('.')
@@ -155,33 +168,9 @@ private:
 
             outFile(col1, col2);
             ++leaves;
-        };
+        }; */
 
-        auto condition2 = [](int refValGlobal, int refValLocal) {
-            return refValLocal < refValGlobal ? true : false;
-        };
-
-        auto ifCond2 = [&]() {
-            foundAtDepth = depth;
-            string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-            string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
-            cout << std::internal
-                 << col1
-                 << std::setw(wide - col1.size())
-                 << col2
-                 << "\n";
-
-            outFile(col1, col2);
-            if (depth > measured_Depth)
-            {
-                measured_Depth = depth;
-            }
-
-            ++leaves;
-        };
-
-        branchHandler.replaceIf<void>(graph.coverSize(), condition1, &ifCond1, graph); // thread safe
-        branchHandler.replaceIf<void>(graph.coverSize(), condition2, &ifCond2, graph);
+        branchHandler.replace_refValGlobal_If<void>(1, condition, nullptr, graph); // thread safe
 
         return;
     }

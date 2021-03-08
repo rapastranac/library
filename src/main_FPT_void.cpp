@@ -32,7 +32,7 @@ int main_FPT_void(int numThreads, int prob, std::string filename)
 
     cover.init(graph, numThreads, filename, prob);
     cover.findCover(1);
-    cover.printSolution();
+    //cover.printSolution();
 
     return 0;
 }

@@ -656,6 +656,7 @@ public:
 		}
 	}
 
+	// it returns the number of neighbours that were removed
 	[[nodiscard]] auto removeNv(int v)
 	{
 		std::set<int> neighboursOfv(list[v]); //copy of neigbours of vertex v
@@ -739,35 +740,35 @@ public:
 
 	/*It explores the highest degree edges and choses whether
 		the first one in the list or randomly*/
-	int id_max(bool random = true)
+	[[nodiscard]] int id_max(bool random = true)
 	{
 		return (random == true) ? _getRandomVertex(this->idsMax) : idsMax[0];
 	}
 
-	int id_min(bool random = true)
+	[[nodiscard]] int id_min(bool random = true)
 	{
 		return (random == true) ? _getRandomVertex(this->idsMin) : idsMin[0];
 	}
 
-	int d_max()
+	[[nodiscard]] int d_max()
 	{
 		return max;
 	}
 
-	int d_min()
+	[[nodiscard]] int d_min()
 	{
 		return min;
 	}
 
 	//Returns graph's size
-	int size()
+	[[nodiscard]] int size()
 	{
 		return this->list.size();
 	}
 
 	//returns cover size
 
-	int coverSize()
+	[[nodiscard]] int coverSize()
 	{
 		return this->_cover.size();
 	}
@@ -798,7 +799,7 @@ public:
 	iterator begin() { return list.begin(); }
 	iterator end() { return list.end(); }
 
-	size_t preprocessing()
+	[[nodiscard]] size_t preprocessing()
 	{
 
 		clean_graph();
@@ -840,12 +841,12 @@ public:
 		_updateVertexDegree();
 	}
 
-	std::set<int> cover()
+	[[nodiscard]] std::set<int> cover()
 	{
 		return _cover;
 	}
 
-	std::set<int> postProcessing()
+	[[nodiscard]] std::set<int> postProcessing()
 	{
 		//_cover.insert(-2);
 		std::set<int>::iterator it = _cover.begin();
@@ -894,7 +895,7 @@ public:
 		return _cover;
 	}
 
-	int max_k()
+	[[nodiscard]] int max_k()
 	{
 		if (!list.empty())
 		{
@@ -905,7 +906,7 @@ public:
 		return 0;
 	}
 
-	int min_k()
+	[[nodiscard]] int min_k()
 	{
 		if (!list.empty())
 		{
@@ -917,7 +918,7 @@ public:
 		return 0;
 	}
 
-	int getNumEdges()
+	[[nodiscard]] int getNumEdges()
 	{
 		return this->numEdges;
 	}
