@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
 	//auto filename = "input/prob_4/400/00400_1";
 	//auto filename = "input/prob_4/600/00600_1";
 	//auto filename = "/home/andres/Downloads/vc_graphs/graphs_500_0.1/10000_500/prob_0.1/0";
-	//auto filename = "input/yeast";
-	filename = "input/prob_4/100/00100_1";
+	//filename = "input/p_hat1000-2";
+	//filename = "input/prob_4/100/00100_1";
 
 	//if (argc > 1)
 	//{

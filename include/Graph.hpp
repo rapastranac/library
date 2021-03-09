@@ -24,9 +24,9 @@ private:
 
 	struct FoldedVertices
 	{
-		int u;
-		int v;
-		int w;
+		int u{-1};
+		int v{-1};
+		int w{-1};
 		/*this id is negative so it does not get confused with
 			positive vertices' names, then negative vertices in graph
 			will be those ones who were folded*/
@@ -34,9 +34,6 @@ private:
 
 		FoldedVertices()
 		{
-			u = -1;
-			v = -1;
-			w = -1;
 		}
 
 		FoldedVertices(int u, int v, int w)
@@ -51,8 +48,6 @@ private:
 		{
 			ar(u, v, w);
 		}
-
-		~FoldedVertices() = default;
 	};
 
 	void _addRowToList(int vec0)
@@ -264,7 +259,7 @@ private:
 		while (pn != pendant_neighbour.end())
 		{
 			//numEdges -= list[*pn].size();
-			erase(list, *pn);
+			this->erase(list, *pn);
 
 			//this->vertexDegree.erase(*pn);
 			//numVertices--;
@@ -434,18 +429,30 @@ private:
 
 	void erase(map<int, set<int>> &list, int v)
 	{
-		set<int>::const_iterator it = list[v].begin();
-
-		while (it != list[v].end())
+		try
 		{
-			list[*it].erase(v);
-			this->vertexDegree[*it]--;
-			it++;
+			set<int>::const_iterator it = list[v].begin();
+
+			while (it != list[v].end())
+			{
+				list[*it].erase(v);
+				this->vertexDegree[*it]--;
+				it++;
+			}
+			numEdges -= list[v].size();
+			numVertices--;
+			list.erase(v);
+			this->vertexDegree.erase(v);
 		}
-		numEdges -= list[v].size();
-		numVertices--;
-		list.erase(v);
-		this->vertexDegree.erase(v);
+		catch (const std::exception &e)
+		{
+			std::stringstream ss;
+			ss << "Exception while erasing vertex from list"
+			   << '\n'
+			   << e.what() << '\n';
+
+			std::cerr << ss.str();
+		}
 	}
 
 	void build(int n, double p)
@@ -574,7 +581,7 @@ public:
 
 			/*After erasing vertices, some of them might end up with zero degree,
 			this function is in charge of erasing those vertices*/
-			for (auto i : _zeroVertexDegree)
+			for (auto &i : _zeroVertexDegree)
 			{
 				list.erase(i);
 				vertexDegree.erase(i);
@@ -657,7 +664,7 @@ public:
 	}
 
 	// it returns the number of neighbours that were removed
-	[[nodiscard]] auto removeNv(int v)
+	auto removeNv(int v)
 	{
 		std::set<int> neighboursOfv(list[v]); //copy of neigbours of vertex v
 		int nNeighours = neighboursOfv.size();
@@ -740,35 +747,35 @@ public:
 
 	/*It explores the highest degree edges and choses whether
 		the first one in the list or randomly*/
-	[[nodiscard]] int id_max(bool random = true)
+	int id_max(bool random = true)
 	{
 		return (random == true) ? _getRandomVertex(this->idsMax) : idsMax[0];
 	}
 
-	[[nodiscard]] int id_min(bool random = true)
+	int id_min(bool random = true)
 	{
 		return (random == true) ? _getRandomVertex(this->idsMin) : idsMin[0];
 	}
 
-	[[nodiscard]] int d_max()
+	int d_max()
 	{
 		return max;
 	}
 
-	[[nodiscard]] int d_min()
+	int d_min()
 	{
 		return min;
 	}
 
 	//Returns graph's size
-	[[nodiscard]] int size()
+	int size()
 	{
 		return this->list.size();
 	}
 
 	//returns cover size
 
-	[[nodiscard]] int coverSize()
+	int coverSize()
 	{
 		return this->_cover.size();
 	}
@@ -799,7 +806,7 @@ public:
 	iterator begin() { return list.begin(); }
 	iterator end() { return list.end(); }
 
-	[[nodiscard]] size_t preprocessing()
+	size_t preprocessing()
 	{
 
 		clean_graph();
@@ -841,12 +848,12 @@ public:
 		_updateVertexDegree();
 	}
 
-	[[nodiscard]] std::set<int> cover()
+	std::set<int> cover()
 	{
 		return _cover;
 	}
 
-	[[nodiscard]] std::set<int> postProcessing()
+	std::set<int> postProcessing()
 	{
 		//_cover.insert(-2);
 		std::set<int>::iterator it = _cover.begin();
@@ -895,7 +902,7 @@ public:
 		return _cover;
 	}
 
-	[[nodiscard]] int max_k()
+	int max_k()
 	{
 		if (!list.empty())
 		{
@@ -906,7 +913,7 @@ public:
 		return 0;
 	}
 
-	[[nodiscard]] int min_k()
+	int min_k()
 	{
 		if (!list.empty())
 		{
@@ -918,7 +925,7 @@ public:
 		return 0;
 	}
 
-	[[nodiscard]] int getNumEdges()
+	int getNumEdges()
 	{
 		return this->numEdges;
 	}
@@ -994,11 +1001,11 @@ public:
 		return tmp;
 	}
 
-	Graph(const Graph &) = default;
-	Graph(Graph &&) = default;
-	Graph &operator=(const Graph &) = default;
-	Graph &operator=(Graph &&) = default;
-	virtual ~Graph() = default;
+	//Graph(const Graph &) = default;
+	//Graph(Graph &&) = default;
+	//Graph &operator=(const Graph &) = default;
+	//Graph &operator=(Graph &&) = default;
+	//virtual ~Graph() = default;
 
 	template <class Archive>
 	void serialize(Archive &ar)

@@ -94,7 +94,7 @@ public:
             return;
         }
 
-        if (graph.size() <= 0)
+        if (graph.size() == 0)
         {
 #ifdef DEBUG_COMMENTS
             printf("Leaf reached, depth : %d \n", depth);
