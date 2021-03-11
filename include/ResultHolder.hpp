@@ -93,7 +93,7 @@ namespace library
 				// **************************************************************
 				// **************************************************************
 				// **************************************************************
-				// I believe this is duplication of somethin that has already happened
+				// I believe this is duplication of something that has already happened
 				// if a thread reach this point of a holder,
 				// the holder should have already been assigned a root in branchHandler.roots[threadId]
 				//then "this->root" is already pointing to branchHandler.roots[threadId]

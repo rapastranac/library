@@ -17,12 +17,12 @@ include_directories(${MPI_INCLUDE_PATH})
 #link_directories(${Boost_LIBRARY_DIRS})
 #include_directories(${Boost_INCLUDE_DIRS})
 
-#add_definitions(-DDLB=true)
-#add_definitions(-DMPI_ENABLED)
+add_definitions(-DDLB=true)
+add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
-add_definitions(-DVC_VOID)
+#add_definitions(-DVC_VOID)
 #add_definitions(-DVC_FPT_VOID)
-#add_definitions(-DVC_VOID_MPI)
+add_definitions(-DVC_VOID_MPI)
 #add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
 
@@ -30,8 +30,8 @@ add_definitions(-DVC_VOID)
 #add_compile_options("-g" "-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
 
 #Here below for boost
-add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
-#add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
+#add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
+add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
 
 #sets the executable in main folder
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )

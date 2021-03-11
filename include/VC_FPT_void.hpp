@@ -90,6 +90,15 @@ public:
 
     void mvc(int id, int k, int depth, Graph &graph, void *parent)
     {
+        size_t LB = graph.min_k();
+        //size_t degLB = graph.DegLB();
+        size_t UB = graph.max_k();
+        //size_t k = relaxation(k1, k2);
+
+        if (graph.coverSize() + LB >= (size_t)currentMVCSize)
+        {
+            return;
+        }
 
         if (k < 0 || branchHandler.getRefValue() == 1)
             return;
@@ -155,6 +164,7 @@ private:
             return refValLocal != refValGlobal ? true : false;
         };
         branchHandler.replace_refValGlobal_If<void>(1, condition, nullptr, graph); // thread safe
+        currentMVCSize = graph.coverSize();
 
         return;
     }

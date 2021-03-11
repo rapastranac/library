@@ -52,7 +52,7 @@ private:
 
 	void _addRowToList(int vec0)
 	{
-		this->list.insert(pair<int, set<int>>(vec0, rows));
+		this->adj.insert(pair<int, set<int>>(vec0, rows));
 		this->rows.clear();
 	}
 
@@ -67,8 +67,8 @@ private:
 			max = 0;
 		}
 
-		map<int, set<int>>::iterator it = this->list.begin();
-		while (it != list.end())
+		map<int, set<int>>::iterator it = this->adj.begin();
+		while (it != adj.end())
 		{
 			tmp = it->second.size();
 			this->vertexDegree.insert({it->first, tmp});
@@ -77,8 +77,8 @@ private:
 			++it;
 		}
 
-		it = list.begin();
-		while (it != list.end())
+		it = adj.begin();
+		while (it != adj.end())
 		{
 			if (this->vertexDegree[it->first] == this->max)
 			{
@@ -98,8 +98,8 @@ private:
 			min = numVertices;
 		}
 
-		map<int, set<int>>::iterator it = this->list.begin();
-		while (it != list.end())
+		map<int, set<int>>::iterator it = this->adj.begin();
+		while (it != adj.end())
 		{
 			tmp = it->second.size();
 			this->vertexDegree.insert({it->first, tmp});
@@ -108,8 +108,8 @@ private:
 			++it;
 		}
 
-		it = list.begin();
-		while (it != list.end())
+		it = adj.begin();
+		while (it != adj.end())
 		{
 			if (this->vertexDegree[it->first] == this->min)
 			{
@@ -167,16 +167,16 @@ private:
 	{
 
 		int _counterEdges = 0;
-		auto _list_copy = this->list;
-		map<int, set<int>>::iterator it = _list_copy.begin();
+		auto adj_cpy = this->adj;
+		map<int, set<int>>::iterator it = adj_cpy.begin();
 
-		while (it != _list_copy.end())
+		while (it != adj_cpy.end())
 		{
 			_counterEdges += it->second.size();
 			set<int>::iterator it2 = it->second.begin();
 			while (it2 != it->second.end())
 			{
-				_list_copy[*it2].erase(it->first);
+				adj_cpy[*it2].erase(it->first);
 				++it2;
 			}
 			++it;
@@ -191,16 +191,16 @@ private:
 	Thus, in G0, an isolated vertex can be eliminated, reducing n0 by one.
 	This rule is applied repeatedly until all isolated
 	vertices are eliminated.*/
-	bool _rule1(map<int, set<int>> &list)
+	bool _rule1(map<int, set<int>> &adj)
 	{
 
-		map<int, set<int>>::const_iterator it = list.begin();
+		map<int, set<int>>::const_iterator it = adj.begin();
 
 		std::vector<int> degree_zero;
 		std::once_flag flag;
 		bool isChanged = false;
 
-		while (it != list.end())
+		while (it != adj.end())
 		{
 			if (it->second.size() == 0)
 			{
@@ -213,7 +213,7 @@ private:
 		while (_it_ != degree_zero.end())
 		{
 
-			list.erase(*_it_);
+			adj.erase(*_it_);
 			this->vertexDegree.erase(*_it_);
 			numVertices--;
 
@@ -234,15 +234,15 @@ private:
 	vertices for deletion under Rule 1. This reduces n� by the number
 	of deleted vertices and reduces k� by one. This rule is applied repeatedly
 	until all pendant vertices are eliminated.*/
-	bool _rule2(map<int, set<int>> &list)
+	bool _rule2(map<int, set<int>> &adj)
 	{
 
-		map<int, set<int>>::const_iterator it = list.begin();
+		map<int, set<int>>::const_iterator it = adj.begin();
 		set<int> pendant_neighbour;
 		std::once_flag flag;
 		bool isChanged = false;
 
-		while (it != list.end())
+		while (it != adj.end())
 		{
 			if (it->second.size() == 1)
 			{
@@ -258,8 +258,8 @@ private:
 		//numEdges -= pendant_neighbour.size();
 		while (pn != pendant_neighbour.end())
 		{
-			//numEdges -= list[*pn].size();
-			this->erase(list, *pn);
+			//numEdges -= adj[*pn].size();
+			this->erase(adj, *pn);
 
 			//this->vertexDegree.erase(*pn);
 			//numVertices--;
@@ -273,19 +273,19 @@ private:
 		return isChanged;
 	}
 
-	bool _rule3(map<int, set<int>> &list)
+	bool _rule3(map<int, set<int>> &adj)
 	{
 		/*		u ---- v ~~~
 				 \	  /
 				  \  /
 				   w ~~~
 		*/
-		map<int, set<int>>::const_iterator u = list.begin();
+		map<int, set<int>>::const_iterator u = adj.begin();
 		bool isChanged = false;
 		bool flag = false;
 		std::once_flag oo_flag;
 
-		while (u != list.end())
+		while (u != adj.end())
 		{
 			if (u->second.size() == 2)
 			{
@@ -294,14 +294,14 @@ private:
 				int v = *an;
 				an++;
 				int w = *an;
-				if (list[v].contains(w) && list[w].contains(v))
+				if (adj[v].contains(w) && adj[w].contains(v))
 				{
 					_cover.insert(v);
 					_cover.insert(w);
 
-					erase(list, u->first);
-					erase(list, v);
-					erase(list, w);
+					erase(adj, u->first);
+					erase(adj, v);
+					erase(adj, w);
 					//this->numEdges -= 3;
 					flag = true;
 					std::call_once(oo_flag, [&isChanged]() {
@@ -312,7 +312,7 @@ private:
 
 			if (flag)
 			{
-				u = list.begin();
+				u = adj.begin();
 				flag = false;
 			}
 			else
@@ -323,7 +323,7 @@ private:
 		return isChanged;
 	}
 
-	bool _rule4(map<int, set<int>> &list)
+	bool _rule4(map<int, set<int>> &adj)
 	{
 		/*		u ---- v ~~~
 				 \				==>  ~~~(u')~~~
@@ -331,7 +331,7 @@ private:
 				   w ~~~
 		*/
 
-		map<int, set<int>>::const_iterator u = list.begin();
+		map<int, set<int>>::const_iterator u = adj.begin();
 		map<int, set<int>> folded_vertices;
 		bool isChanged = false;
 		std::once_flag oo_flag;
@@ -340,7 +340,7 @@ private:
 
 		bool flag = false;
 
-		while (u != list.end())
+		while (u != adj.end())
 		{
 			if (u->second.size() == 2)
 			{
@@ -349,7 +349,7 @@ private:
 				int v = *an;
 				an++;
 				int w = *an;
-				if (!list[v].contains(w) && !list[w].contains(v))
+				if (!adj[v].contains(w) && !adj[w].contains(v))
 				{
 					//Check to not fold already folded vertices
 					if (u->first < 0 || v < 0 || w < 0)
@@ -360,13 +360,13 @@ private:
 
 					//Create (u')
 					FoldedVertices u_prime(u->first, v, w);
-					//push to a list of all the folded vertices
+					//push to a adj of all the folded vertices
 					foldedVertices.insert(pair<int, FoldedVertices>(id, u_prime));
 
 					//Check neighbours of v
 					set<int> foldedNeigbours;
-					set<int>::const_iterator i = list[v].begin();
-					while (i != list[v].end())
+					set<int>::const_iterator i = adj[v].begin();
+					while (i != adj[v].end())
 					{
 						if (*i != u->first)
 						{
@@ -375,8 +375,8 @@ private:
 						i++;
 					}
 					//Check neighbours of w
-					i = list[w].begin();
-					while (i != list[w].end())
+					i = adj[w].begin();
+					while (i != adj[w].end())
 					{
 						if (*i != u->first)
 						{
@@ -386,18 +386,18 @@ private:
 					}
 
 					//Erase u,v and w from the graph
-					erase(list, u->first);
-					erase(list, v);
-					erase(list, w);
+					erase(adj, u->first);
+					erase(adj, v);
+					erase(adj, w);
 
 					//Insert (u') into graph
-					list.insert(pair<int, set<int>>(id, foldedNeigbours));
+					adj.insert(pair<int, set<int>>(id, foldedNeigbours));
 					numVertices++;
 					//link the neighbours of v and w to (u')
 					i = foldedNeigbours.begin();
 					while (i != foldedNeigbours.end())
 					{
-						list[*i].insert(id);
+						adj[*i].insert(id);
 						numEdges++;
 						i++;
 					}
@@ -416,7 +416,7 @@ private:
 
 			if (flag)
 			{
-				u = list.begin();
+				u = adj.begin();
 				flag = false;
 			}
 			else
@@ -427,27 +427,27 @@ private:
 		return isChanged;
 	}
 
-	void erase(map<int, set<int>> &list, int v)
+	void erase(map<int, set<int>> &adj, int v)
 	{
 		try
 		{
-			set<int>::const_iterator it = list[v].begin();
+			set<int>::const_iterator it = adj[v].begin();
 
-			while (it != list[v].end())
+			while (it != adj[v].end())
 			{
-				list[*it].erase(v);
+				adj[*it].erase(v);
 				this->vertexDegree[*it]--;
 				it++;
 			}
-			numEdges -= list[v].size();
+			numEdges -= adj[v].size();
 			numVertices--;
-			list.erase(v);
+			adj.erase(v);
 			this->vertexDegree.erase(v);
 		}
 		catch (const std::exception &e)
 		{
 			std::stringstream ss;
-			ss << "Exception while erasing vertex from list"
+			ss << "Exception while erasing vertex from adj"
 			   << '\n'
 			   << e.what() << '\n';
 
@@ -486,19 +486,19 @@ private:
 				if (r <= p)
 				{
 					++m;
-					list[i].insert(j);
-					list[j].insert(i);
+					adj[i].insert(j);
+					adj[j].insert(i);
 				}
 			}
 		}
 
-		/*This second loop is used only if list.size() != n*/
+		/*This second loop is used only if adj.size() != n*/
 		// rand()%a + b => interval-> [b, b + a)
-		if (list.size() < n)
+		if (adj.size() < n)
 		{
 			for (int i = 0; i < n; i++)
 			{
-				if (!list.contains(i))
+				if (!adj.contains(i))
 				{
 					m++;
 					int interval1 = i - 0;
@@ -525,14 +525,14 @@ private:
 						//int tmp = rand() % upp_bnd + low_bnd;
 						j = tmp;
 					}
-					list[i].insert(j);
-					list[j].insert(i);
-					//if (list.size() > n)
+					adj[i].insert(j);
+					adj[j].insert(i);
+					//if (adj.size() > n)
 					//{
 					//	int var = 5;
 					//}
 				}
-				if (list.size() == n)
+				if (adj.size() == n)
 					break;
 			}
 		}
@@ -583,7 +583,7 @@ public:
 			this function is in charge of erasing those vertices*/
 			for (auto &i : _zeroVertexDegree)
 			{
-				list.erase(i);
+				adj.erase(i);
 				vertexDegree.erase(i);
 			}
 			this->_zeroVertexDegree.clear();
@@ -602,15 +602,15 @@ public:
 
 	void removeEdge(const int &v, const int &w)
 	{
-		list[v].erase(w);
-		list[w].erase(v);
+		adj[v].erase(w);
+		adj[w].erase(v);
 
 		vertexDegree[v]--;
 		vertexDegree[w]--;
 
-		if (list[v].size() == 0)
+		if (adj[v].size() == 0)
 			_zeroVertexDegree.insert(v);
-		if (list[w].size() == 0)
+		if (adj[w].size() == 0)
 			_zeroVertexDegree.insert(w);
 
 		numEdges--;
@@ -621,20 +621,20 @@ public:
 	{
 		try
 		{
-			if (!list.contains(v))
+			if (!adj.contains(v))
 			{
 				throw "_VERTEX_NOT_FOUND";
 			}
 
-			numEdges = numEdges - list[v].size();
+			numEdges = numEdges - adj[v].size();
 
-			std::set<int>::const_iterator it = list[v].begin();
+			std::set<int>::const_iterator it = adj[v].begin();
 			/*Here we explore all the neighbours of v, and then we find
 			vertex v inside of those neighbours in order to erase v of them*/
-			while (it != list[v].end())
+			while (it != adj[v].end())
 			{
-				list[*it].erase(v);
-				if (list[*it].size() == 0)
+				adj[*it].erase(v);
+				if (adj[*it].size() == 0)
 				{
 					//Store temporary position of vertices that end up with no neighbours
 					this->_zeroVertexDegree.insert(*it);
@@ -645,7 +645,7 @@ public:
 
 			/*After v is been erased from its neighbours, then v is erased
 			from graph and the VertexDegree is updated*/
-			this->list.erase(v);
+			this->adj.erase(v);
 			this->vertexDegree.erase(v);
 
 			this->_cover.insert(v);
@@ -666,11 +666,11 @@ public:
 	// it returns the number of neighbours that were removed
 	auto removeNv(int v)
 	{
-		std::set<int> neighboursOfv(list[v]); //copy of neigbours of vertex v
+		std::set<int> neighboursOfv(adj[v]); //copy of neigbours of vertex v
 		int nNeighours = neighboursOfv.size();
 		for (auto i : neighboursOfv)
 		{
-			if (list.contains(i))
+			if (adj.contains(i))
 			{
 				this->_cover.insert(i);
 				removeVertex(i);
@@ -705,7 +705,7 @@ public:
 		}
 		_calculerVertexMaxDegree();
 		_readEdgesFromGraph();
-		//Graph::currentMVCSize = list.size();
+		//Graph::currentMVCSize = adj.size();
 		this->numVertices = _counter_vertices;
 	}
 
@@ -726,12 +726,12 @@ public:
 		{
 			i++;
 			file >> u >> v;
-			list[u].insert(v);
-			list[v].insert(u);
+			adj[u].insert(v);
+			adj[v].insert(u);
 		}
 
 		numEdges = i;
-		numVertices = list.size();
+		numVertices = adj.size();
 
 		/*4 testing*/
 		double mean = (double)numEdges / (double)numVertices;
@@ -770,7 +770,7 @@ public:
 	//Returns graph's size
 	int size()
 	{
-		return this->list.size();
+		return this->adj.size();
 	}
 
 	//returns cover size
@@ -789,9 +789,9 @@ public:
 	//gets neighbours of v, Nv(v) = {w1,w2, ... ,wi}
 	const std::set<int> &operator[](const int v) const
 	{
-		map<int, set<int>>::const_iterator it = list.find(v);
+		map<int, set<int>>::const_iterator it = adj.find(v);
 
-		if (it == list.end())
+		if (it == adj.end())
 		{
 			throw "_VERTEX_NOT_FOUND";
 		}
@@ -803,26 +803,26 @@ public:
 
 	typedef std::map<int, set<int>>::iterator iterator;
 
-	iterator begin() { return list.begin(); }
-	iterator end() { return list.end(); }
+	iterator begin() { return adj.begin(); }
+	iterator end() { return adj.end(); }
 
 	size_t preprocessing()
 	{
 
 		clean_graph();
-		auto _list = this->list;
+		auto _adj = this->adj;
 		bool flag = true;
-		flag = _rule4(_list);
-		this->list = _list;
+		flag = _rule4(_adj);
+		this->adj = _adj;
 		clean_graph();
 
 		_readEdgesFromGraph();
 		_calculerVertexMaxDegree();
 		_calculerVertexMinDegree();
 
-		this->numVertices = this->list.size();
+		this->numVertices = this->adj.size();
 
-		return list.size();
+		return adj.size();
 	}
 
 	void clean_graph()
@@ -836,12 +836,12 @@ public:
 				flag = true;
 				while (flag)
 				{
-					flag = _rule1(this->list);
-					flag = _rule2(this->list);
+					flag = _rule1(this->adj);
+					flag = _rule2(this->adj);
 				}
 			}
 
-			flag2 = _rule3(this->list);
+			flag2 = _rule3(this->adj);
 		}
 
 		this->_zeroVertexDegree.clear();
@@ -904,23 +904,23 @@ public:
 
 	int max_k()
 	{
-		if (!list.empty())
+		if (!adj.empty())
 		{
 			//double mxDegrees = list[idsMax[0]].size();
 			//return floor((double)list.size() / (1.0 + (1.0 / (mxDegrees))));
-			return ceil((double)list.size() / (1.0 + (1.0 / (max))));
+			return ceil((double)adj.size() / (1.0 + (1.0 / (max))));
 		}
 		return 0;
 	}
 
 	int min_k()
 	{
-		if (!list.empty())
+		if (!adj.empty())
 		{
 			//	double mxDegrees = list[idsMax[0]].size();
 			//	double minDegrees = list[idsMin[0]].size();
 			//return floor((double)list.size() / (1.0 + (mxDegrees / minDegrees)));
-			return floor((double)list.size() / (1.0 + ((double)max / (double)min)));
+			return floor((double)adj.size() / (1.0 + ((double)max / (double)min)));
 		}
 		return 0;
 	}
@@ -938,11 +938,11 @@ public:
 
 	void print_edges(std::ofstream &file)
 	{
-		map<int, set<int>>::const_iterator it = list.begin();
+		map<int, set<int>>::const_iterator it = adj.begin();
 
 		/*Fix this to not printing duplicated edges*/
 
-		while (!list.empty())
+		while (!adj.empty())
 		{
 			set<int>::const_iterator it2 = (*it).second.begin();
 			while (!(*it).second.empty())
@@ -958,11 +958,76 @@ public:
 				it2 = (*it).second.begin();
 			}
 			removeZeroVertexDegree();
-			if (!list.empty())
+			if (!adj.empty())
 				file << endl;
 
-			it = list.begin();
+			it = adj.begin();
 		}
+	}
+
+	int find_vi(std::vector<int> &vi)
+	{
+		auto adj_cpy = adj;
+		size_t sum = 0;
+		size_t MAX = max;
+		size_t edges_p = numEdges;
+
+		auto findMax = [&adj_cpy]() {
+			int max = 0;
+
+			for (auto &[key, val] : adj_cpy)
+			{
+				if (val.size() > max)
+					max = val.size();
+			}
+			return max;
+		};
+
+		auto iterator = adj_cpy.begin();
+		while (iterator != adj_cpy.end())
+		{
+			int key = iterator->first;
+			auto &neigbours = iterator->second;
+			if (neigbours.size() == MAX)
+			{
+				vi.push_back(key);
+				sum += neigbours.size();
+
+				edges_p -= neigbours.size();
+
+				for (auto &neighbour : neigbours)
+				{
+					adj_cpy[neighbour].erase(key);
+				}
+				adj_cpy.erase(key);
+				MAX = findMax();
+
+				if (sum >= numEdges)
+					break;
+
+				iterator = adj_cpy.begin();
+			}
+			else
+				iterator++;
+		}
+
+		return 0;
+	}
+	int DegLB()
+	{
+		if (adj.size() == 0)
+			return 0;
+
+		std::vector<int> vi;
+		int sum = find_vi(vi);
+		int last = vi.back();
+		int deg_last = adj[last].size();
+
+		int i = vi.size();
+
+		//int fraction = floor((double)numEdges / (double)deg_last);
+
+		return i;
 	}
 
 	/*		TEMPORARY		*/
@@ -970,11 +1035,11 @@ public:
 	std::vector<std::vector<int>> ADJ_MATRIX()
 	{
 
-		int N = list.size();
+		int N = adj.size();
 		std::vector<std::vector<int>> tmp(N, std::vector<int>(N, 0));
 
-		map<int, set<int>>::const_iterator it = list.begin();
-		while (it != list.end())
+		map<int, set<int>>::const_iterator it = adj.begin();
+		while (it != adj.end())
 		{
 			set<int>::const_iterator jt = it->second.begin();
 			while (jt != it->second.end())
@@ -991,9 +1056,9 @@ public:
 	{
 		std::vector<int> tmp;
 
-		std::map<int, set<int>>::const_iterator it = list.cbegin();
+		std::map<int, set<int>>::const_iterator it = adj.cbegin();
 
-		while (it != list.cend())
+		while (it != adj.cend())
 		{
 			tmp.push_back(it->second.size());
 			it++;
@@ -1014,7 +1079,7 @@ public:
 		   min,
 		   idsMax,
 		   idsMin,
-		   list,
+		   adj,
 		   rows,
 		   vertexDegree,
 		   _zeroVertexDegree,
@@ -1025,16 +1090,16 @@ public:
 	}
 
 private:
-	int max;						   /*Highest degree within graph*/
-	int min;						   /*Lowest degree within graph*/
-	std::vector<int> idsMax;		   /*Stores the positions of max degree
-									vertices within the adjacency list*/
-	std::vector<int> idsMin;		   /*same as above but for min degree*/
-	std::map<int, std::set<int>> list; /*Adjacency list*/
-	std::set<int> rows;				   /*Temporary variable to store*/
-	std::map<int, int> vertexDegree;   /*list of vertices with their corresponding
+	int max;						  /*Highest degree within graph*/
+	int min;						  /*Lowest degree within graph*/
+	std::vector<int> idsMax;		  /*Stores the positions of max degree
+									vertices within the adjacency adj*/
+	std::vector<int> idsMin;		  /*same as above but for min degree*/
+	std::map<int, std::set<int>> adj; /*Adjacency list*/
+	std::set<int> rows;				  /*Temporary variable to store*/
+	std::map<int, int> vertexDegree;  /*list of vertices with their corresponding
 									number of edges*/
-	std::set<int> _zeroVertexDegree;   /*List of vertices with zero degree*/
+	std::set<int> _zeroVertexDegree;  /*List of vertices with zero degree*/
 
 	std::map<int, FoldedVertices> foldedVertices;
 	std::set<int> _cover;

@@ -1,0 +1,71 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/10.2.0".
+
+
+Inactive Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.3     3) ucx/1.8.0
+
+The following have been reloaded with a version change:
+  1) gcccore/.9.3.0 => gcccore/.10.2.0
+
+
+Activating Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.5     3) ucx/1.9.0
+
+
+Currently Loaded Modules:
+  1) CCEnv           (S)      5) StdEnv/2020     (S)   9) pmix/3.1.5
+  2) CCconfig                 6) gcccore/.10.2.0 (H)  10) libfabric/1.10.1
+  3) gentoo/2020     (S)      7) gcc/10.2.0      (t)  11) openmpi/4.0.5    (m)
+  4) imkl/2020.1.217 (math)   8) ucx/1.9.0
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /gpfs/fs0/scratch/m/mlafond/pasr1602/library
+Starting run at: Tue Mar  9 08:15:38 EST 2021
+slurmstepd: error: *** STEP 4970778.0 ON nia0747 CANCELLED AT 2021-03-09T10:15:28 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 4970778 ON nia0747 CANCELLED AT 2021-03-09T10:15:28 DUE TO TIME LIMIT ***
+
+scontrol show jobid 4970778
+JobId=4970778 JobName=p_hat1000-2-1_40_threads
+   UserId=pasr1602(3102120) GroupId=mlafond(6054778) MCS_label=N/A
+   Priority=2310512 Nice=0 Account=def-mlafond QOS=normal
+   JobState=COMPLETING Reason=TimeLimit Dependency=(null)
+   Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:15
+   RunTime=02:00:07 TimeLimit=02:00:00 TimeMin=N/A
+   SubmitTime=2021-03-09T08:14:37 EligibleTime=2021-03-09T08:14:37
+   AccrueTime=2021-03-09T08:14:37
+   StartTime=2021-03-09T08:15:21 EndTime=2021-03-09T10:15:28 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2021-03-09T08:15:21
+   Partition=compute AllocNode:Sid=nia-login07:440740
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=nia0747
+   BatchHost=nia0747
+   NumNodes=1 NumCPUs=80 NumTasks=1 CPUs/Task=40 ReqB:S:C:T=0:0:*:*
+   TRES=cpu=80,mem=175G,node=1,billing=40
+   Socks/Node=* NtasksPerN:B:S:C=1:0:*:* CoreSpec=*
+   MinCPUsNode=40 MinMemoryNode=175G MinTmpDiskNode=0
+   Features=[skylake|cascade] DelayBoot=00:00:00
+   OverSubscribe=NO Contiguous=0 Licenses=(null) Network=(null)
+   Command=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/single.sh
+   WorkDir=/gpfs/fs0/scratch/m/mlafond/pasr1602/library
+   StdErr=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/p_hat1000-2-1_40_threads-4970778.out
+   StdIn=/dev/null
+   StdOut=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/p_hat1000-2-1_40_threads-4970778.out
+   Power=
+   MailUser=pasr1602@usherbrooke.ca MailType=BEGIN,END,FAIL,REQUEUE
+
+sacct -j 4970778
+       JobID    JobName    Account    Elapsed  MaxVMSize     MaxRSS  SystemCPU    UserCPU ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- ---------- ---------- -------- 
+4970778      p_hat1000+ def-mlafo+   02:00:07                        28:22.602 3-06:27:11      0:0 
+4970778.bat+      batch def-mlafo+   02:00:09    457296K      9220K  00:01.263  00:03.486     0:15 
+4970778.ext+     extern def-mlafo+   02:00:09    138360K      1068K   00:00:00   00:00:00      0:0 
+4970778.0         a.out def-mlafo+   01:59:53   3875372K   2525772K  28:21.339 3-06:27:07     0:15 

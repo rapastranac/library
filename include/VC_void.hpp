@@ -32,7 +32,10 @@ public:
         //size_t k_prime = std::min(k_mm, k_uBound);
         //currentMVCSize = k_prime;
         //preSize = graph.size();
+
         preSize = graph.preprocessing();
+
+        auto degLB = graph.DegLB();
 
         size_t k_mm = maximum_matching(graph);
         size_t k_uBound = graph.max_k();
@@ -84,13 +87,15 @@ public:
 
     void mvc(int id, int depth, Graph &graph, void *parent)
     {
-        size_t k1 = graph.min_k();
-        size_t k2 = graph.max_k();
-        size_t k = relaxation(k1, k2);
+        size_t LB = graph.min_k();
+        size_t degLB = graph.DegLB();
+        size_t UB = graph.max_k();
+        size_t mm = maximum_matching(graph);
+        //size_t k = relaxation(k1, k2);
 
-        if (k + graph.coverSize() >= branchHandler.getRefValue())
+        if (graph.coverSize() + std::min(LB, degLB) >= (size_t)branchHandler.getRefValue())
         {
-            size_t addition = k + graph.coverSize();
+            //size_t addition = k + graph.coverSize();
             return;
         }
 
@@ -102,8 +107,18 @@ public:
             terminate_condition(graph, id, depth);
             return;
         }
-        Graph gLeft = graph;             /*Let gLeft be a copy of graph*/
-        Graph gRight = std::move(graph); // graph;	/*Let gRight be a copy of graph*/
+        Graph gLeft;  //= graph;             /*Let gLeft be a copy of graph*/
+        Graph gRight; // = std::move(graph); // graph;	/*Let gRight be a copy of graph*/
+        try
+        {
+            gLeft = graph;
+            gRight = std::move(graph);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+
         int newDepth = depth + 1;
 
         int v = gLeft.id_max(false);

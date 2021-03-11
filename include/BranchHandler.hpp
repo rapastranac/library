@@ -689,9 +689,9 @@ namespace library
 			Holder *leftMost = nullptr; // this is the branch that led us to the root
 			Holder *root = nullptr;		// local pointer to root, to avoid "*" use
 
-			if (holder->parent)
+			if (holder->parent) // this confirms there might be a root
 			{
-				if (holder->parent != *holder->root)
+				if (holder->parent != *holder->root) // this confirms, the root isn't the parent
 				{
 					/* this condition complies if a branch has already
 					 been pushed, to ensure pushing leftMost first */
@@ -705,10 +705,10 @@ namespace library
 					leftMost = root->children.front(); //TODO ... check if branch has been pushed or forwarded
 				}
 				else
-					return nullptr;
+					return nullptr; // parent == root
 			}
 			else
-				return nullptr;
+				return nullptr; // there is no parent
 
 #ifdef DEBUG_COMMENTS
 			printf("rankd %d, likely to get an upperHolder \n", world_rank);
@@ -718,26 +718,9 @@ namespace library
 #ifdef DEBUG_COMMENTS
 			printf("rankd %d, root->children.size() = %d \n", world_rank, N_children);
 #endif
-			//while (parent->parent) {
-			//	leftMost = parent;
-			//	parent = parent->parent;
-			//}
-			//if (leftMost->children.size() == 0)
-			//{
-			//	/*If this complies, then it means it is the first time
-			//	this branch is going to be pushed, this avoids to push
-			//	right branches before the leftMost branch, if available threads*/
-			//	return nullptr;
-			//}
-			//		if (child == holder) {	//Why is this check?
-			//			holder->parent = nullptr;
-			//			return nullptr;
-			//		}
 
-			/*Here below, we check is left child was pushed to pool, then the pointer to parent is pruned*/
-			//	typename std::list<Holder*>::iterator leftMost = parent->children.begin();	//Where it came from
-			//	typename std::list<Holder*>::iterator nextElt = std::next(parent->children.begin(), 1); //this is to access 2nd elt
-			/*				 parent
+			/*Here below, we check is left child was pushed to pool, then the pointer to parent is pruned
+							 parent
 						  /  |  \   \  \
 						 /   |   \	 \	 \
 						/    |    \	  \	   \
@@ -758,6 +741,8 @@ namespace library
 
 			//TODO following lines applied to multiple recursion
 
+			/* there migh be a chance that a good solution has been found in which a top branch is wortless to
+				be pushed, then this branch is ignored if the bound condition is met*/
 			auto worthPushing = [](Holder *holder) -> Holder * {
 				if (holder->isBound())
 				{
@@ -797,23 +782,23 @@ namespace library
 					already pushed*/
 
 				root->children.pop_front();				// deletes leftMost from root's children
-				Holder *right = root->children.front(); //The one to be pushed
-				root->children.clear();
-				right->prune();
+				Holder *right = root->children.front(); // The one to be pushed
+				root->children.clear();					// ..
+				right->prune();							// just in case, right branch is not being sent anyway, only its data
+				leftMost->lowerRoot();					// it sets leftMost as the new root
 
-				leftMost->lowerRoot();
-
-				rootCorrecting(leftMost);
+				rootCorrecting(leftMost); // if leftMost has no pending branch, then root will be assigned to the next
+										  // descendant with at least two children (which is at least a pending branch),
+										  // or the lowest branch which is th one giving priority to root's children
 
 				return worthPushing(right);
 			}
 			else
 			{
-
-				std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+				std::cout << "4 Testing, it's not supposed to happen, checkParent()" << std::endl;
 				//auto s =std::source_location::current();
 				//fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
-				throw "Error";
+				throw "4 Testing, it's not supposed to happen, checkParent()";
 				return nullptr;
 			}
 		}
@@ -835,8 +820,8 @@ namespace library
 
 			if pb is fully solved sequentially or w_i were pushed but there is at least
 				one w_i remaining, then thread will return to first level where the
-				parent is also the root, then lestMost child of the root should be
-				deleted of the list since is already solved. Thus, pushing cb twice
+				parent is also the root, then leftMost child of the root should be
+				deleted of the list since it is already solved. Thus, pushing cb twice
 				is avoided because checkParent() pushes the second element of the children
 			*/
 
@@ -942,11 +927,12 @@ namespace library
 				this->busyThreads++;
 				upperHolder->setPushStatus(true);
 				lck.unlock();
+
 				std::args_handler::unpack_and_push_void(thread_pool, f, upperHolder->getArgs());
 				return true; // top holder found
 			}
-			checkRightSiblings(&holder); // this decrements parent's children
-			return false;				 // top holder not found
+			//checkRightSiblings(&holder); // this decrements parent's children
+			return false; // top holder not found
 		}
 
 		template <typename _ret, typename F, typename Holder,
@@ -980,6 +966,7 @@ namespace library
 			{									  // it also confirms that holder is not a parent (applies for DLB)
 				if (_parent->children.size() > 2) // this is for more than two recursions per scope
 				{
+					//TODO ..
 				}
 				else if (_parent->children.size() == 2) // this verifies that  it's binary and the rightMost will become a new root
 				{
@@ -990,10 +977,10 @@ namespace library
 				}
 				else
 				{
-					std::cout << "4 Testing, it's not supposed to happen" << std::endl;
+					std::cout << "4 Testing, it's not supposed to happen, checkRightSiblings()" << std::endl;
 					//auto s =std::source_location::current();
 					//fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
-					throw "Error";
+					throw "4 Testing, it's not supposed to happen, checkRightSiblings()";
 				}
 			}
 		}
@@ -1012,8 +999,12 @@ namespace library
 				{
 					bool res = try_top_holder<_ret>(lck, f, holder);
 					if (res)
-						return false; // if top holder found, then it should return false to keep trying
+						return false; // if top holder found, then it should
+									  // return false to keep trying another top holder
+
+					checkRightSiblings(&holder); // this decrements parent's children
 				}
+
 				//after this line, only leftMost holder should be pushed
 				this->requests++;
 				this->busyThreads++;
@@ -1027,13 +1018,10 @@ namespace library
 			{
 				lck.unlock();
 				if (is_DLB)
-				{
 					this->forward<_ret>(f, id, holder, true);
-				}
 				else
-				{
 					this->forward<_ret>(f, id, holder);
-				}
+
 				return true;
 			}
 		}

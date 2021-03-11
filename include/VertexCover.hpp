@@ -9,6 +9,7 @@
 #include "util.hpp"
 #include "fmt/core.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <iomanip>
 #include <vector>
