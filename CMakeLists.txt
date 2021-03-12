@@ -18,44 +18,30 @@ include_directories(${MPI_INCLUDE_PATH})
 #include_directories(${Boost_INCLUDE_DIRS})
 
 add_definitions(-DDLB=true)
-add_definitions(-DMPI_ENABLED)
+#add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
-#add_definitions(-DVC_VOID)
+add_definitions(-DVC_VOID)
 #add_definitions(-DVC_FPT_VOID)
-add_definitions(-DVC_VOID_MPI)
+#add_definitions(-DVC_VOID_MPI)
 #add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
 
-#add_compile_options("-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
-#add_compile_options("-g" "-std=c++2a" "-fconcepts" "-Wall" "-Wextra")
+add_compile_options("-std=c++2a")
 
 #Here below for boost
-#add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
-add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread")
+#add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
+add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
 
 #sets the executable in main folder
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
-include_directories("cereal" "fmt/include" )
-include_directories("include" "MPI_Modules")
+include_directories("include")
+include_directories("MPI_Modules")
+include_directories("cereal" )
+include_directories("fmt/include" )
 
-#set(MPI_inc
-#        MPI_Modules/Scheduler.hpp
-#        MPI_Modules/MPI_Mutex.hpp
-#        MPI_Modules/Utils.hpp
-#        )
+file(GLOB Sources "src/*.cpp")
 
-set(Sources
-    src/main.cpp
-    src/main_non_void_MPI.cpp
-    src/main_non_void.cpp
-    src/main_void_MPI.cpp
-    src/main_void.cpp
-    src/main_FPT_void.cpp
-    src/read_graphs.cpp
-)
-
-#${Include}
 add_executable(a.out  ${Sources} 
                     ${CMAKE_CURRENT_SOURCE_DIR}/fmt/src/format.cc
                     ${CMAKE_CURRENT_SOURCE_DIR}/fmt/src/os.cc)

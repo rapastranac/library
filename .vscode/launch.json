@@ -10,8 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/a.out",
             "args": [
-                "-N", "2",
-                "-I", "input/prob_4/400/00400_1"
+                "-N", "4",
+                "-I", "/home/andres/Downloads/vc_graphs/graphs_200_0.1/2000_200/prob_0.1/0"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

@@ -70,18 +70,18 @@ CMakeFiles/a.out.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main.cpp.s"
 	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main.cpp -o CMakeFiles/a.out.dir/src/main.cpp.s
 
-CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: CMakeFiles/a.out.dir/flags.make
-CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../src/main_non_void_MPI.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o"
-	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o -c /home/andres/Documents/github/library/src/main_non_void_MPI.cpp
+CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: CMakeFiles/a.out.dir/flags.make
+CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../src/main_FPT_void.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o"
+	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o -c /home/andres/Documents/github/library/src/main_FPT_void.cpp
 
-CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i"
-	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/main_non_void_MPI.cpp > CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i
+CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/main_FPT_void.cpp > CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i
 
-CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s"
-	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main_non_void_MPI.cpp -o CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s
+CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main_FPT_void.cpp -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s
 
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../src/main_non_void.cpp
@@ -96,18 +96,18 @@ CMakeFiles/a.out.dir/src/main_non_void.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_non_void.cpp.s"
 	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main_non_void.cpp -o CMakeFiles/a.out.dir/src/main_non_void.cpp.s
 
-CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: CMakeFiles/a.out.dir/flags.make
-CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../src/main_void_MPI.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
-	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o -c /home/andres/Documents/github/library/src/main_void_MPI.cpp
+CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: CMakeFiles/a.out.dir/flags.make
+CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../src/main_non_void_MPI.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o"
+	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o -c /home/andres/Documents/github/library/src/main_non_void_MPI.cpp
 
-CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i"
-	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/main_void_MPI.cpp > CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i
+CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/main_non_void_MPI.cpp > CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i
 
-CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s"
-	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main_void_MPI.cpp -o CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s
+CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main_non_void_MPI.cpp -o CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s
 
 CMakeFiles/a.out.dir/src/main_void.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../src/main_void.cpp
@@ -122,18 +122,18 @@ CMakeFiles/a.out.dir/src/main_void.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_void.cpp.s"
 	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main_void.cpp -o CMakeFiles/a.out.dir/src/main_void.cpp.s
 
-CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: CMakeFiles/a.out.dir/flags.make
-CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../src/main_FPT_void.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o"
-	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o -c /home/andres/Documents/github/library/src/main_FPT_void.cpp
+CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: CMakeFiles/a.out.dir/flags.make
+CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../src/main_void_MPI.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
+	/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o -c /home/andres/Documents/github/library/src/main_void_MPI.cpp
 
-CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i"
-	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/main_FPT_void.cpp > CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i
+CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/Documents/github/library/src/main_void_MPI.cpp > CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i
 
-CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s"
-	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main_FPT_void.cpp -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s
+CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s"
+	/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/Documents/github/library/src/main_void_MPI.cpp -o CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s
 
 CMakeFiles/a.out.dir/src/read_graphs.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/read_graphs.cpp.o: ../src/read_graphs.cpp
@@ -177,11 +177,11 @@ CMakeFiles/a.out.dir/fmt/src/os.cc.s: cmake_force
 # Object files for target a.out
 a_out_OBJECTS = \
 "CMakeFiles/a.out.dir/src/main.cpp.o" \
-"CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o" \
-"CMakeFiles/a.out.dir/src/main_non_void.cpp.o" \
-"CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o" \
-"CMakeFiles/a.out.dir/src/main_void.cpp.o" \
 "CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o" \
+"CMakeFiles/a.out.dir/src/main_non_void.cpp.o" \
+"CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o" \
+"CMakeFiles/a.out.dir/src/main_void.cpp.o" \
+"CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o" \
 "CMakeFiles/a.out.dir/src/read_graphs.cpp.o" \
 "CMakeFiles/a.out.dir/fmt/src/format.cc.o" \
 "CMakeFiles/a.out.dir/fmt/src/os.cc.o"
@@ -190,11 +190,11 @@ a_out_OBJECTS = \
 a_out_EXTERNAL_OBJECTS =
 
 ../a.out: CMakeFiles/a.out.dir/src/main.cpp.o
-../a.out: CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
-../a.out: CMakeFiles/a.out.dir/src/main_non_void.cpp.o
-../a.out: CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
-../a.out: CMakeFiles/a.out.dir/src/main_void.cpp.o
 ../a.out: CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o
+../a.out: CMakeFiles/a.out.dir/src/main_non_void.cpp.o
+../a.out: CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
+../a.out: CMakeFiles/a.out.dir/src/main_void.cpp.o
+../a.out: CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
 ../a.out: CMakeFiles/a.out.dir/src/read_graphs.cpp.o
 ../a.out: CMakeFiles/a.out.dir/fmt/src/format.cc.o
 ../a.out: CMakeFiles/a.out.dir/fmt/src/os.cc.o

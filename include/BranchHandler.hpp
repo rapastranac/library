@@ -774,7 +774,7 @@ namespace library
 			else if (root->children.size() == 2)
 			{
 #ifdef DEBUG_COMMENTS
-				printf("rankd %d, about to choose an upperHolder \n", world_rank);
+				printf("rank %d, about to choose an upperHolder \n", world_rank);
 #endif
 				/*	this scope is meant to push right branch which was put in waiting line
 					because there was no available thread to push leftMost branch, then leftMost
@@ -803,6 +803,7 @@ namespace library
 			}
 		}
 
+		// controls the root when sequential calls
 		template <typename Holder>
 		void checkLeftSibling(Holder *holder)
 		{
@@ -831,8 +832,14 @@ namespace library
 				{
 					Holder *leftMost = holder->parent->children.front();
 					if (leftMost != holder) //This confirms pb has already been solved
-					{
-						/* next conditional should always comply, there should not be required
+					{						/*
+						 root == parent
+						  /  |  \   \  \
+						 /   |   \	 \	 \
+						/    |    \	  \	   \
+					  pb     cb    w1  w2 ... wk
+					  		 **
+					   next conditional should always comply, there should not be required
 						* to use a loop, then this While is entitled to just a single loop. 4 testing!!
 						*/
 						while (leftMost != holder)
@@ -856,7 +863,20 @@ namespace library
 				}
 				else if (holder->parent != *holder->root) //any other level,
 				{
-					/* this is relevant, because eventhough the root still has some waiting nodes
+					/*
+						 root != parent
+						   /|  \   \  \
+						  / |   \	 \	 \
+					solved  *    w1  w2 . wk
+					       /|
+					solved	*
+						   /|
+					solved	* parent
+						   / \
+				 solved(pb)  cb
+
+
+					this is relevant, because eventhough the root still has some waiting nodes
 					the thread in charge of the tree might be deep down solving everything sequentially.
 					Every time a leftMost branch is solved sequentially, this one should be removed from 
 					the list to avoid failure attempts of solving a branch that has already been solved.
@@ -875,6 +895,38 @@ namespace library
 						*/
 						holder->parent->children.pop_front();
 					}
+				}
+			}
+		}
+
+		// controls the root when succesfull parallel calls ( if not upperHolder available)
+		template <typename Holder>
+		void checkRightSiblings(Holder *holder)
+		{
+			/* this method is invoked when DLB is enable and the method checkParent() was not able to find
+		a top branch to push, because it means the next right sibling will become a root(for binary recursion)
+		or just the leftMost will be unlisted from the parent's children. This method is invoked if and only if 
+		an available worker is available*/
+			auto *_parent = holder->parent;
+			if (_parent)						  // it should always comply, virtual parent is being created
+			{									  // it also confirms that holder is not a parent (applies for DLB)
+				if (_parent->children.size() > 2) // this is for more than two recursions per scope
+				{
+					//TODO ..
+				}
+				else if (_parent->children.size() == 2) // this verifies that  it's binary and the rightMost will become a new root
+				{
+					_parent->children.pop_front();
+					auto right = _parent->children.front();
+					_parent->children.pop_front();
+					right->lowerRoot();
+				}
+				else
+				{
+					std::cout << "4 Testing, it's not supposed to happen, checkRightSiblings()" << std::endl;
+					//auto s =std::source_location::current();
+					//fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
+					throw "4 Testing, it's not supposed to happen, checkRightSiblings()";
 				}
 			}
 		}
@@ -950,40 +1002,38 @@ namespace library
 				upperHolder->hold_future(std::move(ret));
 				return true; // top holder found
 			}
-			checkRightSiblings(&holder); // this decrements parent's children
-			return false;				 // top holder not found
+			//checkRightSiblings(&holder); // this decrements parent's children
+			return false; // top holder not found
 		}
 
-		/* this method is invoked when DLB is enable and the method checkParent() was not able to find
-		a top branch to push, because it means the next right sibling will become a root(for binary recursion)
-		or just the leftMost will be unlisted from the parent's children. This method is invoked if and only if 
-		an available worker is available*/
-		template <typename Holder>
-		void checkRightSiblings(Holder *holder)
+#ifdef MPI_ENABLED
+		template <typename Holder, typename F_serial>
+		bool try_top_holder(std::unique_lock<std::mutex> &lck, Holder &holder, F_serial &&f_serial, int dest_rank)
 		{
-			auto *_parent = holder->parent;
-			if (_parent)						  // it should always complies, virtual parent is being created
-			{									  // it also confirms that holder is not a parent (applies for DLB)
-				if (_parent->children.size() > 2) // this is for more than two recursions per scope
-				{
-					//TODO ..
-				}
-				else if (_parent->children.size() == 2) // this verifies that  it's binary and the rightMost will become a new root
-				{
-					_parent->children.pop_front();
-					auto right = _parent->children.front();
-					_parent->children.pop_front();
-					right->lowerRoot();
-				}
-				else
-				{
-					std::cout << "4 Testing, it's not supposed to happen, checkRightSiblings()" << std::endl;
-					//auto s =std::source_location::current();
-					//fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
-					throw "4 Testing, it's not supposed to happen, checkRightSiblings()";
-				}
+			Holder *upperHolder = checkParent(&holder);
+			if (upperHolder)
+			{
+				upperHolder->setMPISent(true, dest_rank);
+
+				auto _stream = std::apply(f_serial, upperHolder->getArgs());
+				int Bytes = _stream.str().size(); // number of Bytes
+
+				int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest_rank, 0, *world_Comm); // send buffer
+				if (err != MPI::SUCCESS)
+					printf("buffer failed to sent from rank %d to rank %d! \n", world_rank, dest_rank);
+
+				lck.unlock();
+#ifdef DEBUG_COMMENTS
+				printf("process %d forwarded top-holder to process %d \n", world_rank, dest_rank);
+#endif
+
+				return true; // top holder found
 			}
+			//checkRightSiblings(&holder); // this decrements parent's children
+			return false; // top holder not found
 		}
+
+#endif
 
 	public:
 		template <typename _ret, typename F, typename Holder,
@@ -1009,6 +1059,7 @@ namespace library
 				this->requests++;
 				this->busyThreads++;
 				holder.setPushStatus(true);
+				holder.prune();
 				lck.unlock();
 
 				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
@@ -1040,6 +1091,8 @@ namespace library
 					bool res = try_top_holder<_ret>(lck, f, holder);
 					if (res)
 						return false; //if top holder found, then it should return false to keep trying
+
+					checkRightSiblings(&holder);
 				}
 				this->requests++;
 				busyThreads++;
@@ -1115,48 +1168,34 @@ namespace library
 #ifdef DEBUG_COMMENTS
 						printf("process %d received positive signal from center \n", world_rank);
 #endif
-						int dest = status.MPI_TAG; // this is the available node, sent by center node as a tag
+						int dest_rank = status.MPI_TAG; // this is the available node, sent by center node as a tag
 #ifdef DEBUG_COMMENTS
-						printf("process %d received ID %d\n", world_rank, dest);
+						printf("process %d received ID %d\n", world_rank, dest_rank);
 #endif
 
 						///****************************
 						if (is_DLB)
 						{
-							Holder *upperHolder = checkParent(&holder);
-							if (upperHolder)
-							{
-								upperHolder->setMPISent(true, dest);
-
-								auto _stream = std::apply(f_serial, upperHolder->getArgs());
-								int Bytes = _stream.str().size(); // number of Bytes
-
-								int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
-								if (err != MPI::SUCCESS)
-									printf("buffer failed to sent from rank %d to rank %d! \n", world_rank, dest);
-
-								mpi_lck.unlock();
-#ifdef DEBUG_COMMENTS
-								printf("process %d forwarded top-holder to process %d \n", world_rank, dest);
-#endif
+							bool r = try_top_holder(mpi_lck, holder, f_serial, dest_rank);
+							if (r)
 								return 2;
-							}
+
 							checkRightSiblings(&holder); // this decrements parent's children
 						}
 						///****************************
 
-						holder.setMPISent(true, dest);
+						holder.setMPISent(true, dest_rank);
 
 						auto _stream = std::apply(f_serial, holder.getArgs());
 						int Bytes = _stream.str().size(); // number of Bytes
 
-						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest, 0, *world_Comm); // send buffer
+						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest_rank, 0, *world_Comm); // send buffer
 						if (err != MPI::SUCCESS)
-							printf("buffer failed to send from rank %d to rank %d! \n", world_rank, dest);
+							printf("buffer failed to send from rank %d to rank %d! \n", world_rank, dest_rank);
 
 						mpi_lck.unlock();
 #ifdef DEBUG_COMMENTS
-						printf("process %d forwarded to process %d \n", world_rank, dest);
+						printf("process %d forwarded to process %d \n", world_rank, dest_rank);
 #endif
 						return 0;
 					}
@@ -1284,7 +1323,7 @@ namespace library
 		}
 
 	private:
-		// thread safe creation of roots
+		// thread safe: root creation or root switching
 		void assign_root(int threadId, void *root)
 		{
 			std::unique_lock<std::mutex> lck(root_mtx);

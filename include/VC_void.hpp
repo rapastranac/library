@@ -43,8 +43,6 @@ public:
         size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
         currentMVCSize = k_prime;
 
-        // currentMVCSize = graph.size();
-
         begin = std::chrono::steady_clock::now();
 
         try
@@ -52,11 +50,12 @@ public:
             branchHandler.setRefValue(currentMVCSize);
             //mvc(-1, 0, graph);
             //testing ****************************************
-            HolderType initial(branchHandler, -1);
+            //HolderType initial(branchHandler, -1);
             {
-                int depth = 0;
-                initial.holdArgs(depth, graph);
-                branchHandler.push_multithreading<void>(_f, -1, initial);
+                //int depth = 0;
+                //initial.holdArgs(depth, graph);
+                //branchHandler.push_multithreading<void>(_f, -1, initial);
+                mvc(-1, 0, graph, nullptr);
             }
             //************************************************
 

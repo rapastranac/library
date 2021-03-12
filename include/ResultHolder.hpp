@@ -7,6 +7,8 @@
 * rapastranac@gmail.com
 */
 
+#include <fmt/format.h>
+
 #include <any>
 #include <list>
 #include <future>
@@ -26,7 +28,7 @@ namespace library
 	protected:
 		BranchHandler &branchHandler;
 
-		std::unique_ptr<std::future<_Ret>> expectedFut; // Unique_ptr check it out
+		std::future<_Ret> expectedFut; // Unique_ptr check it out
 		std::any expected;								// expected value
 
 		std::tuple<Args...> tup;
@@ -50,7 +52,7 @@ namespace library
 		template <class T>
 		void hold_future(T &&expectedFut)
 		{
-			*(this->expectedFut) = std::move(expectedFut);
+			this->expectedFut = std::move(expectedFut);
 		}
 
 		//for void functions,
@@ -75,7 +77,6 @@ namespace library
 			auto root_cpy = static_cast<ResultHolder *>(*root); // cpy pointer to the current root
 			if (root_cpy->isVirtual)
 			{
-				//branchHandler.roots[threadId] = this; // this changes the root
 				branchHandler.assign_root(threadId, this);
 				parent = nullptr;
 
@@ -86,8 +87,6 @@ namespace library
 			}
 			else
 			{
-
-				//branchHandler.roots[threadId] = this; // this changes the root
 				branchHandler.assign_root(threadId, this);
 
 				// **************************************************************
@@ -116,7 +115,7 @@ namespace library
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
-			this->expectedFut.reset(new std::future<_Ret>);
+			//this->expectedFut.reset(new std::future<_Ret>);
 			this->itself = this;
 
 			branchHandler.assign_root(threadId, this);
@@ -129,7 +128,7 @@ namespace library
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
-			this->expectedFut.reset(new std::future<_Ret>);
+			//this->expectedFut.reset(new std::future<_Ret>);
 			itself = this;
 
 			if (parent)
@@ -153,21 +152,22 @@ namespace library
 		~ResultHolder()
 		{
 
-			//if (isVirtual)
-			//	printf("Destructor called for virtual root, id : %d, depth : %d \n", id, depth);
+			if (isVirtual)
+				fmt::print("Destructor called for virtual root, id : {}, \t threadId :{}, \t depth : {} \n", id, threadId, depth);
 			//else
 			//	printf("Destructor called for  id : %d \n", id);
 			//
 		}
+		ResultHolder(ResultHolder &&src) = delete;
 
-		ResultHolder(ResultHolder &&src) noexcept
-		{
-			this->depth = src.depth;
-			//Unique_ptr check it out
-			this->expectedFut = std::move(src.expectedFut); //https://stackoverflow.com/questions/16030081/copy-constructor-for-a-class-with-unique-ptr
-			this->isPushed = src.isPushed;
-			this->expected = src.expected;
-		}
+		//ResultHolder(ResultHolder &&src) noexcept
+		//{
+		//	this->depth = src.depth;
+		//	//Unique_ptr check it out
+		//	this->expectedFut = std::move(src.expectedFut); //https://stackoverflow.com/questions/16030081/copy-constructor-for-a-class-with-unique-ptr
+		//	this->isPushed = src.isPushed;
+		//	this->expected = src.expected;
+		//}
 
 		void addChildren(std::shared_ptr<ResultHolder> &child)
 		{
@@ -233,7 +233,7 @@ namespace library
 			if (isPushed)
 			{
 				auto begin = std::chrono::steady_clock::now();
-				this->expected = expectedFut->get();
+				this->expected = expectedFut.get();
 				auto end = std::chrono::steady_clock::now();
 				/*If a thread comes in this scope, then it is clear that numThread
 					must be decremented in one, also it should be locked before another thread
@@ -293,7 +293,7 @@ namespace library
 			if (isPushed)
 			{
 				std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-				expected = expectedFut->get();
+				expected = expectedFut.get();
 				std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 				/*If a thread comes in this scope, then it is clear that numThread
 					must be decremented in one, also it should be locked before another thread
@@ -307,7 +307,8 @@ namespace library
 				branchHandler.lock_mpi(); /* this blocks any other thread to use an MPI function since MPI_Recv is blocking
 												thus, mpi_thread_serialized is guaranteed */
 #ifdef DEBUG_COMMENTS
-				printf("rank %d entered get() to retrieve from %d! \n", branchHandler.world_rank, dest_rank);
+				//printf("rank %d entered get() to retrieve from %d! \n", branchHandler.world_rank, dest_rank);
+				fmt::print("rank {} entered get() to retrieve from {}! \n", branchHandler.world_rank, dest_rank);
 #endif
 
 				MPI_Status status;
@@ -320,7 +321,8 @@ namespace library
 				MPI_Recv(in_buffer, Bytes, MPI::CHAR, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
 
 #ifdef DEBUG_COMMENTS
-				printf("rank %d received %d Bytes from %d! \n", branchHandler.world_rank, Bytes, dest_rank);
+				//printf("rank %d received %d Bytes from %d! \n", branchHandler.world_rank, Bytes, dest_rank);
+				fmt::print("rank {} received {} Bytes from {}! \n", branchHandler.world_rank, Bytes, dest_rank);
 #endif
 
 				std::stringstream ss;

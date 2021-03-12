@@ -19,18 +19,17 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_CXX
   "DLB=true"
-  "MPI_ENABLED"
-  "VC_VOID_MPI"
+  "VC_VOID"
   )
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
   "/usr/lib/x86_64-linux-gnu/openmpi/include"
-  "../cereal"
-  "../fmt/include"
   "../include"
   "../MPI_Modules"
+  "../cereal"
+  "../fmt/include"
   )
 
 # Targets to which this target links.
