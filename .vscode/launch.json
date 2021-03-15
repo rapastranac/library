@@ -10,8 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/a.out",
             "args": [
-                "-N", "4",
-                "-I", "/home/andres/Downloads/vc_graphs/graphs_200_0.1/2000_200/prob_0.1/0"
+                "-N", "0",
+                "-I", "input/p_hat1000_2"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

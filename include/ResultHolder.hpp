@@ -29,14 +29,17 @@ namespace library
 		BranchHandler &branchHandler;
 
 		std::future<_Ret> expectedFut; // Unique_ptr check it out
-		std::any expected;								// expected value
+		std::any expected;			   // expected value
 
 		std::tuple<Args...> tup;
 		std::function<bool()> boundCond; // Condition prior to run the branch
-		bool isBoundCond = false;		 // is there a condition before running this branch?
-		bool isPushed = false;			 // It was performed by another thread
-		bool isForwarded = false;		 // It was performed sequentially
+		std::function<bool()> branch_checkIn;
+		bool isBoundCond = false; // is there a condition before running this branch?
+		bool isPushed = false;	  // It was performed by another thread
+		bool isForwarded = false; // It was performed sequentially
 		bool isRetrieved = false;
+		size_t fw_count = 0;
+		size_t ph_count = 0;
 
 		size_t id;
 		int threadId = -1;
@@ -278,11 +281,18 @@ namespace library
 		void setForwardStatus(bool val)
 		{
 			this->isForwarded = val;
+			this->fw_count++;
 		}
 
 		void setPushStatus(bool val)
 		{
+			this->ph_count++;
 			this->isPushed = val;
+		}
+
+		void add_branch_checkIn(auto &&branch_checkIn)
+		{
+			this->branch_checkIn = std::move(branch_checkIn);
 		}
 
 #ifdef MPI_ENABLED

@@ -7,7 +7,7 @@ class VC_void : public VertexCover
     using HolderType = library::ResultHolder<void, int, Graph>;
 
 private:
-    std::function<void(int, int, Graph &, void *)> _f;
+    std::function<void(int, int, Graph, void *)> _f;
 
 public:
     VC_void()
@@ -84,7 +84,7 @@ public:
         return true;
     }
 
-    void mvc(int id, int depth, Graph &graph, void *parent)
+    void mvc(int id, int depth, Graph graph, void *parent)
     {
         size_t LB = graph.min_k();
         size_t degLB = graph.DegLB();
@@ -135,6 +135,20 @@ public:
         gRight.clean_graph();
         int C2Size = (int)gRight.coverSize();
         hol_r.holdArgs(newDepth, gRight);
+        //*******************************************************************************************
+        hol_l.add_branch_checkIn([&] {
+            Graph g = graph;
+            g.id_max(false);
+            g.clean_graph();
+            int C = g.coverSize();
+            if (C < branchHandler.getRefValue())
+            {
+                hol_l.holdArgs(depth, g);
+                return true;
+            }
+            else
+                return false;
+        });
         //*******************************************************************************************
 
         if (C1Size < branchHandler.getRefValue())

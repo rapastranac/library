@@ -3,10 +3,20 @@
 
 using namespace std;
 
+#ifdef MPI_ENABLED
+
 #include <cereal/types/map.hpp>
 #include <cereal/types/set.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/access.hpp>
+
+#else
+
+#include <map>
+#include <set>
+#include <vector>
+
+#endif
 
 #include "util.hpp"
 
@@ -20,7 +30,9 @@ using namespace std;
 class Graph
 {
 private:
+#ifdef MPI_ENABLED
 	friend class cereal::access;
+#endif
 
 	struct FoldedVertices
 	{
@@ -42,12 +54,13 @@ private:
 			this->v = v;
 			this->w = w;
 		}
-
+#ifdef MPI_ENABLED
 		template <class Archive>
 		void serialize(Archive &ar, const unsigned int version)
 		{
 			ar(u, v, w);
 		}
+#endif
 	};
 
 	void _addRowToList(int vec0)
@@ -1071,7 +1084,7 @@ public:
 	//Graph &operator=(const Graph &) = default;
 	//Graph &operator=(Graph &&) = default;
 	//virtual ~Graph() = default;
-
+#ifdef MPI_ENABLED
 	template <class Archive>
 	void serialize(Archive &ar)
 	{
@@ -1088,6 +1101,7 @@ public:
 		   numEdges,
 		   numVertices);
 	}
+#endif
 
 private:
 	int max;						  /*Highest degree within graph*/

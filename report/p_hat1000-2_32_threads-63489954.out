@@ -1,5 +1,0 @@
-Current working directory: /project/6054778/pasr1602/git/library
-Starting run at: Tue Mar  9 05:21:35 PST 2021
-srun: error: cdr1509: task 0: Segmentation fault (core dumped)
-srun: launch/slurm: _step_signal: Terminating StepId=63489954.0
-Finishing run at: Tue Mar  9 05:25:03 PST 2021
