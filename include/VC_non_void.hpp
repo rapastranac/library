@@ -7,7 +7,7 @@ class VC_non_void : public VertexCover
     using HolderType = library::ResultHolder<Graph, int, Graph>;
 
 private:
-    std::function<Graph(int, int, Graph &, void *)> _f;
+    std::function<Graph(int, int, Graph, void *)> _f;
 
 public:
     VC_non_void()
@@ -65,15 +65,18 @@ public:
         return true;
     }
 
-    Graph mvc(int id, int depth, Graph &graph, void *parent)
+    Graph mvc(int id, int depth, Graph graph, void *parent)
     {
-        size_t k1 = graph.min_k();
-        size_t k2 = graph.max_k();
-        size_t k = relaxation(k1, k2);
+        size_t LB = graph.min_k();
+        size_t degLB = 0; // graph.DegLB();
+        size_t UB = graph.max_k();
+        size_t acLB = 0; // graph.antiColoringLB();
+        //size_t mm = maximum_matching(graph);
+        //size_t k = relaxation(k1, k2);
 
-        if (k + graph.coverSize() >= branchHandler.getRefValue())
+        if (graph.coverSize() + std::max({LB, degLB, acLB}) >= (size_t)branchHandler.getRefValue())
         {
-            size_t addition = k + graph.coverSize();
+            //size_t addition = k + graph.coverSize();
             //return;
             return {};
         }
@@ -83,15 +86,11 @@ public:
 #ifdef DEBUG_COMMENTS
             printf("Leaf reached, depth : %d \n", depth);
 #endif
-            //terminate_condition(graph, id, depth);
-            //return;
             return termination(graph, id, depth);
         }
-        Graph gLeft = graph;             /*Let gLeft be a copy of graph*/
-        Graph gRight = std::move(graph); // graph;	/*Let gRight be a copy of graph*/
         int newDepth = depth + 1;
 
-        int v = gLeft.id_max(false);
+        int v = graph.id_max(false);
         HolderType hol_l(branchHandler, id, parent);
         HolderType hol_r(branchHandler, id, parent);
         hol_l.setDepth(depth);
@@ -100,21 +99,42 @@ public:
         branchHandler.linkParent(id, parent, hol_l, hol_r);
 #endif
 
-        gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
-        gLeft.clean_graph();
-        int C1Size = (int)gLeft.coverSize();
-        gRight.removeNv(v);
-        gRight.clean_graph();
-        int C2Size = (int)gRight.coverSize();
-        hol_r.holdArgs(newDepth, gRight);
+        hol_l.bind_branch_checkIn([&] {
+            Graph g = graph;
+            g.removeVertex(v);
+            g.clean_graph();
+            int C = g.coverSize();
+            if (C < branchHandler.getRefValue()) // user's condition to see if it's worth it to make branch call
+            {
+                int newDepth = depth + 1;
+                hol_l.holdArgs(newDepth, g);
+                return true; // it's worth it
+            }
+            else
+                return false; // it's not worth it
+        });
+
+        hol_r.bind_branch_checkIn([&] {
+            Graph g = std::move(graph);
+            g.removeNv(v);
+            g.clean_graph();
+            int C = g.coverSize();
+            if (C < branchHandler.getRefValue()) // user's condition to see if it's worth it to make branch call
+            {
+                int newDepth = depth + 1;
+                hol_r.holdArgs(newDepth, g);
+                return true; // it's worth it
+            }
+            else
+                return false; // it's not worth it
+        });
 
         //*******************************************************************************************
         Graph r_left;
         Graph r_right;
 
-        if (C1Size < branchHandler.getRefValue())
+        if (hol_l.evaluate_branch_checkIn())
         {
-            hol_l.holdArgs(newDepth, gLeft);
 #ifdef DLB
             branchHandler.push_multithreading<Graph>(_f, id, hol_l, true);
 #else
@@ -122,7 +142,7 @@ public:
 #endif
         }
 
-        if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
+        if (hol_r.evaluate_branch_checkIn())
         {
 #ifdef DLB
             r_right = branchHandler.forward<Graph>(_f, id, hol_r, true);

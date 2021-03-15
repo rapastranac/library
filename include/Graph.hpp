@@ -759,23 +759,23 @@ public:
 	}
 
 	/*It explores the highest degree edges and choses whether
-		the first one in the list or randomly*/
-	int id_max(bool random = true)
+		the first one in the list or arbitrarily*/
+	[[nodiscard]] int id_max(bool random = true)
 	{
 		return (random == true) ? _getRandomVertex(this->idsMax) : idsMax[0];
 	}
 
-	int id_min(bool random = true)
+	[[nodiscard]] int id_min(bool random = true)
 	{
 		return (random == true) ? _getRandomVertex(this->idsMin) : idsMin[0];
 	}
 
-	int d_max()
+	[[nodiscard]] int d_max()
 	{
 		return max;
 	}
 
-	int d_min()
+	[[nodiscard]] int d_min()
 	{
 		return min;
 	}
@@ -1032,15 +1032,89 @@ public:
 			return 0;
 
 		std::vector<int> vi;
-		int sum = find_vi(vi);
-		int last = vi.back();
-		int deg_last = adj[last].size();
+		auto adj_cpy = adj;
+		size_t sum = 0;
 
-		int i = vi.size();
+		size_t edges_p = numEdges;
 
-		//int fraction = floor((double)numEdges / (double)deg_last);
+		auto findMaxVertex = [&adj_cpy]() {
+			int maxdeg_v = adj_cpy.begin()->second.size();
 
-		return i;
+			for (auto &[key, val] : adj_cpy)
+			{
+				if (val.size() > adj_cpy[maxdeg_v].size())
+					maxdeg_v = key;
+			}
+			return maxdeg_v;
+		};
+
+		auto iterator = adj_cpy.begin();
+		while (true)
+		{
+			//todo : use priority queue to maintain max degree guy
+			int max_v = findMaxVertex();
+
+			vi.push_back(max_v);
+			sum += adj[max_v].size(); //neigbours.size();
+
+			edges_p -= adj_cpy[max_v].size();
+
+			for (auto &neighbour : adj_cpy[max_v])
+			{
+				adj_cpy[neighbour].erase(max_v);
+			}
+			adj_cpy.erase(max_v);
+
+			if (sum >= numEdges)
+				break;
+		}
+
+		if (edges_p <= 0 || adj_cpy.size() == 0)
+			return vi.size();
+
+		int nextv = findMaxVertex();
+
+		if (adj[nextv].size() == 0)
+			return vi.size();
+
+		return vi.size() + edges_p / adj[nextv].size();
+	}
+
+	int antiColoringLB()
+	{
+		if (adj.size() == 0)
+			return 0;
+
+		map<int, int> colors;
+		int maxcol = 0;
+
+		for (auto it = adj.begin(); it != adj.end(); ++it)
+		{
+			int v = it->first;
+			set<int> taken;
+			for (auto it2 = adj.begin(); it2 != adj.end(); ++it2)
+			{
+				int w = it2->first;
+				if (w >= v)
+					break;
+				if (!adj[v].contains(w) && colors.contains(w))
+				{
+					taken.insert(colors[w]);
+				}
+			}
+			for (int i = 0; i < adj.size(); ++i)
+			{
+				if (!taken.contains(i))
+				{
+					//cout<<"color "<<v<<" with "<<i<<endl;
+					colors[v] = i;
+					maxcol = std::max(maxcol, i);
+					break;
+				}
+			}
+		}
+		int isub = maxcol + 1;
+		return adj.size() - isub;
 	}
 
 	/*		TEMPORARY		*/

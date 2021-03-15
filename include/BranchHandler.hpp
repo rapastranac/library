@@ -975,9 +975,15 @@ namespace library
 			Holder *upperHolder = checkParent(&holder);
 			if (upperHolder)
 			{
+				if (!upperHolder->evaluate_branch_checkIn())
+				{
+					upperHolder->setDiscard();
+					return true;
+				}
+
 				this->requests++;
 				this->busyThreads++;
-				upperHolder->setPushStatus(true);
+				upperHolder->setPushStatus();
 				lck.unlock();
 
 				std::args_handler::unpack_and_push_void(thread_pool, f, upperHolder->getArgs());
@@ -994,9 +1000,15 @@ namespace library
 			Holder *upperHolder = checkParent(&holder);
 			if (upperHolder)
 			{
+				if (!upperHolder->evaluate_branch_checkIn())
+				{
+					upperHolder->setDiscard();
+					return true;
+				}
+
 				this->requests++;
 				this->busyThreads++;
-				upperHolder->setPushStatus(true);
+				upperHolder->setPushStatus();
 				lck.unlock();
 				auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
 				upperHolder->hold_future(std::move(ret));
@@ -1058,7 +1070,7 @@ namespace library
 				//after this line, only leftMost holder should be pushed
 				this->requests++;
 				this->busyThreads++;
-				holder.setPushStatus(true);
+				holder.setPushStatus();
 				holder.prune();
 				lck.unlock();
 
@@ -1096,7 +1108,7 @@ namespace library
 				}
 				this->requests++;
 				busyThreads++;
-				holder.setPushStatus(true);
+				holder.setPushStatus();
 
 				lck.unlock();
 				auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
@@ -1246,7 +1258,7 @@ namespace library
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder)
 		{
-			holder.setForwardStatus(true);
+			holder.setForwardStatus();
 			holder.threadId = threadId;
 			std::args_handler::unpack_and_forward_void(f, threadId, holder.getArgs(), &holder);
 		}
@@ -1255,7 +1267,7 @@ namespace library
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder)
 		{
-			holder.setForwardStatus(true);
+			holder.setForwardStatus();
 			holder.threadId = threadId;
 			return std::args_handler::unpack_and_forward_non_void(f, threadId, holder.getArgs(), &holder);
 		}

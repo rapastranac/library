@@ -9,10 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/a.out",
-            "args": [
-                "-N", "0",
-                "-I", "input/p_hat1000_2"
-            ],
+            "args": ["-N","12"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -28,3 +25,5 @@
         }
     ]
 }
+//args
+//"-I", "input/brock400_4"

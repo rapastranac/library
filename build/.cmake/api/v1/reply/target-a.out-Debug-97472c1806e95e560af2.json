@@ -45,7 +45,7 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 23,
+				"line" : 26,
 				"parent" : 0
 			},
 			{
@@ -111,7 +111,7 @@
 				},
 				{
 					"backtrace" : 4,
-					"define" : "VC_VOID"
+					"define" : "VC_NON_VOID"
 				}
 			],
 			"includes" : 

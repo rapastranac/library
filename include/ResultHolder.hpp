@@ -12,6 +12,7 @@
 #include <any>
 #include <list>
 #include <future>
+#include <functional>
 #include <memory>
 
 namespace library
@@ -38,6 +39,7 @@ namespace library
 		bool isPushed = false;	  // It was performed by another thread
 		bool isForwarded = false; // It was performed sequentially
 		bool isRetrieved = false;
+		bool isDiscarded = false;
 		size_t fw_count = 0;
 		size_t ph_count = 0;
 
@@ -278,21 +280,57 @@ namespace library
 			return isPushed;
 		}
 
-		void setForwardStatus(bool val)
+		bool is_discarded()
+		{
+			return isDiscarded;
+		}
+
+		void setForwardStatus(bool val = true)
 		{
 			this->isForwarded = val;
 			this->fw_count++;
 		}
 
-		void setPushStatus(bool val)
+		void setPushStatus(bool val = true)
 		{
 			this->ph_count++;
 			this->isPushed = val;
 		}
 
-		void add_branch_checkIn(auto &&branch_checkIn)
+		void setDiscard(bool val = true)
+		{
+			this->isDiscarded = val;
+		}
+
+		void bind_branch_checkIn(auto &&branch_checkIn)
 		{
 			this->branch_checkIn = std::move(branch_checkIn);
+		}
+
+		/* this should be invoked always before calling a branch, since 
+			it invokes user's instructions to prepare data that will be pushed
+			If not invoked, input for a specific branch handled by ResultHolder instance
+			will be empty.
+			
+			This method allows to always have input data ready before a branch call, avoiding to
+			have data in the stack before it is actually needed.
+
+			Thus, the user can evaluate any condition to check if a branch call is worth it or 
+			not, while creating a temporarily a input data set. 
+			
+			If user's condition is met then this temporarily input is held by the ResultHolder::holdArgs(...)
+			and it should return true
+			If user's condition is not met, no input is held and it should return false
+
+			if a void function is being used, this should be a problem, since 
+
+			*/
+		bool evaluate_branch_checkIn()
+		{
+			if (isForwarded || isPushed || isDiscarded)
+				return false;
+			else
+				return branch_checkIn();
 		}
 
 #ifdef MPI_ENABLED
