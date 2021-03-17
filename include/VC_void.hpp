@@ -7,7 +7,7 @@ class VC_void : public VertexCover
     using HolderType = library::ResultHolder<void, int, Graph>;
 
 private:
-    std::function<void(int, int, Graph, void *)> _f;
+    std::function<void(int, int, Graph &, void *)> _f;
 
 public:
     VC_void()
@@ -50,12 +50,12 @@ public:
             branchHandler.setRefValue(currentMVCSize);
             //mvc(-1, 0, graph);
             //testing ****************************************
-            //HolderType initial(branchHandler, -1);
+            HolderType initial(branchHandler, -1);
             {
-                //int depth = 0;
-                //initial.holdArgs(depth, graph);
-                //branchHandler.push_multithreading<void>(_f, -1, initial);
-                mvc(-1, 0, graph, nullptr);
+                int depth = 0;
+                initial.holdArgs(depth, graph);
+                branchHandler.push_multithreading<void>(_f, -1, initial);
+                //mvc(-1, 0, graph, nullptr);
             }
             //************************************************
 
@@ -84,12 +84,12 @@ public:
         return true;
     }
 
-    void mvc(int id, int depth, Graph graph, void *parent)
+    void mvc(int id, int depth, Graph &graph, void *parent)
     {
         size_t LB = graph.min_k();
-        size_t degLB = 0; // graph.DegLB();
+        size_t degLB = graph.DegLB();
         size_t UB = graph.max_k();
-        size_t acLB = 0; // graph.antiColoringLB();
+        size_t acLB = graph.antiColoringLB();
         //size_t mm = maximum_matching(graph);
         //size_t k = relaxation(k1, k2);
 
@@ -119,12 +119,15 @@ public:
         branchHandler.linkParent(id, parent, hol_l, hol_r);
 #endif
 
-        hol_l.bind_branch_checkIn([&] {
+        int *referenceValue = branchHandler.getRefValueTest();
+
+        hol_l.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_l] {
             Graph g = graph;
             g.removeVertex(v);
             g.clean_graph();
+            //g.removeZeroVertexDegree();
             int C = g.coverSize();
-            if (C < branchHandler.getRefValue()) // user's condition to see if it's worth it to make branch call
+            if (C < referenceValue[0]) // user's condition to see if it's worth it to make branch call
             {
                 int newDepth = depth + 1;
                 hol_l.holdArgs(newDepth, g);
@@ -134,12 +137,13 @@ public:
                 return false; // it's not worth it
         });
 
-        hol_r.bind_branch_checkIn([&] {
+        hol_r.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_r] {
             Graph g = std::move(graph);
             g.removeNv(v);
             g.clean_graph();
+            //g.removeZeroVertexDegree();
             int C = g.coverSize();
-            if (C < branchHandler.getRefValue()) // user's condition to see if it's worth it to make branch call
+            if (C < referenceValue[0]) // user's condition to see if it's worth it to make branch call
             {
                 int newDepth = depth + 1;
                 hol_r.holdArgs(newDepth, g);

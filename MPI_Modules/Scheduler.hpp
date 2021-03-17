@@ -130,7 +130,7 @@ namespace library
 				for (int rank = 1; rank < world_size; rank++)
 				{
 					updateNumAvNodes();				 // check list of available nodes
-					if (inbox_boolean[rank] == true) // if this cell changes, then a node has requested permission to push
+					if (inbox_boolean[rank] == true) // if this cell changes, when a node has requested permission to push
 					{
 						if (numAvailableNodes[0] > 0) // if found, positive signal is sent back to requesting node
 						{
@@ -293,7 +293,7 @@ namespace library
 
 		/* this is supposed to be invoked only when there are available nodes
 		returns -1 if no available node [it sould not happen] */
-		auto findAvailableNode()
+		[[nodiscard]] int findAvailableNode()
 		{
 			std::vector<int> nodes; // testing
 			int availableNodeID = -1;
@@ -365,6 +365,7 @@ namespace library
 			MPI_Comm_dup(world_Comm, &NodeToNode_Comm);
 			MPI_Comm_dup(world_Comm, &BCast_Comm);
 			MPI_Comm_dup(world_Comm, &accumulator_Comm);
+			MPI_Comm_dup(world_Comm, &mutex_Comm);
 		}
 
 		void win_allocate()
@@ -376,7 +377,7 @@ namespace library
 			if (world_rank == 0)
 			{
 				// mpi mutex **********************************************************************************************
-				MPI_Win_allocate(sizeof(bool), sizeof(bool), MPI::INFO_NULL, MPI_COMM_WORLD, &mpi_mutex.mutex, &win_mutex);
+				MPI_Win_allocate(sizeof(bool), sizeof(bool), MPI::INFO_NULL, mutex_Comm, &mpi_mutex.mutex, &win_mutex);
 				// ********************************************************************************************************
 
 				MPI_Win_allocate(sizeof(int), sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
@@ -392,7 +393,7 @@ namespace library
 				// it is not required to allocate buffer memory for the other processes
 
 				// mpi mutex **********************************************************************************************
-				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, MPI_COMM_WORLD, &mpi_mutex.mutex, &win_mutex);
+				MPI_Win_allocate(0, sizeof(bool), MPI::INFO_NULL, mutex_Comm, &mpi_mutex.mutex, &win_mutex);
 				// ********************************************************************************************************
 
 				MPI_Win_allocate(0, sizeof(int), MPI::INFO_NULL, accumulator_Comm, &busyNodes, &win_accumulator);
@@ -470,6 +471,7 @@ namespace library
 		char processor_name[128]; // name of the node
 
 		MPI_Mutex mpi_mutex;
+		MPI_Comm mutex_Comm;
 		MPI_Win win_mutex;
 
 		MPI_Win win_boolean; // window for pushing request from nodes

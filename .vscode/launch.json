@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/a.out",
-            "args": ["-N","12"],
+            "args": ["-N","1", "-I", "input/prob_4/400/00400_1"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -27,3 +27,6 @@
 }
 //args
 //"-I", "input/brock400_4"
+//"input/prob_4/600/00600_1"
+//"input/p_hat1000_2"
+//"input/prob_4/400/00400_1"

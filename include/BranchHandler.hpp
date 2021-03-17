@@ -7,7 +7,7 @@
 * pasr1602@usherbrooke.ca
 * rapastranac@gmail.com
 */
-
+#include <fmt/format.h>
 #include "args_handler.hpp"
 #include "pool_include.hpp"
 
@@ -616,6 +616,11 @@ namespace library
 #endif
 
 		//TODO still missing some mutexes
+		int *getRefValueTest()
+		{
+			return refValueGlobal;
+		}
+
 		int getRefValue()
 		{
 			//std::stringstream ss;
@@ -634,7 +639,7 @@ namespace library
 			// since all processes pass by here, then MPI_Bcast is effective
 			this->refValueGlobal[0] = refValue;
 #ifdef DEBUG_COMMENTS
-			printf("rank %d, refValueGlobal has been set : %d at %p \n", world_rank, refValueGlobal[0], refValueGlobal);
+			fmt::print("rank {}, refValueGlobal has been set : {} at {} \n", world_rank, refValueGlobal[0], fmt::ptr(refValueGlobal));
 #endif
 			if (world_rank == 0)
 			{
@@ -642,7 +647,7 @@ namespace library
 				if (err != MPI::SUCCESS)
 					printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
 #ifdef DEBUG_COMMENTS
-				printf("refValueGlobal broadcasted: %d at %p \n", refValueGlobal[0], refValueGlobal);
+				fmt::print("refValueGlobal broadcasted: {} at {} \n", refValueGlobal[0], fmt::ptr(refValueGlobal));
 #endif
 			}
 			else
@@ -651,7 +656,7 @@ namespace library
 				if (err != MPI::SUCCESS)
 					printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
 #ifdef DEBUG_COMMENTS
-				printf("rank %d, refValueGlobal received: %d at %p \n", world_rank, refValueGlobal[0], refValueGlobal);
+				fmt::print("rank {}, refValueGlobal received: {} at {} \n", world_rank, refValueGlobal[0], fmt::ptr(refValueGlobal));
 #endif
 			}
 
@@ -774,7 +779,7 @@ namespace library
 			else if (root->children.size() == 2)
 			{
 #ifdef DEBUG_COMMENTS
-				printf("rank %d, about to choose an upperHolder \n", world_rank);
+				fmt::print("rank {}, about to choose an upperHolder \n", world_rank);
 #endif
 				/*	this scope is meant to push right branch which was put in waiting line
 					because there was no available thread to push leftMost branch, then leftMost
@@ -795,7 +800,7 @@ namespace library
 			}
 			else
 			{
-				std::cout << "4 Testing, it's not supposed to happen, checkParent()" << std::endl;
+				fmt::print("4 Testing, it's not supposed to happen, checkParent() \n");
 				//auto s =std::source_location::current();
 				//fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
 				throw "4 Testing, it's not supposed to happen, checkParent()";
@@ -842,6 +847,7 @@ namespace library
 					   next conditional should always comply, there should not be required
 						* to use a loop, then this While is entitled to just a single loop. 4 testing!!
 						*/
+						auto leftMost_cpy = leftMost;
 						while (leftMost != holder)
 						{
 							holder->parent->children.pop_front();		 // removes pb from the parent's children
@@ -857,6 +863,7 @@ namespace library
 						that it will have to become a new root*/
 
 						holder->lowerRoot();
+						leftMost_cpy->prune();
 						//holder->parent = nullptr;
 						//holder->prune(); //not even required, nullptr is sent
 					}
@@ -1025,6 +1032,12 @@ namespace library
 			Holder *upperHolder = checkParent(&holder);
 			if (upperHolder)
 			{
+				if (!upperHolder->evaluate_branch_checkIn())
+				{
+					upperHolder->setDiscard();
+					return true;
+				}
+
 				upperHolder->setMPISent(true, dest_rank);
 
 				auto _stream = std::apply(f_serial, upperHolder->getArgs());
@@ -1495,7 +1508,8 @@ namespace library
 
 				put_mpi(&flag, 1, MPI::BOOL, 0, world_rank, *win_AvNodes);
 #ifdef DEBUG_COMMENTS
-				printf("process %d put flag [true] in process 0 \n", world_rank);
+				//printf("process %d put flag [true] in process 0 \n", world_rank);
+				fmt::print("process {} put flag [{}] in process 0 \n", world_rank, flag);
 #endif
 
 				MPI_Status status;

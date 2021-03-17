@@ -2,7 +2,7 @@
 
 #include "VertexCover.hpp"
 
-auto user_serializer = [](auto &...args) {
+auto user_serializer = [](auto &&...args) {
 	/* here inside, user can implement its favourite serialization method given the
 	arguments pack and it must return a std::stream */
 	std::stringstream ss;
@@ -52,11 +52,12 @@ public:
 			terminate_condition(graph, id, depth);
 			return;
 		}
-		Graph gLeft = graph;			 /*Let gLeft be a copy of graph*/
-		Graph gRight = std::move(graph); // graph;	/*Let gRight be a copy of graph*/
-		int newDepth = depth + 1;
+		//Graph gLeft = graph;			 /*Let gLeft be a copy of graph*/
+		//Graph gRight = std::move(graph); // graph;	/*Let gRight be a copy of graph*/
+		//int newDepth = depth + 1;
 
-		int v = gLeft.id_max(false);
+		//int v = gLeft.id_max(false);
+		int v = graph.id_max(false);
 
 		HolderType hol_l(branchHandler, id, parent);
 		HolderType hol_r(branchHandler, id, parent);
@@ -65,26 +66,66 @@ public:
 #ifdef DLB
 		branchHandler.linkParent(id, parent, hol_l, hol_r);
 #endif
-		gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
-		gLeft.clean_graph();
-		int C1Size = (int)gLeft.coverSize();
-		gRight.removeNv(v);
-		gRight.clean_graph();
-		int C2Size = (int)gRight.coverSize();
-		hol_r.holdArgs(newDepth, gRight);
+
+		int *referenceValue = branchHandler.getRefValueTest();
+		hol_l.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_l] {
+			Graph g = graph;
+			g.removeVertex(v);
+			g.clean_graph();
+			//g.removeZeroVertexDegree();
+			int C = g.coverSize();
+			if (C < referenceValue[0]) // user's condition to see if it's worth it to make branch call
+			{
+				int newDepth = depth + 1;
+				hol_l.holdArgs(newDepth, g);
+				return true; // it's worth it
+			}
+			else
+				return false; // it's not worth it
+		});
+
+		hol_r.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_r] {
+			Graph g = std::move(graph);
+			g.removeNv(v);
+			g.clean_graph();
+			//g.removeZeroVertexDegree();
+			int C = g.coverSize();
+			if (C < referenceValue[0]) // user's condition to see if it's worth it to make branch call
+			{
+				int newDepth = depth + 1;
+				hol_r.holdArgs(newDepth, g);
+				return true; // it's worth it
+			}
+			else
+				return false; // it's not worth it
+		});
+
+		//
+
+		//gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
+		//gLeft.clean_graph();
+		//int C1Size = (int)gLeft.coverSize();
+		//gRight.removeNv(v);
+		//gRight.clean_graph();
+		//int C2Size = (int)gRight.coverSize();
+		//hol_r.holdArgs(newDepth, gRight);
 		//*******************************************************************************************
 
-		if (C1Size < branchHandler.getRefValue())
+		/*if (C1Size < branchHandler.getRefValue())
 		{
-			hol_l.holdArgs(newDepth, gLeft);
+			hol_l.holdArgs(newDepth, gLeft); */
+		if (hol_l.evaluate_branch_checkIn())
+		{
 #ifdef DLB
 			branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer, true);
 #else
 			branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer);
 #endif
 		}
-
+		/*
 		if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
+		{*/
+		if (hol_r.evaluate_branch_checkIn())
 		{
 #ifdef DLB
 			branchHandler.forward<void>(_f, id, hol_r, true);

@@ -98,13 +98,15 @@ public:
 #ifdef DLB
         branchHandler.linkParent(id, parent, hol_l, hol_r);
 #endif
+        int *referenceValue = branchHandler.getRefValueTest();
 
-        hol_l.bind_branch_checkIn([&] {
+        hol_l.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_l] {
             Graph g = graph;
             g.removeVertex(v);
             g.clean_graph();
+            //g.removeZeroVertexDegree();
             int C = g.coverSize();
-            if (C < branchHandler.getRefValue()) // user's condition to see if it's worth it to make branch call
+            if (C < referenceValue[0]) // user's condition to see if it's worth it to make branch call
             {
                 int newDepth = depth + 1;
                 hol_l.holdArgs(newDepth, g);
@@ -114,12 +116,13 @@ public:
                 return false; // it's not worth it
         });
 
-        hol_r.bind_branch_checkIn([&] {
+        hol_r.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_r] {
             Graph g = std::move(graph);
             g.removeNv(v);
             g.clean_graph();
+            //g.removeZeroVertexDegree();
             int C = g.coverSize();
-            if (C < branchHandler.getRefValue()) // user's condition to see if it's worth it to make branch call
+            if (C < referenceValue[0]) // user's condition to see if it's worth it to make branch call
             {
                 int newDepth = depth + 1;
                 hol_r.holdArgs(newDepth, g);

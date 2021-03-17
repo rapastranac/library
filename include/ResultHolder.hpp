@@ -157,13 +157,14 @@ namespace library
 		~ResultHolder()
 		{
 
-			if (isVirtual)
-				fmt::print("Destructor called for virtual root, id : {}, \t threadId :{}, \t depth : {} \n", id, threadId, depth);
+			//if (isVirtual)
+			//	fmt::print("Destructor called for virtual root, id : {}, \t threadId :{}, \t depth : {} \n", id, threadId, depth);
 			//else
 			//	printf("Destructor called for  id : %d \n", id);
 			//
 		}
 		ResultHolder(ResultHolder &&src) = delete;
+		ResultHolder(ResultHolder &src) = delete;
 
 		//ResultHolder(ResultHolder &&src) noexcept
 		//{
@@ -229,7 +230,7 @@ namespace library
 
 		std::tuple<Args...> &getArgs()
 		{
-			return this->tup;
+			return tup;
 		}
 
 		// if _Ret is void, then this should not be invoked
@@ -302,9 +303,12 @@ namespace library
 			this->isDiscarded = val;
 		}
 
-		void bind_branch_checkIn(auto &&branch_checkIn)
+		template <typename F>
+		void bind_branch_checkIn(F &&branch_checkIn)
 		{
-			this->branch_checkIn = std::move(branch_checkIn);
+			this->branch_checkIn = std::bind(std::forward<F>(branch_checkIn));
+			size_t size = sizeof(this->branch_checkIn);
+			return;
 		}
 
 		/* this should be invoked always before calling a branch, since 

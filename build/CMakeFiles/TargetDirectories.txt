@@ -1,3 +1,4 @@
 /home/andres/Documents/github/library/build/CMakeFiles/rebuild_cache.dir
 /home/andres/Documents/github/library/build/CMakeFiles/edit_cache.dir
+/home/andres/Documents/github/library/build/CMakeFiles/test.dir
 /home/andres/Documents/github/library/build/CMakeFiles/a.out.dir

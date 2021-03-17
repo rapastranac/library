@@ -206,13 +206,11 @@ private:
 	vertices are eliminated.*/
 	bool _rule1(map<int, set<int>> &adj)
 	{
+		std::vector<int> degree_zero;
 
 		map<int, set<int>>::const_iterator it = adj.begin();
 
-		std::vector<int> degree_zero;
-		std::once_flag flag;
-		bool isChanged = false;
-
+		// this loop finds vertices of degree zero
 		while (it != adj.end())
 		{
 			if (it->second.size() == 0)
@@ -222,70 +220,58 @@ private:
 			it++;
 		}
 
-		std::vector<int>::const_iterator _it_ = degree_zero.begin();
-		while (_it_ != degree_zero.end())
+		if (degree_zero.size() == 0)
+			return false; // no vertices then no changes where made
+
+		// this loop removes vertices of degree zero from the adjacency list
+		for (auto &vertex : degree_zero)
 		{
-
-			adj.erase(*_it_);
-			this->vertexDegree.erase(*_it_);
+			adj.erase(vertex);
+			this->vertexDegree.erase(vertex);
 			numVertices--;
-
-			_it_++;
-			std::call_once(flag, [&isChanged]() {
-				isChanged = true;
-			});
 		}
 
-		return isChanged;
+		return true;
 	}
 
 	/*In the case of a pendant vertex (one of degree one), there is
 	an optimal vertex cover that does not contain the pendant vertex
-	but does contain its unique neighbor. Thus, in G�, both the pendant
+	but does contain its unique neighbor. Thus, in G0, both the pendant
 	vertex and its neighbor can be eliminated. This also eliminates any
 	additional edges incident on the neighbor, which may leave isolated
-	vertices for deletion under Rule 1. This reduces n� by the number
-	of deleted vertices and reduces k� by one. This rule is applied repeatedly
+	vertices for deletion under Rule 1. This reduces n0 by the number
+	of deleted vertices and reduces k by one. This rule is applied repeatedly
 	until all pendant vertices are eliminated.*/
 	bool _rule2(map<int, set<int>> &adj)
 	{
 
 		map<int, set<int>>::const_iterator it = adj.begin();
-		set<int> pendant_neighbour;
-		std::once_flag flag;
-		bool isChanged = false;
+		vector<int> pendant_neighbour;
 
 		while (it != adj.end())
 		{
 			if (it->second.size() == 1)
 			{
 				int val = *it->second.begin();
-				pendant_neighbour.insert(val);
+				pendant_neighbour.push_back(val);
 				_cover.insert(val);
 			}
 			it++;
 		}
 
-		set<int>::const_iterator pn = pendant_neighbour.begin();
+		if (pendant_neighbour.size() == 0)
+			return false; // no vertices then no changes where made
 
-		//numEdges -= pendant_neighbour.size();
-		while (pn != pendant_neighbour.end())
+		for (auto &neighbour : pendant_neighbour)
 		{
-			//numEdges -= adj[*pn].size();
-			this->erase(adj, *pn);
-
-			//this->vertexDegree.erase(*pn);
-			//numVertices--;
-
-			pn++;
-			std::call_once(flag, [&isChanged]() {
-				isChanged = true;
-			});
+			this->erase(adj, neighbour);
 		}
 
-		return isChanged;
+		return true;
 	}
 
+	/* this rule states that having a vertex u with two adjacent neighbours v and w,
+		then v and w will be in the MVC*/
 	bool _rule3(map<int, set<int>> &adj)
 	{
 		/*		u ---- v ~~~
@@ -293,47 +279,42 @@ private:
 				  \  /
 				   w ~~~
 		*/
-		map<int, set<int>>::const_iterator u = adj.begin();
-		bool isChanged = false;
 		bool flag = false;
 		std::once_flag oo_flag;
 
-		while (u != adj.end())
+		auto ite = adj.begin();
+		while (ite != adj.end())
 		{
-			if (u->second.size() == 2)
+			if (ite->second.size() == 2)
 			{
-				/*adjacent neighbours*/
-				set<int>::const_iterator an = u->second.begin();
-				int v = *an;
-				an++;
-				int w = *an;
+				int u = ite->first;
+				auto it = ite->second.begin();
+				int v = *it;
+				it++;
+				int w = *it;
+
 				if (adj[v].contains(w) && adj[w].contains(v))
 				{
-					_cover.insert(v);
-					_cover.insert(w);
+					_cover.insert(v); // u is included in the MVC
+					_cover.insert(w); // w is included in the MVC
 
-					erase(adj, u->first);
-					erase(adj, v);
-					erase(adj, w);
-					//this->numEdges -= 3;
-					flag = true;
-					std::call_once(oo_flag, [&isChanged]() {
-						isChanged = true;
-					});
+					erase(adj, u); // u is discarded from the MVC
+					erase(adj, v); // v is removed from list since it was already included in the MVC
+					erase(adj, w); // w is removed from list since it was already included in the MVC
+
+					flag = true; // graph has been changed
+					//reset iterator in here
+					ite = adj.begin(); // loop reseted since after performing deletions, graph might end up with more similar cases
+					// also the iterator breaks
+					continue;
 				}
-			}
-
-			if (flag)
-			{
-				u = adj.begin();
-				flag = false;
+				ite++;
 			}
 			else
-			{
-				u++;
-			}
+				ite++;
 		}
-		return isChanged;
+
+		return flag;
 	}
 
 	bool _rule4(map<int, set<int>> &adj)
@@ -344,7 +325,7 @@ private:
 				   w ~~~
 		*/
 
-		map<int, set<int>>::const_iterator u = adj.begin();
+		map<int, set<int>>::const_iterator it = adj.begin();
 		map<int, set<int>> folded_vertices;
 		bool isChanged = false;
 		std::once_flag oo_flag;
@@ -353,53 +334,47 @@ private:
 
 		bool flag = false;
 
-		while (u != adj.end())
+		while (it != adj.end())
 		{
-			if (u->second.size() == 2)
+			if (it->second.size() == 2)
 			{
+				int u = it->first;
 				/*adjacent neighbours*/
-				set<int>::const_iterator an = u->second.begin();
+				set<int>::const_iterator an = it->second.begin();
 				int v = *an;
 				an++;
 				int w = *an;
 				if (!adj[v].contains(w) && !adj[w].contains(v))
 				{
 					//Check to not fold already folded vertices
-					if (u->first < 0 || v < 0 || w < 0)
+					if (it->first < 0 || v < 0 || w < 0)
 					{
-						u++;
+						it++;
 						continue;
 					}
 
 					//Create (u')
-					FoldedVertices u_prime(u->first, v, w);
+					FoldedVertices u_prime(u, v, w);
 					//push to a adj of all the folded vertices
 					foldedVertices.insert(pair<int, FoldedVertices>(id, u_prime));
 
 					//Check neighbours of v
 					set<int> foldedNeigbours;
-					set<int>::const_iterator i = adj[v].begin();
-					while (i != adj[v].end())
+					for (auto vertex : adj[v])
 					{
-						if (*i != u->first)
-						{
-							foldedNeigbours.insert(*i);
-						}
-						i++;
+						if (vertex != u)
+							foldedNeigbours.insert(vertex);
 					}
+
 					//Check neighbours of w
-					i = adj[w].begin();
-					while (i != adj[w].end())
+					for (auto vertex : adj[w])
 					{
-						if (*i != u->first)
-						{
-							foldedNeigbours.insert(*i);
-						}
-						i++;
+						if (vertex != u)
+							foldedNeigbours.insert(vertex);
 					}
 
 					//Erase u,v and w from the graph
-					erase(adj, u->first);
+					erase(adj, u);
 					erase(adj, v);
 					erase(adj, w);
 
@@ -407,55 +382,46 @@ private:
 					adj.insert(pair<int, set<int>>(id, foldedNeigbours));
 					numVertices++;
 					//link the neighbours of v and w to (u')
-					i = foldedNeigbours.begin();
-					while (i != foldedNeigbours.end())
+					for (auto f_vertex : foldedNeigbours)
 					{
-						adj[*i].insert(id);
+						adj[f_vertex].insert(id);
 						numEdges++;
-						i++;
 					}
 
 					// post-processed graph has two fewer edges due to the folding
 					//numEdges -= 2;
 
 					id--;
+					// graph was changed
 					flag = true;
+					// restar iterator
 
-					std::call_once(oo_flag, [&isChanged]() {
-						isChanged = true;
-					});
+					it = adj.begin();
+					continue;
 				}
-			}
 
-			if (flag)
-			{
-				u = adj.begin();
-				flag = false;
+				it++;
 			}
 			else
-			{
-				u++;
-			}
+				it++;
 		}
-		return isChanged;
+		return flag;
 	}
 
 	void erase(map<int, set<int>> &adj, int v)
 	{
 		try
 		{
-			set<int>::const_iterator it = adj[v].begin();
-
-			while (it != adj[v].end())
+			// this loop removes vertex v from all its neighbours
+			for (auto &vertex : adj[v])
 			{
-				adj[*it].erase(v);
-				this->vertexDegree[*it]--;
-				it++;
+				adj[vertex].erase(v);
+				this->vertexDegree[vertex]--;
 			}
-			numEdges -= adj[v].size();
-			numVertices--;
-			adj.erase(v);
-			this->vertexDegree.erase(v);
+			numEdges -= adj[v].size();	 // number of edges reduced by the number of neighbours that v had
+			numVertices--;				 // only one vertex decremented
+			adj.erase(v);				 // vertex v totally removed from adj list
+			this->vertexDegree.erase(v); // removed from the vertexDegree list as well
 		}
 		catch (const std::exception &e)
 		{
@@ -569,6 +535,18 @@ public:
 		this->min = 0;
 		this->numEdges = 0;
 		this->numVertices = 0;
+
+		const size_t BOUND = 1000000;
+
+		//std::random_device rd;	// Will be used to obtain a seed for the random number engine
+		//std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+		//std::uniform_int_distribution<> distrib(0, BOUND);
+		//
+		//for (size_t i = 0; i < BOUND; i++)
+		//{
+		//	int random = distrib(gen);
+		//	memory_hog.push_back(random);
+		//}
 	}
 
 	//Parameterized constructor
@@ -860,6 +838,19 @@ public:
 		this->_zeroVertexDegree.clear();
 		_updateVertexDegree();
 	}
+	void clean_graph2()
+	{
+		bool flag = true;
+
+		while (flag)
+		{
+			flag = _rule1(this->adj);
+			flag = _rule2(this->adj);
+		}
+
+		this->_zeroVertexDegree.clear();
+		_updateVertexDegree();
+	}
 
 	std::set<int> cover()
 	{
@@ -1026,6 +1017,7 @@ public:
 
 		return 0;
 	}
+
 	int DegLB()
 	{
 		if (adj.size() == 0)
@@ -1177,23 +1169,26 @@ public:
 	}
 #endif
 
-private:
-	int max;						  /*Highest degree within graph*/
-	int min;						  /*Lowest degree within graph*/
-	std::vector<int> idsMax;		  /*Stores the positions of max degree
-									vertices within the adjacency adj*/
-	std::vector<int> idsMin;		  /*same as above but for min degree*/
 	std::map<int, std::set<int>> adj; /*Adjacency list*/
-	std::set<int> rows;				  /*Temporary variable to store*/
-	std::map<int, int> vertexDegree;  /*list of vertices with their corresponding
+
+private:
+	int max;						 /*Highest degree within graph*/
+	int min;						 /*Lowest degree within graph*/
+	std::vector<int> idsMax;		 /*Stores the positions of max degree
+									vertices within the adjacency adj*/
+	std::vector<int> idsMin;		 /*same as above but for min degree*/
+	std::set<int> rows;				 /*Temporary variable to store*/
+	std::map<int, int> vertexDegree; /*list of vertices with their corresponding
 									number of edges*/
-	std::set<int> _zeroVertexDegree;  /*List of vertices with zero degree*/
+	std::set<int> _zeroVertexDegree; /*List of vertices with zero degree*/
 
 	std::map<int, FoldedVertices> foldedVertices;
 	std::set<int> _cover;
 
 	int numEdges;	 //number of edges
 	int numVertices; //number of vertices
+
+	std::vector<int> memory_hog;
 };
 
 #endif

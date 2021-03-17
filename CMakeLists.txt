@@ -4,6 +4,8 @@ project(mpi_simple_test)
 
 set(CMAKE_CXX_STANDARD 20)
 
+enable_testing()
+
 #Set(CMAKE_EXE_LINKER_FLAGS  "-lboost_system -lboost_serialization -lboost_mpi -lboost_fiber")
 #Set(CMAKE_EXE_LINKER_FLAGS  "-lboost_fiber")
 
@@ -18,15 +20,15 @@ include_directories(${MPI_INCLUDE_PATH})
 #include_directories(${Boost_INCLUDE_DIRS})
 
 add_definitions(-DDLB=true)
-#add_definitions(-DMPI_ENABLED)
-#add_definitions(-DDEBUG_COMMENTS)
+add_definitions(-DMPI_ENABLED)
+add_definitions(-DDEBUG_COMMENTS)
 #add_definitions(-DVC_VOID)
 #add_definitions(-DVC_FPT_VOID)
-#add_definitions(-DVC_VOID_MPI)
-add_definitions(-DVC_NON_VOID)
+add_definitions(-DVC_VOID_MPI)
+#add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
 
-add_compile_options("-std=c++2a" "-fconcepts")
+add_compile_options("-std=c++2a" "-fconcepts" "-O3")
 
 #Here below for boost
 #add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
@@ -54,3 +56,5 @@ target_link_libraries(a.out ${CMAKE_THREAD_LIBS_INIT}
 if(MPI_COMPILE_FLAGS)
   set_target_properties(a.out PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
 endif()
+
+add_test(myTest mpirun -n 4 a.out -N 1 -I input/prob_4/400/00400_1)

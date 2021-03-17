@@ -1,0 +1,31 @@
+Start testing: Mar 17 12:20 EDT
+----------------------------------------------------------
+1/1 Testing: myTest
+1/1 Test: myTest
+Command: "/usr/bin/mpirun" "-n" "4" "a.out" "-N" "1" "-I" "input/prob_4/400/00400_1"
+Directory: /home/andres/Documents/github/library/build
+"myTest" start time: Mar 17 12:20 EDT
+Output:
+----------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun was unable to find the specified executable file, and therefore
+did not launch the job.  This error was first reported for process
+rank 0; it may have occurred for other processes as well.
+
+NOTE: A common cause for this error is misspelling a mpirun command
+      line parameter option (remember that mpirun interprets the first
+      unrecognized command line token as the executable).
+
+Node:       manager
+Executable: a.out
+--------------------------------------------------------------------------
+4 total processes failed to start
+<end of output>
+Test time =   1.71 sec
+----------------------------------------------------------
+Test Failed.
+"myTest" end time: Mar 17 12:20 EDT
+"myTest" time elapsed: 00:00:01
+----------------------------------------------------------
+
+End testing: Mar 17 12:20 EDT
