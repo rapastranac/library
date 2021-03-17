@@ -12,7 +12,11 @@
 #include "pool_include.hpp"
 
 #include "../MPI_Modules/Utils.hpp"
+#ifdef MPI_ENABLED
 #include "../MPI_Modules/MPI_Mutex.hpp"
+#include <mpi.h>
+#include <stdio.h>
+#endif
 
 #include <any>
 #include <atomic>
@@ -28,9 +32,6 @@
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
-
-#include <mpi.h>
-#include <stdio.h>
 
 namespace library
 {

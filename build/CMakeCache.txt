@@ -144,7 +144,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=mpi_simple_test
+CMAKE_PROJECT_NAME:STATIC=global
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/bin/ranlib
@@ -277,10 +277,28 @@ MPI_mpi_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so
 MPI_mpi_cxx_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so
 
 //Value Computed by CMake
-mpi_simple_test_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build
+global_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build
 
 //Value Computed by CMake
-mpi_simple_test_SOURCE_DIR:STATIC=/home/andres/Documents/github/library
+global_SOURCE_DIR:STATIC=/home/andres/Documents/github/library
+
+//Value Computed by CMake
+mpi_simple_test_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build/tests/non_void_MPI
+
+//Value Computed by CMake
+mpi_simple_test_SOURCE_DIR:STATIC=/home/andres/Documents/github/library/tests/non_void_MPI
+
+//Value Computed by CMake
+non_void_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build/tests/non_void
+
+//Value Computed by CMake
+non_void_SOURCE_DIR:STATIC=/home/andres/Documents/github/library/tests/non_void
+
+//Value Computed by CMake
+void_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build/tests/void
+
+//Value Computed by CMake
+void_SOURCE_DIR:STATIC=/home/andres/Documents/github/library/tests/void
 
 
 ########################

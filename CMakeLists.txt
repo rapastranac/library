@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(mpi_simple_test)
+project(global)
+
+# testing scenarios
+#add_subdirectory(tests/void)
+#add_subdirectory(tests/non_void)
+#add_subdirectory(tests/void_MPI)
+#add_subdirectory(tests/non_void_MPI)
+
 
 set(CMAKE_CXX_STANDARD 20)
-
-enable_testing()
 
 #Set(CMAKE_EXE_LINKER_FLAGS  "-lboost_system -lboost_serialization -lboost_mpi -lboost_fiber")
 #Set(CMAKE_EXE_LINKER_FLAGS  "-lboost_fiber")
@@ -20,11 +25,11 @@ include_directories(${MPI_INCLUDE_PATH})
 #include_directories(${Boost_INCLUDE_DIRS})
 
 add_definitions(-DDLB=true)
-add_definitions(-DMPI_ENABLED)
-add_definitions(-DDEBUG_COMMENTS)
-#add_definitions(-DVC_VOID)
+#add_definitions(-DMPI_ENABLED)
+#add_definitions(-DDEBUG_COMMENTS)
+add_definitions(-DVC_VOID)
 #add_definitions(-DVC_FPT_VOID)
-add_definitions(-DVC_VOID_MPI)
+#add_definitions(-DVC_VOID_MPI)
 #add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
 
@@ -57,4 +62,10 @@ if(MPI_COMPILE_FLAGS)
   set_target_properties(a.out PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
 endif()
 
-add_test(myTest mpirun -n 4 a.out -N 1 -I input/prob_4/400/00400_1)
+
+
+enable_testing()
+add_test(void                       ../tests/void/void.out                  -N 5 -I ../input/prob_4/400/00400_1)
+add_test(non_void                   ../tests/non_void/non_void.out          -N 5 -I ../input/prob_4/400/00400_1)
+add_test(void_mpi       mpirun -n 6 ../tests/void_MPI/void_mpi.out          -N 1 -I ../input/prob_4/400/00400_1)
+add_test(non_void_mpi   mpirun -n 6 ../tests/non_void_MPI/non_void_mpi.out  -N 1 -I ../input/prob_4/400/00400_1)
