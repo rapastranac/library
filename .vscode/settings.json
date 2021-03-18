@@ -98,5 +98,6 @@
         "format": "cpp",
         "*.ipp": "cpp",
         "strstream": "cpp"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": false
 }

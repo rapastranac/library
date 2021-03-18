@@ -76,7 +76,7 @@ int main_non_void_MPI(int numThreads,int prob, std::string filename)
 	if (rank == 0)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(500)); // to let other processes to print
-		scheduler.printfStats();
+		scheduler.printStats();
 
 		std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream
 		int SIZE = result.str().size();

@@ -77,13 +77,13 @@ int main_void_MPI(int numThreads,int prob, std::string filename)
 	if (rank == 0)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(300)); // to let other processes to print
-		scheduler.printfStats();
+		scheduler.printStats();
 
 		std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream
 		int SIZE = result.str().size();
 		user_deserializer(result, oGraph);
 		auto cv = oGraph.postProcessing();
-		printf("Cover size : %zu \n", cv.size());
+		fmt::print("Cover size : {} \n", cv.size());
 
 		double sum = 0;
 		for (size_t i = 0; i < idleTime.size(); i++)

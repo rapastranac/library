@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20210317-2205-Experimental"
+	Name="(empty)"
+	Generator="ctest-3.16.3"
+	CompilerName=""
+	CompilerVersion=""
+	OSName="Linux"
+	Hostname="manager"
+	OSRelease="5.8.0-45-generic"
+	OSVersion="#51~20.04.1-Ubuntu SMP Tue Feb 23 13:46:31 UTC 2021"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="GenuineIntel"
+	VendorID="Intel Corporation"
+	FamilyID="6"
+	ModelID="158"
+	ProcessorCacheSize="9216"
+	NumberOfLogicalCPU="12"
+	NumberOfPhysicalCPU="6"
+	TotalVirtualMemory="2047"
+	TotalPhysicalMemory="15857"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="3597.68"
+	>
+	<Testing>
+		<StartDateTime>Mar 17 18:05 EDT</StartDateTime>
+		<StartTestTime>1616018753</StartTestTime>
+		<TestList>
+			<Test>./non_void</Test>
+			<Test>./void</Test>
+			<Test>./non_void_mpi</Test>
+			<Test>./void_mpi</Test>
+		</TestList>
+		<Test Status="passed">
+			<Name>non_void</Name>
+			<Path>.</Path>
+			<FullName>./non_void</FullName>
+			<FullCommandLine>/home/andres/Documents/github/library/tests/non_void/non_void.out "-N" "5" "-I" "../input/prob_4/400/00400_1"</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.186974</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>/home/andres/Documents/github/library/tests/non_void/non_void.out "-N" "5" "-I" "../input/prob_4/400/00400_1"</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJyNU8tu2zAQvPMr1ug1sbkUJdG+tkVPaS9Fr4EsU7EAPQJJbtO/L2eEXgILiAAuSM7MkjtcVdNLfZL8QZbrFKvLzPnrNJ7lJP5BmraLQ9XHk+z3h3Z4vS0HgM/+4K09WJvis4rZPW59022QT6KySdiZp1+fpRlvw0XmUZpqkms1i5ZBYhf7OCzznl86t47zLI/6/7JpuiXO34nvqTfF/gPibEucfUBsN8TF+5rviZ358uP7152ZYvOtG89Vl14KyruP8NQObX/r5Xeclvgm9Zgmdx9BRcSlkadRpqHY0AzBI2BfC4SAcAQdfAeKceA4cBw4DpwMSIZcGdgebI+lB5rzMMhMDkkOJAdSWASIC8AFshagFKCUQEsAJQATcM8AdsBmADEgTcChRwBHEI9YqmUtlsVYpDNqWY8lvJa6lqmrC0SdZXSM5LBMo44kR3FGUkY4Y4qMYlavnihNUM+bqyeJbmi+mswdGqAFH6CggG4o7dBiFdMMPDsiTygpKCkomagkWhIN3KdHRgPFtCn1mPl5jTLFeZGxSU0WZeH8tqS/Xf6kvpxin/omtWo71FHaReJbHeNlXsmpK+fr2F2gVpvsOf9NCfbmH2d+AdA=</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<Test Status="passed">
+			<Name>void</Name>
+			<Path>.</Path>
+			<FullName>./void</FullName>
+			<FullCommandLine>/home/andres/Documents/github/library/tests/void/void.out "-N" "5" "-I" "../input/prob_4/400/00400_1"</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.254494</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>/home/andres/Documents/github/library/tests/void/void.out "-N" "5" "-I" "../input/prob_4/400/00400_1"</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJylU01v3CAQvfMrZtVr4mUAY+9e26qntJeq18jrxVlL/ojAbtN/X95YvcXSSrHECPPeG5g30MSX9kzlAy23GJprkvlrnC90JvdAXT+EqRnDmYri2E+v63IE+OyOTuuj1jk+M6nD494X14k+EdMu4aCefn2mbl6nK6WZuibSrUnEVU1hCGOYllRsX964DSnRI/8/Lek9cXWH2O6J/UfE7g6x2RPbD4j9PYY59eXH968HFUP3bZgvzZDbDOW7HXzqp35cR/od4hLeqJ3z5N0OMhGZPMo8qjwYC2wRHALW2SPUCCfQwTegKAOOAceAY8CxQCxyWbAd2A6/Dmgpm0GmSkhKICUQrxEg9oA9snpQPCgV0ApABUDVOGcNdo3FGsQaaWpsegJwAvGEX9ZSi5ZiNNIp1lKPFngrdSuTNxcENVqikSgcKVOxEZIRsRWSFdhKCitiqZ6doGICOzk5OyGJG1xuJsuKGMBeGuBFIG6w2MF+E4sZaDvlZ12on7dAMaSF5i7fk0CLzNclv3b6k69WDGNufb5t/dQG6hcKb20I17SR88VKt3m4Qs06V3j5mxMU6h8y4ArW====</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<Test Status="passed">
+			<Name>non_void_mpi</Name>
+			<Path>.</Path>
+			<FullName>./non_void_mpi</FullName>
+			<FullCommandLine>/usr/bin/mpirun "-n" "6" "../tests/non_void_MPI/non_void_mpi.out" "-N" "1" "-I" "../input/prob_4/400/00400_1"</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>2.72368</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>/usr/bin/mpirun "-n" "6" "../tests/non_void_MPI/non_void_mpi.out" "-N" "1" "-I" "../input/prob_4/400/00400_1"</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJztkrtOw0AQRXt/xU1v+SU/IksUgBAVNKC00doexxaON9oHJCgfz9gOFJEc0tCxxe5qZ+bOmasValPmSFyYRpGodI7QxU7JAjliF3XbUS+2lMPz/LbfWeMPwXXsx0HgBwHv6xCO+Ff5Q5WXsqHKdqSgjVCGqsUCztPqHrW0fQUtUQuFRmiE2RLU0ZZ6o73TYsWStB46TxQIHCX6N4Swu0qwHBTVK9FZeuxkIbrbQsvOGoKRo+DxOB6nIheFreuBpf0cUwqC5n48URiny1mwbBYsOgeLrgLLJrDsBBZdBovnwNJ5x5JzsOQasHRyLP12LLkIFnHandWHZ1mRxg0CiLJp6Z17OA/71sCIDXcrqR2eZI8f136Jh7/E4ynO4zqvDXGKNpA1D8yI490a/o/4YI8UbeVQrdu+JLAm7UuiSk/J7JBuZFcN1WEQxSgOLOA5X+RDW9U=</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<Test Status="failed">
+			<Name>void_mpi</Name>
+			<Path>.</Path>
+			<FullName>./void_mpi</FullName>
+			<FullCommandLine>/usr/bin/mpirun "-n" "6" "../tests/void_MPI/void_mpi.out" "-N" "1" "-I" "../input/prob_4/400/00400_1"</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="text/string" name="Exit Code">
+					<Value>Failed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Exit Value">
+					<Value>143</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>91.2903</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>/usr/bin/mpirun "-n" "6" "../tests/void_MPI/void_mpi.out" "-N" "1" "-I" "../input/prob_4/400/00400_1"</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJztkL1ShUAMhXue4pQ6w6/Dbaht7Cjs7wQ2wiqbZUIYvT69i4W+AHamSJGfk3yHdBo7XHLYrExu69DkWDUO6NDmePELCwXuUJaVl3W36mhe26qt66quU742yOhf5Q9VitMi69UH0hte0wsw1uCFjB0kaqBlueUYdkNz/DjytkHZdhV2GaURKT5ZI/jDG8bouETPin1jLZxXHs1HOVD5W36mDQOzgIao6UZ5JseJUmH1ukvCMz8mJ2wm+8UnecMD3r3N6J8eUSMek44RSGhK9IcZaSuVNz8JLWguuHv+Mfb+VOovebj7yA==</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<EndDateTime>Mar 17 18:07 EDT</EndDateTime>
+		<EndTestTime>1616018845</EndTestTime>
+		<ElapsedMinutes>1</ElapsedMinutes>
+	</Testing>
+</Site>

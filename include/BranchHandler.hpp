@@ -163,13 +163,13 @@ namespace library
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 #ifdef DEBUG_COMMENTS
-			printf("rank %d entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
+			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
 #endif
 
 			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
 			{
 #ifdef DEBUG_COMMENTS
-				printf("rank %d, local condition satisfied refValueGlobal : %d vs refValueLocal : %d \n", world_rank, refValueGlobal[0], refValueLocal);
+				fmt::print("rank {}, local condition satisfied refValueGlobal : {} vs refValueLocal : {} \n", world_rank, refValueGlobal[0], refValueLocal);
 #endif
 				// then, absolute global is checked
 				int refValueGlobalAbsolute;
@@ -180,37 +180,37 @@ namespace library
 
 				//mpi_mutex->lock(world_rank); // critical section begins
 
-				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
 #ifdef DEBUG_COMMENTS
-				printf("rank %d opened epoch to send best result \n", world_rank);
+				fmt::print("rank {} opened epoch to send best result \n", world_rank);
 #endif
 				// this blocks access to this window
 				// this is the only place where this window is read or modified
 
-				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI_INT, target_rank, offset, 1, MPI_INT, window);
 				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
 
 #ifdef DEBUG_COMMENTS
-				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
+				fmt::print("rank {} got refValueGlobalAbsolute : {} \n", world_rank, refValueGlobalAbsolute);
 #endif
 
 				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
 				{
 					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
 
-					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
+					MPI_Accumulate(&refValueLocal, origin_count, MPI_INT, target_rank, offset, 1, MPI_INT, MPI_REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
-					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
+					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
 
 					auto ss = f_serial(result); // serialized result
 #ifdef DEBUG_COMMENTS
-					printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 #endif
 					//int sz_before = bestRstream.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
-					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
+					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
 					bestRstream.first = refValueLocal;
 					bestRstream.second = std::move(ss);
@@ -237,13 +237,13 @@ namespace library
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 #ifdef DEBUG_COMMENTS
-			printf("rank %d entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
+			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
 #endif
 
 			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
 			{
 #ifdef DEBUG_COMMENTS
-				printf("rank %d, local condition satisfied refValueGlobal : %d vs refValueLocal : %d \n", world_rank, refValueGlobal[0], refValueLocal);
+				fmt::print("rank {}, local condition satisfied refValueGlobal : {} vs refValueLocal : {} \n", world_rank, refValueGlobal[0], refValueLocal);
 #endif
 				// then, absolute global is checked
 				int refValueGlobalAbsolute;
@@ -254,18 +254,18 @@ namespace library
 
 				//mpi_mutex->lock(world_rank); // critical section begins
 
-				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
 #ifdef DEBUG_COMMENTS
-				printf("rank %d opened epoch to send best result \n", world_rank);
+				fmt::print("rank {} opened epoch to send best result \n", world_rank);
 #endif
 				// this blocks access to this window
 				// this is the only place where this window is read or modified
 
-				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI_INT, target_rank, offset, 1, MPI_INT, window);
 				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
 
 #ifdef DEBUG_COMMENTS
-				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
+				fmt::print("rank {} got refValueGlobalAbsolute : {} \n", world_rank, refValueGlobalAbsolute);
 #endif
 
 				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
@@ -274,19 +274,19 @@ namespace library
 
 					ifCond();
 
-					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
+					MPI_Accumulate(&refValueLocal, origin_count, MPI_INT, target_rank, offset, 1, MPI_INT, MPI_REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
-					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
+					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
 
 					auto ss = f_serial(result); // serialized result
 #ifdef DEBUG_COMMENTS
-					printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 #endif
 					//int sz_before = bestRstream.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
-					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
+					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
 					bestRstream.first = refValueLocal;
 					bestRstream.second = std::move(ss);
@@ -310,13 +310,13 @@ namespace library
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 #ifdef DEBUG_COMMENTS
-			printf("rank %d entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
+			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
 #endif
 
 			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
 			{
 #ifdef DEBUG_COMMENTS
-				printf("rank %d, local condition satisfied refValueGlobal : %d vs refValueLocal : %d \n", world_rank, refValueGlobal[0], refValueLocal);
+				fmt::print("rank {}, local condition satisfied refValueGlobal : {} vs refValueLocal : {} \n", world_rank, refValueGlobal[0], refValueLocal);
 #endif
 				// then, absolute global is checked
 				int refValueGlobalAbsolute;
@@ -327,36 +327,36 @@ namespace library
 
 				//mpi_mutex->lock(world_rank); // critical section begins
 
-				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
 #ifdef DEBUG_COMMENTS
-				printf("rank %d opened epoch to send best result \n", world_rank);
+				fmt::print("rank {} opened epoch to send best result \n", world_rank);
 #endif
 				// this blocks access to this window
 				// this is the only place where this window is read or modified
 
-				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI_INT, target_rank, offset, 1, MPI_INT, window);
 				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
 
 #ifdef DEBUG_COMMENTS
-				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
+				fmt::print("rank {} got refValueGlobalAbsolute : {} \n", world_rank, refValueGlobalAbsolute);
 #endif
 
 				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
 				{
 					this->refValueGlobal[0] = refValueLocal; // updates global ref value, in this node
 
-					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
+					MPI_Accumulate(&refValueLocal, origin_count, MPI_INT, target_rank, offset, 1, MPI_INT, MPI_REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
-					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
+					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
 
 					auto ss = f_serial(result); // serialized result
 
-					//printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+					//fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 					//int sz_before = bestRstream.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
-					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
+					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
 					//bestRstream.first = refValueLocal;
 					//bestRstream.second = std::move(ss);
@@ -380,13 +380,13 @@ namespace library
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI);
 #ifdef DEBUG_COMMENTS
-			printf("rank %d entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
+			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
 #endif
 
 			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
 			{
 #ifdef DEBUG_COMMENTS
-				printf("rank %d, local condition satisfied refValueGlobal : %d vs refValueLocal : %d \n", world_rank, refValueGlobal[0], refValueLocal);
+				fmt::print("rank {}, local condition satisfied refValueGlobal : {} vs refValueLocal : {} \n", world_rank, refValueGlobal[0], refValueLocal);
 #endif
 				// then, absolute global is checked
 				int refValueGlobalAbsolute;
@@ -397,18 +397,18 @@ namespace library
 
 				//mpi_mutex->lock(world_rank); // critical section begins
 
-				MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
+				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window); // open epoch
 #ifdef DEBUG_COMMENTS
-				printf("rank %d opened epoch to send best result \n", world_rank);
+				fmt::print("rank {} opened epoch to send best result \n", world_rank);
 #endif
 				// this blocks access to this window
 				// this is the only place where this window is read or modified
 
-				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, window);
+				MPI_Get(&refValueGlobalAbsolute, origin_count, MPI_INT, target_rank, offset, 1, MPI_INT, window);
 				MPI_Win_flush(target_rank, window); // retrieve refValueGlobalAbsolute which is the most up-to-date value
 
 #ifdef DEBUG_COMMENTS
-				printf("rank %d got refValueGlobalAbsolute : %d \n", world_rank, refValueGlobalAbsolute);
+				fmt::print("rank {} got refValueGlobalAbsolute : {} \n", world_rank, refValueGlobalAbsolute);
 #endif
 
 				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
@@ -417,18 +417,18 @@ namespace library
 
 					ifCond();
 
-					MPI_Accumulate(&refValueLocal, origin_count, MPI::INT, target_rank, offset, 1, MPI::INT, MPI::REPLACE, window);
+					MPI_Accumulate(&refValueLocal, origin_count, MPI_INT, target_rank, offset, 1, MPI_INT, MPI_REPLACE, window);
 					MPI_Win_flush(target_rank, window); // after this line, global ref value is updated in center node, but not broadcasted
 
-					printf("rank %d updated refValueGlobalAbsolute to %d || %d \n", world_rank, refValueLocal, refValueGlobal[0]);
+					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
 
 					auto ss = f_serial(result); // serialized result
 
-					//printf("rank %d, cover size : %d \n", world_rank, result.coverSize());
+					//fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 					//int sz_before = bestRstream.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
-					printf("rank %d, buffer size to be sent : %d \n", world_rank, SIZE);
+					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
 					//bestRstream.first = refValueLocal;
 					//bestRstream.second = std::move(ss);
@@ -545,7 +545,7 @@ namespace library
 		{
 
 #ifdef DEBUG_COMMENTS
-			printf("Main thread interrupting pool \n");
+			fmt::print("Main thread interrupting pool \n");
 #endif
 			this->thread_pool.interrupt(true);
 		}
@@ -554,7 +554,7 @@ namespace library
 		void wait()
 		{
 #ifdef DEBUG_COMMENTS
-			printf("Main thread waiting results \n");
+			fmt::print("Main thread waiting results \n");
 #endif
 			this->thread_pool.wait();
 		}
@@ -644,18 +644,18 @@ namespace library
 #endif
 			if (world_rank == 0)
 			{
-				int err = MPI_Bcast(refValueGlobal, 1, MPI::INT, 0, *world_Comm);
-				if (err != MPI::SUCCESS)
-					printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
+				int err = MPI_Bcast(refValueGlobal, 1, MPI_INT, 0, *world_Comm);
+				if (err != MPI_SUCCESS)
+					fmt::print("rank {}, broadcast unsucessful with err = {} \n", world_rank, err);
 #ifdef DEBUG_COMMENTS
 				fmt::print("refValueGlobal broadcasted: {} at {} \n", refValueGlobal[0], fmt::ptr(refValueGlobal));
 #endif
 			}
 			else
 			{
-				int err = MPI_Bcast(refValueGlobal, 1, MPI::INT, 0, *world_Comm);
-				if (err != MPI::SUCCESS)
-					printf("rank %d, broadcast unsucessful with err = %d \n", world_rank, err);
+				int err = MPI_Bcast(refValueGlobal, 1, MPI_INT, 0, *world_Comm);
+				if (err != MPI_SUCCESS)
+					fmt::print("rank {}, broadcast unsucessful with err = {} \n", world_rank, err);
 #ifdef DEBUG_COMMENTS
 				fmt::print("rank {}, refValueGlobal received: {} at {} \n", world_rank, refValueGlobal[0], fmt::ptr(refValueGlobal));
 #endif
@@ -682,8 +682,8 @@ namespace library
 #ifdef MPI_ENABLED
 		void put_mpi(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
 		{
-			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window); // opens epoch
-			MPI_Put(origin_addr, count, mpi_type, target_rank, offset, 1, mpi_type, window);
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window); // opens epoch
+			MPI_Put(origin_addr, count, mpi_type, target_rank, offset, count, mpi_type, window);
 			MPI_Win_flush(target_rank, window);
 			MPI_Win_unlock(target_rank, window); // closes epoch
 		}
@@ -717,12 +717,12 @@ namespace library
 				return nullptr; // there is no parent
 
 #ifdef DEBUG_COMMENTS
-			printf("rankd %d, likely to get an upperHolder \n", world_rank);
+			fmt::print("rank {}, likely to get an upperHolder \n", world_rank);
 #endif
 			int N_children = root->children.size();
 
 #ifdef DEBUG_COMMENTS
-			printf("rankd %d, root->children.size() = %d \n", world_rank, N_children);
+			fmt::print("rank {}, root->children.size() = {} \n", world_rank, N_children);
 #endif
 
 			/*Here below, we check is left child was pushed to pool, then the pointer to parent is pruned
@@ -1044,13 +1044,13 @@ namespace library
 				auto _stream = std::apply(f_serial, upperHolder->getArgs());
 				int Bytes = _stream.str().size(); // number of Bytes
 
-				int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest_rank, 0, *world_Comm); // send buffer
-				if (err != MPI::SUCCESS)
-					printf("buffer failed to sent from rank %d to rank %d! \n", world_rank, dest_rank);
+				int err = MPI_Ssend(_stream.str().data(), Bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
+				if (err != MPI_SUCCESS)
+					fmt::print("buffer failed to sent from rank {} to rank {}! \n", world_rank, dest_rank);
 
 				lck.unlock();
 #ifdef DEBUG_COMMENTS
-				printf("process %d forwarded top-holder to process %d \n", world_rank, dest_rank);
+				fmt::print("process {} forwarded top-holder to process {} \n", world_rank, dest_rank);
 #endif
 
 				return true; // top holder found
@@ -1173,30 +1173,30 @@ namespace library
 			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
 			if (mpi_lck.try_lock())
 			{
-				//printf("rank %d entered try_lock \n", world_rank);
-				//printf("rank %d, numAvailableNodes : %d \n", world_rank, numAvailableNodes[0]);
+				//fmt::print("rank {} entered try_lock \n", world_rank);
+				//fmt::print("rank {}, numAvailableNodes : {} \n", world_rank, numAvailableNodes[0]);
 
 				if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
 				{
 #ifdef DEBUG_COMMENTS
-					printf("%d about to request center node to push\n", world_rank);
+					fmt::print("{} about to request center node to push\n", world_rank);
 #endif
 					bool buffer = true;
-					put_mpi(&buffer, 1, MPI::BOOL, 0, world_rank, *win_boolean); // send signal to center node
+					put_mpi(&buffer, 1, MPI_C_BOOL, 0, world_rank, *win_boolean); // send signal to center node
 					MPI_Status status;
 #ifdef DEBUG_COMMENTS
-					printf("process %d requested to push \n", world_rank);
+					fmt::print("process {} requested to push \n", world_rank);
 #endif
-					MPI_Recv(&signal, 1, MPI::BOOL, 0, MPI::ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+					MPI_Recv(&signal, 1, MPI_C_BOOL, 0, MPI_ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
 
 					if (signal)
 					{
 #ifdef DEBUG_COMMENTS
-						printf("process %d received positive signal from center \n", world_rank);
+						fmt::print("process {} received positive signal from center \n", world_rank);
 #endif
 						int dest_rank = status.MPI_TAG; // this is the available node, sent by center node as a tag
 #ifdef DEBUG_COMMENTS
-						printf("process %d received ID %d\n", world_rank, dest_rank);
+						fmt::print("process {} received ID {}\n", world_rank, dest_rank);
 #endif
 
 						///****************************
@@ -1215,13 +1215,13 @@ namespace library
 						auto _stream = std::apply(f_serial, holder.getArgs());
 						int Bytes = _stream.str().size(); // number of Bytes
 
-						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI::CHAR, dest_rank, 0, *world_Comm); // send buffer
-						if (err != MPI::SUCCESS)
-							printf("buffer failed to send from rank %d to rank %d! \n", world_rank, dest_rank);
+						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
+						if (err != MPI_SUCCESS)
+							fmt::print("buffer failed to send from rank {} to rank {}! \n", world_rank, dest_rank);
 
 						mpi_lck.unlock();
 #ifdef DEBUG_COMMENTS
-						printf("process %d forwarded to process %d \n", world_rank, dest_rank);
+						fmt::print("process {} forwarded to process {} \n", world_rank, dest_rank);
 #endif
 						return 0;
 					}
@@ -1447,8 +1447,6 @@ namespace library
 
 		MPI_Comm *world_Comm = nullptr;
 		MPI_Comm *second_Comm = nullptr;
-		MPI_Comm *SendToNodes_Comm = nullptr;
-		MPI_Comm *SendToCenter_Comm = nullptr;
 		MPI_Comm *NodeToNode_Comm = nullptr;
 
 		int *numAvailableNodes = nullptr;
@@ -1467,9 +1465,6 @@ namespace library
 						 MPI_Win *win_refValueGlobal,
 						 MPI_Comm *world_Comm,
 						 MPI_Comm *second_Comm,
-						 MPI_Comm *SendToNodes_Comm,
-						 MPI_Comm *SendToCenter_Comm,
-						 MPI_Comm *NodeToNode_Comm,
 						 MPI_Mutex *mpi_mutex)
 		{
 			this->world_rank = world_rank;
@@ -1485,9 +1480,6 @@ namespace library
 			this->win_refValueGlobal = win_refValueGlobal;
 			this->world_Comm = world_Comm;
 			this->second_Comm = second_Comm;
-			this->SendToNodes_Comm = SendToNodes_Comm;
-			this->SendToCenter_Comm = SendToCenter_Comm;
-			this->NodeToNode_Comm = NodeToNode_Comm;
 
 			// mpi mutex *********************
 			this->mpi_mutex = mpi_mutex;
@@ -1507,39 +1499,38 @@ namespace library
 			while (true)
 			{
 
-				put_mpi(&flag, 1, MPI::BOOL, 0, world_rank, *win_AvNodes);
+				put_mpi(&flag, 1, MPI_C_BOOL, 0, world_rank, *win_AvNodes);
 #ifdef DEBUG_COMMENTS
-				//printf("process %d put flag [true] in process 0 \n", world_rank);
 				fmt::print("process {} put flag [{}] in process 0 \n", world_rank, flag);
 #endif
 
 				MPI_Status status;
 				/* if a thread passes succesfully this method, library gets ready to receive data*/
 #ifdef DEBUG_COMMENTS
-				printf("Receiver called on process %d, avl processes %d \n", world_rank, numAvailableNodes[0]);
-				printf("Receiver on %d ready to receive \n", world_rank);
+				fmt::print("Receiver called on process {}, avl processes {} \n", world_rank, numAvailableNodes[0]);
+				fmt::print("Receiver on {} ready to receive \n", world_rank);
 #endif
 				int Bytes; // Bytes to be received
 
-				MPI_Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI::CHAR, &Bytes);						// receives total number of datatype elements of the message
+				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI_CHAR, &Bytes);					  // receives total number of datatype elements of the message
 
 				char *in_buffer = new char[Bytes];
-				MPI_Recv(in_buffer, Bytes, MPI::CHAR, MPI::ANY_SOURCE, MPI::ANY_TAG, *world_Comm, &status);
+				MPI_Recv(in_buffer, Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status);
 
 				count_rcv++;
 				int src = status.MPI_SOURCE;
 #ifdef DEBUG_COMMENTS
-				printf("process %d has rcvd from %d,%d times \n", world_rank, src, count_rcv);
-				printf("Receiver on %d, received %d Bytes from %d \n", world_rank, Bytes, src);
+				fmt::print("process {} has rcvd from {}, {} times \n", world_rank, src, count_rcv);
+				fmt::print("Receiver on {}, received {} Bytes from {} \n", world_rank, Bytes, src);
 #endif
 				if (status.MPI_TAG == 3)
 				{
 #ifdef DEBUG_COMMENTS
-					printf("rank %d about to send best result to center \n", world_rank);
+					fmt::print("rank {} about to send best result to center \n", world_rank);
 #endif
 					sendBestResultToCenter();
-					printf("Exit tag received on process %d \n", world_rank); // loop termination
+					fmt::print("Exit tag received on process {} \n", world_rank); // loop termination
 					break;
 				}
 
@@ -1551,7 +1542,7 @@ namespace library
 
 				Utils::unpack_tuple(deserialize, ss, newHolder.getArgs());
 
-				accumulate_mpi(1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes++");
+				accumulate_mpi(1, 1, MPI_INT, 0, 0, *win_accumulator, "busyNodes++");
 
 				delete[] in_buffer;
 
@@ -1567,9 +1558,9 @@ namespace library
 
 				reply<_ret>(serialize, newHolder, src);
 #ifdef DEBUG_COMMENTS
-				printf("Passed on process %d \n", world_rank);
+				fmt::print("Passed on process {} \n", world_rank);
 #endif
-				accumulate_mpi(-1, 1, MPI::INT, 0, 0, *win_accumulator, "busyNodes--");
+				accumulate_mpi(-1, 1, MPI_INT, 0, 0, *win_accumulator, "busyNodes--");
 			}
 		}
 
@@ -1581,7 +1572,7 @@ namespace library
 
 			_ret res;
 #ifdef DEBUG_COMMENTS
-			printf("rank %d entered reply! \n", world_rank);
+			fmt::print("rank {} entered reply! \n", world_rank);
 #endif
 			//holder.get(res);
 			res = holder.get();
@@ -1589,38 +1580,38 @@ namespace library
 			if (src == 0) // termination, since all recursions return to center node
 			{
 #ifdef DEBUG_COMMENTS
-				printf("Cover size() :%d, sending to center \n", res.coverSize());
+				fmt::print("Cover size() : {}, sending to center \n", res.coverSize());
 #endif
 
 				std::unique_lock<std::mutex> lck(mtx_MPI); // in theory other threads should be are idle, TO DO ..
 				//this sends a signal so center node turns into receiving mode
 				bool buffer = true;
-				put_mpi(&buffer, 1, MPI::BOOL, src, 0, *win_finalFlag);
+				put_mpi(&buffer, 1, MPI_C_BOOL, src, 0, *win_finalFlag);
 #ifdef DEBUG_COMMENTS
-				printf("rank %d put to finalFlag! \n", world_rank);
+				fmt::print("rank {} put to finalFlag! \n", world_rank);
 #endif
 
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
 
-				int err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, src, refValueGlobal[0], *world_Comm);
-				if (err != MPI::SUCCESS)
-					printf("final result could not be sent from rank %d to rank %d! \n", world_rank, src);
+				int err = MPI_Ssend(ss.str().data(), count, MPI_CHAR, src, refValueGlobal[0], *world_Comm);
+				if (err != MPI_SUCCESS)
+					fmt::print("final result could not be sent from rank {} to rank {}! \n", world_rank, src);
 			}
 			else // some other node requested help and it is surely waiting for the result
 			{
 
 #ifdef DEBUG_COMMENTS
-				printf("rank %d about to reply to %d! \n", world_rank, src);
+				fmt::print("rank {} about to reply to {}! \n", world_rank, src);
 #endif
 				std::unique_lock<std::mutex> lck(mtx_MPI); //no other thread can retrieve nor send via MPI
 
 				std::stringstream ss = serialize(res);
 				int count = ss.str().size();
 
-				int err = MPI_Ssend(ss.str().data(), count, MPI::CHAR, src, 0, *world_Comm);
-				if (err != MPI::SUCCESS)
-					printf("result could not be sent from rank %d to rank %d! \n", world_rank, src);
+				int err = MPI_Ssend(ss.str().data(), count, MPI_CHAR, src, 0, *world_Comm);
+				if (err != MPI_SUCCESS)
+					fmt::print("result could not be sent from rank {} to rank {}! \n", world_rank, src);
 			}
 		}
 
@@ -1639,7 +1630,7 @@ namespace library
 			if (bestRstream.first == -1)
 			{
 #ifdef DEBUG_COMMENTS
-				printf("rank %d did not catch a best result \n", world_rank);
+				fmt::print("rank {} did not catch a best result \n", world_rank);
 #endif
 				// if a solution was not found, processes will synchronise in here
 				MPI_Barrier(*world_Comm); // this guarantees that center nodes gets aware of prior signals
@@ -1647,10 +1638,10 @@ namespace library
 			}
 
 			//sending signal to center so this one turn into receiving best result mode
-			int signal = true;
-			put_mpi(&signal, 1, MPI::BOOL, 0, world_rank, *win_inbox_bestResult);
+			bool signal = true;
+			put_mpi(&signal, 1, MPI_C_BOOL, 0, world_rank, *win_inbox_bestResult);
 #ifdef DEBUG_COMMENTS
-			printf("rank %d put signal in inbox to retrieve a best result \n", world_rank);
+			fmt::print("rank {} put signal in inbox to retrieve a best result \n", world_rank);
 #endif
 			MPI_Barrier(*world_Comm); // this guarantees that center nodes gets aware of prior signals
 
@@ -1658,8 +1649,8 @@ namespace library
 			int Bytes = bestRstream.second.str().size();
 			int refVal = bestRstream.first;
 
-			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI::CHAR, 0, refVal, *world_Comm);
-			printf("rank %d sent best result, Bytes : %d, refVal : %d\n", world_rank, Bytes, refVal);
+			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI_CHAR, 0, refVal, *world_Comm);
+			fmt::print("rank {} sent best result, Bytes : {}, refVal : {}\n", world_rank, Bytes, refVal);
 
 			//reset bestRstream
 			bestRstream.first = -1;		// reset condition to avoid sending empty buffers
@@ -1669,21 +1660,21 @@ namespace library
 		void accumulate_mpi(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
 		{
 #ifdef DEBUG_COMMENTS
-			printf("%d about to accumulate on %s\n", world_rank, msg.c_str());
+			fmt::print("{} about to accumulate on {}\n", world_rank, msg.c_str());
 #endif
-			MPI_Win_lock(MPI::LOCK_EXCLUSIVE, target_rank, 0, window);
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window);
 
-			MPI_Accumulate(&buffer, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, MPI::SUM, window);
+			MPI_Accumulate(&buffer, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, MPI_SUM, window);
 #ifdef DEBUG_COMMENTS
-			printf("%d about to unlock RMA on %d \n", world_rank, target_rank);
+			fmt::print("{} about to unlock RMA on {} \n", world_rank, target_rank);
 #endif
 			MPI_Win_flush(target_rank, window);
 #ifdef DEBUG_COMMENTS
-			printf("%d between flush and unlock \n", world_rank);
+			fmt::print("{} between flush and unlock \n", world_rank);
 #endif
 			MPI_Win_unlock(target_rank, window);
 #ifdef DEBUG_COMMENTS
-			printf("%s, by %d\n", msg.c_str(), world_rank);
+			fmt::print("{}, by {}\n", msg.c_str(), world_rank);
 #endif
 		}
 
@@ -1701,16 +1692,16 @@ namespace library
 	{
 		// Initilialise MPI and ask for thread support
 		int provided;
-		MPI_Init_thread(argc, &argv, MPI::THREAD_SERIALIZED, &provided);
-		if (provided < MPI::THREAD_SERIALIZED)
+		MPI_Init_thread(argc, &argv, MPI_THREAD_SERIALIZED, &provided);
+		if (provided < MPI_THREAD_SERIALIZED)
 		{
-			printf("The threading support level is lesser than that demanded.\n");
-			MPI_Abort(MPI::COMM_WORLD, EXIT_FAILURE);
+			fmt::print("The threading support level is lesser than that demanded.\n");
+			MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		}
 		else
 		{
 #ifdef DEBUG_COMMENTS
-			printf("The threading support level corresponds to that demanded.\n");
+			fmt::print("The threading support level corresponds to that demanded.\n");
 #endif
 		}
 
@@ -1719,10 +1710,10 @@ namespace library
 		int namelen;
 		MPI_Get_processor_name(processor_name, &namelen);
 #ifdef DEBUG_COMMENTS
-		printf("Process %d of %d is on %s\n", world_rank, world_size, processor_name);
+		fmt::print("Process {} of {} is on {}\n", world_rank, world_size, processor_name);
 #endif
 		MPI_Barrier(world_Comm);
-		//printf("About to create window, %d / %d!! \n", world_rank, world_size);
+		//fmt::print("About to create window, {} / {}!! \n", world_rank, world_size);
 		MPI_Barrier(world_Comm);
 		win_allocate();
 
@@ -1745,9 +1736,6 @@ namespace library
 								   &win_refValueGlobal,
 								   &world_Comm,
 								   &second_Comm,
-								   &SendToNodes_Comm,
-								   &SendToCenter_Comm,
-								   &NodeToNode_Comm,
 								   &mpi_mutex);
 
 		return world_rank;
@@ -1757,14 +1745,14 @@ namespace library
 	void Scheduler::start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
 	{
 #ifdef DEBUG_COMMENTS
-		printf("About to start, %d / %d!! \n", world_rank, world_size);
+		fmt::print("About to start, {} / {}!! \n", world_rank, world_size);
 #endif
 
 		if (world_rank == 0)
 		{
 			start_time = MPI_Wtime();
 #ifdef DEBUG_COMMENTS
-			printf("scheduler() launched!! \n");
+			fmt::print("scheduler() launched!! \n");
 #endif
 			this->schedule(holder, serialize);
 			end_time = MPI_Wtime();
@@ -1778,11 +1766,11 @@ namespace library
 			_branchHandler.receiveSeed<_ret>(f, serialize, deserialize, holder);
 		}
 #ifdef DEBUG_COMMENTS
-		printf("process %d waiting at barrier \n", world_rank);
+		fmt::print("process {} waiting at barrier \n", world_rank);
 #endif
 		MPI_Barrier(world_Comm);
 #ifdef DEBUG_COMMENTS
-		printf("process %d passed barrier \n", world_rank);
+		fmt::print("process {} passed barrier \n", world_rank);
 #endif
 	}
 
