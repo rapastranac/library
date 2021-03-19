@@ -107,7 +107,7 @@ namespace library
 
 	private:
 		template <typename Holder, typename Serialize>
-		void schedule(Holder &holder, Serialize &&serialize)
+		void schedule2(Holder &holder, Serialize &&serialize)
 		{
 			sendSeed(holder, serialize);
 
@@ -165,7 +165,7 @@ namespace library
 				if (breakLoop())
 				{
 					MPI_Barrier(world_Comm); //This is synchronised within sendBestResultToCenter() in BranchHandler.hpp
-					receiveCurrentResult();	 // non-waiting algorithms
+					retrieveSolVoid();		 // non-waiting algorithms
 					break;
 				}
 
@@ -181,28 +181,118 @@ namespace library
 			} while (true);
 		}
 
-		void receiveSignal()
+		template <typename Holder, typename Serialize>
+		void schedule(Holder &holder, Serialize &&serialize)
 		{
-			int buffer{0}; // it is meant to receiv
-			MPI_Status status;
-			int count = 1;
+			int nodes = 0; // number of available nodes -- private to this method
+			int busy = 0;
+			std::vector<int> aNodes(world_size);
+			sync_availability(aNodes, nodes);
+			MPI_Barrier(world_Comm); // synchronise process in world group
+			sendSeed(aNodes, nodes, busy, holder, serialize);
 
-			MPI_Recv(&buffer, count, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
-
-			int src_rank = status.MPI_SOURCE;
-			int TAG = status.MPI_TAG;
-
-			if (TAG == 5)
+			while (true)
 			{
-				push_request[src_rank] = 1;
+				fmt::print("nodes {}, busy {} \n", nodes, busy);
+				MPI_Status status;
+				int buffer;
+				MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
+
+				int src_rank = status.MPI_SOURCE;
+				int TAG = status.MPI_TAG;
+
+				/*
+					TAG scenarios:
+					TAG == 3 termination signal
+					TAG == 4 availability report
+					TAG == 5 push request
+					TAG == 6 result request
+					TAG == 7 no result from rank
+				*/
+				if (TAG == 4)
+				{
+					aNodes[src_rank] = 1;
+					++nodes;
+					--busy;
+					BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
+				}
+				if (TAG == 5)
+				{
+					if (nodes > 0)
+					{
+						int k = isAvailable(aNodes);
+						aNodes[k] = 0;
+						int flag = 1;
+						--nodes;
+						++busy;
+						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes);		   // Broadcast number of nodes
+						MPI_Ssend(&flag, 1, MPI_INT, src_rank, k, world_Comm); // send positive signal
+						++approvedRequests;
+					}
+					else
+					{
+						int flag = 0;
+						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes);		   // Broadcast number of nodes
+						MPI_Ssend(&flag, 1, MPI_INT, src_rank, 0, world_Comm); // send negative signal
+						++failedRequests;
+					}
+					++totalRequests;
+				}
+
+				if (nodes == (world_size - 1) && busy == 0)
+				{
+					fmt::print("Termination achieved: nodes {}, busy {} \n", nodes, busy);
+					break; //termination .. TODO to guarantee it reaches 0 only once
+				}
 			}
 
-			/*
-			TAG scenarios:
+			//terminate
 
-			TAG == 5 push request
-			TAG == 6 result request
-			*/
+			for (int rank = 1; rank < world_size; rank++)
+			{
+				int flag = 1;
+				MPI_Ssend(&flag, 1, MPI_INT, rank, 3, world_Comm); // send positive signal
+			}
+
+			// receive
+			retrieveSolVoid();
+		}
+
+		// first synchronisation, thus rank 0 is aware of other availability
+		// the purpose is to broadcast the total availability to other ranks
+		void sync_availability(std::vector<int> &aNodes, int &nodes)
+		{
+			while (true)
+			{
+				MPI_Status status;
+				int buffer;
+
+				MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, 4, world_Comm, &status);
+
+				int src_rank = status.MPI_SOURCE;
+				/*
+					TAG scenarios:
+					TAG == 4 availability report
+				*/
+
+				aNodes[src_rank] = 1;
+				++nodes;
+				BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
+
+				if (nodes == (world_size - 1))
+					break;
+			}
+			BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // broadcast nodes
+			MPI_Barrier(world_Comm);					   // synchronise process in world group
+		}
+
+		int isAvailable(std::vector<int> &aNodes)
+		{
+			for (int rank = 0; rank < world_size; rank++)
+			{
+				if (aNodes[rank] == 1)
+					return rank;
+			}
 		}
 
 		// this sends the termination signal
@@ -255,44 +345,51 @@ namespace library
 			}
 		}
 
-		void receiveCurrentResult()
+		void retrieveSolVoid()
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				if (result_request[rank])
+
+				MPI_Status status;
+				int Bytes;
+				// sender would not need to send data size before hand **********************************************
+				MPI_Probe(rank, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI_CHAR, &Bytes);		   // receives total number of datatype elements of the message
+				//***************************************************************************************************
+
+				char *buffer = new char[Bytes];
+				MPI_Recv(buffer, Bytes, MPI_CHAR, rank, MPI_ANY_TAG, world_Comm, &status);
+
+				int TAG = status.MPI_TAG;
+				if (TAG == 7)
 				{
-					result_request[rank] = false;
-
-					MPI_Status status;
-					int Bytes;
-					// sender would not need to send data size before hand **********************************************
-					MPI_Probe(rank, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
-					MPI_Get_count(&status, MPI_CHAR, &Bytes);		   // receives total number of datatype elements of the message
-					//***************************************************************************************************
-
-					char *buffer = new char[Bytes];
-					MPI_Recv(buffer, Bytes, MPI_CHAR, rank, MPI_ANY_TAG, world_Comm, &status);
-
-					fmt::print("Center received a best result from {}, Bytes : {}, refVal {} \n", rank, Bytes, status.MPI_TAG);
-
-					std::stringstream ss;
-
-					for (int i = 0; i < Bytes; i++)
-					{
-						ss << buffer[i];
-					}
-					delete[] buffer;
-					bestResults[rank].first = status.MPI_TAG; // reference value corresponding to result
-					bestResults[rank].second = std::move(ss); // best result so far from this rank
+					fmt::print("solution NOT received from rank {} \n", rank);
+					continue;
 				}
+
+				fmt::print("Center received a best result from {}, Bytes : {}, refVal {} \n", rank, Bytes, status.MPI_TAG);
+
+				std::stringstream ss;
+
+				for (int i = 0; i < Bytes; i++)
+				{
+					ss << buffer[i];
+				}
+				delete[] buffer;
+				bestResults[rank].first = status.MPI_TAG; // reference value corresponding to result
+				bestResults[rank].second = std::move(ss); // best result so far from this rank
 			}
 		}
 
 		template <typename Holder, typename Serialize>
-		void sendSeed(Holder &holder, Serialize &&serialize)
+		void sendSeed(std::vector<int> &aNodes, int &nodes, int &busy, Holder &holder, Serialize &&serialize)
 		{
-			if (MPI_COMM_NULL != second_Comm)
-				MPI_Barrier(second_Comm);
+			// global syncrhonisation **********************
+			--nodes;
+			++busy;
+			aNodes[1] = 0;
+			BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
+			// *********************************************
 
 			auto ss = std::apply(serialize, holder.getArgs());
 
@@ -300,30 +397,13 @@ namespace library
 			char *buffer = new char[count];
 			std::memcpy(buffer, ss.str().data(), count);
 
-			int rcvrNode = 1;
-
 			int err = MPI_Ssend(buffer, count, MPI_CHAR, 1, 0, world_Comm); // send buffer
 			if (err != MPI_SUCCESS)
 				fmt::print("buffer failed to send! \n");
 
-			//availableNodes[rcvrNode] = false; // becomes unavailable until it finishes
 			delete[] buffer;
 
-			// **************************************************************************************
-			// rank 1 should already have accumulated to numAvailableNodes, then this should also be reduced by 1
-			int subs = -1;
-			accumulate_mpi(subs, 1, MPI_INT, 0, 0, MPI_SUM, win_NumNodes); // process-safe
-			int reset = false;
-			int r = put_mpi(&reset, 1, MPI_INT, 0, rcvrNode, win_AvNodes); // becomes unavailable until it finishes
-
-			updateNumAvNodes();
-
-			// **************************************************************************************
-			if (MPI_COMM_NULL != second_Comm)
-				MPI_Barrier(second_Comm); // syncrhonises only process 0 and 1 - this guarantees ...
-										  // ... that process 0 does not terminate the loop before process 1...
-										  // ... receives the seed, then busyNodes will be != 0 for the first ...
-										  // ... loop
+			fmt::print("Seed sent \n");
 		}
 
 		//generic put blocking RMA

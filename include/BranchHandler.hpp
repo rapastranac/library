@@ -1191,7 +1191,8 @@ namespace library
 					mpi_mutex->lock(0, world_rank);
 #endif
 					int buffer = 1;
-					put_mpi(&buffer, 1, MPI_INT, 0, world_rank, *win_phsRequest); // send signal to center node
+					MPI_Ssend(&buffer, 1, MPI_INT, 0, 5, *world_Comm); // sync nodes availability
+
 					MPI_Status status;
 #ifdef DEBUG_COMMENTS
 					fmt::print("process {} requested to push \n", world_rank);
@@ -1525,23 +1526,16 @@ namespace library
 			int count_rcv = 0;
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
-			int flag{1};
+			int flag = 1;
 
-			int sum = 1;
-			int nodes_at_center;
-			fetch_and_op(&sum, &nodes_at_center, MPI_INT, 0, 0, MPI_SUM, *win_NumNodes);
+			MPI_Ssend(&flag, 1, MPI_INT, 0, 4, *world_Comm); // sync nodes availability
+			MPI_Barrier(*world_Comm);						 // synchronise process in world group
 
-			if (MPI_COMM_NULL != *second_Comm)
-				MPI_Barrier(*second_Comm);
+			fmt::print("rank {} synchronised, num nodes = {} \n", world_rank, numAvailableNodes[0]);
+			MPI_Barrier(*world_Comm); // synchronise process in world group
 
 			while (true)
 			{
-				int rflag = put_mpi(&flag, 1, MPI_INT, 0, world_rank, *win_AvNodes);
-
-#ifdef DEBUG_COMMENTS
-				fmt::print("process {} put flag [{}] in process 0 \n", world_rank, flag);
-#endif
-
 				MPI_Status status;
 				/* if a thread passes succesfully this method, library gets ready to receive data*/
 #ifdef DEBUG_COMMENTS
@@ -1564,11 +1558,11 @@ namespace library
 #endif
 				if (status.MPI_TAG == 3)
 				{
+					fmt::print("Exit tag received on process {} \n", world_rank); // loop termination
 #ifdef DEBUG_COMMENTS
 					fmt::print("rank {} about to send best result to center \n", world_rank);
 #endif
 					sendBestResultToCenter();
-					fmt::print("Exit tag received on process {} \n", world_rank); // loop termination
 					break;
 				}
 
@@ -1584,13 +1578,13 @@ namespace library
 
 				delete[] in_buffer;
 
-				if (!onceFlag)
-				{
-					if (MPI_COMM_NULL != *second_Comm)
-						MPI_Barrier(*second_Comm);
-					//onceFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
-					onceFlag = true;
-				}
+				//if (!onceFlag)
+				//{
+				//	if (MPI_COMM_NULL != *second_Comm)
+				//		MPI_Barrier(*second_Comm);
+				//	//onceFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
+				//	onceFlag = true;
+				//}
 
 				push_multithreading<_ret>(f, 0, newHolder); // first push, node is idle
 
@@ -1599,6 +1593,8 @@ namespace library
 				fmt::print("Passed on process {} \n", world_rank);
 #endif
 				accumulate_mpi(-1, 1, MPI_INT, 0, 0, *win_accumulator, "busyNodes--");
+
+				MPI_Ssend(&flag, 1, MPI_INT, 0, 4, *world_Comm);
 			}
 		}
 
@@ -1670,18 +1666,12 @@ namespace library
 #ifdef DEBUG_COMMENTS
 				fmt::print("rank {} did not catch a best result \n", world_rank);
 #endif
+				int buffer = 1;
+				int TAG = 7; // TAG no result from this rank
+				MPI_Ssend(&buffer, 1, MPI_CHAR, 0, TAG, *world_Comm);
 				// if a solution was not found, processes will synchronise in here
-				MPI_Barrier(*world_Comm); // this guarantees that center nodes gets aware of prior signals
 				return;
 			}
-
-			//sending signal to center so this one turn into receiving best result mode
-			int signal = true;
-			put_mpi(&signal, 1, MPI_INT, 0, world_rank, *win_resRequest);
-#ifdef DEBUG_COMMENTS
-			fmt::print("rank {} put signal in inbox to retrieve a best result \n", world_rank);
-#endif
-			MPI_Barrier(*world_Comm); // this guarantees that center nodes gets aware of prior signals
 
 			//char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT
 			int Bytes = bestRstream.second.str().size();
