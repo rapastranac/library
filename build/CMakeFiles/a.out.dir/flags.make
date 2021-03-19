@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_FLAGS =   -g -Wall -Wpedantic -Wextra -fexceptions -pthread -fconcepts -O3 -std=gnu++2a
 
-CXX_DEFINES = -DVC_VOID
+CXX_DEFINES = -DDLB=true -DVC_VOID
 
 CXX_INCLUDES = -I/home/manuel/git/libvc/library/include -I/home/manuel/git/libvc/library/MPI_Modules -I/home/manuel/git/libvc/library/cereal -I/home/manuel/git/libvc/library/fmt/include 
 
