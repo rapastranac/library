@@ -1188,7 +1188,7 @@ namespace library
 #ifdef DEBUG_COMMENTS
 					fmt::print("{} about to request center node to push\n", world_rank);
 
-					mpi_mutex->lock(0, world_rank);
+					//mpi_mutex->lock(0, world_rank);
 #endif
 					int buffer = 1;
 					MPI_Ssend(&buffer, 1, MPI_INT, 0, 5, *world_Comm); // sync nodes availability
@@ -1201,7 +1201,7 @@ namespace library
 
 					if (signal == 1)
 					{
-						mpi_mutex->unlock(0, world_rank);
+						//mpi_mutex->unlock(0, world_rank);
 #ifdef DEBUG_COMMENTS
 						fmt::print("process {} received positive signal from center \n", world_rank);
 #endif
@@ -1217,6 +1217,7 @@ namespace library
 							if (r)
 							{
 								CHECK_MPI_MUTEX(-1, holder.getThreadId());
+								mpi_lck.unlock();
 								return 2;
 							}
 
@@ -1241,7 +1242,7 @@ namespace library
 						return 0;
 					}
 
-					mpi_mutex->unlock(0, world_rank);
+					//mpi_mutex->unlock(0, world_rank);
 				}
 
 				CHECK_MPI_MUTEX(-1, holder.getThreadId());
@@ -1479,7 +1480,7 @@ namespace library
 			this->CHECKER.fetch_add(sum, std::memory_order_relaxed);
 			int tmp = CHECKER.load();
 			if (tmp > 1 || tmp < 0)
-				fmt::print("rank {}, threadID {}, mutex has failed : CHECKER = {}", world_rank, threadId, tmp);
+				fmt::print("rank {}, threadID {}, mutex has failed : CHECKER = {} \n", world_rank, threadId, tmp);
 		}
 
 		void linkMPIargs(int world_rank,

@@ -193,7 +193,7 @@ namespace library
 
 			while (true)
 			{
-				fmt::print("nodes {}, busy {} \n", nodes, busy);
+				//fmt::print("nodes {}, busy {} \n", nodes, busy);
 				MPI_Status status;
 				int buffer;
 				MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
