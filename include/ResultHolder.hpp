@@ -202,6 +202,10 @@ namespace library
 			return id;
 		}
 
+		auto getThreadId()
+		{
+			return threadId;
+		}
 		//First argument is the condition bound as a lambda function
 		//Then all the arguments needed to perform the condition are passed either by value or reference
 		/*If this method is invoked, operation "|| bound.isBound()" must be added to original condition, because

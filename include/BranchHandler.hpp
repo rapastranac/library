@@ -680,12 +680,19 @@ namespace library
 		//}
 		/*--------------------------------------------------------end*/
 #ifdef MPI_ENABLED
-		void put_mpi(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
+		int put_mpi(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
 		{
-			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window); // opens epoch
+			int result;
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, MPI_MODE_NOCHECK, window); // opens epoch
 			MPI_Put(origin_addr, count, mpi_type, target_rank, offset, count, mpi_type, window);
 			MPI_Win_flush(target_rank, window);
+
+			// 4 testing, verifies if value successfully put
+			MPI_Get(&result, count, mpi_type, target_rank, offset, count, mpi_type, window);
+			MPI_Win_flush(target_rank, window);
+
 			MPI_Win_unlock(target_rank, window); // closes epoch
+			return result;
 		}
 #endif
 		template <typename Holder>
@@ -1169,28 +1176,31 @@ namespace library
 		template <typename Holder, typename F_SERIAL>
 		int try_another_process(Holder &holder, F_SERIAL &&f_serial)
 		{
-			bool signal{false};
+			int signal{0};
 			std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
 			if (mpi_lck.try_lock())
 			{
-				//fmt::print("rank {} entered try_lock \n", world_rank);
+				CHECK_MPI_MUTEX(1, holder.getThreadId());
 				//fmt::print("rank {}, numAvailableNodes : {} \n", world_rank, numAvailableNodes[0]);
 
 				if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
 				{
 #ifdef DEBUG_COMMENTS
 					fmt::print("{} about to request center node to push\n", world_rank);
+
+					mpi_mutex->lock(0, world_rank);
 #endif
-					bool buffer = true;
-					put_mpi(&buffer, 1, MPI_C_BOOL, 0, world_rank, *win_boolean); // send signal to center node
+					int buffer = 1;
+					put_mpi(&buffer, 1, MPI_INT, 0, world_rank, *win_phsRequest); // send signal to center node
 					MPI_Status status;
 #ifdef DEBUG_COMMENTS
 					fmt::print("process {} requested to push \n", world_rank);
 #endif
-					MPI_Recv(&signal, 1, MPI_C_BOOL, 0, MPI_ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
+					MPI_Recv(&signal, 1, MPI_INT, 0, MPI_ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
 
-					if (signal)
+					if (signal == 1)
 					{
+						mpi_mutex->unlock(0, world_rank);
 #ifdef DEBUG_COMMENTS
 						fmt::print("process {} received positive signal from center \n", world_rank);
 #endif
@@ -1204,7 +1214,10 @@ namespace library
 						{
 							bool r = try_top_holder(mpi_lck, holder, f_serial, dest_rank);
 							if (r)
+							{
+								CHECK_MPI_MUTEX(-1, holder.getThreadId());
 								return 2;
+							}
 
 							checkRightSiblings(&holder); // this decrements parent's children
 						}
@@ -1219,13 +1232,18 @@ namespace library
 						if (err != MPI_SUCCESS)
 							fmt::print("buffer failed to send from rank {} to rank {}! \n", world_rank, dest_rank);
 
+						CHECK_MPI_MUTEX(-1, holder.getThreadId());
 						mpi_lck.unlock();
 #ifdef DEBUG_COMMENTS
 						fmt::print("process {} forwarded to process {} \n", world_rank, dest_rank);
 #endif
 						return 0;
 					}
+
+					mpi_mutex->unlock(0, world_rank);
 				}
+
+				CHECK_MPI_MUTEX(-1, holder.getThreadId());
 				mpi_lck.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
 			}
 			return 1; //this return is necessary only due to function extraction
@@ -1429,6 +1447,8 @@ namespace library
 		int *refValueGlobal = nullptr; // shared with MPI
 
 #ifdef MPI_ENABLED
+		std::atomic<int> CHECKER{0};
+
 		std::mutex mtx_MPI; //local mutex
 
 		/* MPI parameters */
@@ -1438,11 +1458,12 @@ namespace library
 		int world_size = -1;	  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
 
-		MPI_Win *win_boolean = nullptr;
+		MPI_Win *win_phsRequest = nullptr;
 		MPI_Win *win_AvNodes = nullptr;
-		MPI_Win *win_finalFlag = nullptr;
+		MPI_Win *win_termination = nullptr;
 		MPI_Win *win_accumulator = nullptr;
-		MPI_Win *win_inbox_bestResult = nullptr;
+		MPI_Win *win_resRequest = nullptr;
+		MPI_Win *win_NumNodes = nullptr;
 		MPI_Win *win_refValueGlobal = nullptr;
 
 		MPI_Comm *world_Comm = nullptr;
@@ -1452,16 +1473,25 @@ namespace library
 		int *numAvailableNodes = nullptr;
 		bool request_response = false;
 
+		void CHECK_MPI_MUTEX(int sum, int threadId)
+		{
+			this->CHECKER.fetch_add(sum, std::memory_order_relaxed);
+			int tmp = CHECKER.load();
+			if (tmp > 1 || tmp < 0)
+				fmt::print("rank {}, threadID {}, mutex has failed : CHECKER = {}", world_rank, threadId, tmp);
+		}
+
 		void linkMPIargs(int world_rank,
 						 int world_size,
 						 char *processor_name,
 						 int *numAvailableNodes,
 						 int *refValueGlobal,
 						 MPI_Win *win_accumulator,
-						 MPI_Win *win_finalFlag,
+						 MPI_Win *win_termination,
 						 MPI_Win *win_AvNodes,
-						 MPI_Win *win_boolean,
-						 MPI_Win *win_inbox_bestResult,
+						 MPI_Win *win_phsRequest,
+						 MPI_Win *win_resRequest,
+						 MPI_Win *win_NumNodes,
 						 MPI_Win *win_refValueGlobal,
 						 MPI_Comm *world_Comm,
 						 MPI_Comm *second_Comm,
@@ -1469,14 +1499,15 @@ namespace library
 		{
 			this->world_rank = world_rank;
 			this->world_size = world_size;
+			strncpy(this->processor_name, processor_name, 128);
 			this->numAvailableNodes = numAvailableNodes;
 			this->refValueGlobal = refValueGlobal;
-			strncpy(this->processor_name, processor_name, 128);
 			this->win_accumulator = win_accumulator;
+			this->win_termination = win_termination;
 			this->win_AvNodes = win_AvNodes;
-			this->win_finalFlag = win_finalFlag;
-			this->win_boolean = win_boolean;
-			this->win_inbox_bestResult = win_inbox_bestResult;
+			this->win_phsRequest = win_phsRequest;
+			this->win_resRequest = win_resRequest;
+			this->win_NumNodes = win_NumNodes;
 			this->win_refValueGlobal = win_refValueGlobal;
 			this->world_Comm = world_Comm;
 			this->second_Comm = second_Comm;
@@ -1494,12 +1525,19 @@ namespace library
 			int count_rcv = 0;
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
-			bool flag = true;
+			int flag{1};
+
+			int sum = 1;
+			int nodes_at_center;
+			fetch_and_op(&sum, &nodes_at_center, MPI_INT, 0, 0, MPI_SUM, *win_NumNodes);
+
+			if (MPI_COMM_NULL != *second_Comm)
+				MPI_Barrier(*second_Comm);
 
 			while (true)
 			{
+				int rflag = put_mpi(&flag, 1, MPI_INT, 0, world_rank, *win_AvNodes);
 
-				put_mpi(&flag, 1, MPI_C_BOOL, 0, world_rank, *win_AvNodes);
 #ifdef DEBUG_COMMENTS
 				fmt::print("process {} put flag [{}] in process 0 \n", world_rank, flag);
 #endif
@@ -1586,9 +1624,9 @@ namespace library
 				std::unique_lock<std::mutex> lck(mtx_MPI); // in theory other threads should be are idle, TO DO ..
 				//this sends a signal so center node turns into receiving mode
 				bool buffer = true;
-				put_mpi(&buffer, 1, MPI_C_BOOL, src, 0, *win_finalFlag);
+				put_mpi(&buffer, 1, MPI_CXX_BOOL, src, 0, *win_termination);
 #ifdef DEBUG_COMMENTS
-				fmt::print("rank {} put to finalFlag! \n", world_rank);
+				fmt::print("rank {} put to termination! \n", world_rank);
 #endif
 
 				std::stringstream ss = serialize(res);
@@ -1638,8 +1676,8 @@ namespace library
 			}
 
 			//sending signal to center so this one turn into receiving best result mode
-			bool signal = true;
-			put_mpi(&signal, 1, MPI_C_BOOL, 0, world_rank, *win_inbox_bestResult);
+			int signal = true;
+			put_mpi(&signal, 1, MPI_INT, 0, world_rank, *win_resRequest);
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {} put signal in inbox to retrieve a best result \n", world_rank);
 #endif
@@ -1676,6 +1714,16 @@ namespace library
 #ifdef DEBUG_COMMENTS
 			fmt::print("{}, by {}\n", msg.c_str(), world_rank);
 #endif
+		}
+
+		void fetch_and_op(const void *origin_addr, void *result_addr,
+						  MPI_Datatype datatype, int target_rank, MPI_Aint target_disp,
+						  MPI_Op op, MPI_Win &win)
+		{
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, MPI_MODE_NOCHECK, win);
+			MPI_Fetch_and_op(origin_addr, result_addr, datatype, target_rank, target_disp, op, win);
+			MPI_Win_flush(target_rank, win);
+			MPI_Win_unlock(target_rank, win);
 		}
 
 		MPI_Comm &getCommunicator()
@@ -1729,10 +1777,11 @@ namespace library
 								   numAvailableNodes,
 								   refValueGlobal,
 								   &win_accumulator,
-								   &win_finalFlag,
+								   &win_termination,
 								   &win_AvNodes,
-								   &win_boolean,
-								   &win_inbox_bestResult,
+								   &win_phsRequest,
+								   &win_resRequest,
+								   &win_NumNodes,
 								   &win_refValueGlobal,
 								   &world_Comm,
 								   &second_Comm,
