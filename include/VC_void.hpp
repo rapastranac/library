@@ -87,9 +87,9 @@ public:
     void mvc(int id, int depth, Graph &graph, void *parent)
     {
         size_t LB = graph.min_k();
-        size_t degLB = graph.DegLB();
+        size_t degLB = 0;//graph.DegLB();
         size_t UB = graph.max_k();
-        size_t acLB = graph.antiColoringLB();
+        size_t acLB = 0;//graph.antiColoringLB();
         //size_t mm = maximum_matching(graph);
         //size_t k = relaxation(k1, k2);
 

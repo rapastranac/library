@@ -247,6 +247,8 @@ private:
 
 		map<int, set<int>>::const_iterator it = adj.begin();
 		vector<int> pendant_neighbour;
+		
+		vector<pair<int, int>> matching_ccs;
 
 		while (it != adj.end())
 		{
@@ -254,13 +256,32 @@ private:
 			{
 				int val = *it->second.begin();
 				pendant_neighbour.push_back(val);
-				_cover.insert(val);
+				
+				//special case : what if the neighbor also has degree 1?
+				if (adj[val].size() == 1)
+				{
+					if (it->first < val)	//not add the same matching twice
+						matching_ccs.push_back( make_pair(it->first, val) );
+				}
+				else
+				{	
+					_cover.insert(val);
+				}
 			}
 			it++;
 		}
 
-		if (pendant_neighbour.size() == 0)
+		
+
+		if (pendant_neighbour.size() == 0 && matching_ccs.size() == 0)
 			return false; // no vertices then no changes where made
+
+		for (auto &match : matching_ccs)
+		{
+			_cover.insert(match.first);
+			this->erase(adj, match.first);
+			this->erase(adj, match.second);	
+		}
 
 		for (auto &neighbour : pendant_neighbour)
 		{

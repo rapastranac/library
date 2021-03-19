@@ -1,6 +1,0 @@
-void 7 0.0753452
-non_void 7 0.0527657
-void_mpi 3 0.25014
-non_void_mpi 3 1.23705
----
-void_mpi
