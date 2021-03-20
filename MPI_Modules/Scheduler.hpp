@@ -162,12 +162,13 @@ namespace library
 					}
 				}
 
-				if (breakLoop())
-				{
-					MPI_Barrier(world_Comm); //This is synchronised within sendBestResultToCenter() in BranchHandler.hpp
-					retrieveSolVoid();		 // non-waiting algorithms
-					break;
-				}
+				// ATTENTION !!!! WHATCH OUT *****
+				//if (breakLoop(nodes, busy))
+				//{
+				//	MPI_Barrier(world_Comm); //This is synchronised within sendBestResultToCenter() in BranchHandler.hpp
+				//	retrieveSolVoid();		 // non-waiting algorithms
+				//	break;
+				//}
 
 				receiveResult(); // waiting algorithms
 
@@ -191,6 +192,10 @@ namespace library
 			MPI_Barrier(world_Comm); // synchronise process in world group
 			sendSeed(aNodes, nodes, busy, holder, serialize);
 
+			refValueGlobal_old = refValueGlobal[0];
+
+			int rcv_availability = 0;
+
 			while (true)
 			{
 				//fmt::print("nodes {}, busy {} \n", nodes, busy);
@@ -208,19 +213,33 @@ namespace library
 					TAG == 5 push request
 					TAG == 6 result request
 					TAG == 7 no result from rank
+					TAG == 8 reference value update, TAG == 9 for actual update
 				*/
 				if (TAG == 4)
 				{
+					++rcv_availability;
+#ifdef DEBUG_COMMENTS
+					fmt::print("rank {} availability received {} times\n", world_rank, rcv_availability);
+#endif
+					if (aNodes[src_rank] == 1)
+						fmt::print("***********************ERROR************************** aNodes[{}] == 1\n ", src_rank);
 					aNodes[src_rank] = 1;
 					++nodes;
 					--busy;
 					BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
+
+					if (breakLoop(nodes, busy))
+						break;
+
+					continue;
 				}
 				if (TAG == 5)
 				{
 					if (nodes > 0)
 					{
 						int k = isAvailable(aNodes);
+						if (aNodes[k] == 0)
+							fmt::print("***********************ERROR************************** aNodes[{}] == 0\n ", k);
 						aNodes[k] = 0;
 						int flag = 1;
 						--nodes;
@@ -237,23 +256,42 @@ namespace library
 						++failedRequests;
 					}
 					++totalRequests;
-				}
 
-				if (nodes == (world_size - 1) && busy == 0)
+					if (breakLoop(nodes, busy))
+						break;
+
+					continue;
+				}
+				if (TAG == 8)
 				{
-					fmt::print("Termination achieved: nodes {}, busy {} \n", nodes, busy);
-					break; //termination .. TODO to guarantee it reaches 0 only once
+					// send ref value global
+					MPI_Ssend(refValueGlobal, 1, MPI_INT, src_rank, 0, world_Comm);
+
+					// receive either the update ref value global or just pass
+					MPI_Recv(&buffer, 1, MPI_INT, src_rank, MPI_ANY_TAG, world_Comm, &status);
+					int TAG2 = status.MPI_TAG;
+					if (TAG2 == 9)
+					{
+						refValueGlobal[0] = buffer;
+						BcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
+					}
+
+					if (breakLoop(nodes, busy))
+						break;
+
+					continue;
 				}
 			}
 
 			//terminate
+			// TAG == 3 termination signal
 
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				int flag = 1;
-				MPI_Ssend(&flag, 1, MPI_INT, rank, 3, world_Comm); // send positive signal
+				char buffer = 'a';
+				MPI_Ssend(&buffer, 1, MPI_CHAR, rank, 3, world_Comm); // send positive signal
 			}
-
+			MPI_Barrier(world_Comm);
 			// receive
 			retrieveSolVoid();
 		}
@@ -277,7 +315,7 @@ namespace library
 
 				aNodes[src_rank] = 1;
 				++nodes;
-				BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
+				//BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
 
 				if (nodes == (world_size - 1))
 					break;
@@ -288,29 +326,28 @@ namespace library
 
 		int isAvailable(std::vector<int> &aNodes)
 		{
-			for (int rank = 0; rank < world_size; rank++)
+			int r = -1;
+			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (aNodes[rank] == 1)
-					return rank;
+				{
+					r = rank;
+					break;
+				}
 			}
+			return r; // this should not happen
 		}
 
 		// this sends the termination signal
-		bool breakLoop()
+		bool breakLoop(const int &nodes, const int &busy)
 		{
 			//std::this_thread::sleep_for(std::chrono::milliseconds(10)); // 4 testing
 			//fmt::print("test, busyNodes = {}\n", busyNodes[0]);
 
-			if (busyNodes[0] == 0 && (numAvailableNodes[0] == (world_size - 1)))
+			if (nodes == (world_size - 1) && busy == 0)
 			{
-				for (int dest = 1; dest < world_size; dest++)
-				{
-					char emptyBuffer{'a'};
-					int tag = 3;
-					MPI_Ssend(&emptyBuffer, 1, MPI_CHAR, dest, tag, world_Comm);
-				}
-				fmt::print("BusyNodes = 0 achieved \n");
-				return true;
+				fmt::print("Termination achieved: nodes {}, busy {} \n", nodes, busy);
+				return true; //termination .. TODO to guarantee it reaches 0 only once
 			}
 			return false;
 		}
@@ -347,6 +384,9 @@ namespace library
 
 		void retrieveSolVoid()
 		{
+			// order order order order
+			//int nodes = world_size - 1;
+
 			for (int rank = 1; rank < world_size; rank++)
 			{
 
@@ -360,10 +400,35 @@ namespace library
 				char *buffer = new char[Bytes];
 				MPI_Recv(buffer, Bytes, MPI_CHAR, rank, MPI_ANY_TAG, world_Comm, &status);
 
+				//int rank = status.MPI_SOURCE;
 				int TAG = status.MPI_TAG;
-				if (TAG == 7)
+
+				fmt::print("fetching result from rank {} \n", rank);
+
+				//--nodes;
+
+				char empty[] = "empty_buffer";
+				bool isEmpty = false;
+				int count = 1;
+				for (int i = 0; i < 12; i++)
 				{
-					fmt::print("solution NOT received from rank {} \n", rank);
+					if (buffer[i] == empty[i])
+					{
+						count++;
+						if (count == 12)
+							isEmpty = true;
+					}
+				}
+
+				if (isEmpty)
+				{
+					fmt::print("solution NOT received from rank {}\n", rank);
+
+					delete[] buffer;
+
+					//if (nodes == 0)
+					//	break;
+					//else
 					continue;
 				}
 
@@ -375,9 +440,14 @@ namespace library
 				{
 					ss << buffer[i];
 				}
-				delete[] buffer;
-				bestResults[rank].first = status.MPI_TAG; // reference value corresponding to result
+
+				bestResults[rank].first = TAG;			  // reference value corresponding to result
 				bestResults[rank].second = std::move(ss); // best result so far from this rank
+
+				delete[] buffer;
+
+				//if (nodes == 0)
+				//	break;
 			}
 		}
 
