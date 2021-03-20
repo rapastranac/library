@@ -1252,10 +1252,11 @@ namespace library
 		{
 			int r = try_another_process(holder, f_serial);
 			if (r == 0)
-				return true;
+				return true; // top holder pushed to another rank
 			if (r == 2)
-				return false;
+				return false; // current holder pushed to another rank
 
+			//no rank available
 			return push_multithreading<_ret>(f, id, holder);
 		}
 

@@ -52,11 +52,7 @@ public:
 			terminate_condition(graph, id, depth);
 			return;
 		}
-		//Graph gLeft = graph;			 /*Let gLeft be a copy of graph*/
-		//Graph gRight = std::move(graph); // graph;	/*Let gRight be a copy of graph*/
-		//int newDepth = depth + 1;
 
-		//int v = gLeft.id_max(false);
 		int v = graph.id_max(false);
 
 		HolderType hol_l(branchHandler, id, parent);
@@ -68,6 +64,7 @@ public:
 #endif
 
 		int *referenceValue = branchHandler.getRefValueTest();
+	
 		hol_l.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_l] {
 			Graph g = graph;
 			g.removeVertex(v);
@@ -100,20 +97,6 @@ public:
 				return false; // it's not worth it
 		});
 
-		//
-
-		//gLeft.removeVertex(v); //perform deletion before checking if worth to explore branch
-		//gLeft.clean_graph();
-		//int C1Size = (int)gLeft.coverSize();
-		//gRight.removeNv(v);
-		//gRight.clean_graph();
-		//int C2Size = (int)gRight.coverSize();
-		//hol_r.holdArgs(newDepth, gRight);
-		//*******************************************************************************************
-
-		/*if (C1Size < branchHandler.getRefValue())
-		{
-			hol_l.holdArgs(newDepth, gLeft); */
 		if (hol_l.evaluate_branch_checkIn())
 		{
 #ifdef DLB
