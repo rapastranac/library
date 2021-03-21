@@ -33,13 +33,7 @@
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 40,
-				"parent" : 0
-			},
-			{
-				"command" : 2,
-				"file" : 0,
-				"line" : 27,
+				"line" : 36,
 				"parent" : 0
 			},
 			{
@@ -99,31 +93,15 @@
 				},
 				{
 					"backtrace" : 2,
-					"fragment" : "-g"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-Wall"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-Wpedantic"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-Wextra"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-fexceptions"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-pthread"
+					"fragment" : "-std=c++2a"
 				},
 				{
 					"backtrace" : 2,
 					"fragment" : "-fconcepts"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-O3"
 				},
 				{
 					"fragment" : "-std=gnu++2a"
@@ -133,41 +111,37 @@
 			[
 				{
 					"backtrace" : 3,
-					"define" : "DLB=true"
-				},
-				{
-					"backtrace" : 4,
 					"define" : "MPI_ENABLED"
 				},
 				{
-					"backtrace" : 5,
+					"backtrace" : 4,
 					"define" : "VC_VOID_MPI"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 6,
+					"backtrace" : 5,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 5,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 6,
 					"path" : "/home/andres/Documents/github/library/include"
 				},
 				{
-					"backtrace" : 8,
+					"backtrace" : 7,
 					"path" : "/home/andres/Documents/github/library/MPI_Modules"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 8,
 					"path" : "/home/andres/Documents/github/library/cereal"
 				},
 				{
-					"backtrace" : 10,
+					"backtrace" : 9,
 					"path" : "/home/andres/Documents/github/library/fmt/include"
 				}
 			],

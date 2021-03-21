@@ -169,16 +169,7 @@ public:
         //if condition1 complies, then ifCond1 is called
         auto ifCond1 = [&]() {
             foundAtDepth = depth;
-            string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-            string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
-            cout << std::internal
-                 << std::setfill('.')
-                 << col1
-                 << std::setw(wide - col1.size())
-                 << col2
-                 << "\n";
-
-            outFile(col1, col2);
+            recurrent_msg(id);
             ++leaves;
         };
 
@@ -188,15 +179,7 @@ public:
 
         auto ifCond2 = [&]() {
             foundAtDepth = depth;
-            string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-            string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
-            cout << std::internal
-                 << col1
-                 << std::setw(wide - col1.size())
-                 << col2
-                 << "\n";
-
-            outFile(col1, col2);
+            recurrent_msg(id);
             if (depth > measured_Depth)
             {
                 measured_Depth = depth;

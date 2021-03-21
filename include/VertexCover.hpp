@@ -13,6 +13,8 @@
 #include <filesystem>
 #include <iomanip>
 #include <vector>
+#include <chrono>
+#include <ctime>
 
 using namespace std::placeholders;
 
@@ -21,7 +23,9 @@ namespace fs = std::filesystem;
 class VertexCover
 {
 public:
-	VertexCover() {}
+	VertexCover()
+	{
+	}
 
 	virtual ~VertexCover() = default;
 
@@ -93,8 +97,7 @@ public:
 		output << std::internal
 			   << col1
 			   << std::setw(wide - col1.size())
-			   << col2
-			   << "\n";
+			   << col2;
 
 		output.close();
 	}
@@ -302,13 +305,21 @@ public:
 		this->currentMVCSize = mvcSize;
 	}
 
-protected:
-	size_t relaxation(const size_t &k1, const size_t &k2)
+	void recurrent_msg(int id)
 	{
-		return floor(((1.0 - factor) * (double)k1 + factor * (double)k2));
+		auto clock = std::chrono::system_clock::now();
+		std::time_t time = std::chrono::system_clock::to_time_t(clock); //it includes a "\n"
+		string col1 = fmt::format("VC = {}", branchHandler.getRefValue());
+		string col2 = fmt::format("process {}, thread {}, {}", branchHandler.getRankID(), id, std::ctime(&time));
+		cout << std::internal
+			 << std::setfill('.')
+			 << col1
+			 << std::setw(wide - col1.size())
+			 << col2;
+
+		outFile(col1, col2);
 	}
 
-public:
 	size_t maximum_matching(Graph g)
 	{
 		size_t k = 0;
@@ -338,9 +349,13 @@ public:
 	}
 
 protected:
-	library::BranchHandler &branchHandler = library::BranchHandler::getInstance();
+	size_t relaxation(const size_t &k1, const size_t &k2)
+	{
+		return floor(((1.0 - factor) * (double)k1 + factor * (double)k2));
+	}
 
-	//std::function <void(int, int, Graph&, std::vector<int>&, Holder*)> _f;
+protected:
+	library::BranchHandler &branchHandler = library::BranchHandler::getInstance();
 
 	Graph graph;
 	Graph graph_res;

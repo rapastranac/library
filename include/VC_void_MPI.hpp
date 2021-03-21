@@ -34,13 +34,17 @@ public:
 
 	void mvc(int id, int depth, Graph &graph, void *parent)
 	{
-		size_t k1 = graph.min_k();
-		size_t k2 = graph.max_k();
-		size_t k = relaxation(k1, k2);
+		size_t LB = graph.min_k();
+		size_t degLB = 0; //graph.DegLB();
+		size_t UB = graph.max_k();
+		size_t acLB = 0; //graph.antiColoringLB();
+		//size_t mm = maximum_matching(graph);
+		size_t k = relaxation(LB, UB);
+		//std::max({LB, degLB, acLB})
 
-		if (k + graph.coverSize() >= branchHandler.getRefValue())
+		if (k + graph.coverSize() >= (size_t)branchHandler.getRefValue())
 		{
-			size_t addition = k + graph.coverSize();
+			//size_t addition = k + graph.coverSize();
 			return;
 		}
 
@@ -64,7 +68,7 @@ public:
 #endif
 
 		int *referenceValue = branchHandler.getRefValueTest();
-	
+
 		hol_l.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_l] {
 			Graph g = graph;
 			g.removeVertex(v);
@@ -128,16 +132,7 @@ public:
 		//if condition1 complies, then ifCond1 is called
 		auto ifCond1 = [&]() {
 			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
-			cout << std::internal
-				 << std::setfill('.')
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
+			recurrent_msg(id);
 			++leaves;
 		};
 
@@ -147,15 +142,8 @@ public:
 
 		auto ifCond2 = [&]() {
 			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
-			cout << std::internal
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			outFile(col1, col2);
+			recurrent_msg(id);
+			
 			if (depth > measured_Depth)
 			{
 				measured_Depth = depth;

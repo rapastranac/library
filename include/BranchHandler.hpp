@@ -1260,6 +1260,16 @@ namespace library
 			return push_multithreading<_ret>(f, id, holder);
 		}
 
+		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
+		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial, bool)
+		{
+			bool _flag = false;
+			while (!_flag)
+				_flag = push_multiprocess<_ret>(f, id, holder, f_serial);
+
+			return _flag;
+		}
+
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
@@ -1273,15 +1283,6 @@ namespace library
 			return push_multithreading<_ret>(f, id, holder);
 		}
 
-		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
-		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial, bool)
-		{
-			bool _flag = false;
-			while (!_flag)
-				_flag = push_multiprocess<_ret>(f, id, holder, f_serial);
-
-			return _flag;
-		}
 #endif
 		// no DLB begin **********************************************************************
 		template <typename _ret, typename F, typename Holder,
