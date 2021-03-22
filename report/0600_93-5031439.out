@@ -1,0 +1,170 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/10.2.0".
+
+
+Inactive Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.3     3) ucx/1.8.0
+
+The following have been reloaded with a version change:
+  1) gcccore/.9.3.0 => gcccore/.10.2.0
+
+
+Activating Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.5     3) ucx/1.9.0
+
+
+Currently Loaded Modules:
+  1) CCEnv           (S)      5) StdEnv/2020     (S)   9) pmix/3.1.5
+  2) CCconfig                 6) gcccore/.10.2.0 (H)  10) libfabric/1.10.1
+  3) gentoo/2020     (S)      7) gcc/10.2.0      (t)  11) openmpi/4.0.5    (m)
+  4) imkl/2020.1.217 (math)   8) ucx/1.9.0
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /gpfs/fs0/scratch/m/mlafond/pasr1602/library
+Starting run at: Mon Mar 22 13:39:19 EDT 2021
+argc: 7, threads: 40, prob : 4, filename: input/prob_4/600/0600_93 
+Process 0 of 5 is on nia0025.scinet.local
+Seed sent 
+Termination achieved: nodes 4, busy 0 
+fetching result from rank 1 
+Center received a best result from 1, Bytes : 2176, refVal 271 
+fetching result from rank 2 
+solution NOT received from rank 2
+fetching result from rank 3 
+Center received a best result from 3, Bytes : 2164, refVal 268 
+fetching result from rank 4 
+Center received a best result from 4, Bytes : 2148, refVal 264 
+
+ 
+ 
+*****************************************************
+Elapsed time : 978.196 
+Total number of requests : 9975 
+Number of approved requests : 4584 
+Number of failed requests : 5391 
+*****************************************************
+
+ 
+ 
+Stream retrieved, size : 2148 
+Cover size : 327 
+
+Global pool idle time: 55.956330 seconds
+
+
+argc: 7, threads: 40, prob : 4, filename: input/prob_4/600/0600_93 
+Process 4 of 5 is on nia0219.scinet.local
+rank 4 synchronised, num nodes = 4 
+VC = 267......process 4, thread 4, Mon Mar 22 13:39:27 2021
+rank 4 updated refValueGlobalAbsolute to 267 || 267 
+rank 4, buffer size to be sent : 2160 
+VC = 266.....process 4, thread 36, Mon Mar 22 13:39:27 2021
+rank 4 updated refValueGlobalAbsolute to 266 || 266 
+rank 4, buffer size to be sent : 2156 
+VC = 265.....process 4, thread 17, Mon Mar 22 13:39:27 2021
+rank 4 updated refValueGlobalAbsolute to 265 || 265 
+rank 4, buffer size to be sent : 2152 
+VC = 264.....process 4, thread 17, Mon Mar 22 13:39:31 2021
+rank 4 updated refValueGlobalAbsolute to 264 || 264 
+rank 4, buffer size to be sent : 2148 
+*********************************Deadlock reached!!
+Exit tag received on process 4 
+rank 4 sent best result, Bytes : 2148, refVal : 264
+argc: 7, threads: 40, prob : 4, filename: input/prob_4/600/0600_93 
+Process 3 of 5 is on nia0218.scinet.local
+rank 3 synchronised, num nodes = 4 
+VC = 275......process 3, thread 0, Mon Mar 22 13:39:27 2021
+rank 3 updated refValueGlobalAbsolute to 275 || 275 
+rank 3, buffer size to be sent : 2192 
+VC = 272......process 3, thread 7, Mon Mar 22 13:39:27 2021
+rank 3 updated refValueGlobalAbsolute to 272 || 272 
+rank 3, buffer size to be sent : 2180 
+VC = 269.....process 3, thread 22, Mon Mar 22 13:39:27 2021
+rank 3 updated refValueGlobalAbsolute to 269 || 269 
+rank 3, buffer size to be sent : 2168 
+VC = 268.....process 3, thread 34, Mon Mar 22 13:39:27 2021
+rank 3 updated refValueGlobalAbsolute to 268 || 268 
+rank 3, buffer size to be sent : 2164 
+*********************************Deadlock reached!!
+Exit tag received on process 3 
+rank 3 sent best result, Bytes : 2164, refVal : 268
+argc: 7, threads: 40, prob : 4, filename: input/prob_4/600/0600_93 
+Process 2 of 5 is on nia0207.scinet.local
+rank 2 synchronised, num nodes = 4 
+*********************************Deadlock reached!!
+*********************************Deadlock reached!!
+*********************************Deadlock reached!!
+Exit tag received on process 2 
+argc: 7, threads: 40, prob : 4, filename: input/prob_4/600/0600_93 
+Process 1 of 5 is on nia0083.scinet.local
+rank 1 synchronised, num nodes = 4 
+VC = 274......process 1, thread 1, Mon Mar 22 13:39:27 2021
+rank 1 updated refValueGlobalAbsolute to 274 || 274 
+rank 1, buffer size to be sent : 2188 
+VC = 271......process 1, thread 9, Mon Mar 22 13:39:27 2021
+rank 1 updated refValueGlobalAbsolute to 271 || 271 
+rank 1, buffer size to be sent : 2176 
+*********************************Deadlock reached!!
+*********************************Deadlock reached!!
+*********************************Deadlock reached!!
+*********************************Deadlock reached!!
+Exit tag received on process 1 
+rank 1 sent best result, Bytes : 2176, refVal : 271
+Finishing run at: Mon Mar 22 13:55:46 EDT 2021
+
+scontrol show jobid 5031439
+JobId=5031439 JobName=0600_93
+   UserId=pasr1602(3102120) GroupId=mlafond(6054778) MCS_label=N/A
+   Priority=2083763 Nice=0 Account=def-mlafond QOS=normal
+   JobState=COMPLETING Reason=None Dependency=(null)
+   Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:16:44 TimeLimit=01:00:00 TimeMin=N/A
+   SubmitTime=2021-03-22T13:34:47 EligibleTime=2021-03-22T13:34:47
+   AccrueTime=2021-03-22T13:34:47
+   StartTime=2021-03-22T13:39:03 EndTime=2021-03-22T13:55:47 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2021-03-22T13:39:03
+   Partition=compute AllocNode:Sid=nia-login01:143835
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=nia[0025,0083,0218-0219]
+   BatchHost=nia0025
+   NumNodes=4 NumCPUs=400 NumTasks=5 CPUs/Task=40 ReqB:S:C:T=0:0:*:*
+   TRES=cpu=400,mem=875000M,node=5,billing=200
+   Socks/Node=* NtasksPerN:B:S:C=1:0:*:* CoreSpec=*
+   MinCPUsNode=40 MinMemoryNode=175000M MinTmpDiskNode=0
+   Features=[skylake|cascade] DelayBoot=00:00:00
+   OverSubscribe=NO Contiguous=0 Licenses=(null) Network=(null)
+   Command=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/job.sh
+   WorkDir=/gpfs/fs0/scratch/m/mlafond/pasr1602/library
+   StdErr=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/0600_93-5031439.out
+   StdIn=/dev/null
+   StdOut=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/0600_93-5031439.out
+   Power=
+   MailUser=pasr1602@usherbrooke.ca MailType=BEGIN,END,FAIL,REQUEUE
+
+sacct -j 5031439
+       JobID    JobName    Account    Elapsed  MaxVMSize     MaxRSS  SystemCPU    UserCPU ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- ---------- ---------- -------- 
+5031439         0600_93 def-mlafo+   00:16:44                        02:21.718 1-17:14:35      0:0 
+5031439.bat+      batch def-mlafo+   00:16:44    724580K      9376K  00:01.358  00:03.596      0:0 
+5031439.ext+     extern def-mlafo+   00:16:44    138360K       880K  00:00.001  00:00.002      0:0 
+5031439.0         a.out def-mlafo+   00:16:28   3235452K    441124K  02:20.358 1-17:14:32      0:0 
+
+kernel messages produced during job executions:
+[Mar22 12:37] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x2260a
+[  +0.011365] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x2260b
+[  +0.011276] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x2260c
+[  +0.011195] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x2260d
+[  +0.011175] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x2260e
+[  +0.041835] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x225fa
+[  +0.011172] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x225fb
+[  +0.011142] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x225fc
+[  +0.011129] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x225fd
+[  +0.011126] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x225fe

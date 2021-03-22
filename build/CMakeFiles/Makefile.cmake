@@ -12,6 +12,10 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.16.3/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.16.3/CMakeSystem.cmake"
   "CMakeFiles/FindMPI/test_mpi.cpp"
+  "../tests/non_void/CMakeLists.txt"
+  "../tests/non_void_MPI/CMakeLists.txt"
+  "../tests/void/CMakeLists.txt"
+  "../tests/void_MPI/CMakeLists.txt"
   "/usr/share/cmake-3.16/Modules/CMakeCInformation.cmake"
   "/usr/share/cmake-3.16/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake-3.16/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake"
@@ -52,9 +56,17 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/FindMPI/test_mpi.cpp"
   "CMakeFiles/FindMPI/test_mpi.cpp"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
+  "tests/void/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "tests/non_void/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "tests/void_MPI/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "tests/non_void_MPI/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/a.out.dir/DependInfo.cmake"
+  "tests/void/CMakeFiles/void.out.dir/DependInfo.cmake"
+  "tests/non_void/CMakeFiles/non_void.out.dir/DependInfo.cmake"
+  "tests/void_MPI/CMakeFiles/void_mpi.out.dir/DependInfo.cmake"
+  "tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/DependInfo.cmake"
   )

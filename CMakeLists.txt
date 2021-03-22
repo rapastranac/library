@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.8)
 project(global)
 
 # testing scenarios
-#add_subdirectory(tests/void)
-#add_subdirectory(tests/non_void)
-#add_subdirectory(tests/void_MPI)
-#add_subdirectory(tests/non_void_MPI)
+add_subdirectory(tests/void)
+add_subdirectory(tests/non_void)
+add_subdirectory(tests/void_MPI)
+add_subdirectory(tests/non_void_MPI)
 
 
 set(CMAKE_CXX_STANDARD 20)
@@ -33,11 +33,11 @@ add_definitions(-DVC_VOID_MPI)
 #add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
 
-#add_compile_options("-std=c++2a" "-fconcepts" "-O3")
+add_compile_options("-std=c++2a" "-fconcepts" "-O3")
 
 #Here below for boost
 #add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
-add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
+#add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
 
 #sets the executable in main folder
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
@@ -67,5 +67,5 @@ endif()
 enable_testing()
 add_test(void                       ../tests/void/void.out                  -N 5 -I ../input/prob_4/400/00400_1)
 add_test(non_void                   ../tests/non_void/non_void.out          -N 5 -I ../input/prob_4/400/00400_1)
-add_test(void_mpi       mpirun -n 5 ../tests/void_MPI/void_mpi.out          -N 1 -I ../input/prob_4/400/00400_1)
-add_test(non_void_mpi   mpirun -n 5 ../tests/non_void_MPI/non_void_mpi.out  -N 1 -I ../input/prob_4/400/00400_1)
+add_test(void_mpi       mpirun -n 6 ../tests/void_MPI/void_mpi.out          -N 1 -I ../input/prob_4/400/00400_1)
+add_test(non_void_mpi   mpirun -n 6 ../tests/non_void_MPI/non_void_mpi.out  -N 1 -I ../input/prob_4/400/00400_1)

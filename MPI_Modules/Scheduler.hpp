@@ -170,7 +170,7 @@ namespace library
 				//	break;
 				//}
 
-				receiveResult(); // waiting algorithms
+				//fetchSolution<_ret>(); // waiting algorithms
 
 				// refValueGlobal updated if changed
 				if (refValueGlobal[0] != refValueGlobal_old)
@@ -182,7 +182,7 @@ namespace library
 			} while (true);
 		}
 
-		template <typename Holder, typename Serialize>
+		template <typename _ret, typename Holder, typename Serialize>
 		void schedule(Holder &holder, Serialize &&serialize)
 		{
 			int nodes = 0; // number of available nodes -- private to this method
@@ -293,8 +293,9 @@ namespace library
 				MPI_Ssend(&buffer, 1, MPI_CHAR, rank, 3, world_Comm); // send positive signal
 			}
 			MPI_Barrier(world_Comm);
-			// receive
-			retrieveSolVoid();
+
+			// receive solution from other processes
+			fetchSolution();
 		}
 
 		// first synchronisation, thus rank 0 is aware of other availability
@@ -353,8 +354,66 @@ namespace library
 			return false;
 		}
 
+		//template <typename _ret, std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		void fetchSolution()
+		{
+			// order order order order
+			//int nodes = world_size - 1;
+
+			for (int rank = 1; rank < world_size; rank++)
+			{
+
+				MPI_Status status;
+				int Bytes;
+				// sender would not need to send data size before hand **********************************************
+				MPI_Probe(rank, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI_CHAR, &Bytes);		   // receives total number of datatype elements of the message
+				//***************************************************************************************************
+
+				char *buffer = new char[Bytes];
+				MPI_Recv(buffer, Bytes, MPI_CHAR, rank, MPI_ANY_TAG, world_Comm, &status);
+
+				int TAG = status.MPI_TAG;
+#ifdef DEBUG_COMMENTS
+				fmt::print("fetching result from rank {} \n", rank);
+#endif
+				char empty[] = "empty_buffer";
+				bool isEmpty = false;
+				int count = 1;
+				for (int i = 0; i < 12; i++)
+				{
+					if (buffer[i] == empty[i])
+					{
+						count++;
+						if (count == 12)
+							isEmpty = true;
+					}
+				}
+
+				if (isEmpty)
+				{
+					fmt::print("solution NOT received from rank {}\n", rank);
+					delete[] buffer;
+					continue;
+				}
+				fmt::print("Center received a best result from {}, Bytes : {}, refVal {} \n", rank, Bytes, status.MPI_TAG);
+				std::stringstream ss;
+
+				for (int i = 0; i < Bytes; i++)
+				{
+					ss << buffer[i];
+				}
+
+				bestResults[rank].first = TAG;			  // reference value corresponding to result
+				bestResults[rank].second = std::move(ss); // best result so far from this rank
+
+				delete[] buffer;
+			}
+		}
+
 		//this method is usefull only when parallelizing waiting algorithms
-		void receiveResult()
+		template <typename _ret, std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
+		void fetchSolution2()
 		{
 			if (termination[0])
 			{
@@ -380,75 +439,6 @@ namespace library
 
 				bestResults[src].first = status.MPI_TAG; // reference value corresponding to result
 				bestResults[src].second = std::move(ss); // best result so far from this rank
-			}
-		}
-
-		void retrieveSolVoid()
-		{
-			// order order order order
-			//int nodes = world_size - 1;
-
-			for (int rank = 1; rank < world_size; rank++)
-			{
-
-				MPI_Status status;
-				int Bytes;
-				// sender would not need to send data size before hand **********************************************
-				MPI_Probe(rank, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR, &Bytes);		   // receives total number of datatype elements of the message
-				//***************************************************************************************************
-
-				char *buffer = new char[Bytes];
-				MPI_Recv(buffer, Bytes, MPI_CHAR, rank, MPI_ANY_TAG, world_Comm, &status);
-
-				//int rank = status.MPI_SOURCE;
-				int TAG = status.MPI_TAG;
-
-				fmt::print("fetching result from rank {} \n", rank);
-
-				//--nodes;
-
-				char empty[] = "empty_buffer";
-				bool isEmpty = false;
-				int count = 1;
-				for (int i = 0; i < 12; i++)
-				{
-					if (buffer[i] == empty[i])
-					{
-						count++;
-						if (count == 12)
-							isEmpty = true;
-					}
-				}
-
-				if (isEmpty)
-				{
-					fmt::print("solution NOT received from rank {}\n", rank);
-
-					delete[] buffer;
-
-					//if (nodes == 0)
-					//	break;
-					//else
-					continue;
-				}
-
-				fmt::print("Center received a best result from {}, Bytes : {}, refVal {} \n", rank, Bytes, status.MPI_TAG);
-
-				std::stringstream ss;
-
-				for (int i = 0; i < Bytes; i++)
-				{
-					ss << buffer[i];
-				}
-
-				bestResults[rank].first = TAG;			  // reference value corresponding to result
-				bestResults[rank].second = std::move(ss); // best result so far from this rank
-
-				delete[] buffer;
-
-				//if (nodes == 0)
-				//	break;
 			}
 		}
 

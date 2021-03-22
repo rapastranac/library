@@ -194,9 +194,9 @@ namespace library
 					// send most up-to-date refValue to rank 0
 					TAG = 9;
 					MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, TAG, *world_Comm);
-
+#ifdef DEBUG_COMMENTS
 					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
-
+#endif
 					auto ss = f_serial(result); // serialized result
 #ifdef DEBUG_COMMENTS
 					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
@@ -1630,13 +1630,10 @@ namespace library
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
-			//thread_pool.wait();
-
-			_ret res;
+			_ret res; // default construction of return type "_ret"
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {} entered reply! \n", world_rank);
 #endif
-			//holder.get(res);
 			res = holder.get();
 
 			if (src == 0) // termination, since all recursions return to center node
@@ -1644,23 +1641,12 @@ namespace library
 #ifdef DEBUG_COMMENTS
 				fmt::print("Cover size() : {}, sending to center \n", res.coverSize());
 #endif
-
-				std::unique_lock<std::mutex> lck(mtx_MPI); // in theory other threads should be are idle, TO DO ..
-				//this sends a signal so center node turns into receiving mode
-				bool buffer = true;
-				put_mpi(&buffer, 1, MPI_CXX_BOOL, src, 0, *win_termination);
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {} put to termination! \n", world_rank);
-#endif
-
 				std::stringstream ss = serialize(res);
-				int count = ss.str().size();
 
-				int err = MPI_Ssend(ss.str().data(), count, MPI_CHAR, src, refValueGlobal[0], *world_Comm);
-				if (err != MPI_SUCCESS)
-					fmt::print("final result could not be sent from rank {} to rank {}! \n", world_rank, src);
+				bestRstream.first = refValueGlobal[0];
+				bestRstream.second = std::move(ss);
 			}
-			else // some other node requested help and it is surely waiting for the result
+			else // some other node requested help and it is surely waiting for the return value
 			{
 
 #ifdef DEBUG_COMMENTS
@@ -1681,9 +1667,7 @@ namespace library
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		void reply(Serialize &&serialize, Holder &holder, int src)
 		{
-			//this->waitResult(true);
 			thread_pool.wait();
-			//sendBestResultToCenter();
 		}
 
 		// this should is supposed to be called only when all tasks are finished
@@ -1705,8 +1689,9 @@ namespace library
 			int refVal = bestRstream.first;
 
 			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI_CHAR, 0, refVal, *world_Comm);
+#ifdef DEBUG_COMMENTS
 			fmt::print("rank {} sent best result, Bytes : {}, refVal : {}\n", world_rank, Bytes, refVal);
-
+#endif
 			//reset bestRstream
 			bestRstream.first = -1;		// reset condition to avoid sending empty buffers
 			bestRstream.second.str(""); // clear stream, eventhough it's not necessary since this value is replaced when a better solution is found
@@ -1820,7 +1805,7 @@ namespace library
 #ifdef DEBUG_COMMENTS
 			fmt::print("scheduler() launched!! \n");
 #endif
-			this->schedule(holder, serialize);
+			this->schedule<_ret>(holder, serialize);
 			end_time = MPI_Wtime();
 		}
 		else
