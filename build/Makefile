@@ -134,58 +134,6 @@ a.out/fast:
 	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/build
 .PHONY : a.out/fast
 
-#=============================================================================
-# Target rules for targets named void.out
-
-# Build rule for target.
-void.out: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 void.out
-.PHONY : void.out
-
-# fast build rule for target.
-void.out/fast:
-	$(MAKE) -f tests/void/CMakeFiles/void.out.dir/build.make tests/void/CMakeFiles/void.out.dir/build
-.PHONY : void.out/fast
-
-#=============================================================================
-# Target rules for targets named non_void.out
-
-# Build rule for target.
-non_void.out: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 non_void.out
-.PHONY : non_void.out
-
-# fast build rule for target.
-non_void.out/fast:
-	$(MAKE) -f tests/non_void/CMakeFiles/non_void.out.dir/build.make tests/non_void/CMakeFiles/non_void.out.dir/build
-.PHONY : non_void.out/fast
-
-#=============================================================================
-# Target rules for targets named void_mpi.out
-
-# Build rule for target.
-void_mpi.out: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 void_mpi.out
-.PHONY : void_mpi.out
-
-# fast build rule for target.
-void_mpi.out/fast:
-	$(MAKE) -f tests/void_MPI/CMakeFiles/void_mpi.out.dir/build.make tests/void_MPI/CMakeFiles/void_mpi.out.dir/build
-.PHONY : void_mpi.out/fast
-
-#=============================================================================
-# Target rules for targets named non_void_mpi.out
-
-# Build rule for target.
-non_void_mpi.out: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 non_void_mpi.out
-.PHONY : non_void_mpi.out
-
-# fast build rule for target.
-non_void_mpi.out/fast:
-	$(MAKE) -f tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/build.make tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/build
-.PHONY : non_void_mpi.out/fast
-
 fmt/src/format.o: fmt/src/format.cc.o
 
 .PHONY : fmt/src/format.o
@@ -439,10 +387,6 @@ help:
 	@echo "... edit_cache"
 	@echo "... test"
 	@echo "... a.out"
-	@echo "... void.out"
-	@echo "... non_void.out"
-	@echo "... void_mpi.out"
-	@echo "... non_void_mpi.out"
 	@echo "... fmt/src/format.o"
 	@echo "... fmt/src/format.i"
 	@echo "... fmt/src/format.s"

@@ -54,101 +54,18 @@ CMAKE_BINARY_DIR = /home/andres/Documents/github/library/build
 
 # The main recursive "all" target.
 all: CMakeFiles/a.out.dir/all
-all: tests/void/all
-all: tests/non_void/all
-all: tests/void_MPI/all
-all: tests/non_void_MPI/all
 
 .PHONY : all
 
 # The main recursive "preinstall" target.
-preinstall: tests/void/preinstall
-preinstall: tests/non_void/preinstall
-preinstall: tests/void_MPI/preinstall
-preinstall: tests/non_void_MPI/preinstall
+preinstall:
 
 .PHONY : preinstall
 
 # The main recursive "clean" target.
 clean: CMakeFiles/a.out.dir/clean
-clean: tests/void/clean
-clean: tests/non_void/clean
-clean: tests/void_MPI/clean
-clean: tests/non_void_MPI/clean
 
 .PHONY : clean
-
-#=============================================================================
-# Directory level rules for directory tests/non_void
-
-# Recursive "all" directory target.
-tests/non_void/all: tests/non_void/CMakeFiles/non_void.out.dir/all
-
-.PHONY : tests/non_void/all
-
-# Recursive "preinstall" directory target.
-tests/non_void/preinstall:
-
-.PHONY : tests/non_void/preinstall
-
-# Recursive "clean" directory target.
-tests/non_void/clean: tests/non_void/CMakeFiles/non_void.out.dir/clean
-
-.PHONY : tests/non_void/clean
-
-#=============================================================================
-# Directory level rules for directory tests/non_void_MPI
-
-# Recursive "all" directory target.
-tests/non_void_MPI/all: tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/all
-
-.PHONY : tests/non_void_MPI/all
-
-# Recursive "preinstall" directory target.
-tests/non_void_MPI/preinstall:
-
-.PHONY : tests/non_void_MPI/preinstall
-
-# Recursive "clean" directory target.
-tests/non_void_MPI/clean: tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/clean
-
-.PHONY : tests/non_void_MPI/clean
-
-#=============================================================================
-# Directory level rules for directory tests/void
-
-# Recursive "all" directory target.
-tests/void/all: tests/void/CMakeFiles/void.out.dir/all
-
-.PHONY : tests/void/all
-
-# Recursive "preinstall" directory target.
-tests/void/preinstall:
-
-.PHONY : tests/void/preinstall
-
-# Recursive "clean" directory target.
-tests/void/clean: tests/void/CMakeFiles/void.out.dir/clean
-
-.PHONY : tests/void/clean
-
-#=============================================================================
-# Directory level rules for directory tests/void_MPI
-
-# Recursive "all" directory target.
-tests/void_MPI/all: tests/void_MPI/CMakeFiles/void_mpi.out.dir/all
-
-.PHONY : tests/void_MPI/all
-
-# Recursive "preinstall" directory target.
-tests/void_MPI/preinstall:
-
-.PHONY : tests/void_MPI/preinstall
-
-# Recursive "clean" directory target.
-tests/void_MPI/clean: tests/void_MPI/CMakeFiles/void_mpi.out.dir/clean
-
-.PHONY : tests/void_MPI/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/a.out.dir
@@ -176,114 +93,6 @@ a.out: CMakeFiles/a.out.dir/rule
 CMakeFiles/a.out.dir/clean:
 	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/clean
 .PHONY : CMakeFiles/a.out.dir/clean
-
-#=============================================================================
-# Target rules for target tests/void/CMakeFiles/void.out.dir
-
-# All Build rule for target.
-tests/void/CMakeFiles/void.out.dir/all:
-	$(MAKE) -f tests/void/CMakeFiles/void.out.dir/build.make tests/void/CMakeFiles/void.out.dir/depend
-	$(MAKE) -f tests/void/CMakeFiles/void.out.dir/build.make tests/void/CMakeFiles/void.out.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=31,32,33,34,35,36,37,38,39,40 "Built target void.out"
-.PHONY : tests/void/CMakeFiles/void.out.dir/all
-
-# Build rule for subdir invocation for target.
-tests/void/CMakeFiles/void.out.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/andres/Documents/github/library/build/CMakeFiles 10
-	$(MAKE) -f CMakeFiles/Makefile2 tests/void/CMakeFiles/void.out.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/andres/Documents/github/library/build/CMakeFiles 0
-.PHONY : tests/void/CMakeFiles/void.out.dir/rule
-
-# Convenience name for target.
-void.out: tests/void/CMakeFiles/void.out.dir/rule
-
-.PHONY : void.out
-
-# clean rule for target.
-tests/void/CMakeFiles/void.out.dir/clean:
-	$(MAKE) -f tests/void/CMakeFiles/void.out.dir/build.make tests/void/CMakeFiles/void.out.dir/clean
-.PHONY : tests/void/CMakeFiles/void.out.dir/clean
-
-#=============================================================================
-# Target rules for target tests/non_void/CMakeFiles/non_void.out.dir
-
-# All Build rule for target.
-tests/non_void/CMakeFiles/non_void.out.dir/all:
-	$(MAKE) -f tests/non_void/CMakeFiles/non_void.out.dir/build.make tests/non_void/CMakeFiles/non_void.out.dir/depend
-	$(MAKE) -f tests/non_void/CMakeFiles/non_void.out.dir/build.make tests/non_void/CMakeFiles/non_void.out.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=11,12,13,14,15,16,17,18,19,20 "Built target non_void.out"
-.PHONY : tests/non_void/CMakeFiles/non_void.out.dir/all
-
-# Build rule for subdir invocation for target.
-tests/non_void/CMakeFiles/non_void.out.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/andres/Documents/github/library/build/CMakeFiles 10
-	$(MAKE) -f CMakeFiles/Makefile2 tests/non_void/CMakeFiles/non_void.out.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/andres/Documents/github/library/build/CMakeFiles 0
-.PHONY : tests/non_void/CMakeFiles/non_void.out.dir/rule
-
-# Convenience name for target.
-non_void.out: tests/non_void/CMakeFiles/non_void.out.dir/rule
-
-.PHONY : non_void.out
-
-# clean rule for target.
-tests/non_void/CMakeFiles/non_void.out.dir/clean:
-	$(MAKE) -f tests/non_void/CMakeFiles/non_void.out.dir/build.make tests/non_void/CMakeFiles/non_void.out.dir/clean
-.PHONY : tests/non_void/CMakeFiles/non_void.out.dir/clean
-
-#=============================================================================
-# Target rules for target tests/void_MPI/CMakeFiles/void_mpi.out.dir
-
-# All Build rule for target.
-tests/void_MPI/CMakeFiles/void_mpi.out.dir/all:
-	$(MAKE) -f tests/void_MPI/CMakeFiles/void_mpi.out.dir/build.make tests/void_MPI/CMakeFiles/void_mpi.out.dir/depend
-	$(MAKE) -f tests/void_MPI/CMakeFiles/void_mpi.out.dir/build.make tests/void_MPI/CMakeFiles/void_mpi.out.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=41,42,43,44,45,46,47,48,49,50 "Built target void_mpi.out"
-.PHONY : tests/void_MPI/CMakeFiles/void_mpi.out.dir/all
-
-# Build rule for subdir invocation for target.
-tests/void_MPI/CMakeFiles/void_mpi.out.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/andres/Documents/github/library/build/CMakeFiles 10
-	$(MAKE) -f CMakeFiles/Makefile2 tests/void_MPI/CMakeFiles/void_mpi.out.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/andres/Documents/github/library/build/CMakeFiles 0
-.PHONY : tests/void_MPI/CMakeFiles/void_mpi.out.dir/rule
-
-# Convenience name for target.
-void_mpi.out: tests/void_MPI/CMakeFiles/void_mpi.out.dir/rule
-
-.PHONY : void_mpi.out
-
-# clean rule for target.
-tests/void_MPI/CMakeFiles/void_mpi.out.dir/clean:
-	$(MAKE) -f tests/void_MPI/CMakeFiles/void_mpi.out.dir/build.make tests/void_MPI/CMakeFiles/void_mpi.out.dir/clean
-.PHONY : tests/void_MPI/CMakeFiles/void_mpi.out.dir/clean
-
-#=============================================================================
-# Target rules for target tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir
-
-# All Build rule for target.
-tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/all:
-	$(MAKE) -f tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/build.make tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/depend
-	$(MAKE) -f tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/build.make tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/andres/Documents/github/library/build/CMakeFiles --progress-num=21,22,23,24,25,26,27,28,29,30 "Built target non_void_mpi.out"
-.PHONY : tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/all
-
-# Build rule for subdir invocation for target.
-tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/andres/Documents/github/library/build/CMakeFiles 10
-	$(MAKE) -f CMakeFiles/Makefile2 tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/andres/Documents/github/library/build/CMakeFiles 0
-.PHONY : tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/rule
-
-# Convenience name for target.
-non_void_mpi.out: tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/rule
-
-.PHONY : non_void_mpi.out
-
-# clean rule for target.
-tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/clean:
-	$(MAKE) -f tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/build.make tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/clean
-.PHONY : tests/non_void_MPI/CMakeFiles/non_void_mpi.out.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-int main_void_MPI(int numThreads,int prob, std::string filename)
+int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 	using HolderType = library::ResultHolder<void, int, Graph>;
 
@@ -60,7 +60,7 @@ int main_void_MPI(int numThreads,int prob, std::string filename)
 	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
 
 	// *****************************************************************************************
-	// this is a generic way of getting information of all the other processes after execution retuns
+	// this is a generic way of getting information from all the other processes after execution retuns
 	auto world_size = scheduler.getWorldSize();
 	std::vector<double> idleTime(world_size);
 	double idl_tm = 0;
@@ -70,7 +70,7 @@ int main_void_MPI(int numThreads,int prob, std::string filename)
 
 	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in
 	// a contiguos array
-	scheduler.allgather(idleTime.data(), &idl_tm);
+	scheduler.allgather(idleTime.data(), &idl_tm, MPI_DOUBLE);
 
 	// *****************************************************************************************
 

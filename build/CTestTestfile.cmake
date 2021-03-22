@@ -12,7 +12,3 @@ add_test(void_mpi "mpirun" "-n" "6" "../tests/void_MPI/void_mpi.out" "-N" "1" "-
 set_tests_properties(void_mpi PROPERTIES  _BACKTRACE_TRIPLES "/home/andres/Documents/github/library/CMakeLists.txt;70;add_test;/home/andres/Documents/github/library/CMakeLists.txt;0;")
 add_test(non_void_mpi "mpirun" "-n" "6" "../tests/non_void_MPI/non_void_mpi.out" "-N" "1" "-I" "../input/prob_4/400/00400_1")
 set_tests_properties(non_void_mpi PROPERTIES  _BACKTRACE_TRIPLES "/home/andres/Documents/github/library/CMakeLists.txt;71;add_test;/home/andres/Documents/github/library/CMakeLists.txt;0;")
-subdirs("tests/void")
-subdirs("tests/non_void")
-subdirs("tests/void_MPI")
-subdirs("tests/non_void_MPI")

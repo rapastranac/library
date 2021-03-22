@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.8)
 project(global)
 
 # testing scenarios
-add_subdirectory(tests/void)
-add_subdirectory(tests/non_void)
-add_subdirectory(tests/void_MPI)
-add_subdirectory(tests/non_void_MPI)
+#add_subdirectory(tests/void)
+#add_subdirectory(tests/non_void)
+#add_subdirectory(tests/void_MPI)
+#add_subdirectory(tests/non_void_MPI)
 
 
 set(CMAKE_CXX_STANDARD 20)

@@ -676,22 +676,7 @@ namespace library
 		//	return dynamic_cast<ctpl::Pool *>(item);
 		//}
 		/*--------------------------------------------------------end*/
-#ifdef MPI_ENABLED
-		int put_mpi(const void *origin_addr, int count, MPI_Datatype mpi_type, int target_rank, MPI_Aint offset, MPI_Win &window)
-		{
-			int result;
-			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, MPI_MODE_NOCHECK, window); // opens epoch
-			MPI_Put(origin_addr, count, mpi_type, target_rank, offset, count, mpi_type, window);
-			MPI_Win_flush(target_rank, window);
 
-			// 4 testing, verifies if value successfully put
-			MPI_Get(&result, count, mpi_type, target_rank, offset, count, mpi_type, window);
-			MPI_Win_flush(target_rank, window);
-
-			MPI_Win_unlock(target_rank, window); // closes epoch
-			return result;
-		}
-#endif
 		template <typename Holder>
 		Holder *checkParent(Holder *holder)
 		{
@@ -1040,7 +1025,7 @@ namespace library
 				if (!upperHolder->evaluate_branch_checkIn())
 				{
 					upperHolder->setDiscard();
-					fmt::print("*********************************Deadlock reached!!\n");
+					//fmt::print("*********************************Deadlock reached!!\n");
 					char empty = 'a';
 					int TAG = 2;
 					int err = MPI_Ssend(&empty, 1, MPI_CHAR, dest_rank, TAG, *world_Comm); // send buffer
@@ -1396,7 +1381,6 @@ namespace library
 		}
 
 		int appliedStrategy = -1;
-		//size_t idCounter;
 		std::atomic<size_t> idCounter;
 		std::atomic<size_t> requests;
 
@@ -1456,27 +1440,13 @@ namespace library
 
 		std::mutex mtx_MPI; //local mutex
 
-		/* MPI parameters */
-		MPI_Mutex *mpi_mutex = nullptr;
-
 		int world_rank = -1;	  // get the rank of the process
 		int world_size = -1;	  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
 
-		MPI_Win *win_phsRequest = nullptr;
-		MPI_Win *win_AvNodes = nullptr;
-		MPI_Win *win_termination = nullptr;
-		MPI_Win *win_accumulator = nullptr;
-		MPI_Win *win_resRequest = nullptr;
-		MPI_Win *win_NumNodes = nullptr;
-		MPI_Win *win_refValueGlobal = nullptr;
-
 		MPI_Comm *world_Comm = nullptr;
-		MPI_Comm *second_Comm = nullptr;
-		MPI_Comm *NodeToNode_Comm = nullptr;
 
 		int *numAvailableNodes = nullptr;
-		bool request_response = false;
 
 		void CHECK_MPI_MUTEX(int sum, int threadId)
 		{
@@ -1486,40 +1456,15 @@ namespace library
 				fmt::print("rank {}, threadID {}, mutex has failed : CHECKER = {} \n", world_rank, threadId, tmp);
 		}
 
-		void linkMPIargs(int world_rank,
-						 int world_size,
-						 char *processor_name,
-						 int *numAvailableNodes,
-						 int *refValueGlobal,
-						 MPI_Win *win_accumulator,
-						 MPI_Win *win_termination,
-						 MPI_Win *win_AvNodes,
-						 MPI_Win *win_phsRequest,
-						 MPI_Win *win_resRequest,
-						 MPI_Win *win_NumNodes,
-						 MPI_Win *win_refValueGlobal,
-						 MPI_Comm *world_Comm,
-						 MPI_Comm *second_Comm,
-						 MPI_Mutex *mpi_mutex)
+		void linkMPIargs(int world_rank, int world_size, char *processor_name,
+						 int *numAvailableNodes, int *refValueGlobal, MPI_Comm *world_Comm)
 		{
 			this->world_rank = world_rank;
 			this->world_size = world_size;
 			strncpy(this->processor_name, processor_name, 128);
 			this->numAvailableNodes = numAvailableNodes;
 			this->refValueGlobal = refValueGlobal;
-			this->win_accumulator = win_accumulator;
-			this->win_termination = win_termination;
-			this->win_AvNodes = win_AvNodes;
-			this->win_phsRequest = win_phsRequest;
-			this->win_resRequest = win_resRequest;
-			this->win_NumNodes = win_NumNodes;
-			this->win_refValueGlobal = win_refValueGlobal;
 			this->world_Comm = world_Comm;
-			this->second_Comm = second_Comm;
-
-			// mpi mutex *********************
-			this->mpi_mutex = mpi_mutex;
-			// *******************************
 		}
 
 		/* if method receives data, this node is supposed to be totally idle */
@@ -1536,7 +1481,6 @@ namespace library
 			MPI_Barrier(*world_Comm);						   // synchronise process in world group
 
 			fmt::print("rank {} synchronised, num nodes = {} \n", world_rank, numAvailableNodes[0]);
-			MPI_Barrier(*world_Comm); // synchronise process in world group
 
 			int send_availability = 0;
 
@@ -1595,17 +1539,7 @@ namespace library
 
 				Utils::unpack_tuple(deserialize, ss, newHolder.getArgs());
 
-				//accumulate_mpi(1, 1, MPI_INT, 0, 0, *win_accumulator, "busyNodes++");
-
 				delete[] in_buffer;
-
-				//if (!onceFlag)
-				//{
-				//	if (MPI_COMM_NULL != *second_Comm)
-				//		MPI_Barrier(*second_Comm);
-				//	//onceFlag = true; //prevents to synchronise again if process #1 gets free, yet job is not finished
-				//	onceFlag = true;
-				//}
 
 				push_multithreading<_ret>(f, 0, newHolder); // first push, node is idle
 
@@ -1613,8 +1547,6 @@ namespace library
 #ifdef DEBUG_COMMENTS
 				fmt::print("Passed on process {} \n", world_rank);
 #endif
-				//accumulate_mpi(-1, 1, MPI_INT, 0, 0, *win_accumulator, "busyNodes--");
-
 				int err = MPI_Ssend(&signal, 1, MPI_INT, 0, 4, *world_Comm);
 				if (err != MPI_SUCCESS)
 					fmt::print("rank {} failed to notify availability \n");
@@ -1748,46 +1680,16 @@ namespace library
 			fmt::print("The threading support level is lesser than that demanded.\n");
 			MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 		}
-		else
-		{
-#ifdef DEBUG_COMMENTS
-			fmt::print("The threading support level corresponds to that demanded.\n");
-#endif
-		}
 
 		communicators();
 
 		int namelen;
 		MPI_Get_processor_name(processor_name, &namelen);
-		//#ifdef DEBUG_COMMENTS
 		fmt::print("Process {} of {} is on {}\n", world_rank, world_size, processor_name);
-		//#endif
-		MPI_Barrier(world_Comm);
-		//fmt::print("About to create window, {} / {}!! \n", world_rank, world_size);
-		MPI_Barrier(world_Comm);
 		win_allocate();
 
-		// initiliaze MPI mutex *********************************************************
-		mpi_mutex.set(world_Comm, win_mutex);
-		// ******************************************************************************
-
-		MPI_Barrier(world_Comm);
-
-		_branchHandler.linkMPIargs(world_rank,
-								   world_size,
-								   processor_name,
-								   numAvailableNodes,
-								   refValueGlobal,
-								   &win_accumulator,
-								   &win_termination,
-								   &win_AvNodes,
-								   &win_phsRequest,
-								   &win_resRequest,
-								   &win_NumNodes,
-								   &win_refValueGlobal,
-								   &world_Comm,
-								   &second_Comm,
-								   &mpi_mutex);
+		_branchHandler.linkMPIargs(world_rank, world_size, processor_name,
+								   numAvailableNodes, refValueGlobal, &world_Comm);
 
 		return world_rank;
 	}
@@ -1805,7 +1707,7 @@ namespace library
 #ifdef DEBUG_COMMENTS
 			fmt::print("scheduler() launched!! \n");
 #endif
-			this->schedule<_ret>(holder, serialize);
+			this->schedule(holder, serialize);
 			end_time = MPI_Wtime();
 		}
 		else
