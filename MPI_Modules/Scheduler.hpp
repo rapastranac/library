@@ -208,6 +208,7 @@ namespace library
 
 				/*
 					TAG scenarios:
+					TAG == 2 discarded
 					TAG == 3 termination signal
 					TAG == 4 availability report
 					TAG == 5 push request

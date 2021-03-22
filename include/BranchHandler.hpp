@@ -1041,6 +1041,11 @@ namespace library
 				{
 					upperHolder->setDiscard();
 					fmt::print("*********************************Deadlock reached!!\n");
+					char empty = 'a';
+					int TAG = 2;
+					int err = MPI_Ssend(&empty, 1, MPI_CHAR, dest_rank, TAG, *world_Comm); // send buffer
+					if (err != MPI_SUCCESS)
+						fmt::print("buffer failed to sent from rank {} to rank {}! \n", world_rank, dest_rank);
 					return true; //true is creating deadlocks
 				}
 
@@ -1557,6 +1562,19 @@ namespace library
 				fmt::print("process {} has rcvd from {}, {} times \n", world_rank, src, count_rcv);
 				fmt::print("Receiver on {}, received {} Bytes from {} \n", world_rank, Bytes, src);
 #endif
+				if (status.MPI_TAG == 2)
+				{
+					delete[] in_buffer;
+					int err = MPI_Ssend(&signal, 1, MPI_INT, 0, 4, *world_Comm);
+					if (err != MPI_SUCCESS)
+						fmt::print("rank {} failed to notify availability \n");
+
+					++send_availability;
+#ifdef DEBUG_COMMENTS
+					fmt::print("rank {} availability sent {} times\n", world_rank, send_availability);
+#endif
+					continue;
+				}
 				if (status.MPI_TAG == 3)
 				{
 					delete[] in_buffer;
@@ -1756,9 +1774,9 @@ namespace library
 
 		int namelen;
 		MPI_Get_processor_name(processor_name, &namelen);
-#ifdef DEBUG_COMMENTS
+		//#ifdef DEBUG_COMMENTS
 		fmt::print("Process {} of {} is on {}\n", world_rank, world_size, processor_name);
-#endif
+		//#endif
 		MPI_Barrier(world_Comm);
 		//fmt::print("About to create window, {} / {}!! \n", world_rank, world_size);
 		MPI_Barrier(world_Comm);
