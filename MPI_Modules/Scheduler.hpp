@@ -462,16 +462,11 @@ namespace library
 			// *********************************************
 
 			auto ss = std::apply(serialize, holder.getArgs());
-
 			int count = ss.str().size(); // number of Bytes
-			char *buffer = new char[count];
-			std::memcpy(buffer, ss.str().data(), count);
 
-			int err = MPI_Ssend(buffer, count, MPI_CHAR, 1, 0, world_Comm); // send buffer
+			int err = MPI_Ssend(ss.str().data(), count, MPI_CHAR, 1, 0, world_Comm); // send buffer
 			if (err != MPI_SUCCESS)
 				fmt::print("buffer failed to send! \n");
-
-			delete[] buffer;
 
 			fmt::print("Seed sent \n");
 		}

@@ -6,8 +6,8 @@
 #SBATCH --tasks=3
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=80
-#SBATCH -- mem=150000 # memory limit per compute node
-##SBATCH --mem-per-cpu=2000M      # memory; default unit is megabytes
+#SBATCH --mem=MaxMemPerNode         # memory limit per compute node
+##SBATCH --mem-per-cpu=2000M        # memory; default unit is megabytes
 #SBATCH --time=0-02:00:00           # time (DD-HH:MM)
 #SBATCH --mail-user=pasr1602@usherbrooke.ca
 #SBATCH --mail-type=BEGIN

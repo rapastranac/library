@@ -1034,13 +1034,14 @@ namespace library
 		template <typename Holder, typename F_serial>
 		bool try_top_holder(Holder &holder, F_serial &&f_serial, int dest_rank)
 		{
-			Holder *upperHolder = checkParent(&holder);
+			Holder *upperHolder = checkParent(&holder); //  if it finds it, then root has been already lowered
 			if (upperHolder)
 			{
 				if (!upperHolder->evaluate_branch_checkIn())
 				{
 					upperHolder->setDiscard();
-					return true;
+					fmt::print("*********************************Deadlock reached!!\n");
+					return true; //true is creating deadlocks
 				}
 
 				upperHolder->setMPISent(true, dest_rank);
