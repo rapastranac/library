@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/a.out",
-            "args": ["-N","1", "-I", "input/prob_4/400/00400_1"],
+            "args": ["-N","12", "-I", "input/p_hat1000_2"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -30,3 +30,6 @@
 //"input/prob_4/600/00600_1"
 //"input/p_hat1000_2"
 //"input/prob_4/400/00400_1"
+//input/frb30_15_mis/frb30_15_1.mis
+//"input/frb35-17-mis/frb35-17-1.mis"
+//"input/frb30-15-clq/frb30-15-1.clq"

@@ -29,6 +29,7 @@ int main_FPT_void(int numThreads, int prob, std::string filename)
     VC_FPT_void cover;
 
     graph.readEdges(filename);
+    //graph.readDimacs(filename);
 
     cover.init(graph, numThreads, filename, prob);
     cover.findCover(1);

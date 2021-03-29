@@ -1274,6 +1274,16 @@ namespace library
 			return push_multithreading<_ret>(f, id, holder);
 		}
 
+		void set_starving_at(int threshold)
+		{
+			this->starvingThreshold = threshold;
+		}
+
+		int is_starving()
+		{
+			return numAvailableNodes[0] < starvingThreshold ? true : false;
+		}
+
 #endif
 		// no DLB begin **********************************************************************
 		template <typename _ret, typename F, typename Holder,
@@ -1438,15 +1448,13 @@ namespace library
 #ifdef MPI_ENABLED
 		std::atomic<int> CHECKER{0};
 
-		std::mutex mtx_MPI; //local mutex
-
-		int world_rank = -1;	  // get the rank of the process
-		int world_size = -1;	  // get the number of processes/nodes
-		char processor_name[128]; // name of the node
-
-		MPI_Comm *world_Comm = nullptr;
-
-		int *numAvailableNodes = nullptr;
+		std::mutex mtx_MPI;				  // mutex to ensure MPI_THREAD_SERIALIZED
+		int world_rank = -1;			  // get the rank of the process
+		int world_size = -1;			  // get the number of processes/nodes
+		char processor_name[128];		  // name of the node
+		int starvingThreshold = -1;		  // number of available nodes in which they stop been a push priority
+		int *numAvailableNodes = nullptr; // remote memory synchronised by center node
+		MPI_Comm *world_Comm = nullptr;	  // world communicator MPI
 
 		void CHECK_MPI_MUTEX(int sum, int threadId)
 		{

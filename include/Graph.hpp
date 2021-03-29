@@ -17,7 +17,7 @@ using namespace std;
 #include <vector>
 
 #endif
-
+#include <fmt/format.h>
 #include "util.hpp"
 
 #include <climits>
@@ -71,95 +71,81 @@ private:
 
 	void _calculerVertexMaxDegree()
 	{
-		int tmp;
+		int DEG;
 		/*Finding vertex degrees, in order to start exploring by these ones.*/
 		if (!vertexDegree.empty())
 		{
 			vertexDegree.clear();
 			idsMax.clear();
-			max = 0;
+			max = INT_MIN;
 		}
 
-		map<int, set<int>>::iterator it = this->adj.begin();
-		while (it != adj.end())
+		for (auto const &[v, neighbours] : adj)
 		{
-			tmp = it->second.size();
-			this->vertexDegree.insert({it->first, tmp});
-			if (tmp > this->max)
-				this->max = tmp;
-			++it;
+			DEG = neighbours.size();
+			this->vertexDegree.insert({v, DEG});
+			if (DEG > min)
+				max = DEG;
 		}
 
-		it = adj.begin();
-		while (it != adj.end())
+		for (auto const &[v, neighbours] : adj)
 		{
-			if (this->vertexDegree[it->first] == this->max)
-			{
-				this->idsMax.push_back(it->first);
-			}
-			++it;
+			if (vertexDegree[v] == max)
+				idsMax.push_back(v);
 		}
 	}
 
 	void _calculerVertexMinDegree()
 	{
-		int tmp;
+		int DEG;
 		/*Finding vertex degrees, in order to start exploring by these ones.*/
 		if (!vertexDegree.empty())
 		{
+			vertexDegree.clear();
 			idsMin.clear();
-			min = numVertices;
+			min = INT_MAX;
 		}
 
-		map<int, set<int>>::iterator it = this->adj.begin();
-		while (it != adj.end())
+		for (auto const &[v, neighbours] : adj)
 		{
-			tmp = it->second.size();
-			this->vertexDegree.insert({it->first, tmp});
-			if (tmp < this->min)
-				this->min = tmp;
-			++it;
+			DEG = neighbours.size();
+			this->vertexDegree.insert({v, DEG});
+			if (DEG < min)
+				min = DEG;
 		}
 
-		it = adj.begin();
-		while (it != adj.end())
+		for (auto const &[v, neighbours] : adj)
 		{
-			if (this->vertexDegree[it->first] == this->min)
-			{
-				this->idsMin.push_back(it->first);
-			}
-			++it;
+			if (vertexDegree[v] == min)
+				idsMin.push_back(v);
 		}
 	}
 
 	void _updateVertexDegree()
 	{
 		//Recalculating the vertex with maximum number of edges
-		int max_tmp = 0;
-		int min_tmp = numVertices;
+		int max_tmp = INT_MIN;
+		int min_tmp = INT_MAX;
 
-		for (auto const &it : this->vertexDegree)
+		for (auto const &[v, degree] : vertexDegree)
 		{
-			if (it.second > max_tmp)
-			{
-				max_tmp = it.second;
-			}
-			if (it.second < min_tmp)
-			{
-				min_tmp = it.second;
-			}
+			if (degree > max_tmp)
+				max_tmp = degree;
+
+			if (degree < min_tmp)
+				min_tmp = degree;
 		}
-		this->max = max_tmp;
-		this->min = min_tmp;
-		this->idsMax.clear();
-		this->idsMin.clear();
+		max = max_tmp;
+		min = min_tmp;
+		idsMax.clear();
+		idsMin.clear();
 		/*storing position of highest degree vertices within adjacency list*/
-		for (auto const &it : this->vertexDegree)
+		for (auto const &[v, degree] : vertexDegree)
 		{
-			if (it.second == max)
-				this->idsMax.push_back(it.first);
-			if (it.second == min)
-				this->idsMin.push_back(it.first);
+			if (degree == max)
+				this->idsMax.push_back(v);
+			if (degree == min)
+				this->idsMin.push_back(v);
 		}
 	}
 
@@ -208,29 +194,22 @@ private:
 	{
 		std::vector<int> degree_zero;
 
-		map<int, set<int>>::const_iterator it = adj.begin();
-
 		// this loop finds vertices of degree zero
-		while (it != adj.end())
+		for (auto const &[v, neighbours] : adj)
 		{
-			if (it->second.size() == 0)
-			{
-				degree_zero.push_back(it->first);
-			}
-			it++;
+			if (neighbours.size() == 0)
+				degree_zero.push_back(v);
 		}
 
 		if (degree_zero.size() == 0)
 			return false; // no vertices then no changes where made
 
-		// this loop removes vertices of degree zero from the adjacency list
+		// this loop removes vertices of zero degree from the adjacency list
 		for (auto &vertex : degree_zero)
 		{
 			adj.erase(vertex);
-			this->vertexDegree.erase(vertex);
-			numVertices--;
+			vertexDegree.erase(vertex);
 		}
-
 		return true;
 	}
 
@@ -242,36 +221,34 @@ private:
 	vertices for deletion under Rule 1. This reduces n0 by the number
 	of deleted vertices and reduces k by one. This rule is applied repeatedly
 	until all pendant vertices are eliminated.*/
-	bool _rule2(map<int, set<int>> &adj)
+	bool _rule2(map<int, set<int>> &adj, int &added_to_cover)
 	{
-
-		map<int, set<int>>::const_iterator it = adj.begin();
 		vector<int> pendant_neighbour;
-		
 		vector<pair<int, int>> matching_ccs;
 
-		while (it != adj.end())
+		for (auto &[v, neighbours] : adj)
 		{
-			if (it->second.size() == 1)
+			if (neighbours.size() == 1)
 			{
-				int val = *it->second.begin();
-				pendant_neighbour.push_back(val);
-				
+				int w = *neighbours.begin(); // only neighbour of v
+				pendant_neighbour.push_back(w);
+
 				//special case : what if the neighbor also has degree 1?
-				if (adj[val].size() == 1)
+				if (adj[w].size() == 1) // v is only neighbour of w?
 				{
-					if (it->first < val)	//not add the same matching twice
-						matching_ccs.push_back( make_pair(it->first, val) );
+					if (v < w) //not add the same matching twice
+						matching_ccs.push_back(make_pair(v, w));
 				}
 				else
-				{	
-					_cover.insert(val);
+				{
+					if (!_cover.contains(w)) // avoid added_to_cover++ twice for the same pendant vertex
+					{
+						_cover.insert(w);
+						added_to_cover++;
+					}
 				}
 			}
-			it++;
 		}
-
-		
 
 		if (pendant_neighbour.size() == 0 && matching_ccs.size() == 0)
 			return false; // no vertices then no changes where made
@@ -279,8 +256,9 @@ private:
 		for (auto &match : matching_ccs)
 		{
 			_cover.insert(match.first);
-			this->erase(adj, match.first);
-			this->erase(adj, match.second);	
+			this->erase(adj, match.first); // only one is erased, since erase(..) has its own way to handle counter
+			//this->erase(adj, match.second); // this will be handled by _rule1(..) since it is  iterative
+			added_to_cover++;
 		}
 
 		for (auto &neighbour : pendant_neighbour)
@@ -293,7 +271,7 @@ private:
 
 	/* this rule states that having a vertex u with two adjacent neighbours v and w,
 		then v and w will be in the MVC*/
-	bool _rule3(map<int, set<int>> &adj)
+	bool _rule3(map<int, set<int>> &adj, int &added_to_cover)
 	{
 		/*		u ---- v ~~~
 				 \	  /
@@ -318,6 +296,7 @@ private:
 				{
 					_cover.insert(v); // u is included in the MVC
 					_cover.insert(w); // w is included in the MVC
+					added_to_cover += 2;
 
 					erase(adj, u); // u is discarded from the MVC
 					erase(adj, v); // v is removed from list since it was already included in the MVC
@@ -348,7 +327,6 @@ private:
 
 		map<int, set<int>>::const_iterator it = adj.begin();
 		map<int, set<int>> folded_vertices;
-		bool isChanged = false;
 		std::once_flag oo_flag;
 
 		int id = -1;
@@ -401,7 +379,6 @@ private:
 
 					//Insert (u') into graph
 					adj.insert(pair<int, set<int>>(id, foldedNeigbours));
-					numVertices++;
 					//link the neighbours of v and w to (u')
 					for (auto f_vertex : foldedNeigbours)
 					{
@@ -429,6 +406,15 @@ private:
 		return flag;
 	}
 
+	bool _rule5(map<int, set<int>> &adj, int &added_to_cover, int k)
+	{
+		for (auto const &[v, neighbours] : adj)
+		{
+		}
+
+		return true;
+	}
+
 	void erase(map<int, set<int>> &adj, int v)
 	{
 		try
@@ -440,7 +426,6 @@ private:
 				this->vertexDegree[vertex]--;
 			}
 			numEdges -= adj[v].size();	 // number of edges reduced by the number of neighbours that v had
-			numVertices--;				 // only one vertex decremented
 			adj.erase(v);				 // vertex v totally removed from adj list
 			this->vertexDegree.erase(v); // removed from the vertexDegree list as well
 		}
@@ -629,7 +614,7 @@ public:
 		_updateVertexDegree();
 	}
 
-	void removeVertex(int v)
+	int removeVertex(int v)
 	{
 		try
 		{
@@ -637,22 +622,19 @@ public:
 			{
 				throw "_VERTEX_NOT_FOUND";
 			}
-
 			numEdges = numEdges - adj[v].size();
 
-			std::set<int>::const_iterator it = adj[v].begin();
 			/*Here we explore all the neighbours of v, and then we find
 			vertex v inside of those neighbours in order to erase v of them*/
-			while (it != adj[v].end())
+			for (auto &u : adj[v])
 			{
-				adj[*it].erase(v);
-				if (adj[*it].size() == 0)
+				adj[u].erase(v);
+				if (adj[u].size() == 0)
 				{
-					//Store temporary position of vertices that end up with no neighbours
-					this->_zeroVertexDegree.insert(*it);
+					// store temporary position of vertices that end up with no neighbours
+					this->_zeroVertexDegree.insert(u);
 				}
-				this->vertexDegree[*it]--;
-				it++;
+				this->vertexDegree[u]--;
 			}
 
 			/*After v is been erased from its neighbours, then v is erased
@@ -661,8 +643,9 @@ public:
 			this->vertexDegree.erase(v);
 
 			this->_cover.insert(v);
-			numVertices--;
 			_updateVertexDegree();
+
+			numVertices = adj.size();
 		}
 		catch (const std::exception &e)
 		{
@@ -676,7 +659,7 @@ public:
 	}
 
 	// it returns the number of neighbours that were removed
-	auto removeNv(int v)
+	int removeNv(int v)
 	{
 		std::set<int> neighboursOfv(adj[v]); //copy of neigbours of vertex v
 		int nNeighours = neighboursOfv.size();
@@ -719,6 +702,40 @@ public:
 		_readEdgesFromGraph();
 		//Graph::currentMVCSize = adj.size();
 		this->numVertices = _counter_vertices;
+	}
+
+	void readDimacs(string &NameOfFile)
+	{
+		std::fstream file;
+		file.open(NameOfFile, ios::in);
+
+		if (!file.is_open())
+			throw "File not found";
+
+		std::string line;
+
+		while (std::getline(file, line))
+		{
+			if (line[0] == 'e')
+			{
+				auto split = Util::Split(line, " ");
+				int u = std::stoi(split[1]);
+				int v = std::stoi(split[2]);
+				add_edge(u, v);
+				numEdges++;
+			}
+		}
+		numVertices = adj.size();
+		_calculerVertexMaxDegree();
+		_calculerVertexMinDegree();
+
+		return;
+	}
+
+	void add_edge(int u, int v)
+	{
+		adj[u].insert(v);
+		adj[v].insert(u);
 	}
 
 	void readEdges(string NameOfFile)
@@ -821,12 +838,12 @@ public:
 	size_t preprocessing()
 	{
 
-		clean_graph();
+		clean_graph(INT_MAX);
 		auto _adj = this->adj;
 		bool flag = true;
 		flag = _rule4(_adj);
 		this->adj = _adj;
-		clean_graph();
+		clean_graph(INT_MAX);
 
 		_readEdgesFromGraph();
 		_calculerVertexMaxDegree();
@@ -837,8 +854,9 @@ public:
 		return adj.size();
 	}
 
-	void clean_graph()
+	int [[nodiscard("Number of vertices added to the cover")]] clean_graph()
 	{
+		int added_to_cover = 0;
 		bool flag = true;
 		bool flag2 = true;
 		while (flag2)
@@ -849,28 +867,59 @@ public:
 				while (flag)
 				{
 					flag = _rule1(this->adj);
-					flag = _rule2(this->adj);
+					flag = _rule2(this->adj, added_to_cover);
 				}
 			}
 
-			flag2 = _rule3(this->adj);
+			flag2 = _rule3(this->adj, added_to_cover);
 		}
 
 		this->_zeroVertexDegree.clear();
 		_updateVertexDegree();
+		numVertices = adj.size();
+		return added_to_cover;
 	}
-	void clean_graph2()
+
+	int [[nodiscard("Number of vertices added to the cover")]] clean_graph(int k)
 	{
+		int added_to_cover = 0;
+		bool flag = true;
+		bool flag2 = true;
+		while (flag2)
+		{
+			if (flag2)
+			{
+				flag = true;
+				while (flag)
+				{
+					flag = _rule1(this->adj);
+					flag = _rule2(this->adj, added_to_cover);
+				}
+			}
+
+			flag2 = _rule3(this->adj, added_to_cover);
+		}
+
+		this->_zeroVertexDegree.clear();
+		_updateVertexDegree();
+		numVertices = adj.size();
+		return added_to_cover;
+	}
+
+	int clean_graph2()
+	{
+		int added_to_cover = 0;
 		bool flag = true;
 
 		while (flag)
 		{
 			flag = _rule1(this->adj);
-			flag = _rule2(this->adj);
+			flag = _rule2(this->adj, added_to_cover);
 		}
 
 		this->_zeroVertexDegree.clear();
 		_updateVertexDegree();
+		return added_to_cover;
 	}
 
 	std::set<int> cover()
