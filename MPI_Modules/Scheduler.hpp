@@ -116,6 +116,7 @@ namespace library
 			sendSeed(aNodes, nodes, busy, holder, serialize);
 
 			int rcv_availability = 0;
+			std::vector<size_t> tasks_per_node(world_size, 0);
 
 			while (true)
 			{
@@ -169,6 +170,7 @@ namespace library
 						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes);		   // Broadcast number of nodes
 						MPI_Ssend(&flag, 1, MPI_INT, src_rank, k, world_Comm); // send positive signal
 						++approvedRequests;
+						tasks_per_node[k]++;
 					}
 					else
 					{
@@ -215,6 +217,11 @@ namespace library
 			}
 			MPI_Barrier(world_Comm);
 
+			for (size_t rank = 1; rank < world_size; rank++)
+			{
+				fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
+			}
+
 			// receive solution from other processes
 			fetchSolution();
 		}
@@ -223,28 +230,14 @@ namespace library
 		// the purpose is to broadcast the total availability to other ranks
 		void sync_availability(std::vector<int> &aNodes, int &nodes)
 		{
-			while (true)
+			nodes = world_size - 1;
+			for (size_t node = 1; node < world_size; node++)
 			{
-				MPI_Status status;
-				int buffer;
-
-				MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, 4, world_Comm, &status);
-
-				int src_rank = status.MPI_SOURCE;
-				/*
-					TAG scenarios:
-					TAG == 4 availability report
-				*/
-
-				aNodes[src_rank] = 1;
-				++nodes;
-				//BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
-
-				if (nodes == (world_size - 1))
-					break;
+				aNodes[node] = 1;
 			}
-			BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // broadcast nodes
-			MPI_Barrier(world_Comm);					   // synchronise process in world group
+
+			MPI_Bcast(&nodes, 1, MPI_INT, 0, world_Comm);
+			MPI_Barrier(world_Comm); // synchronise process in world group
 		}
 
 		int isAvailable(std::vector<int> &aNodes)
@@ -334,17 +327,18 @@ namespace library
 		template <typename Holder, typename Serialize>
 		void sendSeed(std::vector<int> &aNodes, int &nodes, int &busy, Holder &holder, Serialize &&serialize)
 		{
+			const int dest = 1;
 			// global synchronisation **********************
 			--nodes;
 			++busy;
-			aNodes[1] = 0;
+			aNodes[dest] = 0;
 			BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
 			// *********************************************
 
 			auto ss = std::apply(serialize, holder.getArgs());
 			int count = ss.str().size(); // number of Bytes
 
-			int err = MPI_Ssend(ss.str().data(), count, MPI_CHAR, 1, 0, world_Comm); // send buffer
+			int err = MPI_Ssend(ss.str().data(), count, MPI_CHAR, dest, 0, world_Comm); // send buffer
 			if (err != MPI_SUCCESS)
 				fmt::print("buffer failed to send! \n");
 

@@ -84,7 +84,7 @@ private:
 		{
 			DEG = neighbours.size();
 			this->vertexDegree.insert({v, DEG});
-			if (DEG > min)
+			if (DEG > max)
 				max = DEG;
 		}
 
@@ -127,7 +127,7 @@ private:
 		int max_tmp = INT_MIN;
 		int min_tmp = INT_MAX;
 
-		for (auto const &[v, degree] : vertexDegree)
+		for (auto &[v, degree] : vertexDegree)
 		{
 			if (degree > max_tmp)
 				max_tmp = degree;
@@ -135,12 +135,13 @@ private:
 			if (degree < min_tmp)
 				min_tmp = degree;
 		}
+
 		max = max_tmp;
 		min = min_tmp;
 		idsMax.clear();
 		idsMin.clear();
 		/*storing position of highest degree vertices within adjacency list*/
-		for (auto const &[v, degree] : vertexDegree)
+		for (auto &[v, degree] : vertexDegree)
 		{
 			if (degree == max)
 				this->idsMax.push_back(v);
@@ -570,31 +571,13 @@ public:
 		this->rows.insert(val);
 	}
 
-	void removeZeroVertexDegree()
+	// removes all vertices of degree zero, it returns the number of removed vertices
+	int removeZeroVertexDegree()
 	{
-		try
-		{
-			/*This is also rule number 1 of preprocessing*/
-
-			/*After erasing vertices, some of them might end up with zero degree,
-			this function is in charge of erasing those vertices*/
-			for (auto &i : _zeroVertexDegree)
-			{
-				adj.erase(i);
-				vertexDegree.erase(i);
-			}
-			this->_zeroVertexDegree.clear();
-			_updateVertexDegree();
-		}
-		catch (const std::exception &e)
-		{
-			std::stringstream ss;
-			ss << "Exception while removing zero vertex degrees"
-			   << '\n'
-			   << e.what() << '\n';
-
-			std::cerr << ss.str();
-		}
+		int size0 = adj.size();
+		_rule1(this->adj);
+		int size1 = adj.size();
+		return abs(size0 - size1);
 	}
 
 	void removeEdge(const int &v, const int &w)
@@ -620,21 +603,22 @@ public:
 		{
 			if (!adj.contains(v))
 			{
+				fmt::print("_VERTEX_NOT_FOUND\n");
 				throw "_VERTEX_NOT_FOUND";
 			}
 			numEdges = numEdges - adj[v].size();
 
 			/*Here we explore all the neighbours of v, and then we find
 			vertex v inside of those neighbours in order to erase v of them*/
-			for (auto &u : adj[v])
+			for (auto &neighbour : adj[v])
 			{
-				adj[u].erase(v);
-				if (adj[u].size() == 0)
+				adj[neighbour].erase(v);
+				if (adj[neighbour].size() == 0)
 				{
 					// store temporary position of vertices that end up with no neighbours
-					this->_zeroVertexDegree.insert(u);
+					this->_zeroVertexDegree.insert(neighbour);
 				}
-				this->vertexDegree[u]--;
+				this->vertexDegree[neighbour]--;
 			}
 
 			/*After v is been erased from its neighbours, then v is erased
@@ -656,22 +640,23 @@ public:
 			   << e.what() << '\n';
 			std::cerr << ss.str();
 		}
+		return 0;
 	}
 
 	// it returns the number of neighbours that were removed
 	int removeNv(int v)
 	{
 		std::set<int> neighboursOfv(adj[v]); //copy of neigbours of vertex v
-		int nNeighours = neighboursOfv.size();
-		for (auto i : neighboursOfv)
+		int numNeighours = neighboursOfv.size();
+		for (auto vertex : neighboursOfv)
 		{
-			if (adj.contains(i))
+			if (adj.contains(vertex))
 			{
-				this->_cover.insert(i);
-				removeVertex(i);
+				this->_cover.insert(vertex);
+				removeVertex(vertex);
 			}
 		}
-		return nNeighours;
+		return numNeighours;
 	}
 
 	void readGraph(string NameOfFile, string directory)
@@ -778,12 +763,12 @@ public:
 		the first one in the list or arbitrarily*/
 	[[nodiscard]] int id_max(bool random = true)
 	{
-		return (random == true) ? _getRandomVertex(this->idsMax) : idsMax[0];
+		return random ? _getRandomVertex(this->idsMax) : idsMax[0];
 	}
 
 	[[nodiscard]] int id_min(bool random = true)
 	{
-		return (random == true) ? _getRandomVertex(this->idsMin) : idsMin[0];
+		return random ? _getRandomVertex(this->idsMin) : idsMin[0];
 	}
 
 	[[nodiscard]] int d_max()
@@ -816,18 +801,12 @@ public:
 	}
 
 	//gets neighbours of v, Nv(v) = {w1,w2, ... ,wi}
-	const std::set<int> &operator[](const int v) const
+	std::set<int> &operator[](const int v)
 	{
-		map<int, set<int>>::const_iterator it = adj.find(v);
-
-		if (it == adj.end())
-		{
+		if (!adj.contains(v))
 			throw "_VERTEX_NOT_FOUND";
-		}
 		else
-		{
-			return (it->second);
-		}
+			return adj[v];
 	}
 
 	typedef std::map<int, set<int>>::iterator iterator;

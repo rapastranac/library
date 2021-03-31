@@ -282,24 +282,6 @@ global_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build
 //Value Computed by CMake
 global_SOURCE_DIR:STATIC=/home/andres/Documents/github/library
 
-//Value Computed by CMake
-mpi_simple_test_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build/tests/non_void_MPI
-
-//Value Computed by CMake
-mpi_simple_test_SOURCE_DIR:STATIC=/home/andres/Documents/github/library/tests/non_void_MPI
-
-//Value Computed by CMake
-non_void_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build/tests/non_void
-
-//Value Computed by CMake
-non_void_SOURCE_DIR:STATIC=/home/andres/Documents/github/library/tests/non_void
-
-//Value Computed by CMake
-void_BINARY_DIR:STATIC=/home/andres/Documents/github/library/build/tests/void
-
-//Value Computed by CMake
-void_SOURCE_DIR:STATIC=/home/andres/Documents/github/library/tests/void
-
 
 ########################
 # INTERNAL cache entries

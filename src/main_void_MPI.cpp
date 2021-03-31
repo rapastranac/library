@@ -48,6 +48,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	int preSize = graph.preprocessing();
 
 	size_t k_mm = cover.maximum_matching(graph);
+
 	size_t k_uBound = graph.max_k();
 	size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
 	//cover.setMVCSize(k_prime);

@@ -28,8 +28,8 @@ int main_void(int numThreads, int prob, std::string filename)
 	Graph oGraph;
 	VC_void cover;
 
-	//graph.readEdges(filename);
-	graph.readDimacs(filename);
+	graph.readEdges(filename);
+	//graph.readDimacs(filename);
 
 	cover.init(graph, numThreads, filename, prob);
 	cover.findCover(1);

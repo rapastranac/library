@@ -9,6 +9,7 @@ project(global)
 #add_subdirectory(tests/non_void_MPI)
 
 
+#set(CMAKE_C_COMPILER /usr/bin/g++-10)
 set(CMAKE_CXX_STANDARD 20)
 
 #set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall")
@@ -26,20 +27,20 @@ include_directories(${MPI_INCLUDE_PATH})
 #link_directories(${Boost_LIBRARY_DIRS})
 #include_directories(${Boost_INCLUDE_DIRS})
 
-#add_definitions(-DDLB=true)
-#add_definitions(-DMPI_ENABLED)
+add_definitions(-DDLB=true)
+add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
 #add_definitions(-DVC_VOID)
-add_definitions(-DVC_FPT_VOID)
-#add_definitions(-DVC_VOID_MPI)
+#add_definitions(-DVC_FPT_VOID)
+add_definitions(-DVC_VOID_MPI)
 #add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
 
-#add_compile_options("-std=c++2a" "-fconcepts" "-O3")
+add_compile_options("-std=c++2a" "-fconcepts" "-O3")
 
 #Here below for boost
-#add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
-add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
+#add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts" )
+#add_compile_options("-g" "-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts")
 
 #sets the executable in main folder
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )

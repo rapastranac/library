@@ -323,7 +323,7 @@ public:
 	size_t maximum_matching(Graph g)
 	{
 		size_t k = 0;
-		size_t v, w;
+		int v, w;
 
 		while (!g.isCovered())
 		{
@@ -334,10 +334,12 @@ public:
 			{
 				g.removeVertex(v);
 				g.removeVertex(w);
+				g.removeZeroVertexDegree();
 				//				g.clean_graph(); //stupid thing
 			}
-			catch (std::string e)
+			catch (const std::exception &e)
 			{
+				std::cerr << e.what() << std::endl;
 			}
 		}
 		return k;

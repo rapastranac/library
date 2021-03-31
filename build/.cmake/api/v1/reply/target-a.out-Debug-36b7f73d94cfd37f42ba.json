@@ -27,31 +27,37 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 54,
+				"line" : 55,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 42,
+				"line" : 39,
 				"parent" : 0
 			},
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 33,
+				"line" : 30,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 31,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 35,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 24,
-				"parent" : 0
-			},
-			{
-				"command" : 3,
-				"file" : 0,
-				"line" : 47,
+				"line" : 25,
 				"parent" : 0
 			},
 			{
@@ -71,6 +77,12 @@
 				"file" : 0,
 				"line" : 50,
 				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 51,
+				"parent" : 0
 			}
 		]
 	},
@@ -87,31 +99,15 @@
 				},
 				{
 					"backtrace" : 2,
-					"fragment" : "-g"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-Wall"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-Wpedantic"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-Wextra"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-fexceptions"
-				},
-				{
-					"backtrace" : 2,
-					"fragment" : "-pthread"
+					"fragment" : "-std=c++2a"
 				},
 				{
 					"backtrace" : 2,
 					"fragment" : "-fconcepts"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-O3"
 				},
 				{
 					"fragment" : "-std=gnu++2a"
@@ -121,33 +117,41 @@
 			[
 				{
 					"backtrace" : 3,
-					"define" : "VC_FPT_VOID"
+					"define" : "DLB=true"
+				},
+				{
+					"backtrace" : 4,
+					"define" : "MPI_ENABLED"
+				},
+				{
+					"backtrace" : 5,
+					"define" : "VC_VOID_MPI"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 4,
+					"backtrace" : 6,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
 				},
 				{
-					"backtrace" : 4,
+					"backtrace" : 6,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
 				},
 				{
-					"backtrace" : 5,
+					"backtrace" : 7,
 					"path" : "/home/andres/Documents/github/library/include"
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 8,
 					"path" : "/home/andres/Documents/github/library/MPI_Modules"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"path" : "/home/andres/Documents/github/library/cereal"
 				},
 				{
-					"backtrace" : 8,
+					"backtrace" : 10,
 					"path" : "/home/andres/Documents/github/library/fmt/include"
 				}
 			],
