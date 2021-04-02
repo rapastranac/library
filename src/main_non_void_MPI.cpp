@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-int main_non_void_MPI(int numThreads,int prob, std::string filename)
+int main_non_void_MPI(int numThreads, int prob, std::string filename)
 {
 	using HolderType = library::ResultHolder<Graph, int, Graph>;
 
@@ -71,7 +71,7 @@ int main_non_void_MPI(int numThreads,int prob, std::string filename)
 	if (rank != 0)
 		idl_tm = handler.getPoolIdleTime();
 
-	scheduler.allgather(idleTime.data(), &idl_tm);
+	scheduler.allgather(idleTime.data(), &idl_tm, MPI_DOUBLE);
 
 	if (rank == 0)
 	{

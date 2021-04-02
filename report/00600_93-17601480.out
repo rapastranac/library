@@ -1,0 +1,322 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/10.2.0".
+
+
+Inactive Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.3     3) ucx/1.8.0
+
+The following have been reloaded with a version change:
+  1) gcccore/.9.3.0 => gcccore/.10.2.0
+
+
+Activating Modules:
+  1) libfabric/1.10.1     2) openmpi/4.0.5     3) ucx/1.9.0
+
+
+Currently Loaded Modules:
+  1) CCconfig                 5) gcccore/.10.2.0 (H)   9) libfabric/1.10.1
+  2) gentoo/2020     (S)      6) gcc/10.2.0      (t)  10) openmpi/4.0.5    (m)
+  3) imkl/2020.1.217 (math)   7) ucx/1.9.0
+  4) StdEnv/2020     (S)      8) pmix/3.1.5
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /lustre03/project/6054778/pasr1602/git/library
+Starting run at: Thu Apr  1 08:32:30 EDT 2021
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 35 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 35 synchronised, num nodes = 39 
+VC = 279.....process 35, thread 0, Thu Apr  1 08:32:43 2021
+rank 35 updated refValueGlobalAbsolute to 279 || 279 
+rank 35, buffer size to be sent : 2208 
+Exit tag received on process 35 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 27 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 27 synchronised, num nodes = 39 
+Exit tag received on process 27 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 31 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 31 synchronised, num nodes = 39 
+VC = 267.....process 31, thread 0, Thu Apr  1 08:32:43 2021
+rank 31 updated refValueGlobalAbsolute to 267 || 267 
+rank 31, buffer size to be sent : 2160 
+Exit tag received on process 31 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 29 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 29 synchronised, num nodes = 39 
+Exit tag received on process 29 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 39 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 39 synchronised, num nodes = 39 
+Exit tag received on process 39 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 36 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 36 synchronised, num nodes = 39 
+Exit tag received on process 36 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 0 of 40 is on blg8253.int.ets1.calculquebec.ca
+Seed sent 
+Termination achieved: nodes 39, busy 0 
+tasks executed by rank 1 = 152 
+tasks executed by rank 2 = 125 
+tasks executed by rank 3 = 143 
+tasks executed by rank 4 = 115 
+tasks executed by rank 5 = 109 
+tasks executed by rank 6 = 143 
+tasks executed by rank 7 = 113 
+tasks executed by rank 8 = 113 
+tasks executed by rank 9 = 135 
+tasks executed by rank 10 = 101 
+tasks executed by rank 11 = 107 
+tasks executed by rank 12 = 122 
+tasks executed by rank 13 = 98 
+tasks executed by rank 14 = 115 
+tasks executed by rank 15 = 92 
+tasks executed by rank 16 = 91 
+tasks executed by rank 17 = 104 
+tasks executed by rank 18 = 76 
+tasks executed by rank 19 = 92 
+tasks executed by rank 20 = 94 
+tasks executed by rank 21 = 66 
+tasks executed by rank 22 = 125 
+tasks executed by rank 23 = 68 
+tasks executed by rank 24 = 93 
+tasks executed by rank 25 = 90 
+tasks executed by rank 26 = 73 
+tasks executed by rank 27 = 62 
+tasks executed by rank 28 = 57 
+tasks executed by rank 29 = 88 
+tasks executed by rank 30 = 55 
+tasks executed by rank 31 = 35 
+tasks executed by rank 32 = 94 
+tasks executed by rank 33 = 74 
+tasks executed by rank 34 = 30 
+tasks executed by rank 35 = 78 
+tasks executed by rank 36 = 54 
+tasks executed by rank 37 = 81 
+tasks executed by rank 38 = 47 
+tasks executed by rank 39 = 78 
+solution NOT received from rank 1
+solution received from 2, Bytes : 2212, refVal 280 
+solution NOT received from rank 3
+solution NOT received from rank 4
+solution received from 5, Bytes : 2180, refVal 272 
+solution NOT received from rank 6
+solution NOT received from rank 7
+solution NOT received from rank 8
+solution received from 9, Bytes : 2192, refVal 275 
+solution received from 10, Bytes : 2164, refVal 268 
+solution received from 11, Bytes : 2148, refVal 264 
+solution NOT received from rank 12
+solution received from 13, Bytes : 2168, refVal 269 
+solution NOT received from rank 14
+solution NOT received from rank 15
+solution NOT received from rank 16
+solution NOT received from rank 17
+solution NOT received from rank 18
+solution NOT received from rank 19
+solution NOT received from rank 20
+solution received from 21, Bytes : 2152, refVal 265 
+solution NOT received from rank 22
+solution NOT received from rank 23
+solution NOT received from rank 24
+solution received from 25, Bytes : 2172, refVal 270 
+solution NOT received from rank 26
+solution NOT received from rank 27
+solution NOT received from rank 28
+solution NOT received from rank 29
+solution NOT received from rank 30
+solution received from 31, Bytes : 2160, refVal 267 
+solution NOT received from rank 32
+solution NOT received from rank 33
+solution NOT received from rank 34
+solution received from 35, Bytes : 2208, refVal 279 
+solution NOT received from rank 36
+solution NOT received from rank 37
+solution NOT received from rank 38
+solution NOT received from rank 39
+
+ 
+ 
+*****************************************************
+Elapsed time : 1073.427 
+Total number of requests : 15206 
+Number of approved requests : 3588 
+Number of failed requests : 11618 
+*****************************************************
+
+ 
+ 
+Stream retrieved, size : 2148 
+Cover size : 327 
+
+Global pool idle time: 4.996128 seconds
+
+
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 38 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 38 synchronised, num nodes = 39 
+Exit tag received on process 38 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 16 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 16 synchronised, num nodes = 39 
+Exit tag received on process 16 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 26 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 26 synchronised, num nodes = 39 
+Exit tag received on process 26 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 34 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 34 synchronised, num nodes = 39 
+Exit tag received on process 34 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 8 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 8 synchronised, num nodes = 39 
+Exit tag received on process 8 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 5 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 5 synchronised, num nodes = 39 
+VC = 272......process 5, thread 0, Thu Apr  1 08:32:43 2021
+rank 5 updated refValueGlobalAbsolute to 272 || 272 
+rank 5, buffer size to be sent : 2180 
+Exit tag received on process 5 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 12 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 12 synchronised, num nodes = 39 
+Exit tag received on process 12 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 30 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 30 synchronised, num nodes = 39 
+Exit tag received on process 30 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 15 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 15 synchronised, num nodes = 39 
+Exit tag received on process 15 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 19 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 19 synchronised, num nodes = 39 
+Exit tag received on process 19 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 23 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 23 synchronised, num nodes = 39 
+Exit tag received on process 23 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 25 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 25 synchronised, num nodes = 39 
+VC = 270.....process 25, thread 0, Thu Apr  1 08:32:43 2021
+rank 25 updated refValueGlobalAbsolute to 270 || 270 
+rank 25, buffer size to be sent : 2172 
+Exit tag received on process 25 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 32 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 32 synchronised, num nodes = 39 
+Exit tag received on process 32 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 4 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 4 synchronised, num nodes = 39 
+Exit tag received on process 4 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 2 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 2 synchronised, num nodes = 39 
+VC = 280......process 2, thread 0, Thu Apr  1 08:32:43 2021
+rank 2 updated refValueGlobalAbsolute to 280 || 280 
+rank 2, buffer size to be sent : 2212 
+Exit tag received on process 2 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 1 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 1 synchronised, num nodes = 39 
+Exit tag received on process 1 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 13 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 13 synchronised, num nodes = 39 
+VC = 269.....process 13, thread 0, Thu Apr  1 08:32:43 2021
+rank 13 updated refValueGlobalAbsolute to 269 || 269 
+rank 13, buffer size to be sent : 2168 
+Exit tag received on process 13 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 37 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 37 synchronised, num nodes = 39 
+Exit tag received on process 37 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 20 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 20 synchronised, num nodes = 39 
+Exit tag received on process 20 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 22 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 22 synchronised, num nodes = 39 
+Exit tag received on process 22 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 6 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 6 synchronised, num nodes = 39 
+Exit tag received on process 6 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 21 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 21 synchronised, num nodes = 39 
+VC = 266.....process 21, thread 0, Thu Apr  1 08:32:43 2021
+rank 21 updated refValueGlobalAbsolute to 266 || 266 
+rank 21, buffer size to be sent : 2156 
+VC = 265.....process 21, thread 0, Thu Apr  1 08:32:43 2021
+rank 21 updated refValueGlobalAbsolute to 265 || 265 
+rank 21, buffer size to be sent : 2152 
+Exit tag received on process 21 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 33 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 33 synchronised, num nodes = 39 
+Exit tag received on process 33 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 18 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 18 synchronised, num nodes = 39 
+Exit tag received on process 18 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 24 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 24 synchronised, num nodes = 39 
+Exit tag received on process 24 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 9 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 9 synchronised, num nodes = 39 
+VC = 275......process 9, thread 0, Thu Apr  1 08:32:43 2021
+rank 9 updated refValueGlobalAbsolute to 275 || 275 
+rank 9, buffer size to be sent : 2192 
+Exit tag received on process 9 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 3 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 3 synchronised, num nodes = 39 
+Exit tag received on process 3 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 14 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 14 synchronised, num nodes = 39 
+Exit tag received on process 14 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 11 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 11 synchronised, num nodes = 39 
+VC = 264.....process 11, thread 0, Thu Apr  1 08:35:12 2021
+rank 11 updated refValueGlobalAbsolute to 264 || 264 
+rank 11, buffer size to be sent : 2148 
+Exit tag received on process 11 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 10 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 10 synchronised, num nodes = 39 
+VC = 268.....process 10, thread 0, Thu Apr  1 08:32:43 2021
+rank 10 updated refValueGlobalAbsolute to 268 || 268 
+rank 10, buffer size to be sent : 2164 
+Exit tag received on process 10 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 7 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 7 synchronised, num nodes = 39 
+Exit tag received on process 7 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 17 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 17 synchronised, num nodes = 39 
+Exit tag received on process 17 
+argc: 7, threads: 1, prob : 4, filename: input/prob_4/600/0600_93 
+Process 28 of 40 is on blg8253.int.ets1.calculquebec.ca
+rank 28 synchronised, num nodes = 39 
+Exit tag received on process 28 
+Finishing run at: Thu Apr  1 08:53:04 EDT 2021

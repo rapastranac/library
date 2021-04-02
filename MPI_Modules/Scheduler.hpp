@@ -105,18 +105,23 @@ namespace library
 			return world_size;
 		}
 
+		std::vector<int> executedTasksPerNode()
+		{
+			return tasks_per_node;
+		}
+
 	private:
 		template <typename Holder, typename Serialize>
 		void schedule(Holder &holder, Serialize &&serialize)
 		{
 			int nodes = 0; // number of available nodes -- private to this method
 			int busy = 0;
-			std::vector<int> aNodes(world_size);
+			std::vector<int> aNodes(world_size, 1);
 			sync_availability(aNodes, nodes);
 			sendSeed(aNodes, nodes, busy, holder, serialize);
 
 			int rcv_availability = 0;
-			std::vector<size_t> tasks_per_node(world_size, 0);
+			tasks_per_node.resize(world_size, 0);
 
 			while (true)
 			{
@@ -217,11 +222,6 @@ namespace library
 			}
 			MPI_Barrier(world_Comm);
 
-			for (size_t rank = 1; rank < world_size; rank++)
-			{
-				fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
-			}
-
 			// receive solution from other processes
 			fetchSolution();
 		}
@@ -230,11 +230,8 @@ namespace library
 		// the purpose is to broadcast the total availability to other ranks
 		void sync_availability(std::vector<int> &aNodes, int &nodes)
 		{
+			aNodes[0] = 0;
 			nodes = world_size - 1;
-			for (size_t node = 1; node < world_size; node++)
-			{
-				aNodes[node] = 1;
-			}
 
 			MPI_Bcast(&nodes, 1, MPI_INT, 0, world_Comm);
 			MPI_Barrier(world_Comm); // synchronise process in world group
@@ -424,6 +421,8 @@ namespace library
 		std::vector<std::pair<int, std::stringstream>> bestResults;
 
 		size_t threadsPerNode = std::thread::hardware_concurrency(); // detects the number of logical processors in machine
+
+		std::vector<int> tasks_per_node;
 
 		// statistics
 		size_t totalRequests = 0;

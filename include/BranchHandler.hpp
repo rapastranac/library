@@ -1508,15 +1508,14 @@ namespace library
 			//********** starving threshold **********************
 			this->starvingThreshold = world_size - 1;
 			//this->starvingThreshold = (world_size - 2) / 2;
-			//this->starvingThreshold = (int)((float)(world_size - 1) * 0.6);
+			//this->starvingThreshold = (int)((float)(world_size - 1) * 0.8);
 			//****************************************************
 		}
 
 		/* if method receives data, this node is supposed to be totally idle */
-		template <typename _ret, typename F, typename Serialize, typename Deserialize, typename Holder>
-		void receiveSeed(F &&f, Serialize &&serialize, Deserialize &&deserialize, Holder &holder)
+		template <typename _ret, typename Holder, typename F, typename Serialize, typename Deserialize>
+		void receiveSeed(F &&f, Serialize &&serialize, Deserialize &&deserialize)
 		{
-			bool onceFlag = false;
 			int count_rcv = 0;
 
 			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
@@ -1576,19 +1575,19 @@ namespace library
 					break;
 				}
 
-				Holder newHolder(*this, -1); // copy types
+				Holder holder(*this, -1); // copy types
 
 				std::stringstream ss;
 				for (int i = 0; i < Bytes; i++)
 					ss << in_buffer[i];
 
-				Utils::unpack_tuple(deserialize, ss, newHolder.getArgs());
+				Utils::unpack_tuple(deserialize, ss, holder.getArgs());
 
 				delete[] in_buffer;
 
-				push_multithreading<_ret>(f, 0, newHolder); // first push, node is idle
+				push_multithreading<_ret>(f, -1, holder); // first push, node is idle
 
-				reply<_ret>(serialize, newHolder, src);
+				reply<_ret>(serialize, holder, src);
 #ifdef DEBUG_COMMENTS
 				fmt::print("Passed on process {} \n", world_rank);
 #endif
@@ -1760,7 +1759,7 @@ namespace library
 			if (std::is_void<_ret>::value)
 				_branchHandler.functionIsVoid();
 
-			_branchHandler.receiveSeed<_ret>(f, serialize, deserialize, holder);
+			_branchHandler.receiveSeed<_ret, Holder>(f, serialize, deserialize);
 		}
 #ifdef DEBUG_COMMENTS
 		fmt::print("process {} waiting at barrier \n", world_rank);

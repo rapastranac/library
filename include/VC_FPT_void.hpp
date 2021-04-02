@@ -34,7 +34,7 @@ public:
         size_t k_uBound = graph.max_k();
         size_t k_lBound = graph.min_k();
         int k_prime = std::min(k_mm, k_uBound);
-        k_prime = 946;
+        //k_prime = 946;
         currentMVCSize = k_prime;
 
         begin = std::chrono::steady_clock::now();

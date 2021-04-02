@@ -5,10 +5,15 @@ using namespace std;
 
 #ifdef MPI_ENABLED
 
-#include <cereal/types/map.hpp>
-#include <cereal/types/set.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/access.hpp>
+//#include <cereal/types/map.hpp>
+//#include <cereal/types/set.hpp>
+//#include <cereal/types/vector.hpp>
+//#include <cereal/access.hpp>
+
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/access.hpp>
 
 #else
 
@@ -17,6 +22,8 @@ using namespace std;
 #include <vector>
 
 #endif
+
+
 #include <fmt/format.h>
 #include "util.hpp"
 
@@ -31,7 +38,9 @@ class Graph
 {
 private:
 #ifdef MPI_ENABLED
-	friend class cereal::access;
+	//friend class cereal::access;
+	friend class boost::serialization::access;
+
 #endif
 
 	struct FoldedVertices
@@ -55,10 +64,20 @@ private:
 			this->w = w;
 		}
 #ifdef MPI_ENABLED
+		// cereal
+		//template <class Archive>
+		//void serialize(Archive &ar, const unsigned int version)
+		//{
+		//	ar(u, v, w);
+		//}
+
+		//boost
 		template <class Archive>
 		void serialize(Archive &ar, const unsigned int version)
 		{
-			ar(u, v, w);
+			ar &u;
+			ar &v;
+			ar &w;
 		}
 #endif
 	};
@@ -1200,6 +1219,7 @@ public:
 	//Graph &operator=(Graph &&) = default;
 	//virtual ~Graph() = default;
 #ifdef MPI_ENABLED
+	/*
 	template <class Archive>
 	void serialize(Archive &ar)
 	{
@@ -1215,6 +1235,23 @@ public:
 		   _cover,
 		   numEdges,
 		   numVertices);
+	} */
+
+	template <class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar &max;
+		ar &min;
+		ar &idsMax;
+		ar &idsMin;
+		ar &adj;
+		ar &rows;
+		ar &vertexDegree;
+		ar &_zeroVertexDegree;
+		ar &foldedVertices;
+		ar &_cover;
+		ar &numEdges;
+		ar &numVertices;
 	}
 #endif
 

@@ -45,6 +45,11 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	graph.readEdges(filename);
 
+	//auto ss = user_serializer(graph);
+	//int buffer_size = ss.str().size();
+	//fmt::print("SIZE = {} \n", buffer_size);
+	//return 0;
+
 	int preSize = graph.preprocessing();
 
 	size_t k_mm = cover.maximum_matching(graph);
@@ -64,20 +69,27 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	// this is a generic way of getting information from all the other processes after execution retuns
 	auto world_size = scheduler.getWorldSize();
 	std::vector<double> idleTime(world_size);
+	std::vector<size_t> threadRequests(world_size);
+
 	double idl_tm = 0;
+	size_t rqst = 0;
 
 	if (rank != 0)
-		idl_tm = handler.getPoolIdleTime(); //rank 0 does not run an instance of BranchHandler
+	{ //rank 0 does not run an instance of BranchHandler
+		idl_tm = handler.getPoolIdleTime();
+		rqst = handler.getNumberRequests();
+	}
 
 	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in
 	// a contiguos array
 	scheduler.allgather(idleTime.data(), &idl_tm, MPI_DOUBLE);
+	scheduler.allgather(threadRequests.data(), &rqst, MPI_UNSIGNED_LONG_LONG);
 
 	// *****************************************************************************************
 
 	if (rank == 0)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(300)); // to let other processes to print
+		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
 		scheduler.printStats();
 
 		std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream
@@ -87,12 +99,28 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		fmt::print("Cover size : {} \n", cv.size());
 
 		double sum = 0;
-		for (size_t i = 0; i < idleTime.size(); i++)
+		for (size_t i = 1; i < world_size; i++)
 		{
 			//fmt::print("idleTime[{}]: {} \n", i, idleTime[i]);
 			sum += idleTime[i];
 		}
 		fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", sum);
+
+		// **************************************************************************
+		auto tasks_per_node = scheduler.executedTasksPerNode();
+
+		for (size_t rank = 1; rank < world_size; rank++)
+		{
+			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
+		}
+		fmt::print("\n\n\n");
+
+		for (size_t i = 1; i < world_size; i++)
+		{
+			fmt::print("rank {}, thread requests: {} \n", i, threadRequests[i]);
+		}
+
+		// **************************************************************************
 	}
 	scheduler.finalize();
 

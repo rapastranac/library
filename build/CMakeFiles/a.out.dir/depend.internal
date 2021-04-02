@@ -20,21 +20,6 @@ CMakeFiles/a.out.dir/src/main.cpp.o
  /home/andres/Documents/github/library/include/main.h
  /home/andres/Documents/github/library/src/main.cpp
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o
- ../cereal/cereal/access.hpp
- ../cereal/cereal/archives/binary.hpp
- ../cereal/cereal/cereal.hpp
- ../cereal/cereal/details/helpers.hpp
- ../cereal/cereal/details/polymorphic_impl_fwd.hpp
- ../cereal/cereal/details/static_object.hpp
- ../cereal/cereal/details/traits.hpp
- ../cereal/cereal/macros.hpp
- ../cereal/cereal/specialize.hpp
- ../cereal/cereal/types/base_class.hpp
- ../cereal/cereal/types/common.hpp
- ../cereal/cereal/types/concepts/pair_associative_container.hpp
- ../cereal/cereal/types/map.hpp
- ../cereal/cereal/types/set.hpp
- ../cereal/cereal/types/vector.hpp
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
@@ -87,21 +72,6 @@ CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o
  /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win.h
  /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win_inln.h
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o
- ../cereal/cereal/access.hpp
- ../cereal/cereal/archives/binary.hpp
- ../cereal/cereal/cereal.hpp
- ../cereal/cereal/details/helpers.hpp
- ../cereal/cereal/details/polymorphic_impl_fwd.hpp
- ../cereal/cereal/details/static_object.hpp
- ../cereal/cereal/details/traits.hpp
- ../cereal/cereal/macros.hpp
- ../cereal/cereal/specialize.hpp
- ../cereal/cereal/types/base_class.hpp
- ../cereal/cereal/types/common.hpp
- ../cereal/cereal/types/concepts/pair_associative_container.hpp
- ../cereal/cereal/types/map.hpp
- ../cereal/cereal/types/set.hpp
- ../cereal/cereal/types/vector.hpp
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
@@ -154,21 +124,6 @@ CMakeFiles/a.out.dir/src/main_non_void.cpp.o
  /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win.h
  /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win_inln.h
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
- ../cereal/cereal/access.hpp
- ../cereal/cereal/archives/binary.hpp
- ../cereal/cereal/cereal.hpp
- ../cereal/cereal/details/helpers.hpp
- ../cereal/cereal/details/polymorphic_impl_fwd.hpp
- ../cereal/cereal/details/static_object.hpp
- ../cereal/cereal/details/traits.hpp
- ../cereal/cereal/macros.hpp
- ../cereal/cereal/specialize.hpp
- ../cereal/cereal/types/base_class.hpp
- ../cereal/cereal/types/common.hpp
- ../cereal/cereal/types/concepts/pair_associative_container.hpp
- ../cereal/cereal/types/map.hpp
- ../cereal/cereal/types/set.hpp
- ../cereal/cereal/types/vector.hpp
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
@@ -222,21 +177,6 @@ CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
  /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win.h
  /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win_inln.h
 CMakeFiles/a.out.dir/src/main_void.cpp.o
- ../cereal/cereal/access.hpp
- ../cereal/cereal/archives/binary.hpp
- ../cereal/cereal/cereal.hpp
- ../cereal/cereal/details/helpers.hpp
- ../cereal/cereal/details/polymorphic_impl_fwd.hpp
- ../cereal/cereal/details/static_object.hpp
- ../cereal/cereal/details/traits.hpp
- ../cereal/cereal/macros.hpp
- ../cereal/cereal/specialize.hpp
- ../cereal/cereal/types/base_class.hpp
- ../cereal/cereal/types/common.hpp
- ../cereal/cereal/types/concepts/pair_associative_container.hpp
- ../cereal/cereal/types/map.hpp
- ../cereal/cereal/types/set.hpp
- ../cereal/cereal/types/vector.hpp
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
@@ -289,21 +229,6 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o
  /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win.h
  /usr/lib/x86_64-linux-gnu/openmpi/include/openmpi/ompi/mpi/cxx/win_inln.h
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
- ../cereal/cereal/access.hpp
- ../cereal/cereal/archives/binary.hpp
- ../cereal/cereal/cereal.hpp
- ../cereal/cereal/details/helpers.hpp
- ../cereal/cereal/details/polymorphic_impl_fwd.hpp
- ../cereal/cereal/details/static_object.hpp
- ../cereal/cereal/details/traits.hpp
- ../cereal/cereal/macros.hpp
- ../cereal/cereal/specialize.hpp
- ../cereal/cereal/types/base_class.hpp
- ../cereal/cereal/types/common.hpp
- ../cereal/cereal/types/concepts/pair_associative_container.hpp
- ../cereal/cereal/types/map.hpp
- ../cereal/cereal/types/set.hpp
- ../cereal/cereal/types/vector.hpp
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h

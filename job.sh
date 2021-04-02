@@ -22,6 +22,8 @@ module load gcc/10.2.0
 module load openmpi/4.0.5
 module list
 
+ulimit -a
+
 #gcc --version
 #mpirun --version
 echo "Current working directory: `pwd`"

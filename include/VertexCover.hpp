@@ -1,7 +1,9 @@
 #ifndef VERTEXCOVER_HPP
 #define VERTEXCOVER_HPP
 
-#include <cereal/archives/binary.hpp>
+//#include <cereal/archives/binary.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include "Graph.hpp"
 #include "BranchHandler.hpp"

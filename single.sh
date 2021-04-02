@@ -16,6 +16,7 @@
 #SBATCH --mail-type=REQUEUE
 # ---------------------------------------------------------------------
 
+ulimit -a
 
 echo "Current working directory: `pwd`"
 echo "Starting run at: `date`"
