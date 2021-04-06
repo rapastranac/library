@@ -230,10 +230,10 @@ namespace POOL
 			cv2.wait(lck, [this]() {
 				bool flag = false;
 
-				if (nWaiting.load() == size() && awake)
+				if (nWaiting.load() == size() && running)
 				{
 					flag = true;   // this allows the waiting thread to exit when pool finishes its tasks
-					awake = false; // this allows to reused the pool after tasks have been finished
+					running = false; // this allows to reused the pool after tasks have been finished
 				}
 
 				return flag;
@@ -248,14 +248,14 @@ namespace POOL
 
 		bool isAwake()
 		{
-			if (awake)
+			if (running)
 			{
-				awake = false;
+				running = false;
 				return true;
 			}
 			else
 			{
-				return awake;
+				return running;
 			}
 		}
 
@@ -292,7 +292,7 @@ namespace POOL
 		/*It stores internal threadId so it is possible to ascertain
 			if a running thread belongs to this pool*/
 		std::atomic<int> nWaiting; // how many threads are waiting
-		bool awake = false;
+		bool running = false;
 
 		/*It stores threadIds in the order that they finis*/
 		detail::Queue<int> kill_q;

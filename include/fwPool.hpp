@@ -135,8 +135,8 @@ namespace fwPool
 					});
 					--this->nWaiting;
 
-					if (!awake)
-						awake = true;
+					if (!running)
+						running = true;
 
 					if (!isPop)
 					{

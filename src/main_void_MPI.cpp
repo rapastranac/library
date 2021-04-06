@@ -86,13 +86,15 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	scheduler.allgather(threadRequests.data(), &rqst, MPI_UNSIGNED_LONG_LONG);
 
 	// *****************************************************************************************
+	//scheduler.finalize();
+	//return 0;
 
 	if (rank == 0)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
 		scheduler.printStats();
 
-		std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream
+		std::stringstream result = scheduler.retrieveResult(); // returns a stringstream
 		int SIZE = result.str().size();
 		user_deserializer(result, oGraph);
 		auto cv = oGraph.postProcessing();
@@ -113,17 +115,18 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		{
 			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
 		}
-		fmt::print("\n\n\n");
+		fmt::print("\n");
 
 		for (size_t rank = 1; rank < world_size; rank++)
 		{
 			fmt::print("rank {}, thread requests: {} \n", rank, threadRequests[rank]);
 		}
 
+		fmt::print("\n\n\n");
+
 		// **************************************************************************
 	}
 	scheduler.finalize();
-
 	return 0;
 }
 

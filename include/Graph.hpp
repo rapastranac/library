@@ -498,7 +498,7 @@ private:
 
 		/*This second loop is used only if adj.size() != n*/
 		// rand()%a + b => interval-> [b, b + a)
-		if (adj.size() < n)
+		if (adj.size() < (size_t)n)
 		{
 			for (int i = 0; i < n; i++)
 			{
@@ -536,7 +536,7 @@ private:
 					//	int var = 5;
 					//}
 				}
-				if (adj.size() == n)
+				if (adj.size() == (size_t)n)
 					break;
 			}
 		}
@@ -545,7 +545,7 @@ private:
 		this->numVertices = n;
 		/*begin<----------4 testing purposes-------*/
 		double mean = (double)m / n;
-		double density = mean / maxEdgesPerNode;
+		//double density = mean / (double)maxEdgesPerNode;
 	}
 
 public:
@@ -561,7 +561,7 @@ public:
 		this->numEdges = 0;
 		this->numVertices = 0;
 
-		const size_t BOUND = 1000000;
+		//const size_t BOUND = 1000000;
 
 		//std::random_device rd;	// Will be used to obtain a seed for the random number engine
 		//std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
@@ -767,11 +767,11 @@ public:
 
 		/*4 testing*/
 		double mean = (double)numEdges / (double)numVertices;
-		double prob = mean * 100 / (double)numVertices;
+		//double prob = mean * 100 / (double)numVertices;
 
 		double maxEdgesPossible = numVertices * (numVertices - 1) / 2;
 		double maxEdgesPerNode = maxEdgesPossible / (double)numVertices;
-		double density = mean / maxEdgesPerNode;
+		//double density = mean / maxEdgesPerNode;
 
 		_calculerVertexMaxDegree();
 		_calculerVertexMinDegree();
@@ -1244,9 +1244,9 @@ public:
 		ar &idsMax;
 		ar &idsMin;
 		ar &adj;
-		ar &rows;
+		//ar &rows;
 		ar &vertexDegree;
-		ar &_zeroVertexDegree;
+		//ar &_zeroVertexDegree;
 		ar &foldedVertices;
 		ar &_cover;
 		ar &numEdges;

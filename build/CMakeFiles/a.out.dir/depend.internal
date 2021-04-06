@@ -27,15 +27,12 @@ CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o
  /home/andres/Documents/github/library/MPI_Modules/Utils.hpp
  /home/andres/Documents/github/library/include/BranchHandler.hpp
  /home/andres/Documents/github/library/include/Graph.hpp
- /home/andres/Documents/github/library/include/POOL.hpp
  /home/andres/Documents/github/library/include/ResultHolder.hpp
+ /home/andres/Documents/github/library/include/ThreadPool.hpp
  /home/andres/Documents/github/library/include/VC_FPT_void.hpp
  /home/andres/Documents/github/library/include/VertexCover.hpp
  /home/andres/Documents/github/library/include/args_handler.hpp
- /home/andres/Documents/github/library/include/ctpl_stl.hpp
- /home/andres/Documents/github/library/include/fwPool.hpp
  /home/andres/Documents/github/library/include/main.h
- /home/andres/Documents/github/library/include/pool_include.hpp
  /home/andres/Documents/github/library/include/util.hpp
  /home/andres/Documents/github/library/src/main_FPT_void.cpp
  /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h
@@ -79,15 +76,12 @@ CMakeFiles/a.out.dir/src/main_non_void.cpp.o
  /home/andres/Documents/github/library/MPI_Modules/Utils.hpp
  /home/andres/Documents/github/library/include/BranchHandler.hpp
  /home/andres/Documents/github/library/include/Graph.hpp
- /home/andres/Documents/github/library/include/POOL.hpp
  /home/andres/Documents/github/library/include/ResultHolder.hpp
+ /home/andres/Documents/github/library/include/ThreadPool.hpp
  /home/andres/Documents/github/library/include/VC_non_void.hpp
  /home/andres/Documents/github/library/include/VertexCover.hpp
  /home/andres/Documents/github/library/include/args_handler.hpp
- /home/andres/Documents/github/library/include/ctpl_stl.hpp
- /home/andres/Documents/github/library/include/fwPool.hpp
  /home/andres/Documents/github/library/include/main.h
- /home/andres/Documents/github/library/include/pool_include.hpp
  /home/andres/Documents/github/library/include/util.hpp
  /home/andres/Documents/github/library/src/main_non_void.cpp
  /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h
@@ -132,15 +126,12 @@ CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
  /home/andres/Documents/github/library/MPI_Modules/Utils.hpp
  /home/andres/Documents/github/library/include/BranchHandler.hpp
  /home/andres/Documents/github/library/include/Graph.hpp
- /home/andres/Documents/github/library/include/POOL.hpp
  /home/andres/Documents/github/library/include/ResultHolder.hpp
+ /home/andres/Documents/github/library/include/ThreadPool.hpp
  /home/andres/Documents/github/library/include/VC_non_void_MPI.hpp
  /home/andres/Documents/github/library/include/VertexCover.hpp
  /home/andres/Documents/github/library/include/args_handler.hpp
- /home/andres/Documents/github/library/include/ctpl_stl.hpp
- /home/andres/Documents/github/library/include/fwPool.hpp
  /home/andres/Documents/github/library/include/main.h
- /home/andres/Documents/github/library/include/pool_include.hpp
  /home/andres/Documents/github/library/include/util.hpp
  /home/andres/Documents/github/library/src/main_non_void_MPI.cpp
  /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h
@@ -184,15 +175,12 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o
  /home/andres/Documents/github/library/MPI_Modules/Utils.hpp
  /home/andres/Documents/github/library/include/BranchHandler.hpp
  /home/andres/Documents/github/library/include/Graph.hpp
- /home/andres/Documents/github/library/include/POOL.hpp
  /home/andres/Documents/github/library/include/ResultHolder.hpp
+ /home/andres/Documents/github/library/include/ThreadPool.hpp
  /home/andres/Documents/github/library/include/VC_void.hpp
  /home/andres/Documents/github/library/include/VertexCover.hpp
  /home/andres/Documents/github/library/include/args_handler.hpp
- /home/andres/Documents/github/library/include/ctpl_stl.hpp
- /home/andres/Documents/github/library/include/fwPool.hpp
  /home/andres/Documents/github/library/include/main.h
- /home/andres/Documents/github/library/include/pool_include.hpp
  /home/andres/Documents/github/library/include/util.hpp
  /home/andres/Documents/github/library/src/main_void.cpp
  /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h
@@ -237,15 +225,12 @@ CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
  /home/andres/Documents/github/library/MPI_Modules/Utils.hpp
  /home/andres/Documents/github/library/include/BranchHandler.hpp
  /home/andres/Documents/github/library/include/Graph.hpp
- /home/andres/Documents/github/library/include/POOL.hpp
  /home/andres/Documents/github/library/include/ResultHolder.hpp
+ /home/andres/Documents/github/library/include/ThreadPool.hpp
  /home/andres/Documents/github/library/include/VC_void_MPI.hpp
  /home/andres/Documents/github/library/include/VertexCover.hpp
  /home/andres/Documents/github/library/include/args_handler.hpp
- /home/andres/Documents/github/library/include/ctpl_stl.hpp
- /home/andres/Documents/github/library/include/fwPool.hpp
  /home/andres/Documents/github/library/include/main.h
- /home/andres/Documents/github/library/include/pool_include.hpp
  /home/andres/Documents/github/library/include/util.hpp
  /home/andres/Documents/github/library/src/main_void_MPI.cpp
  /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h

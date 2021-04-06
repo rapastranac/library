@@ -101,11 +101,11 @@ namespace ctpl
 				while (true)
 				{
 					while (isPop)
-					{	// if there is anything in the queue
+					{ // if there is anything in the queue
 						/* at return, delete the function even if an exception occurred, this
 							allows to free memory according to unique pointer rules*/
-						if (!awake)
-							awake = true; // this helps blocking a main thread that launches the thread pool
+						if (!running)
+							running = true; // this helps blocking a main thread that launches the thread pool
 
 						std::unique_ptr<std::function<void(int threadId)>> func(_f);
 						(*_f)(threadId);
@@ -130,7 +130,7 @@ namespace ctpl
 					std::unique_lock<std::mutex> lock(this->mtx);
 					++this->nWaiting;
 
-					if (nWaiting.load() == this->size() && awake)
+					if (nWaiting.load() == this->size() && running)
 						this->cv2.notify_one(); // this only happens when pool finishes all its tasks
 
 					this->cv.wait(lock, [this, &_f, &isPop, &_flag]() { // all threads go into sleep mode when pool is launched

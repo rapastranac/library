@@ -1,7 +1,8 @@
 #ifndef ARGS_HANDLER_HPP
 #define ARGS_HANDLER_HPP
 
-#include "ctpl_stl.hpp"
+//#include "ctpl_stl.hpp"
+#include "ThreadPool.hpp"
 
 #include <functional>
 #include <iostream>
@@ -65,11 +66,11 @@ namespace std
 		//}
 		/*--------------- This detects if return type is void or not ----------------->end*/
 
-		template <typename F, typename... Args> //,  // typename std::enable_if<std::is_same<P, ctpl::Pool>::value>::type * = nullptr>
-		static auto helper(ctpl::Pool &pool, F &&f, Args &&...args)
+		template <typename F, typename... Args> //,  // typename std::enable_if<std::is_same<P, ThreadPool::Pool>::value>::type * = nullptr>
+		static auto helper(ThreadPool::Pool &pool, F &&f, Args &...args)
 		{
 			//int size = sizeof...(args); //testing
-			auto lambda = [&](int, Args &&...args, void *) {
+			auto lambda = [&](int, Args... args, void *) {
 				//id is ignored due to ctpl stuff
 				//holder tracker (last parameter) is not passed when pushed
 				return pool.push(f, args..., nullptr);
@@ -81,13 +82,13 @@ namespace std
 		// void Callable
 
 		template <typename F, typename Tuple, size_t... I>
-		static auto unpack_and_push_void(ctpl::Pool &pool, F &&f, Tuple &t, std::index_sequence<I...>)
+		static auto unpack_and_push_void(ThreadPool::Pool &pool, F &&f, Tuple &t, std::index_sequence<I...>)
 		{
 			return helper(pool, f, std::get<I>(t)...);
 		}
 
 		template <typename F, typename Tuple>
-		static auto unpack_and_push_void(ctpl::Pool &pool, F &&f, Tuple &t)
+		static auto unpack_and_push_void(ThreadPool::Pool &pool, F &&f, Tuple &t)
 		{
 			static constexpr auto size = std::tuple_size<Tuple>::value;
 			return unpack_and_push_void(pool, f, t, std::make_index_sequence<size>{});
@@ -99,13 +100,13 @@ namespace std
 		// non void callable
 
 		template <typename F, typename Tuple, size_t... I>
-		static auto unpack_and_push_non_void(ctpl::Pool &pool, F &&f, Tuple &t, std::index_sequence<I...>)
+		static auto unpack_and_push_non_void(ThreadPool::Pool &pool, F &&f, Tuple &t, std::index_sequence<I...>)
 		{
 			return helper(pool, f, std::get<I>(t)...);
 		}
 
 		template <typename F, typename Tuple>
-		static auto unpack_and_push_non_void(ctpl::Pool &pool, F &&f, Tuple &t)
+		static auto unpack_and_push_non_void(ThreadPool::Pool &pool, F &&f, Tuple &t)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
 			static constexpr auto size = std::tuple_size<Tuple>::value;

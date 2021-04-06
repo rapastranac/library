@@ -10,7 +10,12 @@ project(global)
 
 set(CMAKE_CXX_STANDARD 20)
 
-
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif ()
 
 find_package(Threads  REQUIRED)
 find_package(MPI  REQUIRED)
@@ -24,9 +29,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 Set(CMAKE_EXE_LINKER_FLAGS  "-lboost_system -lboost_serialization  -lboost_fiber")
 
 
-add_definitions(-DDLB=true)
+#add_definitions(-DDLB=true)
 add_definitions(-DMPI_ENABLED)
-#add_definitions(-DDEBUG_COMMENTS)
+add_definitions(-DDEBUG_COMMENTS)
 #add_definitions(-DVC_VOID)
 #add_definitions(-DVC_FPT_VOID)
 add_definitions(-DVC_VOID_MPI)

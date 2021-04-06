@@ -226,7 +226,7 @@ namespace library
 
 		//14.7.3 Explicit specialization
 		//template<typename...Args>
-		void holdArgs(Args &...args)
+		void holdArgs(Args ...args)
 		{
 			this->tup = std::make_tuple(std::forward<Args &&>(args)...);
 			//std::cout << typeid(tup).name() << "\n";

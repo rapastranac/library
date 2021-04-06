@@ -60,9 +60,10 @@ namespace library
 #endif
 		}
 
-		std::stringstream &retrieveResult()
+		std::stringstream retrieveResult()
 		{
 			int pos;
+			std::stringstream ret;
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (bestResults[rank].first == refValueGlobal[0])
@@ -70,11 +71,13 @@ namespace library
 					int SIZE = bestResults[rank].second.str().size();
 					fmt::print("Stream retrieved, size : {} \n", SIZE);
 					pos = rank;
+					ret << bestResults[rank].second.rdbuf();
 					break;
 				}
 			}
 
-			return bestResults[pos].second;
+			//return bestResults[pos].second;
+			return ret;
 		}
 
 		void printStats()

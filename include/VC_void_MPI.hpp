@@ -50,7 +50,7 @@ class VC_void_MPI : public VertexCover
 	using HolderType = library::ResultHolder<void, int, Graph>;
 
 private:
-	std::function<void(int, int, Graph &, void *)> _f;
+	std::function<void(int, int, Graph , void *)> _f;
 
 public:
 	VC_void_MPI()
@@ -59,7 +59,7 @@ public:
 	}
 	~VC_void_MPI() {}
 
-	void mvc(int id, int depth, Graph &graph, void *parent)
+	void mvc(int id, int depth, Graph graph, void *parent)
 	{
 		size_t LB = graph.min_k();
 		size_t degLB = 0; //graph.DegLB();
@@ -159,6 +159,7 @@ public:
 		//if condition1 complies, then ifCond1 is called
 		auto ifCond1 = [&]() {
 			foundAtDepth = depth;
+			measured_Depth = depth;
 			recurrent_msg(id);
 			++leaves;
 		};
@@ -171,16 +172,14 @@ public:
 			foundAtDepth = depth;
 			recurrent_msg(id);
 
-			if (depth > measured_Depth)
-			{
-				measured_Depth = depth;
-			}
+			if (depth > (int)measured_Depth)
+				measured_Depth = (size_t)depth;
 
 			++leaves;
 		};
 
 		branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition1, ifCond1, graph, user_serializer); // thread safe
-		branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition2, ifCond2, graph, user_serializer);
+		branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition2, ifCond2, graph, user_serializer); // thread safe
 
 		return;
 	}

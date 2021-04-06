@@ -9,7 +9,8 @@
 */
 #include <fmt/format.h>
 #include "args_handler.hpp"
-#include "pool_include.hpp"
+//#include "pool_include.hpp"
+#include "ThreadPool.hpp"
 
 #include "../MPI_Modules/Utils.hpp"
 #ifdef MPI_ENABLED
@@ -23,12 +24,14 @@
 #include <bits/stdc++.h>
 #include <chrono>
 #include <future>
+#include <functional>
 #include <list>
 #include <iostream>
 #include <math.h>
 #include <mutex>
 #include <queue>
 #include <sstream>
+#include <tuple>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
@@ -233,7 +236,7 @@ namespace library
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result, F_SERIAL &&f_serial)
 		{
-			std::unique_lock<std::mutex> lck(mtx_MPI); // guarante MPI_THREAD_SERIALIZED
+			std::unique_lock<std::mutex> lck(mtx_MPI); // guaranteed MPI_THREAD_SERIALIZED
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
 #endif
@@ -273,7 +276,7 @@ namespace library
 
 					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
 
-					auto ss = f_serial(result); // serialized result
+					std::stringstream ss = f_serial(result); // serialized result
 #ifdef DEBUG_COMMENTS
 					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 #endif
@@ -282,8 +285,8 @@ namespace library
 					int SIZE = ss.str().size();
 					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
-					bestRstream.first = refValueLocal;
-					bestRstream.second = std::move(ss);
+					bestRstream.first = refValueLocal;	// reference value of the potential solution
+					bestRstream.second = std::move(ss); // serialized solution
 
 					//mpi_mutex->unlock(world_rank); // critical section ends
 					return true;
@@ -538,14 +541,14 @@ namespace library
 		}
 
 		/* for void algorithms, this also calls the destructor of the pool*/
-		void wait_and_finish()
+		/*void wait_and_finish()
 		{
 
 #ifdef DEBUG_COMMENTS
 			fmt::print("Main thread interrupting pool \n");
 #endif
 			this->thread_pool.interrupt(true);
-		}
+		} */
 
 		/* for void algorithms, this allows to reuse the pool*/
 		void wait()
@@ -573,7 +576,7 @@ namespace library
 			return std::any_cast<RESULT_TYPE>(bestR);
 		}
 
-		bool isResultDone(bool isDone = false)
+		/*	bool isResultDone(bool isDone = false)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
 			if (isDone)
@@ -587,7 +590,7 @@ namespace library
 			if (this->isDone)
 				return true;
 			return false;
-		}
+		} */
 
 		void lock()
 		{
@@ -1382,12 +1385,6 @@ namespace library
 			return forward<_ret>(f, threadId, holder);
 		}
 
-		//Not useful yet
-		void singal_interruption()
-		{
-			this->thread_pool.signal_interruption();
-		}
-
 		/*This syncronizes available threads in branchHandler with
 			busyThreads in pool, this is relevant when using void functions
 			because there is no need to call getResults(),
@@ -1401,7 +1398,7 @@ namespace library
 		// thread safe: root creation or root switching
 		void assign_root(int threadId, void *root)
 		{
-			std::unique_lock<std::mutex> lck(root_mtx);
+			std::unique_lock<std::mutex> lck(mtx);
 			roots[threadId] = root;
 		}
 
@@ -1451,7 +1448,7 @@ namespace library
 		std::mutex mtx; //local mutex
 		std::condition_variable cv;
 		std::atomic<bool> superFlag;
-		ctpl::Pool thread_pool;
+		ThreadPool::Pool thread_pool;
 
 		BranchHandler()
 		{
@@ -1581,7 +1578,8 @@ namespace library
 				for (int i = 0; i < Bytes; i++)
 					ss << in_buffer[i];
 
-				Utils::unpack_tuple(deserialize, ss, holder.getArgs());
+				auto _deser = std::bind_front(deserialize, std::ref(ss));
+				std::apply(_deser, holder.getArgs());
 
 				delete[] in_buffer;
 
@@ -1617,10 +1615,11 @@ namespace library
 #ifdef DEBUG_COMMENTS
 				fmt::print("Cover size() : {}, sending to center \n", res.coverSize());
 #endif
-				std::stringstream ss = serialize(res);
+				//std::stringstream ss = serialize(res);
 
 				bestRstream.first = refValueGlobal[0];
-				bestRstream.second = std::move(ss);
+				//bestRstream.second = std::move(ss);
+				bestRstream.second = serialize(res);
 			}
 			else // some other node requested help and it is surely waiting for the return value
 			{
@@ -1641,7 +1640,7 @@ namespace library
 
 		template <typename _ret, typename Holder, typename Serialize,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		void reply(Serialize &&serialize, Holder &holder, int src)
+		void reply(Serialize &&, Holder &, int)
 		{
 			thread_pool.wait();
 		}
@@ -1661,16 +1660,16 @@ namespace library
 			}
 
 			//char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT
-			int Bytes = bestRstream.second.str().size();
 			int refVal = bestRstream.first;
+			int Bytes = bestRstream.second.str().size();
 
 			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI_CHAR, 0, refVal, *world_Comm);
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {} sent best result, Bytes : {}, refVal : {}\n", world_rank, Bytes, refVal);
 #endif
 			//reset bestRstream
-			bestRstream.first = -1;		// reset condition to avoid sending empty buffers
-			bestRstream.second.str(""); // clear stream, eventhough it's not necessary since this value is replaced when a better solution is found
+			//bestRstream.first = -1;		// reset condition to avoid sending empty buffers
+			//bestRstream.second.str(""); // clear stream, eventhough it's not necessary since this value is replaced when a better solution is found
 		}
 
 		void accumulate_mpi(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
