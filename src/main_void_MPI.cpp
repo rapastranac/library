@@ -115,9 +115,9 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		}
 		fmt::print("\n\n\n");
 
-		for (size_t i = 1; i < world_size; i++)
+		for (size_t rank = 1; rank < world_size; rank++)
 		{
-			fmt::print("rank {}, thread requests: {} \n", i, threadRequests[i]);
+			fmt::print("rank {}, thread requests: {} \n", rank, threadRequests[rank]);
 		}
 
 		// **************************************************************************

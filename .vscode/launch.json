@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/a.out",
-            "args": ["-N","1", "-I", "input/prob_4/400/00400_1"],
+            "args": ["-N","1", "-I", "input/p_hat1000_2"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

@@ -86,6 +86,15 @@ public:
 
     void mvc(int id, int depth, Graph &graph, void *parent)
     {
+
+        vector<Graph> graphs;
+        for (int i = 0; i < 500; i++)
+        {
+            Graph gg = graph;
+            graphs.push_back(gg);
+            cout << "done=" << i << endl;
+        }
+
         size_t LB = graph.min_k();
         size_t degLB = 0; //graph.DegLB();
         size_t UB = graph.max_k();

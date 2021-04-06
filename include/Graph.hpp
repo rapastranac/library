@@ -23,7 +23,6 @@ using namespace std;
 
 #endif
 
-
 #include <fmt/format.h>
 #include "util.hpp"
 
@@ -742,7 +741,7 @@ public:
 		adj[v].insert(u);
 	}
 
-	void readEdges(string NameOfFile)
+	void readEdges(string &NameOfFile)
 	{
 
 		std::ifstream file(NameOfFile);
@@ -1273,8 +1272,6 @@ private:
 
 	int numEdges;	 //number of edges
 	int numVertices; //number of vertices
-
-	std::vector<int> memory_hog;
 };
 
 #endif

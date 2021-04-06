@@ -101,9 +101,12 @@ namespace ctpl
 				while (true)
 				{
 					while (isPop)
-					{ // if there is anything in the queue
+					{	// if there is anything in the queue
 						/* at return, delete the function even if an exception occurred, this
 							allows to free memory according to unique pointer rules*/
+						if (!awake)
+							awake = true; // this helps blocking a main thread that launches the thread pool
+
 						std::unique_ptr<std::function<void(int threadId)>> func(_f);
 						(*_f)(threadId);
 
@@ -138,9 +141,6 @@ namespace ctpl
 
 					sumUpIdleTime(begin, end); // this only measures the threads idle time
 					--this->nWaiting;
-
-					if (!awake)
-						awake = true; // this helps blocking a main thread that launches the thread pool
 
 					if (!isPop)
 					{
