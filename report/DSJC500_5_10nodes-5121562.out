@@ -1,0 +1,64 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/9.3.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) openmpi/4.0.3
+
+
+Currently Loaded Modules:
+  1) CCEnv           (S)      5) StdEnv/2020    (S)   9) libfabric/1.10.1
+  2) CCconfig                 6) gcccore/.9.3.0 (H)  10) openmpi/4.0.3    (m)
+  3) gentoo/2020     (S)      7) gcc/9.3.0      (t)  11) boost/1.72.0     (t)
+  4) imkl/2020.1.217 (math)   8) ucx/1.8.0
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /gpfs/fs0/scratch/m/mlafond/pasr1602/library
+Starting run at: Thu Apr  8 13:43:28 EDT 2021
+slurmstepd: error: *** STEP 5121562.0 ON nia0291 CANCELLED AT 2021-04-08T14:00:20 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 5121562 ON nia0291 CANCELLED AT 2021-04-08T14:00:20 DUE TO TIME LIMIT ***
+
+scontrol show jobid 5121562
+JobId=5121562 JobName=DSJC500_5_10nodes
+   UserId=pasr1602(3102120) GroupId=mlafond(6054778) MCS_label=N/A
+   Priority=1823422 Nice=0 Account=def-mlafond QOS=normal
+   JobState=TIMEOUT Reason=TimeLimit Dependency=(null)
+   Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:15
+   RunTime=00:17:11 TimeLimit=00:17:00 TimeMin=N/A
+   SubmitTime=2021-04-08T13:42:10 EligibleTime=2021-04-08T13:42:10
+   AccrueTime=2021-04-08T13:42:10
+   StartTime=2021-04-08T13:43:09 EndTime=2021-04-08T14:00:20 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2021-04-08T13:43:09
+   Partition=compute AllocNode:Sid=nia-login05:302487
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=nia[0291,0650,0695,0721,0790,0876,0900,0902-0903,1018,1022-1023,1044,1063,1093,1165-1167,1275-1276]
+   BatchHost=nia0291
+   NumNodes=20 NumCPUs=1600 NumTasks=800 CPUs/Task=1 ReqB:S:C:T=0:0:*:*
+   TRES=cpu=1600,mem=3500000M,node=20,billing=800
+   Socks/Node=* NtasksPerN:B:S:C=40:0:*:* CoreSpec=*
+   MinCPUsNode=40 MinMemoryNode=175000M MinTmpDiskNode=0
+   Features=[skylake|cascade] DelayBoot=00:00:00
+   OverSubscribe=NO Contiguous=0 Licenses=(null) Network=(null)
+   Command=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/job.sh
+   WorkDir=/gpfs/fs0/scratch/m/mlafond/pasr1602/library
+   StdErr=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/DSJC500_5_10nodes-5121562.out
+   StdIn=/dev/null
+   StdOut=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/DSJC500_5_10nodes-5121562.out
+   Power=
+   MailUser=pasr1602@usherbrooke.ca MailType=BEGIN,END,FAIL,REQUEUE
+
+sacct -j 5121562
+       JobID    JobName    Account    Elapsed  MaxVMSize     MaxRSS  SystemCPU    UserCPU ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- ---------- ---------- -------- 
+5121562      DSJC500_5+ def-mlafo+   00:17:11                         01:23:10 9-03:49:23      0:0 
+5121562.bat+      batch def-mlafo+   00:17:13   3117940K     31408K  00:01.397  00:03.922     0:15 
+5121562.ext+     extern def-mlafo+   00:17:11    138360K      1072K  00:00.003  00:00.013      0:0 
+5121562.0         a.out def-mlafo+   00:17:02   2178776K   1783720K   01:23:09 9-03:49:19     0:11 

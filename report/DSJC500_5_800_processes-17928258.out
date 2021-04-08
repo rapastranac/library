@@ -1,0 +1,222 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/9.3.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) openmpi/4.0.3
+
+
+Currently Loaded Modules:
+  1) CCconfig                 5) gcccore/.9.3.0   (H)   9) openmpi/4.0.3 (m)
+  2) gentoo/2020     (S)      6) gcc/9.3.0        (t)  10) boost/1.72.0  (t)
+  3) imkl/2020.1.217 (math)   7) ucx/1.8.0
+  4) StdEnv/2020     (S)      8) libfabric/1.10.1
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /home/pasr1602/projects/def-mlafond/pasr1602/git/library
+Starting run at: Thu Apr  8 14:32:03 EDT 2021
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 2 of 20 is on blg8327.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 2 synchronised, num workers = 19 
+Exit tag received on process 2 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 18 of 20 is on blg8446.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 18 synchronised, num workers = 19 
+Exit tag received on process 18 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 3 of 20 is on blg8329.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 3 synchronised, num workers = 19 
+VC = 487......process 3, thread 0, Thu Apr  8 14:32:09 2021
+rank 3 updated refValueGlobalAbsolute to 487 || 487 
+rank 3, buffer size to be sent : 1940 
+Exit tag received on process 3 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 6 of 20 is on blg8337.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 6 synchronised, num workers = 19 
+VC = 489......process 6, thread 0, Thu Apr  8 14:32:08 2021
+rank 6 updated refValueGlobalAbsolute to 489 || 489 
+rank 6, buffer size to be sent : 1948 
+Exit tag received on process 6 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 7 of 20 is on blg8340.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 7 synchronised, num workers = 19 
+Exit tag received on process 7 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 19 of 20 is on blg8449.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 19 synchronised, num workers = 19 
+Exit tag received on process 19 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 14 of 20 is on blg8441.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 14 synchronised, num workers = 19 
+Exit tag received on process 14 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 12 of 20 is on blg8435.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 12 synchronised, num workers = 19 
+Exit tag received on process 12 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 5 of 20 is on blg8333.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 5 synchronised, num workers = 19 
+Exit tag received on process 5 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 9 of 20 is on blg8427.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 9 synchronised, num workers = 19 
+VC = 490......process 9, thread 0, Thu Apr  8 14:32:08 2021
+rank 9 updated refValueGlobalAbsolute to 490 || 490 
+rank 9, buffer size to be sent : 1951 
+Exit tag received on process 9 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 16 of 20 is on blg8443.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 16 synchronised, num workers = 19 
+Exit tag received on process 16 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 13 of 20 is on blg8437.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 13 synchronised, num workers = 19 
+Exit tag received on process 13 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 1 of 20 is on blg8325.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 1 synchronised, num workers = 19 
+VC = 492......process 1, thread 0, Thu Apr  8 14:32:08 2021
+rank 1 updated refValueGlobalAbsolute to 492 || 492 
+rank 1, buffer size to be sent : 1958 
+Exit tag received on process 1 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 0 of 20 is on blg8322.int.ets1.calculquebec.ca
+Seed sent 
+Termination achieved: nodes 19, busy 0 
+solution received from 1, Bytes : 1958, refVal 492 
+solution NOT received from rank 2
+solution received from 3, Bytes : 1940, refVal 487 
+solution NOT received from rank 4
+solution NOT received from rank 5
+solution received from 6, Bytes : 1948, refVal 489 
+solution NOT received from rank 7
+solution received from 8, Bytes : 1954, refVal 491 
+solution received from 9, Bytes : 1951, refVal 490 
+solution received from 10, Bytes : 1943, refVal 488 
+solution NOT received from rank 11
+solution NOT received from rank 12
+solution NOT received from rank 13
+solution NOT received from rank 14
+solution NOT received from rank 15
+solution NOT received from rank 16
+solution NOT received from rank 17
+solution NOT received from rank 18
+solution NOT received from rank 19
+
+ 
+ 
+*****************************************************
+Elapsed time : 137.579 
+Total number of requests : 72653 
+Number of approved requests : 45696 
+Number of failed requests : 26957 
+*****************************************************
+
+ 
+ 
+Stream retrieved, size : 1940 
+Cover size : 487 
+
+Global pool idle time: 124.715788 seconds
+
+
+tasks executed by rank 1 = 3393 
+tasks executed by rank 2 = 1602 
+tasks executed by rank 3 = 4238 
+tasks executed by rank 4 = 3559 
+tasks executed by rank 5 = 3972 
+tasks executed by rank 6 = 3323 
+tasks executed by rank 7 = 2995 
+tasks executed by rank 8 = 170 
+tasks executed by rank 9 = 3633 
+tasks executed by rank 10 = 2858 
+tasks executed by rank 11 = 6 
+tasks executed by rank 12 = 887 
+tasks executed by rank 13 = 2066 
+tasks executed by rank 14 = 2900 
+tasks executed by rank 15 = 2375 
+tasks executed by rank 16 = 2116 
+tasks executed by rank 17 = 323 
+tasks executed by rank 18 = 2340 
+tasks executed by rank 19 = 2940 
+
+rank 1, thread requests: 3394 
+rank 2, thread requests: 1602 
+rank 3, thread requests: 4238 
+rank 4, thread requests: 3559 
+rank 5, thread requests: 3972 
+rank 6, thread requests: 3323 
+rank 7, thread requests: 2995 
+rank 8, thread requests: 170 
+rank 9, thread requests: 3633 
+rank 10, thread requests: 2858 
+rank 11, thread requests: 6 
+rank 12, thread requests: 887 
+rank 13, thread requests: 2066 
+rank 14, thread requests: 2900 
+rank 15, thread requests: 2375 
+rank 16, thread requests: 2116 
+rank 17, thread requests: 323 
+rank 18, thread requests: 2340 
+rank 19, thread requests: 2940 
+
+
+
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 17 of 20 is on blg8445.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 17 synchronised, num workers = 19 
+Exit tag received on process 17 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 11 of 20 is on blg8433.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 11 synchronised, num workers = 19 
+Exit tag received on process 11 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 10 of 20 is on blg8431.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 10 synchronised, num workers = 19 
+VC = 488.....process 10, thread 0, Thu Apr  8 14:32:09 2021
+rank 10 updated refValueGlobalAbsolute to 488 || 488 
+rank 10, buffer size to be sent : 1943 
+Exit tag received on process 10 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 8 of 20 is on blg8341.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 8 synchronised, num workers = 19 
+VC = 491......process 8, thread 0, Thu Apr  8 14:32:08 2021
+rank 8 updated refValueGlobalAbsolute to 491 || 491 
+rank 8, buffer size to be sent : 1954 
+Exit tag received on process 8 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 4 of 20 is on blg8330.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 4 synchronised, num workers = 19 
+Exit tag received on process 4 
+argc: 7, threads: 1, prob : 75, filename: input/DSJC500_5 
+Process 15 of 20 is on blg8442.int.ets1.calculquebec.ca
+Number of threads spawned : 1 
+rank 15 synchronised, num workers = 19 
+Exit tag received on process 15 
+Finishing run at: Thu Apr  8 14:34:32 EDT 2021

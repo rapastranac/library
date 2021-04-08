@@ -1,2 +1,2 @@
-manager slots=6
-node1 slots=4
+manager slots=2
+node1 slots=1

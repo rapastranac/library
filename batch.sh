@@ -13,9 +13,11 @@ echo "Starting run at: `date`"
 
 #mpirun -n 2 xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out -N 1 -P 5 -I input/p_hat1000_2
 
-
-mpirun -hostfile hostfile -np 10 ./a.out -N 10 -P 5 -I input/prob_4/600/00600_1  ## mini cluster
+## MINI CLUSTER SETUP
+#mpirun -hostfile hostfile -np 3 ./a.out -N 1 -P 5 -I input/prob_4/400/00400_1
+mpirun -hostfile hostfile -np 3 ./a.out -N 1 -P 5 -I input/DSJC500_5
 
 # ---------------------------------------------------------------------
 echo "Finishing run at: `date`"
 # ---------------------------------------------------------------------
+#mpirun -np 2 ./a.out -N 6 -P 5 -I input/prob_4/400/00400_1

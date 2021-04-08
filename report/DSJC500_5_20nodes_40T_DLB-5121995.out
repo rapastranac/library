@@ -1,0 +1,301 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/9.3.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) openmpi/4.0.3
+
+
+Currently Loaded Modules:
+  1) CCEnv           (S)      5) StdEnv/2020    (S)   9) libfabric/1.10.1
+  2) CCconfig                 6) gcccore/.9.3.0 (H)  10) openmpi/4.0.3    (m)
+  3) gentoo/2020     (S)      7) gcc/9.3.0      (t)  11) boost/1.72.0     (t)
+  4) imkl/2020.1.217 (math)   8) ucx/1.8.0
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /gpfs/fs0/scratch/m/mlafond/pasr1602/library
+Starting run at: Thu Apr  8 16:04:53 EDT 2021
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 11 of 20 is on nia1312.scinet.local
+Number of threads spawned : 40 
+rank 11 synchronised, num workers = 19 
+Exit tag received on process 11 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 5 of 20 is on nia0835.scinet.local
+Number of threads spawned : 40 
+rank 5 synchronised, num workers = 19 
+Exit tag received on process 5 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 8 of 20 is on nia0838.scinet.local
+Number of threads spawned : 40 
+rank 8 synchronised, num workers = 19 
+Exit tag received on process 8 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 0 of 20 is on nia0458.scinet.local
+Seed sent 
+Termination achieved: nodes 19, busy 0 
+solution received from 1, Bytes : 1958, refVal 492 
+solution received from 2, Bytes : 1940, refVal 487 
+solution NOT received from rank 3
+solution NOT received from rank 4
+solution NOT received from rank 5
+solution NOT received from rank 6
+solution NOT received from rank 7
+solution NOT received from rank 8
+solution NOT received from rank 9
+solution NOT received from rank 10
+solution NOT received from rank 11
+solution NOT received from rank 12
+solution NOT received from rank 13
+solution received from 14, Bytes : 1955, refVal 491 
+solution received from 15, Bytes : 1946, refVal 489 
+solution NOT received from rank 16
+solution NOT received from rank 17
+solution received from 18, Bytes : 1946, refVal 488 
+solution received from 19, Bytes : 1951, refVal 490 
+
+ 
+ 
+*****************************************************
+Elapsed time : 121.561 
+Total number of requests : 642495 
+Number of approved requests : 217687 
+Number of failed requests : 424808 
+*****************************************************
+
+ 
+ 
+Stream retrieved, size : 1940 
+Cover size : 487 
+
+Global pool idle time: 1533.330618 seconds
+
+
+tasks executed by rank 1 = 16846 
+tasks executed by rank 2 = 13216 
+tasks executed by rank 3 = 13352 
+tasks executed by rank 4 = 15958 
+tasks executed by rank 5 = 13120 
+tasks executed by rank 6 = 12225 
+tasks executed by rank 7 = 11665 
+tasks executed by rank 8 = 11828 
+tasks executed by rank 9 = 11931 
+tasks executed by rank 10 = 11416 
+tasks executed by rank 11 = 12417 
+tasks executed by rank 12 = 11375 
+tasks executed by rank 13 = 11501 
+tasks executed by rank 14 = 10665 
+tasks executed by rank 15 = 10434 
+tasks executed by rank 16 = 19 
+tasks executed by rank 17 = 9123 
+tasks executed by rank 18 = 10939 
+tasks executed by rank 19 = 9657 
+
+rank 1, thread requests: 207110 
+rank 2, thread requests: 216509 
+rank 3, thread requests: 227559 
+rank 4, thread requests: 226662 
+rank 5, thread requests: 224383 
+rank 6, thread requests: 241474 
+rank 7, thread requests: 230524 
+rank 8, thread requests: 231994 
+rank 9, thread requests: 249678 
+rank 10, thread requests: 245056 
+rank 11, thread requests: 255699 
+rank 12, thread requests: 258203 
+rank 13, thread requests: 264075 
+rank 14, thread requests: 250238 
+rank 15, thread requests: 245642 
+rank 16, thread requests: 13841 
+rank 17, thread requests: 247698 
+rank 18, thread requests: 282999 
+rank 19, thread requests: 277399 
+
+
+
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 19 of 20 is on nia1516.scinet.local
+Number of threads spawned : 40 
+rank 19 synchronised, num workers = 19 
+VC = 490....process 19, thread 20, Thu Apr  8 16:05:04 2021
+rank 19 updated refValueGlobalAbsolute to 490 || 490 
+rank 19, buffer size to be sent : 1951 
+Exit tag received on process 19 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 14 of 20 is on nia1458.scinet.local
+Number of threads spawned : 40 
+rank 14 synchronised, num workers = 19 
+VC = 491....process 14, thread 12, Thu Apr  8 16:05:04 2021
+rank 14 updated refValueGlobalAbsolute to 491 || 491 
+rank 14, buffer size to be sent : 1955 
+Exit tag received on process 14 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 18 of 20 is on nia1515.scinet.local
+Number of threads spawned : 40 
+rank 18 synchronised, num workers = 19 
+VC = 488....process 18, thread 36, Thu Apr  8 16:05:04 2021
+rank 18 updated refValueGlobalAbsolute to 488 || 488 
+rank 18, buffer size to be sent : 1946 
+Exit tag received on process 18 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 13 of 20 is on nia1457.scinet.local
+Number of threads spawned : 40 
+rank 13 synchronised, num workers = 19 
+Exit tag received on process 13 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 4 of 20 is on nia0817.scinet.local
+Number of threads spawned : 40 
+rank 4 synchronised, num workers = 19 
+Exit tag received on process 4 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 17 of 20 is on nia1475.scinet.local
+Number of threads spawned : 40 
+rank 17 synchronised, num workers = 19 
+Exit tag received on process 17 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 12 of 20 is on nia1313.scinet.local
+Number of threads spawned : 40 
+rank 12 synchronised, num workers = 19 
+Exit tag received on process 12 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 10 of 20 is on nia0962.scinet.local
+Number of threads spawned : 40 
+rank 10 synchronised, num workers = 19 
+Exit tag received on process 10 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 9 of 20 is on nia0839.scinet.local
+Number of threads spawned : 40 
+rank 9 synchronised, num workers = 19 
+Exit tag received on process 9 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 1 of 20 is on nia0460.scinet.local
+Number of threads spawned : 40 
+rank 1 synchronised, num workers = 19 
+VC = 492......process 1, thread 6, Thu Apr  8 16:05:04 2021
+rank 1 updated refValueGlobalAbsolute to 492 || 492 
+rank 1, buffer size to be sent : 1958 
+Exit tag received on process 1 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 15 of 20 is on nia1473.scinet.local
+Number of threads spawned : 40 
+rank 15 synchronised, num workers = 19 
+VC = 489....process 15, thread 27, Thu Apr  8 16:05:04 2021
+rank 15 updated refValueGlobalAbsolute to 489 || 489 
+rank 15, buffer size to be sent : 1946 
+Exit tag received on process 15 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 3 of 20 is on nia0776.scinet.local
+Number of threads spawned : 40 
+rank 3 synchronised, num workers = 19 
+Exit tag received on process 3 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 7 of 20 is on nia0837.scinet.local
+Number of threads spawned : 40 
+rank 7 synchronised, num workers = 19 
+Exit tag received on process 7 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 2 of 20 is on nia0549.scinet.local
+Number of threads spawned : 40 
+rank 2 synchronised, num workers = 19 
+VC = 487.....process 2, thread 37, Thu Apr  8 16:05:12 2021
+rank 2 updated refValueGlobalAbsolute to 487 || 487 
+rank 2, buffer size to be sent : 1940 
+Exit tag received on process 2 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 6 of 20 is on nia0836.scinet.local
+Number of threads spawned : 40 
+rank 6 synchronised, num workers = 19 
+Exit tag received on process 6 
+argc: 7, threads: 40, prob : 75, filename: input/DSJC500_5 
+Process 16 of 20 is on nia1474.scinet.local
+Number of threads spawned : 40 
+rank 16 synchronised, num workers = 19 
+Exit tag received on process 16 
+Finishing run at: Thu Apr  8 16:07:08 EDT 2021
+
+scontrol show jobid 5121995
+JobId=5121995 JobName=DSJC500_5_20nodes_40T_DLB
+   UserId=pasr1602(3102120) GroupId=mlafond(6054778) MCS_label=N/A
+   Priority=1712288 Nice=0 Account=def-mlafond QOS=normal
+   JobState=COMPLETING Reason=None Dependency=(null)
+   Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:02:35 TimeLimit=00:17:00 TimeMin=N/A
+   SubmitTime=2021-04-08T15:56:47 EligibleTime=2021-04-08T15:56:47
+   AccrueTime=2021-04-08T15:56:47
+   StartTime=2021-04-08T16:04:33 EndTime=2021-04-08T16:07:08 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2021-04-08T16:04:33
+   Partition=compute AllocNode:Sid=nia-login05:302487
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=nia[0458,0460,0549,0776,0817,0835-0839,0962,1312-1313,1457-1458,1473-1475,1515-1516]
+   BatchHost=nia0458
+   NumNodes=20 NumCPUs=1600 NumTasks=20 CPUs/Task=40 ReqB:S:C:T=0:0:*:*
+   TRES=cpu=1600,mem=3500000M,node=20,billing=800
+   Socks/Node=* NtasksPerN:B:S:C=1:0:*:* CoreSpec=*
+   MinCPUsNode=40 MinMemoryNode=175000M MinTmpDiskNode=0
+   Features=[skylake|cascade] DelayBoot=00:00:00
+   OverSubscribe=NO Contiguous=0 Licenses=(null) Network=(null)
+   Command=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/job.sh
+   WorkDir=/gpfs/fs0/scratch/m/mlafond/pasr1602/library
+   StdErr=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/DSJC500_5_20nodes_40T_DLB-5121995.out
+   StdIn=/dev/null
+   StdOut=/gpfs/fs0/scratch/m/mlafond/pasr1602/library/report/DSJC500_5_20nodes_40T_DLB-5121995.out
+   Power=
+   MailUser=pasr1602@usherbrooke.ca MailType=BEGIN,END,FAIL,REQUEUE
+
+sacct -j 5121995
+       JobID    JobName    Account    Elapsed  MaxVMSize     MaxRSS  SystemCPU    UserCPU ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- ---------- ---------- -------- 
+5121995      DSJC500_5+ def-mlafo+   00:02:36                        03:26.927   03:45:07      0:0 
+5121995.bat+      batch def-mlafo+   00:02:36                         00:00:00   00:00:00      0:0 
+5121995.ext+     extern def-mlafo+   00:02:36                         00:00:00   00:00:00      0:0 
+5121995.0         a.out def-mlafo+   00:02:14   9368356K   7724444K  03:26.927   03:45:07      0:0 
+
+kernel messages produced during job executions:
+[Apr 8 13:51] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x4199
+[  +0.011187] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x419a
+[  +0.011127] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x419b
+[  +0.011066] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x419c
+[  +0.011045] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x419d
+[  +0.011015] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x419e
+[  +0.010992] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x419f
+[  +0.010972] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a0
+[  +0.010966] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a1
+[  +0.010960] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a2
+[  +0.010956] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a3
+[  +0.010955] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a4
+[  +0.010958] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a5
+[  +0.010948] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a6
+[  +0.010951] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a7
+[  +0.010949] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a8
+[  +0.010952] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41a9
+[  +0.010948] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41aa
+[  +0.010944] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41ab
+[  +0.010938] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41ac
+[  +0.055091] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x4185
+[  +0.010960] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x4186
+[  +0.010941] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x4187
+[  +0.010938] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x4188
+[  +0.010935] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x4189
+[  +0.010933] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x418a
+[  +0.010928] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x418b
+[  +0.010928] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x418c
+[  +0.010930] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x418d
+[  +0.010921] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41ad
+[  +0.010920] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41ae
+[  +0.010913] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41af
+[  +0.010907] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41b0
+[  +0.010892] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41b1
+[  +0.010869] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41b2
+[  +0.010849] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41b3
+[  +0.010847] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41b4
+[  +0.010846] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41b5
+[  +0.010839] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41b6
+[  +0.010840] mlx5_core 0000:06:00.0: mlx5_core_get_rsc:63:(pid 0): Async event for bogus resource 0x41b7

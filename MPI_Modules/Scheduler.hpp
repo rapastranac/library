@@ -380,6 +380,7 @@ namespace library
 			// applicable for all the processes
 			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &numAvailableNodes, &win_NumNodes);
 			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
+			MPI_Win_allocate(2 * sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &nextNode, &win_NextNode);
 
 			init();
 			MPI_Barrier(world_Comm);
@@ -395,6 +396,9 @@ namespace library
 		void init()
 		{
 			numAvailableNodes[0] = 0;
+			nextNode[0] = -1; // -1 one means it has no next node assigned
+			nextNode[1] = -1; // -1 one means it has no next node assigned
+
 			if (world_rank == 0)
 			{
 				bestResults.resize(world_size);
@@ -410,6 +414,7 @@ namespace library
 
 		MPI_Win win_NumNodes;		// window for the number of available nodes
 		MPI_Win win_refValueGlobal; // window to send reference value global
+		MPI_Win win_NextNode;
 
 		MPI_Group world_group;	// all ranks belong to this group
 		MPI_Comm numNodes_Comm; // attached to win_NumNodes
@@ -417,6 +422,7 @@ namespace library
 
 		int *numAvailableNodes = nullptr; // Number of available nodes	[every node is aware of this number]
 		int *refValueGlobal = nullptr;	  // reference value to chose a best result
+		int *nextNode = nullptr;		  // potentially to replace numAvailableNodes
 
 		std::stringstream returnStream;
 		std::vector<std::pair<int, std::stringstream>> bestResults;

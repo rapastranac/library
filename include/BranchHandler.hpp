@@ -1262,18 +1262,14 @@ namespace library
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
 		{
-			if (is_starving())
-			{
-				int r = try_another_process(holder, f_serial);
-				if (r == 0)
-					return true; // top holder pushed to another rank
-				if (r == 2)
-					return false; // current holder pushed to another rank
 
-				return push_multithreading<_ret>(f, id, holder); //no rank available
-			}
-			else
-				return push_multithreading<_ret>(f, id, holder); //no rank available
+			int r = try_another_process(holder, f_serial);
+			if (r == 0)
+				return true; // top holder pushed to another rank
+			if (r == 2)
+				return false; // current holder pushed to another rank
+
+			return push_multithreading<_ret>(f, id, holder); //no rank available
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
@@ -1299,36 +1295,9 @@ namespace library
 			return push_multithreading<_ret>(f, id, holder);
 		}
 
-		/* this utility  is aimed to optimize communication overhead at user's will
-			library prioritize  processes over local threads, then user could help itself
-			by deciding to call push_multiprocess(..) or push_multithreading(..) 
-			based on a starving value of processes. This is to decrease the number of
-			fail requests due to communication delay. If all processes are busy but they
-			are unware of it because rank 0 has not broadcasted the availability yet,
-			then there will be at most (n-2) fail request, where n is the total number of processes. 
-			If the user add its own condition to avoid pushing to other processes 
-			(ie. arguments not heavy enough to be sent), then using a starving value will reduce 
-			fail request to almost 100% depending if this starving value is set to (n-2)/2 */
-		void set_starving_at(int threshold)
+		int getBusyNodes()
 		{
-			if (threshold < 1 || threshold > world_size)
-			{
-				fmt::print("starving threshold out of bounds\n");
-				throw "error at set_starving_at(..)";
-			}
-			this->starvingThreshold = threshold;
-		}
-
-		bool is_starving()
-		{
-			if (starvingThreshold == -1)
-			{
-				fmt::print("threshold has not been set\n");
-				throw "threshold has not been set";
-			}
-			int busyNodes = world_size - numAvailableNodes[0] - 1;
-
-			return busyNodes <= starvingThreshold ? true : false;
+			return world_size - numAvailableNodes[0] - 1;
 		}
 
 #endif
@@ -1496,8 +1465,8 @@ namespace library
 		int world_rank = -1;			  // get the rank of the process
 		int world_size = -1;			  // get the number of processes/nodes
 		char processor_name[128];		  // name of the node
-		int starvingThreshold = -1;		  // number of available nodes in which they stop been a push priority
 		int *numAvailableNodes = nullptr; // remote memory synchronised by center node
+		int *nextNode = nullptr;		  // size 2 array nextNode[0]= new, nextNode[1]= old
 		MPI_Comm *world_Comm = nullptr;	  // world communicator MPI
 
 		void CHECK_MPI_MUTEX(int sum, int threadId)
@@ -1509,20 +1478,15 @@ namespace library
 		}
 
 		void linkMPIargs(int world_rank, int world_size, char *processor_name,
-						 int *numAvailableNodes, int *refValueGlobal, MPI_Comm *world_Comm)
+						 int *numAvailableNodes, int *refValueGlobal, int *nextNode, MPI_Comm *world_Comm)
 		{
 			this->world_rank = world_rank;
 			this->world_size = world_size;
 			strncpy(this->processor_name, processor_name, 128);
 			this->numAvailableNodes = numAvailableNodes;
 			this->refValueGlobal = refValueGlobal;
+			this->nextNode = nextNode;
 			this->world_Comm = world_Comm;
-
-			//********** starving threshold **********************
-			this->starvingThreshold = world_size - 1;
-			//this->starvingThreshold = (world_size - 2) / 2;
-			//this->starvingThreshold = (int)((float)(world_size - 1) * 0.8);
-			//****************************************************
 		}
 
 		/* if method receives data, this node is supposed to be totally idle */
@@ -1748,7 +1712,7 @@ namespace library
 		win_allocate();
 
 		_branchHandler.linkMPIargs(world_rank, world_size, processor_name,
-								   numAvailableNodes, refValueGlobal, &world_Comm);
+								   numAvailableNodes, refValueGlobal, nextNode, &world_Comm);
 		return world_rank;
 	}
 

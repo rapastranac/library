@@ -45,10 +45,13 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	graph.readEdges(filename);
 
-	//auto ss = user_serializer(graph);
-	//int buffer_size = ss.str().size();
-	//fmt::print("SIZE = {} \n", buffer_size);
-	//return 0;
+	// ******************************************************************
+	// temp for mini-cluster
+	if (rank == 1)
+		numThreads = 5; //cuz center is also in this machine
+	if (rank == 2)
+		numThreads = 4;
+	// ******************************************************************
 
 	int preSize = graph.preprocessing();
 
