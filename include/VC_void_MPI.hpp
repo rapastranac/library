@@ -83,6 +83,7 @@ public:
 		}
 
 		int v = graph.id_max(false);
+		int SIZE = graph.size();
 
 		HolderType hol_l(branchHandler, id, parent);
 		HolderType hol_r(branchHandler, id, parent);
@@ -128,11 +129,22 @@ public:
 
 		if (hol_l.evaluate_branch_checkIn())
 		{
+			if (SIZE > 30)
+			{
 #ifdef DLB
-			branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer, true);
+				branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer, true);
 #else
-			branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer);
+				branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer);
 #endif
+			}
+			else
+			{
+#ifdef DLB
+				branchHandler.push_multithreading<void>(_f, id, hol_l, true);
+#else
+				branchHandler.push_multithreading<void>(_f, id, hol_l);
+#endif
+			}
 		}
 		/*
 		if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
