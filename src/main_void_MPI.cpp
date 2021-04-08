@@ -94,16 +94,16 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
 		scheduler.printStats();
 
-		std::stringstream result = scheduler.retrieveResult(); // returns a stringstream
-		int SIZE = result.str().size();
+		std::stringstream result;
+		scheduler.retrieveResult(result); // returns a stringstream
+
 		user_deserializer(result, oGraph);
 		auto cv = oGraph.postProcessing();
 		fmt::print("Cover size : {} \n", cv.size());
 
 		double sum = 0;
-		for (size_t i = 1; i < world_size; i++)
+		for (int i = 1; i < world_size; i++)
 		{
-			//fmt::print("idleTime[{}]: {} \n", i, idleTime[i]);
 			sum += idleTime[i];
 		}
 		fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", sum);
@@ -111,13 +111,13 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		// **************************************************************************
 		auto tasks_per_node = scheduler.executedTasksPerNode();
 
-		for (size_t rank = 1; rank < world_size; rank++)
+		for (int rank = 1; rank < world_size; rank++)
 		{
 			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
 		}
 		fmt::print("\n");
 
-		for (size_t rank = 1; rank < world_size; rank++)
+		for (int rank = 1; rank < world_size; rank++)
 		{
 			fmt::print("rank {}, thread requests: {} \n", rank, threadRequests[rank]);
 		}

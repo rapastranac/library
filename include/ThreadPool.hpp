@@ -126,13 +126,6 @@ namespace ThreadPool
             std::unique_lock<std::mutex> lck(this->mtx2);
             cv2.wait(lck, [this]() {
                 bool flag = false;
-                //
-                ////if (nWaiting.load() == size() && running) {
-                //if (nWaiting.load() == size())
-                //{
-                //    flag = true;   // this allows the waiting thread to exit when pool finishes its tasks
-                //    running = false; // this allows to reused the pool after tasks have been finished
-                //}
 
                 if (exitWait)
                 {
@@ -234,61 +227,62 @@ namespace ThreadPool
 
         void run(int threadId)
         {
-            auto f = [this, threadId]() {
-                std::function<void(int threadId)> *_f;
-                bool isPop = this->q.pop(_f);
-                std::chrono::steady_clock::time_point begin;
-                std::chrono::steady_clock::time_point end;
-                while (true)
-                {
-                    while (isPop)
-                    { // if there is anything in the queue
-                        /* at return, delete the function even if an exception occurred, this
+            std::function<void(int)> *_f; // pointer to the function enqueued
+            bool isPop = this->q.pop(_f); // dequeuing a function
+            std::chrono::steady_clock::time_point begin;
+            std::chrono::steady_clock::time_point end;
+            while (true)
+            {
+                while (isPop)
+                { // if there is anything in the queue
+                    /* at return, delete the function even if an exception occurred, this
                             allows to free memory according to unique pointer rules*/
 
-                        if (!running)
-                            running = true; // this helps blocking a main thread that launches the thread pool
+                    if (!running)
+                        running = true; // this helps blocking a main thread that launches the thread pool
 
-                        std::unique_ptr<std::function<void(int threadId)>> func(_f);
-                        (*_f)(threadId);
+                    std::unique_ptr<std::function<void(int)>> func(_f);
+                    (*_f)(threadId);
 
-                        if (this->externNumThreads)
+                    if (this->externNumThreads)
+                    {
+//std::unique_lock<std::mutex> lock(this->mtx);
+#pragma omp critical(sync_external_threads)
                         {
-                            std::unique_lock<std::mutex> lock(this->mtx);
                             --(*this->externNumThreads);
                         }
-
-                        isPop = this->q.pop(_f);
-                    }
-                    // the queue is empty here, wait for the next command
-                    begin = std::chrono::steady_clock::now();
-                    std::unique_lock<std::mutex> lock(this->mtx);
-                    ++this->nWaiting;
-
-                    if (nWaiting.load() == this->size() && running)
-                    {
-                        this->exitWait = true;
-                        this->cv2.notify_one(); // this only happens when pool finishes all its tasks
                     }
 
-                    this->cv.wait(lock,
-                                  [this, &_f, &isPop]() { // all threads go into sleep mode when pool is launched
-                                      isPop = this->q.pop(_f);
-                                      return isPop || this->isDone;
-                                  });
-                    end = std::chrono::steady_clock::now();
-
-                    sumUpIdleTime(begin, end); // this only measures the threads idle time
-                    --this->nWaiting;
-
-                    if (!isPop)
-                        return; // if the queue is empty and this->isDone == true or *flag then return
+                    isPop = this->q.pop(_f);
                 }
-            };
-            f();
+                // the queue is empty here, wait for the next command
+                begin = std::chrono::steady_clock::now();
+                std::unique_lock<std::mutex> lock(this->mtx);
+                ++this->nWaiting;
+
+                if (nWaiting.load() == this->size() && running)
+                {
+                    this->exitWait = true;
+                    this->cv2.notify_one(); // this only happens when pool finishes all its tasks
+                }
+
+                this->cv.wait(lock,
+                              [this, &_f, &isPop]() { // all threads go into sleep mode when pool is launched
+                                  isPop = this->q.pop(_f);
+                                  return isPop || this->isDone;
+                              });
+                end = std::chrono::steady_clock::now();
+
+                sumUpIdleTime(begin, end); // this only measures the threads idle time
+                --this->nWaiting;
+
+                if (!isPop)
+                    return; // if the queue is empty and this->isDone == true or *flag then return
+            }
         }
 
-        void init()
+        void
+        init()
         {
             this->nWaiting = 0;
             this->isInterrupted = false;
@@ -313,7 +307,7 @@ namespace ThreadPool
         std::condition_variable cv;  // used with mtx
         std::condition_variable cv2; // used with mtx2
 
-        detail::Queue<std::function<void(int id)> *> q;
+        detail::Queue<std::function<void(int)> *> q;
     };
 
 } // namespace ThreadPool

@@ -60,24 +60,18 @@ namespace library
 #endif
 		}
 
-		std::stringstream retrieveResult()
+		void retrieveResult(std::stringstream &ret)
 		{
-			int pos;
-			std::stringstream ret;
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (bestResults[rank].first == refValueGlobal[0])
 				{
 					int SIZE = bestResults[rank].second.str().size();
 					fmt::print("Stream retrieved, size : {} \n", SIZE);
-					pos = rank;
 					ret << bestResults[rank].second.rdbuf();
 					break;
 				}
 			}
-
-			//return bestResults[pos].second;
-			return ret;
 		}
 
 		void printStats()
@@ -126,6 +120,17 @@ namespace library
 			int rcv_availability = 0;
 			tasks_per_node.resize(world_size, 0);
 
+			/*
+					TAG scenarios:
+					TAG == 2 discarded
+					TAG == 3 termination signal
+					TAG == 4 availability report
+					TAG == 5 push request
+					TAG == 6 result request
+					TAG == 7 no result from rank
+					TAG == 8 reference value update, TAG == 9 for actual update
+				*/
+
 			while (true)
 			{
 				//fmt::print("nodes {}, busy {} \n", nodes, busy);
@@ -136,16 +141,6 @@ namespace library
 				int src_rank = status.MPI_SOURCE;
 				int TAG = status.MPI_TAG;
 
-				/*
-					TAG scenarios:
-					TAG == 2 discarded
-					TAG == 3 termination signal
-					TAG == 4 availability report
-					TAG == 5 push request
-					TAG == 6 result request
-					TAG == 7 no result from rank
-					TAG == 8 reference value update, TAG == 9 for actual update
-				*/
 				if (TAG == 4)
 				{
 					++rcv_availability;
@@ -310,15 +305,16 @@ namespace library
 					continue;
 				}
 				fmt::print("solution received from {}, Bytes : {}, refVal {} \n", rank, Bytes, status.MPI_TAG);
-				std::stringstream ss;
+
+				auto &ss = bestResults[rank].second; // it should be empty
 
 				for (int i = 0; i < Bytes; i++)
 				{
 					ss << buffer[i];
 				}
 
-				bestResults[rank].first = TAG;			  // reference value corresponding to result
-				bestResults[rank].second = std::move(ss); // best result so far from this rank
+				bestResults[rank].first = TAG; // reference value corresponding to result
+				//bestResults[rank].second = std::move(ss); // best result so far from this rank
 
 				delete[] buffer;
 			}
@@ -333,12 +329,14 @@ namespace library
 			++busy;
 			aNodes[dest] = 0;
 			BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
-			// *********************************************
+														   // *********************************************
 
-			auto ss = std::apply(serialize, holder.getArgs());
-			int count = ss.str().size(); // number of Bytes
+			std::stringstream _stream;
+			auto __f = std::bind_front(serialize, std::ref(_stream));
+			std::apply(__f, holder.getArgs());
+			int count = _stream.str().size(); // number of Bytes
 
-			int err = MPI_Ssend(ss.str().data(), count, MPI_CHAR, dest, 0, world_Comm); // send buffer
+			int err = MPI_Ssend(_stream.str().data(), count, MPI_CHAR, dest, 0, world_Comm); // send buffer
 			if (err != MPI_SUCCESS)
 				fmt::print("buffer failed to send! \n");
 

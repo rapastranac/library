@@ -2,20 +2,45 @@
 
 #include "VertexCover.hpp"
 
-auto user_serializer = [](auto &...args) {
+void helper_ser(auto &archive, auto &first)
+{
+	archive << first;
+}
+
+void helper_ser(auto &archive, auto &first, auto &...args)
+{
+	archive << first;
+	helper_ser(archive, args...);
+}
+
+auto user_serializer = [](std::stringstream &ss, auto &&...args) {
 	/* here inside, user can implement its favourite serialization method given the
 	arguments pack and it must return a std::stream */
-	std::stringstream ss;
-	cereal::BinaryOutputArchive archive(ss);
-	archive(args...);
-	return std::move(ss);
+	//cereal::BinaryOutputArchive archive(ss);
+	//archive(args...);
+	boost::archive::text_oarchive archive(ss);
+	helper_ser(archive, args...);
 };
+
+void helper_dser(auto &archive, auto &first)
+{
+	archive >> first;
+}
+
+void helper_dser(auto &archive, auto &first, auto &...args)
+{
+	archive >> first;
+	helper_dser(archive, args...);
+}
 
 auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 	/* here inside, the user can implement its favourite deserialization method given buffer
 	and the arguments pack*/
-	cereal::BinaryInputArchive archive(ss);
-	archive(args...);
+	//cereal::BinaryInputArchive archive(ss);
+	boost::archive::text_iarchive archive(ss);
+
+	helper_dser(archive, args...);
+	//archive(args...);
 };
 
 class VC_non_void_MPI : public VertexCover

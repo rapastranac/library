@@ -13,15 +13,13 @@ void helper_ser(auto &archive, auto &first, auto &...args)
 	helper_ser(archive, args...);
 }
 
-auto user_serializer = [](auto &&...args) {
+auto user_serializer = [](std::stringstream &ss, auto &&...args) {
 	/* here inside, user can implement its favourite serialization method given the
 	arguments pack and it must return a std::stream */
-	std::stringstream ss;
 	//cereal::BinaryOutputArchive archive(ss);
 	//archive(args...);
 	boost::archive::text_oarchive archive(ss);
 	helper_ser(archive, args...);
-	return std::move(ss);
 };
 
 void helper_dser(auto &archive, auto &first)
@@ -50,7 +48,7 @@ class VC_void_MPI : public VertexCover
 	using HolderType = library::ResultHolder<void, int, Graph>;
 
 private:
-	std::function<void(int, int, Graph , void *)> _f;
+	std::function<void(int, int, Graph, void *)> _f;
 
 public:
 	VC_void_MPI()

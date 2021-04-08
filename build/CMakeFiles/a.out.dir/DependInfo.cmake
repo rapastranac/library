@@ -4,15 +4,15 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/andres/Documents/github/library/fmt/src/format.cc" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/fmt/src/format.cc.o"
-  "/home/andres/Documents/github/library/fmt/src/os.cc" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/fmt/src/os.cc.o"
-  "/home/andres/Documents/github/library/src/main.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/main.cpp.o"
-  "/home/andres/Documents/github/library/src/main_FPT_void.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o"
-  "/home/andres/Documents/github/library/src/main_non_void.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/main_non_void.cpp.o"
-  "/home/andres/Documents/github/library/src/main_non_void_MPI.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o"
-  "/home/andres/Documents/github/library/src/main_void.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/main_void.cpp.o"
-  "/home/andres/Documents/github/library/src/main_void_MPI.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
-  "/home/andres/Documents/github/library/src/read_graphs.cpp" "/home/andres/Documents/github/library/build/CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
+  "/home/andres/cloud/library/fmt/src/format.cc" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/fmt/src/format.cc.o"
+  "/home/andres/cloud/library/fmt/src/os.cc" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/fmt/src/os.cc.o"
+  "/home/andres/cloud/library/src/main.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main.cpp.o"
+  "/home/andres/cloud/library/src/main_FPT_void.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o"
+  "/home/andres/cloud/library/src/main_non_void.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_non_void.cpp.o"
+  "/home/andres/cloud/library/src/main_non_void_MPI.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o"
+  "/home/andres/cloud/library/src/main_void.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_void.cpp.o"
+  "/home/andres/cloud/library/src/main_void_MPI.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
+  "/home/andres/cloud/library/src/read_graphs.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -24,7 +24,7 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
   "BOOST_FILESYSTEM_DYN_LINK"
   "BOOST_SERIALIZATION_DYN_LINK"
   "BOOST_SYSTEM_DYN_LINK"
-  "DEBUG_COMMENTS"
+  "DLB=true"
   "MPI_ENABLED"
   "VC_VOID_MPI"
   )

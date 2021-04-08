@@ -1,4 +1,4 @@
-# Install script for directory: /home/andres/Documents/github/library
+# Install script for directory: /home/andres/cloud/library
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/andres/Documents/github/library/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/andres/cloud/library/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

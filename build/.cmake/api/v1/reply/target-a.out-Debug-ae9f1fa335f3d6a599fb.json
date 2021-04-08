@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "/home/andres/Documents/github/library/a.out"
+			"path" : "/home/andres/cloud/library/a.out"
 		}
 	],
 	"backtrace" : 1,
@@ -46,7 +46,7 @@
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 34,
+				"line" : 32,
 				"parent" : 0
 			},
 			{
@@ -164,7 +164,7 @@
 				},
 				{
 					"backtrace" : 4,
-					"define" : "DEBUG_COMMENTS"
+					"define" : "DLB=true"
 				},
 				{
 					"backtrace" : 5,
@@ -187,19 +187,19 @@
 				},
 				{
 					"backtrace" : 8,
-					"path" : "/home/andres/Documents/github/library/include"
+					"path" : "/home/andres/cloud/library/include"
 				},
 				{
 					"backtrace" : 9,
-					"path" : "/home/andres/Documents/github/library/MPI_Modules"
+					"path" : "/home/andres/cloud/library/MPI_Modules"
 				},
 				{
 					"backtrace" : 10,
-					"path" : "/home/andres/Documents/github/library/cereal"
+					"path" : "/home/andres/cloud/library/cereal"
 				},
 				{
 					"backtrace" : 11,
-					"path" : "/home/andres/Documents/github/library/fmt/include"
+					"path" : "/home/andres/cloud/library/fmt/include"
 				}
 			],
 			"language" : "CXX",
@@ -232,10 +232,6 @@
 			},
 			{
 				"fragment" : "-Wl,-rpath,/usr/lib/x86_64-linux-gnu/openmpi/lib",
-				"role" : "libraries"
-			},
-			{
-				"fragment" : "-lpthread",
 				"role" : "libraries"
 			},
 			{

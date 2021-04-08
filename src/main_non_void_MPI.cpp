@@ -78,7 +78,9 @@ int main_non_void_MPI(int numThreads, int prob, std::string filename)
 		std::this_thread::sleep_for(std::chrono::milliseconds(500)); // to let other processes to print
 		scheduler.printStats();
 
-		std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream
+		std::stringstream result;
+		scheduler.retrieveResult(result); // returns a stringstream
+
 		int SIZE = result.str().size();
 		user_deserializer(result, oGraph);
 		auto cv = oGraph.postProcessing();

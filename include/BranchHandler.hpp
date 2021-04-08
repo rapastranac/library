@@ -138,7 +138,11 @@ namespace library
 					virtualRoot->setDepth(child.depth);
 
 					child.parent = static_cast<Holder *>(roots[threadId]);
-					child.root = &roots[threadId];
+
+#pragma omp critical(sync_roots_access)
+					{
+						child.root = &roots[threadId];
+					}
 
 					virtualRoot->children.push_back(&child);
 					helper(virtualRoot, args...);
@@ -276,7 +280,11 @@ namespace library
 
 					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
 
-					std::stringstream ss = f_serial(result); // serialized result
+					auto &ss = bestRstream.second;
+					ss.str(std::string());
+					ss.clear();
+
+					f_serial(ss, result); // serialized result
 #ifdef DEBUG_COMMENTS
 					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 #endif
@@ -285,8 +293,8 @@ namespace library
 					int SIZE = ss.str().size();
 					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
-					bestRstream.first = refValueLocal;	// reference value of the potential solution
-					bestRstream.second = std::move(ss); // serialized solution
+					bestRstream.first = refValueLocal; // reference value of the potential solution
+					//bestRstream.second = std::move(ss); // serialized solution
 
 					//mpi_mutex->unlock(world_rank); // critical section ends
 					return true;
@@ -417,13 +425,13 @@ namespace library
 
 					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
 
-					auto ss = f_serial(result); // serialized result
+					//auto ss = f_serial(result); // serialized result
 
 					//fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 					//int sz_before = bestRstream.second.str().size(); //testing only
 
-					int SIZE = ss.str().size();
-					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
+					//int SIZE = ss.str().size();
+					//fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
 					//bestRstream.first = refValueLocal;
 					//bestRstream.second = std::move(ss);
@@ -1044,7 +1052,9 @@ namespace library
 
 				upperHolder->setMPISent(true, dest_rank);
 
-				auto _stream = std::apply(f_serial, upperHolder->getArgs());
+				std::stringstream _stream;
+				auto __f = std::bind_front(f_serial, std::ref(_stream));
+				std::apply(__f, upperHolder->getArgs());
 				int Bytes = _stream.str().size(); // number of Bytes
 
 				int err = MPI_Ssend(_stream.str().data(), Bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
@@ -1220,7 +1230,10 @@ namespace library
 
 						holder.setMPISent(true, dest_rank);
 
-						auto _stream = std::apply(f_serial, holder.getArgs());
+						std::stringstream _stream;
+						auto __f = std::bind_front(f_serial, std::ref(_stream));
+						std::apply(__f, holder.getArgs());
+
 						int Bytes = _stream.str().size(); // number of Bytes
 
 						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
@@ -1398,8 +1411,11 @@ namespace library
 		// thread safe: root creation or root switching
 		void assign_root(int threadId, void *root)
 		{
-			std::unique_lock<std::mutex> lck(mtx);
-			roots[threadId] = root;
+			//std::unique_lock<std::mutex> lck(mtx);
+#pragma omp critical(sync_roots_access)
+			{
+				roots[threadId] = root;
+			}
 		}
 
 		void init()
@@ -1521,7 +1537,7 @@ namespace library
 			MPI_Bcast(numAvailableNodes, 1, MPI_INT, 0, *world_Comm);
 			MPI_Barrier(*world_Comm); // synchronise processes in world group
 
-			fmt::print("rank {} synchronised, num nodes = {} \n", world_rank, numAvailableNodes[0]);
+			fmt::print("rank {} synchronised, num workers = {} \n", world_rank, numAvailableNodes[0]);
 
 			int send_availability = 0;
 
@@ -1615,11 +1631,10 @@ namespace library
 #ifdef DEBUG_COMMENTS
 				fmt::print("Cover size() : {}, sending to center \n", res.coverSize());
 #endif
-				//std::stringstream ss = serialize(res);
 
 				bestRstream.first = refValueGlobal[0];
-				//bestRstream.second = std::move(ss);
-				bestRstream.second = serialize(res);
+				auto &ss = bestRstream.second; // it should be empty
+				serialize(ss, res);
 			}
 			else // some other node requested help and it is surely waiting for the return value
 			{
@@ -1629,7 +1644,8 @@ namespace library
 #endif
 				std::unique_lock<std::mutex> lck(mtx_MPI); //no other thread can retrieve nor send via MPI
 
-				std::stringstream ss = serialize(res);
+				std::stringstream ss;
+				serialize(ss, res);
 				int count = ss.str().size();
 
 				int err = MPI_Ssend(ss.str().data(), count, MPI_CHAR, src, 0, *world_Comm);
