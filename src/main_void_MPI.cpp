@@ -4,7 +4,11 @@
 #include "../include/Graph.hpp"
 #include "../MPI_Modules/Scheduler.hpp"
 
-#include "../include/VC_void_MPI.hpp"
+#ifdef BITVECTOR_VC
+	#include "../include/VC_void_MPI_bitvec.hpp"
+#else
+	#include "../include/VC_void_MPI.hpp"
+#endif
 
 #include "../include/ResultHolder.hpp"
 #include "../include/BranchHandler.hpp"
@@ -19,6 +23,120 @@
 #include <iterator>
 #include <string>
 #include <vector>
+
+
+
+
+
+#ifdef BITVECTOR_VC
+int main_void_MPI(int numThreads, int prob, std::string filename)
+{
+
+	using HolderType = library::ResultHolder<void, int, gbitset, gbitset>;
+
+	auto &handler = library::BranchHandler::getInstance(); // parallel library
+
+	Graph graph;
+	VC_void_MPI cover;
+
+	auto mainAlgo = std::bind(&VC_void_MPI::mvcbitset, &cover, _1, _2, _3, _4, _5); // target algorithm [all arguments]
+
+	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
+	int rank = scheduler.initMPI(NULL, NULL);					// initialize MPI and member variable linkin
+												
+	graph.readEdges(filename);
+	//graph.preprocessing();	
+
+	cover.init(graph, numThreads, filename, prob);
+	cover.setGraph(graph);
+
+	int solsize = 0;
+	int gsize = graph.adj.size() + 1;	//+1 cuz some files use node ids from 1 to n (instead of 0 to n - 1)
+	gbitset allzeros(gsize);
+	gbitset allones = ~allzeros;
+
+	handler.setRefValue(gsize);
+	
+	scheduler.setThreadsPerNode(numThreads);
+	HolderType holder(handler, -1);
+	holder.holdArgs(solsize, allones, allzeros);
+	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
+
+	// *****************************************************************************************
+	// this is a generic way of getting information from all the other processes after execution retuns
+	auto world_size = scheduler.getWorldSize();
+	std::vector<double> idleTime(world_size);
+	std::vector<size_t> threadRequests(world_size);
+
+	double idl_tm = 0;
+	size_t rqst = 0;
+
+	if (rank != 0)
+	{ //rank 0 does not run an instance of BranchHandler
+		idl_tm = handler.getPoolIdleTime();
+		rqst = handler.getNumberRequests();
+	}
+
+	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in
+	// a contiguos array
+	scheduler.allgather(idleTime.data(), &idl_tm, MPI_DOUBLE);
+	scheduler.allgather(threadRequests.data(), &rqst, MPI_UNSIGNED_LONG_LONG);
+
+	// *****************************************************************************************
+
+	if (rank == 0)
+	{
+		cout<<"DONE!"<<endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
+
+		scheduler.printStats();
+
+		/*std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream
+
+
+		gbitset solution;
+		int SIZE = result.str().size();
+		user_deserializer(result, solution);
+
+		cout<<"SOLSIZE="<<solution.count()<<endl;		*/
+		//auto cv = oGraph.postProcessing();
+		//fmt::print("Cover size : {} \n", cv.size());
+
+		double sum = 0;
+		for (size_t i = 1; i < world_size; i++)
+		{
+			//fmt::print("idleTime[{}]: {} \n", i, idleTime[i]);
+			sum += idleTime[i];
+		}
+		fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", sum);
+
+		// **************************************************************************
+		auto tasks_per_node = scheduler.executedTasksPerNode();
+
+		for (size_t rank = 1; rank < world_size; rank++)
+		{
+			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
+		}
+		fmt::print("\n\n\n");
+
+		for (size_t i = 1; i < world_size; i++)
+		{
+			fmt::print("rank {}, thread requests: {} \n", i, threadRequests[i]);
+		}
+
+		// **************************************************************************
+	}
+	scheduler.finalize();
+
+	return 0;
+}
+
+
+
+#else
+
+
+
 
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
@@ -129,5 +247,6 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	scheduler.finalize();
 	return 0;
 }
+#endif 		//end of bit vector flag
 
 #endif
