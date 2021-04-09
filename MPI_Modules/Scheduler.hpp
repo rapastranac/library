@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <thread>
+#include <queue>
 
 namespace library
 {
@@ -111,11 +112,15 @@ namespace library
 		template <typename Holder, typename Serialize>
 		void schedule(Holder &holder, Serialize &&serialize)
 		{
-			int nodes = 0; // number of available nodes -- private to this method
+			std::vector<std::queue<int>> static_next(world_size); // static load balancing
+			std::vector<int> dynamic_next(world_size, -1);		  // when static is no longer useful
+			built_processes_tree(static_next);
+			std::vector<int> requesting(world_size, 1);
+			int nodes = world_size - 1; // number of available nodes -- private to this method
 			int busy = 0;
-			std::vector<int> aNodes(world_size, 1);
-			sync_availability(aNodes, nodes);
-			sendSeed(aNodes, nodes, busy, holder, serialize);
+			std::vector<int> aNodes(world_size, 1); // list of nodes availability
+			Bcast_availability(aNodes, nodes);
+			sendSeed(static_next, aNodes, nodes, busy, holder, serialize);
 
 			int rcv_availability = 0;
 			tasks_per_node.resize(world_size, 0);
@@ -161,25 +166,19 @@ namespace library
 				}
 				if (TAG == 5)
 				{
+					requesting[src_rank] = 1;
+
 					if (nodes > 0)
 					{
-						int k = isAvailable(aNodes);
-						if (aNodes[k] == 0)
-							fmt::print("***********************ERROR************************** aNodes[{}] == 0\n ", k);
-						aNodes[k] = 0;
-						int flag = 1;
-						--nodes;
-						++busy;
-						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes);		   // Broadcast number of nodes
-						MPI_Ssend(&flag, 1, MPI_INT, src_rank, k, world_Comm); // send positive signal
+
+						reply_requesters(requesting, static_next, aNodes, nodes, busy, src_rank);
+
+						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes  (not doing anything relevant for now)
 						++approvedRequests;
-						tasks_per_node[k]++;
 					}
-					else
+					else // this scenarios should not happen anymore
 					{
-						int flag = 0;
-						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes);		   // Broadcast number of nodes
-						MPI_Ssend(&flag, 1, MPI_INT, src_rank, 0, world_Comm); // send negative signal
+						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
 						++failedRequests;
 					}
 					++totalRequests;
@@ -224,13 +223,97 @@ namespace library
 			fetchSolution();
 		}
 
+		void built_processes_tree(std::vector<std::queue<int>> &static_next)
+		{
+			int numNodes = world_size - 1;
+
+			for (int depth = 0; depth < log2(numNodes); depth++)
+			{
+				for (int rank = 1; rank <= pow(2, depth); rank++)
+				{
+					int child = next_node(numNodes, rank, depth);
+					static_next[rank].push(child);
+					fmt::print("process: {}, child: {}\n", rank, child);
+				}
+			}
+
+			for (int i = 1; i < world_size; i++)
+			{
+				while (!static_next[i].empty())
+				{
+					int child = static_next[i].front();
+					static_next[i].pop();
+					fmt::print("rank: {}, child: {}\n", i, child);
+				}
+			}
+		}
+
+		int next_node(int numNodes, int rank, int depth)
+		{
+			int child = rank + pow(2, depth);
+
+			if (child > numNodes)
+				return -1;
+			else
+				return child;
+		}
+
+		void reply_requesters(std::vector<int> &requesting,
+							  std::vector<std::queue<int>> &static_next,
+							  std::vector<int> aNodes,
+							  int nodes, int busy, int src_rank)
+		{
+			static bool flag = true;
+			static int count = world_size - 1;
+
+			if (flag)
+			{
+				if (!static_next[src_rank].empty()) // if empty, does not mean that all processes have
+				{
+					int next = static_next[src_rank].front();
+					static_next[src_rank].pop();
+					count--;
+					if (count == 0)
+						flag = false;
+				}
+			}
+
+			for (int rank = 1; rank < world_size - 1; rank++)
+			{
+				int k = isAvailable(aNodes);
+
+				if (k == -1)
+					break; // no more available nodes
+
+				if (aNodes[k] == 0)
+					fmt::print("***********************ERROR************************** aNodes[{}] == 0\n ", k);
+
+				aNodes[k] = 0;
+				--nodes;
+				++busy;
+				put(&k, 1, src_rank, MPI_INT, 0, win_NextNode); // puts the next available node, worker does not need to receive
+				tasks_per_node[k]++;
+			}
+		}
+
+		void correct_dynamic_next(std::vector<int> &dynamic_next, std::vector<int> aNodes)
+		{
+			for (int rank = 1; rank < world_size; rank++)
+			{
+				if ((aNodes[rank] == 1) && (dynamic_next[rank] != -1))
+				{
+					int next = dynamic_next[rank];
+					if (aNodes[next] == 0)
+						aNodes[next] = 0;
+				}
+			}
+		}
 		// first synchronisation, thus rank 0 is aware of other availability
 		// the purpose is to broadcast the total availability to other ranks
-		void sync_availability(std::vector<int> &aNodes, int &nodes)
+		void
+		Bcast_availability(std::vector<int> &aNodes, int &nodes)
 		{
 			aNodes[0] = 0;
-			nodes = world_size - 1;
-
 			MPI_Bcast(&nodes, 1, MPI_INT, 0, world_Comm);
 			MPI_Barrier(world_Comm); // synchronise process in world group
 		}
@@ -321,7 +404,7 @@ namespace library
 		}
 
 		template <typename Holder, typename Serialize>
-		void sendSeed(std::vector<int> &aNodes, int &nodes, int &busy, Holder &holder, Serialize &&serialize)
+		void sendSeed(std::vector<std::queue<int>> &static_next, std::vector<int> &aNodes, int &nodes, int &busy, Holder &holder, Serialize &&serialize)
 		{
 			const int dest = 1;
 			// global synchronisation **********************
@@ -329,7 +412,18 @@ namespace library
 			++busy;
 			aNodes[dest] = 0;
 			BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
-														   // *********************************************
+
+			// *********************************************
+
+			// put next node *******************************
+			if (!static_next[dest].empty()) // there might be a single worker
+			{
+				int next = static_next[dest].front();
+				static_next[dest].pop();
+				aNodes[next] = 0; // prioritized for node 1
+				put(&next, 1, dest, MPI_INT, 0, win_NextNode);
+			}
+			// *********************************************
 
 			std::stringstream _stream;
 			auto __f = std::bind_front(serialize, std::ref(_stream));
@@ -343,10 +437,16 @@ namespace library
 			fmt::print("Seed sent \n");
 		}
 
+		void put(const void *origin_addr, int count, int dest_rank, MPI_Datatype mpi_datatype, MPI_Aint offset, MPI_Win &window)
+		{
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, dest_rank, 0, window);									   // open epoch
+			MPI_Put(origin_addr, count, mpi_datatype, dest_rank, offset, count, mpi_datatype, window); // put date through window
+			MPI_Win_flush(dest_rank, window);														   // complete RMA operation
+			MPI_Win_unlock(dest_rank, window);														   // close epoch
+		}
+
 		//generic put blocking RMA
-		void BcastPut(const void *origin_addr, int count,
-					  MPI_Datatype mpi_datatype, MPI_Aint offset,
-					  MPI_Win &window)
+		void BcastPut(const void *origin_addr, int count, MPI_Datatype mpi_datatype, MPI_Aint offset, MPI_Win &window)
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
@@ -390,6 +490,7 @@ namespace library
 		{
 			MPI_Win_free(&win_NumNodes);
 			MPI_Win_free(&win_refValueGlobal);
+			MPI_Win_free(&win_NextNode);
 			MPI_Group_free(&world_group);
 		}
 

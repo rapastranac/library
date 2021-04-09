@@ -1055,9 +1055,9 @@ namespace library
 				std::stringstream _stream;
 				auto __f = std::bind_front(f_serial, std::ref(_stream));
 				std::apply(__f, upperHolder->getArgs());
-				int Bytes = _stream.str().size(); // number of Bytes
+				int bytes = _stream.str().size(); // number of bytes
 
-				int err = MPI_Ssend(_stream.str().data(), Bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
+				int err = MPI_Ssend(_stream.str().data(), bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
 				if (err != MPI_SUCCESS)
 					fmt::print("buffer failed to sent from rank {} to rank {}! \n", world_rank, dest_rank);
 
@@ -1173,6 +1173,18 @@ namespace library
 
 #ifdef MPI_ENABLED
 
+		bool is_node_available()
+		{
+			if (nextNode[0] != -1)
+			{
+				if (nextNode[0] != nextNode[1])
+					return true; // center has put a new target
+				else
+					return false; // no node is available
+			}
+			return false; // center has not had time to put any target yet
+		}
+
 		/*
  		return 0, for normal success with an available process
  		return 1, for failure with no available process
@@ -1187,73 +1199,60 @@ namespace library
 				CHECK_MPI_MUTEX(1, holder.getThreadId());
 				//fmt::print("rank {}, numAvailableNodes : {} \n", world_rank, numAvailableNodes[0]);
 
-				if (numAvailableNodes[0] > 0) // center node is in charge of broadcasting this number
+				if (is_node_available()) // center node is in charge of broadcasting this number
 				{
-#ifdef DEBUG_COMMENTS
-					fmt::print("{} about to request center node to push\n", world_rank);
-
-					//mpi_mutex->lock(0, world_rank);
-#endif
-					int buffer = 1;
-					MPI_Ssend(&buffer, 1, MPI_INT, 0, 5, *world_Comm); // sync nodes availability
-
-					MPI_Status status;
-#ifdef DEBUG_COMMENTS
-					fmt::print("process {} requested to push \n", world_rank);
-#endif
-					MPI_Recv(&signal, 1, MPI_INT, 0, MPI_ANY_TAG, *world_Comm, &status); //awaits signal if data can be sent
-
-					if (signal == 1)
-					{
-						//mpi_mutex->unlock(0, world_rank);
-
-						int dest_rank = status.MPI_TAG; // this is the available node, sent by center node as a tag
-#ifdef DEBUG_COMMENTS
-						fmt::print("process {} received positive signal from center \n", world_rank);
-						fmt::print("process {} received ID {}\n", world_rank, dest_rank);
-#endif
-
-						///****************************
-						if (is_DLB)
-						{
-							bool r = try_top_holder(holder, f_serial, dest_rank);
-							if (r)
-							{
-								CHECK_MPI_MUTEX(-1, holder.getThreadId());
-								mtx_MPI.unlock();
-								return 2;
-							}
-
-							checkRightSiblings(&holder); // this decrements parent's children
-						}
-						///****************************
-
-						holder.setMPISent(true, dest_rank);
-
-						std::stringstream _stream;
-						auto __f = std::bind_front(f_serial, std::ref(_stream));
-						std::apply(__f, holder.getArgs());
-
-						int Bytes = _stream.str().size(); // number of Bytes
-
-						int err = MPI_Ssend(_stream.str().data(), Bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
-						if (err != MPI_SUCCESS)
-							fmt::print("buffer failed to send from rank {} to rank {}! \n", world_rank, dest_rank);
-
-#ifdef DEBUG_COMMENTS
-						fmt::print("process {} forwarded to process {} \n", world_rank, dest_rank);
-#endif
-						CHECK_MPI_MUTEX(-1, holder.getThreadId());
-						mtx_MPI.unlock();
-
-						return 0;
-					}
 
 					//mpi_mutex->unlock(0, world_rank);
+
+					int dest_rank = nextNode[0]; // this is the available node, sent by center node as a tag
+					nextNode[1] = nextNode[0];	 // this is safe because center won't put anything until this worker notifies it
+
+					int buffer = 1;
+					int TAG = 5;
+					MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG, *world_Comm); // this worker notifies that nextNode has been used up
+
+#ifdef DEBUG_COMMENTS
+					fmt::print("process {} received ID {}\n", world_rank, dest_rank);
+#endif
+
+					///****************************
+					if (is_DLB)
+					{
+						bool r = try_top_holder(holder, f_serial, dest_rank);
+						if (r)
+						{
+							CHECK_MPI_MUTEX(-1, holder.getThreadId());
+							mtx_MPI.unlock();
+							return 2;
+						}
+
+						checkRightSiblings(&holder); // this decrements parent's children
+					}
+					///****************************
+
+					holder.setMPISent(true, dest_rank);
+
+					std::stringstream _stream;								 // temporary stream to hold bytes
+					auto __f = std::bind_front(f_serial, std::ref(_stream)); // handy dandy to use std::apply here below
+					std::apply(__f, holder.getArgs());						 // serialization
+
+					int bytes = _stream.str().size(); // number of bytes
+
+					int err = MPI_Ssend(_stream.str().data(), bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
+					if (err != MPI_SUCCESS)
+						fmt::print("buffer failed to send from rank {} to rank {}! \n", world_rank, dest_rank);
+
+#ifdef DEBUG_COMMENTS
+					fmt::print("process {} forwarded to process {} \n", world_rank, dest_rank);
+#endif
+					CHECK_MPI_MUTEX(-1, holder.getThreadId());
+					mtx_MPI.unlock();
+
+					return 0;
 				}
 
 				CHECK_MPI_MUTEX(-1, holder.getThreadId());
-				mtx_MPI.unlock(); // this ensures to unlock it even if (numAvailableNodes == 0)
+				mtx_MPI.unlock(); // this ensures to unlock it even if (is_node_available() == false)
 			}
 			return 1; //this return is necessary only due to function extraction
 		}
@@ -1513,19 +1512,19 @@ namespace library
 				fmt::print("Receiver called on process {}, avl processes {} \n", world_rank, numAvailableNodes[0]);
 				fmt::print("Receiver on {} ready to receive \n", world_rank);
 #endif
-				int Bytes; // Bytes to be received
+				int bytes; // bytes to be received
 
 				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR, &Bytes);					  // receives total number of datatype elements of the message
+				MPI_Get_count(&status, MPI_CHAR, &bytes);					  // receives total number of datatype elements of the message
 
-				char *in_buffer = new char[Bytes];
-				MPI_Recv(in_buffer, Bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status);
+				char *in_buffer = new char[bytes];
+				MPI_Recv(in_buffer, bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status);
 
 				count_rcv++;
 				int src = status.MPI_SOURCE;
 #ifdef DEBUG_COMMENTS
 				fmt::print("process {} has rcvd from {}, {} times \n", world_rank, src, count_rcv);
-				fmt::print("Receiver on {}, received {} Bytes from {} \n", world_rank, Bytes, src);
+				fmt::print("Receiver on {}, received {} bytes from {} \n", world_rank, bytes, src);
 #endif
 				if (status.MPI_TAG == 2)
 				{
@@ -1555,7 +1554,7 @@ namespace library
 				Holder holder(*this, -1); // copy types
 
 				std::stringstream ss;
-				for (int i = 0; i < Bytes; i++)
+				for (int i = 0; i < bytes; i++)
 					ss << in_buffer[i];
 
 				auto _deser = std::bind_front(deserialize, std::ref(ss));
@@ -1641,11 +1640,11 @@ namespace library
 
 			//char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT
 			int refVal = bestRstream.first;
-			int Bytes = bestRstream.second.str().size();
+			int bytes = bestRstream.second.str().size();
 
-			MPI_Ssend(bestRstream.second.str().data(), Bytes, MPI_CHAR, 0, refVal, *world_Comm);
+			MPI_Ssend(bestRstream.second.str().data(), bytes, MPI_CHAR, 0, refVal, *world_Comm);
 #ifdef DEBUG_COMMENTS
-			fmt::print("rank {} sent best result, Bytes : {}, refVal : {}\n", world_rank, Bytes, refVal);
+			fmt::print("rank {} sent best result, bytes : {}, refVal : {}\n", world_rank, bytes, refVal);
 #endif
 			//reset bestRstream
 			//bestRstream.first = -1;		// reset condition to avoid sending empty buffers
