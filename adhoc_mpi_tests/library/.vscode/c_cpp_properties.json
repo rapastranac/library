@@ -1,0 +1,29 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/MPI_Modules",
+                "/usr/lib/x86_64-linux-gnu/openmpi/include",
+                "${workspaceFolder}/cereal",
+                "${workspaceFolder}/fmt/include"
+            ],
+            "defines": [
+                "DLB",
+                "MPI_ENABLE",
+                "VC_VOID",
+                "VC_NON_VOID",
+                "VC_FPT_VOID",
+                "VC_VOID_MPI",
+                "VC_NON_VOID_MPI"
+            ],
+            "compilerPath": "/usr/bin/mpicc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++20",
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}

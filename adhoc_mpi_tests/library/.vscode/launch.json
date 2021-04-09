@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/a.out",
+            "args": ["-N","2", "-I", "input/prob_4/400/00400_1"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
+//args
+//"-I", "input/brock400_4"
+//"input/prob_4/600/00600_1"
+//"input/p_hat1000_2"
+//"input/prob_4/400/00400_1"
+//input/frb30_15_mis/frb30_15_1.mis
+//"input/frb35-17-mis/frb35-17-1.mis"
+//"input/frb30-15-clq/frb30-15-1.clq"

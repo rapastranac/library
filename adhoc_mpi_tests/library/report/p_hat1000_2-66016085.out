@@ -1,0 +1,168 @@
+
+Currently Loaded Modules:
+  1) CCconfig                 5) intel/2020.1.217 (t)   9) StdEnv/2020  (S)
+  2) gentoo/2020     (S)      6) ucx/1.8.0             10) boost/1.72.0 (t)
+  3) gcccore/.9.3.0  (H)      7) libfabric/1.10.1
+  4) imkl/2020.1.217 (math)   8) openmpi/4.0.3    (m)
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+core file size          (blocks, -c) unlimited
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 514026
+max locked memory       (kbytes, -l) unlimited
+max memory size         (kbytes, -m) 2621440
+open files                      (-n) 51200
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) unlimited
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 514026
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+Current working directory: /home/mlafond/projects/def-mlafond/mlafond/libvc_me/library
+Starting run at: Wed Apr  7 20:35:09 PDT 2021
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 4 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 3 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 9 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 8 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 5 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 7 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 1 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 6 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 2 out of 10 processors
+Graph has 500 vertices and 62624 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/DSJC500_5 
+Init done : processor cdr377.int.cedar.computecanada.ca, rank 0 out of 10 processors
+Graph has 500 vertices and 62624 edges
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=501
+Graph bits loaded
+Gsize=501
+Gsize=501
+Gsize=501
+Gsize=501
+Gsize=501
+Gsize=501
+Gsize=501
+Main task added to wr=1
+Gsize=501
+Graph bits loaded
+Gsize=501
+PROC 4 found a solution of size 490, sending
+PROC 3 found a solution of size 491, sending
+PROC 3 found a solution of size 490, sending
+PROC 5 found a solution of size 490, sending
+PROC 7 found a solution of size 491, sending
+PROC 7 found a solution of size 490, sending
+PROC 9 found a solution of size 490, sending
+PROC 6 found a solution of size 490, sending
+PROC 2 found a solution of size 489, sending
+PROC 8 found a solution of size 490, sending
+PROC 7 found a solution of size 489, sending
+PROC 6 found a solution of size 489, sending
+CENTER : updating bestVal to 490
+PROC 9 found a solution of size 489, sending
+PROC 8 found a solution of size 489, sending
+PROC 3 found a solution of size 489, sending
+CENTER : updating bestVal to 491
+CENTER : updating bestVal to 490
+CENTER : updating bestVal to 490
+CENTER : updating bestVal to 491
+CENTER : updating bestVal to 490
+CENTER : updating bestVal to 490
+CENTER : updating bestVal to 490
+CENTER : updating bestVal to 489
+CENTER : updating bestVal to 490
+CENTER : updating bestVal to 489
+CENTER : updating bestVal to 489
+CENTER : updating bestVal to 489
+CENTER : updating bestVal to 489
+CENTER : updating bestVal to 489
+PROC 6 found a solution of size 488, sending
+CENTER : updating bestVal to 488
+PROC 3 found a solution of size 487, sending
+CENTER : updating bestVal to 487
+wr=9 passes=1000000 gsize=21 refvalue=487 solsize=476 isskips=245998 deglbskips=80821 seen_skips=0 seen.size=0
+wr=8 passes=1000000 gsize=11 refvalue=487 solsize=486 isskips=242369 deglbskips=84358 seen_skips=0 seen.size=0
+wr=3 passes=1000000 gsize=51 refvalue=487 solsize=447 isskips=239217 deglbskips=87491 seen_skips=0 seen.size=0
+wr=7 passes=1000000 gsize=25 refvalue=487 solsize=472 isskips=245042 deglbskips=80677 seen_skips=0 seen.size=0
+wr=6 passes=1000000 gsize=19 refvalue=487 solsize=478 isskips=237969 deglbskips=87934 seen_skips=0 seen.size=0
+wr=4 passes=1000000 gsize=23 refvalue=487 solsize=474 isskips=241509 deglbskips=84164 seen_skips=0 seen.size=0
+wr=5 passes=1000000 gsize=17 refvalue=487 solsize=480 isskips=244676 deglbskips=82277 seen_skips=0 seen.size=0
+wr=2 passes=1000000 gsize=11 refvalue=487 solsize=486 isskips=236991 deglbskips=89735 seen_skips=0 seen.size=0
+wr=1 passes=1000000 gsize=31 refvalue=487 solsize=467 isskips=120065 deglbskips=122462 seen_skips=0 seen.size=0
+wr=8 passes=2000000 gsize=23 refvalue=487 solsize=474 isskips=485338 deglbskips=159378 seen_skips=0 seen.size=0
+wr=9 passes=2000000 gsize=18 refvalue=487 solsize=479 isskips=489038 deglbskips=156662 seen_skips=0 seen.size=0
+wr=3 passes=2000000 gsize=21 refvalue=487 solsize=476 isskips=480519 deglbskips=162495 seen_skips=0 seen.size=0
+wr=6 passes=2000000 gsize=11 refvalue=487 solsize=486 isskips=477302 deglbskips=164653 seen_skips=0 seen.size=0
+wr=7 passes=2000000 gsize=33 refvalue=487 solsize=465 isskips=486428 deglbskips=156785 seen_skips=0 seen.size=0
+wr=5 passes=2000000 gsize=12 refvalue=487 solsize=485 isskips=486344 deglbskips=156662 seen_skips=0 seen.size=0
+wr=4 passes=2000000 gsize=14 refvalue=487 solsize=484 isskips=482207 deglbskips=160951 seen_skips=0 seen.size=0
+wr=2 passes=2000000 gsize=11 refvalue=487 solsize=486 isskips=474884 deglbskips=166092 seen_skips=0 seen.size=0
+wr=1 passes=2000000 gsize=20 refvalue=487 solsize=477 isskips=293270 deglbskips=205285 seen_skips=0 seen.size=0
+Rank 1 got a terminate call
+Rank 2 got a terminate call
+Rank 3 got a terminate call
+Rank 4 got a terminate call
+Rank 5 got a terminate call
+Rank 6 got a terminate call
+Rank 7 got a terminate call
+Rank 8 got a terminate call
+Rank 9 got a terminate call
+Time = 13.3784
+DONE, rank 2 says best=487 and winbest=487
+DONE, rank 3 says best=487 and winbest=487
+DONE, rank 4 says best=487 and winbest=487
+DONE, rank 5 says best=487 and winbest=487
+DONE, rank 6 says best=487 and winbest=487
+DONE, rank 7 says best=487 and winbest=487
+DONE, rank 8 says best=487 and winbest=487
+DONE, rank 9 says best=487 and winbest=487
+DONE, rank 0 says best=487 and winbest=501
+DONE, rank 1 says best=487 and winbest=487
+DESTROY SCHED 1
+DESTROY SCHED 3
+DESTROY SCHED 5
+DESTROY SCHED 6
+DESTROY SCHED 7
+DESTROY SCHED 8
+DESTROY SCHED 9
+DESTROY SCHED 0
+DESTROY SCHED 2
+DESTROY SCHED 4
+Finishing run at: Wed Apr  7 20:36:26 PDT 2021

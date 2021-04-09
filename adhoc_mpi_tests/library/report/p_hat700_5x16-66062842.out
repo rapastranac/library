@@ -1,0 +1,1632 @@
+
+Currently Loaded Modules:
+  1) CCconfig                 5) intel/2020.1.217 (t)   9) StdEnv/2020  (S)
+  2) gentoo/2020     (S)      6) ucx/1.8.0             10) boost/1.72.0 (t)
+  3) gcccore/.9.3.0  (H)      7) libfabric/1.10.1
+  4) imkl/2020.1.217 (math)   8) openmpi/4.0.3    (m)
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+core file size          (blocks, -c) unlimited
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 766569
+max locked memory       (kbytes, -l) unlimited
+max memory size         (kbytes, -m) 4194304
+open files                      (-n) 51200
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) unlimited
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 766569
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+Current working directory: /home/mlafond/projects/def-mlafond/mlafond/libvc_me/library
+Starting run at: Thu Apr  8 11:20:14 PDT 2021
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 110 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 15 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 91 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 80 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 83 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 146 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 23 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 28 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 19 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 21 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 64 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 65 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 67 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 68 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 17 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 29 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 30 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 20 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 16 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 130 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 128 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 132 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 140 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 141 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 136 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 135 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 142 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 129 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 137 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 95 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 84 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 88 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 74 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 47 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 127 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 37 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 40 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 36 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 46 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 61 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 38 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 50 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 32 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 48 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 43 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 44 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 57 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 33 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 52 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 51 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 60 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 25 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 49 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 42 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 81 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 134 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 39 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 35 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 41 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 82 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 138 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 94 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 45 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 72 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 92 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 22 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 24 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 87 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 85 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 86 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 76 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 126 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 78 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 69 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 113 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 93 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 114 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 75 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 117 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 56 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 70 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 89 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 118 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 54 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 71 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 125 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 59 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1972.int.cedar.computecanada.ca, rank 34 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 77 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 112 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 55 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 73 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 120 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 79 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 122 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 53 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 123 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 63 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 116 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 62 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 119 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1983.int.cedar.computecanada.ca, rank 90 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 121 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1973.int.cedar.computecanada.ca, rank 58 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 124 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 18 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1977.int.cedar.computecanada.ca, rank 66 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 26 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 133 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 27 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1985.int.cedar.computecanada.ca, rank 115 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1971.int.cedar.computecanada.ca, rank 31 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 131 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 143 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1991.int.cedar.computecanada.ca, rank 139 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 97 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 102 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 96 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 100 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 108 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 101 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 111 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 104 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 107 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 98 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 105 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 99 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 106 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 103 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1984.int.cedar.computecanada.ca, rank 109 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 9 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 1 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 157 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 0 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 159 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 10 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 144 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 5 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 152 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 2 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 148 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 12 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 153 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 8 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 145 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 14 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 147 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 13 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 155 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 6 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 151 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 4 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 156 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 3 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 158 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 7 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 149 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1963.int.cedar.computecanada.ca, rank 11 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 150 out of 160 processors
+Graph has 700 vertices and 60999 edges
+argc: 3, threads: 1, prob : 4, filename: ./input/p_hat700_1 
+Init done : processor cdr1992.int.cedar.computecanada.ca, rank 154 out of 160 processors
+Graph has 700 vertices and 60999 edges
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Main task added to wr=1
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+PROC 91 found a solution of size 646, sending
+CENTER : updating bestVal to 646
+PROC 157 found a solution of size 646, sending
+PROC 68 found a solution of size 646, sending
+PROC 91 found a solution of size 645, sending
+PROC 157 found a solution of size 645, sending
+Graph bits loaded
+PROC 83 found a solution of size 646, sending
+PROC 146 found a solution of size 646, sending
+PROC 110 found a solution of size 645, sending
+PROC 102 found a solution of size 644, sending
+Gsize=701
+PROC 110 found a solution of size 644, sending
+PROC 9 found a solution of size 648, sending
+PROC 67 found a solution of size 643, sending
+Gsize=701
+PROC 9 found a solution of size 647, sending
+PROC 97 found a solution of size 645, sending
+PROC 100 found a solution of size 646, sending
+PROC 15 found a solution of size 648, sending
+PROC 15 found a solution of size 647, sending
+PROC 64 found a solution of size 647, sending
+PROC 65 found a solution of size 648, sending
+PROC 80 found a solution of size 644, sending
+PROC 159 found a solution of size 647, sending
+PROC 28 found a solution of size 643, sending
+PROC 152 found a solution of size 643, sending
+PROC 9 found a solution of size 646, sending
+PROC 23 found a solution of size 644, sending
+PROC 159 found a solution of size 646, sending
+PROC 30 found a solution of size 643, sending
+PROC 19 found a solution of size 648, sending
+PROC 64 found a solution of size 646, sending
+PROC 144 found a solution of size 644, sending
+PROC 102 found a solution of size 643, sending
+PROC 17 found a solution of size 646, sending
+Graph bits loaded
+PROC 29 found a solution of size 644, sending
+Gsize=701
+PROC 23 found a solution of size 643, sending
+PROC 65 found a solution of size 647, sending
+PROC 29 found a solution of size 643, sending
+PROC 96 found a solution of size 646, sending
+Gsize=701
+PROC 20 found a solution of size 645, sending
+PROC 20 found a solution of size 644, sending
+Graph bits loaded
+PROC 108 found a solution of size 646, sending
+PROC 101 found a solution of size 646, sending
+PROC 108 found a solution of size 645, sending
+PROC 95 found a solution of size 644, sending
+Graph bits loaded
+Graph bits loaded
+PROC 19 found a solution of size 647, sending
+PROC 67 found a solution of size 642, sending
+PROC 84 found a solution of size 642, sending
+Gsize=701
+PROC 88 found a solution of size 647, sending
+Graph bits loaded
+PROC 21 found a solution of size 651, sending
+PROC 141 found a solution of size 649, sending
+PROC 136 found a solution of size 643, sending
+PROC 141 found a solution of size 648, sending
+PROC 140 found a solution of size 645, sending
+PROC 16 found a solution of size 647, sending
+PROC 21 found a solution of size 650, sending
+PROC 137 found a solution of size 645, sending
+Graph bits loaded
+PROC 16 found a solution of size 646, sending
+PROC 132 found a solution of size 643, sending
+PROC 135 found a solution of size 642, sending
+Graph bits loaded
+Graph bits loaded
+PROC 74 found a solution of size 642, sending
+PROC 95 found a solution of size 643, sending
+PROC 88 found a solution of size 646, sending
+PROC 130 found a solution of size 648, sending
+PROC 141 found a solution of size 647, sending
+PROC 129 found a solution of size 648, sending
+Graph bits loaded
+PROC 142 found a solution of size 648, sending
+PROC 47 found a solution of size 647, sending
+PROC 47 found a solution of size 646, sending
+PROC 88 found a solution of size 645, sending
+PROC 130 found a solution of size 647, sending
+Gsize=701
+Graph bits loaded
+PROC 128 found a solution of size 645, sending
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+PROC 40 found a solution of size 643, sending
+PROC 127 found a solution of size 647, sending
+PROC 152 found a solution of size 642, sending
+Gsize=701
+PROC 37 found a solution of size 645, sending
+PROC 136 found a solution of size 642, sending
+PROC 36 found a solution of size 647, sending
+PROC 46 found a solution of size 644, sending
+PROC 36 found a solution of size 646, sending
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+PROC 36 found a solution of size 645, sending
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+PROC 146 found a solution of size 645, sending
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+PROC 127 found a solution of size 646, sending
+PROC 43 found a solution of size 647, sending
+Gsize=701
+PROC 50 found a solution of size 647, sending
+PROC 148 found a solution of size 644, sending
+Gsize=701
+PROC 148 found a solution of size 643, sending
+PROC 32 found a solution of size 646, sending
+PROC 48 found a solution of size 646, sending
+PROC 48 found a solution of size 645, sending
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+PROC 9 found a solution of size 645, sending
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+PROC 48 found a solution of size 644, sending
+Gsize=701
+Graph bits loaded
+Gsize=701
+Graph bits loaded
+PROC 97 found a solution of size 644, sending
+Graph bits loaded
+PROC 148 found a solution of size 642, sending
+Graph bits loaded
+Graph bits loaded
+Graph bits loaded
+PROC 142 found a solution of size 647, sending
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+PROC 17 found a solution of size 645, sending
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+Graph bits loaded
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+PROC 1 found a solution of size 638, sending
+Gsize=701
+Gsize=701
+Gsize=701
+Gsize=701
+Graph bits loaded
+PROC 1 found a solution of size 637, sending
+PROC 128 found a solution of size 644, sending
+Gsize=701
+Graph bits loaded
+PROC 101 found a solution of size 645, sending
+Gsize=701
+PROC 48 found a solution of size 643, sending
+PROC 129 found a solution of size 647, sending
+PROC 30 found a solution of size 642, sending
+PROC 142 found a solution of size 646, sending
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 648
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 648
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 648
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 648
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 642
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 642
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 649
+CENTER : updating bestVal to 651
+CENTER : updating bestVal to 648
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 650
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 642
+CENTER : updating bestVal to 642
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 648
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 648
+CENTER : updating bestVal to 648
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 642
+CENTER : updating bestVal to 642
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 645
+PROC 1 found a solution of size 636, sending
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 642
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 638
+PROC 81 found a solution of size 641, sending
+PROC 104 found a solution of size 641, sending
+PROC 98 found a solution of size 640, sending
+CENTER : updating bestVal to 637
+CENTER : updating bestVal to 644
+CENTER : updating bestVal to 645
+CENTER : updating bestVal to 643
+CENTER : updating bestVal to 647
+CENTER : updating bestVal to 642
+CENTER : updating bestVal to 646
+CENTER : updating bestVal to 636
+CENTER : updating bestVal to 641
+CENTER : updating bestVal to 641
+CENTER : updating bestVal to 640
+PROC 1 found a solution of size 635, sending
+CENTER : updating bestVal to 635
+wr=21 passes=10000000 gsize=76 refvalue=635 solsize=618 isskips=481313 deglbskips=4498420 seen_skips=0 seen.size=0
+wr=100 passes=10000000 gsize=60 refvalue=635 solsize=626 isskips=528988 deglbskips=4429458 seen_skips=0 seen.size=0
+wr=15 passes=10000000 gsize=64 refvalue=635 solsize=627 isskips=767944 deglbskips=4181605 seen_skips=0 seen.size=0
+wr=127 passes=10000000 gsize=74 refvalue=635 solsize=620 isskips=649306 deglbskips=4293770 seen_skips=0 seen.size=0
+wr=4 passes=10000000 gsize=68 refvalue=635 solsize=622 isskips=707242 deglbskips=4232295 seen_skips=0 seen.size=0
+wr=65 passes=10000000 gsize=86 refvalue=635 solsize=608 isskips=1080079 deglbskips=3857266 seen_skips=0 seen.size=0
+wr=107 passes=10000000 gsize=66 refvalue=635 solsize=624 isskips=539393 deglbskips=4418910 seen_skips=0 seen.size=0
+wr=96 passes=10000000 gsize=88 refvalue=635 solsize=606 isskips=652557 deglbskips=4294569 seen_skips=0 seen.size=0
+wr=19 passes=10000000 gsize=83 refvalue=635 solsize=609 isskips=557285 deglbskips=4402841 seen_skips=0 seen.size=0
+wr=157 passes=10000000 gsize=69 refvalue=635 solsize=624 isskips=766918 deglbskips=4163681 seen_skips=0 seen.size=0
+wr=61 passes=10000000 gsize=69 refvalue=635 solsize=618 isskips=697795 deglbskips=4246717 seen_skips=0 seen.size=0
+wr=17 passes=10000000 gsize=74 refvalue=635 solsize=614 isskips=609644 deglbskips=4333723 seen_skips=0 seen.size=0
+wr=159 passes=10000000 gsize=64 refvalue=635 solsize=628 isskips=778815 deglbskips=4150780 seen_skips=0 seen.size=0
+wr=8 passes=10000000 gsize=69 refvalue=635 solsize=621 isskips=658607 deglbskips=4290780 seen_skips=0 seen.size=0
+wr=68 passes=10000000 gsize=87 refvalue=635 solsize=607 isskips=821665 deglbskips=4112111 seen_skips=0 seen.size=0
+wr=45 passes=10000000 gsize=83 refvalue=635 solsize=609 isskips=857458 deglbskips=4057053 seen_skips=0 seen.size=0
+wr=50 passes=10000000 gsize=78 refvalue=635 solsize=614 isskips=704255 deglbskips=4230536 seen_skips=0 seen.size=0
+wr=16 passes=10000000 gsize=82 refvalue=635 solsize=610 isskips=832962 deglbskips=4096243 seen_skips=0 seen.size=0
+wr=97 passes=10000000 gsize=96 refvalue=635 solsize=600 isskips=790549 deglbskips=4133750 seen_skips=0 seen.size=0
+wr=88 passes=10000000 gsize=69 refvalue=635 solsize=618 isskips=919153 deglbskips=3996660 seen_skips=0 seen.size=0
+wr=41 passes=10000000 gsize=79 refvalue=635 solsize=615 isskips=673262 deglbskips=4260263 seen_skips=0 seen.size=0
+wr=64 passes=10000000 gsize=78 refvalue=635 solsize=613 isskips=936960 deglbskips=3986685 seen_skips=0 seen.size=0
+wr=60 passes=10000000 gsize=67 refvalue=635 solsize=616 isskips=798129 deglbskips=4126285 seen_skips=0 seen.size=0
+wr=37 passes=10000000 gsize=64 refvalue=635 solsize=626 isskips=815864 deglbskips=4100649 seen_skips=0 seen.size=0
+wr=42 passes=10000000 gsize=71 refvalue=635 solsize=616 isskips=812019 deglbskips=4086255 seen_skips=0 seen.size=0
+wr=91 passes=10000000 gsize=77 refvalue=635 solsize=614 isskips=737620 deglbskips=4182976 seen_skips=0 seen.size=0
+wr=3 passes=10000000 gsize=96 refvalue=635 solsize=598 isskips=639877 deglbskips=4312211 seen_skips=0 seen.size=0
+wr=55 passes=10000000 gsize=86 refvalue=635 solsize=607 isskips=651760 deglbskips=4295754 seen_skips=0 seen.size=0
+wr=108 passes=10000000 gsize=90 refvalue=635 solsize=604 isskips=808600 deglbskips=4113956 seen_skips=0 seen.size=0
+wr=120 passes=10000000 gsize=85 refvalue=635 solsize=605 isskips=757344 deglbskips=4174397 seen_skips=0 seen.size=0
+wr=147 passes=10000000 gsize=68 refvalue=635 solsize=624 isskips=849274 deglbskips=4054571 seen_skips=0 seen.size=0
+wr=146 passes=10000000 gsize=71 refvalue=635 solsize=620 isskips=716020 deglbskips=4223157 seen_skips=0 seen.size=0
+wr=67 passes=10000000 gsize=80 refvalue=635 solsize=614 isskips=943250 deglbskips=3902708 seen_skips=0 seen.size=0
+wr=29 passes=10000000 gsize=81 refvalue=635 solsize=612 isskips=849913 deglbskips=4064607 seen_skips=0 seen.size=0
+wr=46 passes=10000000 gsize=81 refvalue=635 solsize=608 isskips=789531 deglbskips=4099826 seen_skips=0 seen.size=0
+wr=47 passes=10000000 gsize=75 refvalue=635 solsize=617 isskips=693052 deglbskips=4241148 seen_skips=0 seen.size=0
+wr=99 passes=10000000 gsize=101 refvalue=635 solsize=595 isskips=795253 deglbskips=4124764 seen_skips=0 seen.size=0
+wr=101 passes=10000000 gsize=72 refvalue=635 solsize=621 isskips=754035 deglbskips=4169182 seen_skips=0 seen.size=0
+wr=56 passes=10000000 gsize=65 refvalue=635 solsize=619 isskips=759310 deglbskips=4149965 seen_skips=0 seen.size=0
+wr=80 passes=10000000 gsize=100 refvalue=635 solsize=595 isskips=757025 deglbskips=4163604 seen_skips=0 seen.size=0
+wr=105 passes=10000000 gsize=70 refvalue=635 solsize=620 isskips=756196 deglbskips=4128013 seen_skips=0 seen.size=0
+wr=48 passes=10000000 gsize=59 refvalue=635 solsize=626 isskips=821444 deglbskips=4087329 seen_skips=0 seen.size=0
+wr=35 passes=10000000 gsize=72 refvalue=635 solsize=613 isskips=811655 deglbskips=4094909 seen_skips=0 seen.size=0
+wr=153 passes=10000000 gsize=78 refvalue=635 solsize=611 isskips=778529 deglbskips=4123534 seen_skips=0 seen.size=0
+wr=20 passes=10000000 gsize=69 refvalue=635 solsize=620 isskips=783066 deglbskips=4119088 seen_skips=0 seen.size=0
+wr=86 passes=10000000 gsize=71 refvalue=635 solsize=619 isskips=676359 deglbskips=4256118 seen_skips=0 seen.size=0
+wr=6 passes=10000000 gsize=77 refvalue=635 solsize=615 isskips=736042 deglbskips=4165221 seen_skips=0 seen.size=0
+wr=122 passes=10000000 gsize=73 refvalue=635 solsize=611 isskips=859531 deglbskips=4030856 seen_skips=0 seen.size=0
+wr=33 passes=10000000 gsize=74 refvalue=635 solsize=618 isskips=778075 deglbskips=4121100 seen_skips=0 seen.size=0
+wr=2 passes=10000000 gsize=70 refvalue=635 solsize=612 isskips=747718 deglbskips=4147294 seen_skips=0 seen.size=0
+wr=115 passes=10000000 gsize=75 refvalue=635 solsize=613 isskips=734758 deglbskips=4189439 seen_skips=0 seen.size=0
+wr=103 passes=10000000 gsize=95 refvalue=635 solsize=598 isskips=803786 deglbskips=4090783 seen_skips=0 seen.size=0
+wr=83 passes=10000000 gsize=59 refvalue=635 solsize=628 isskips=944715 deglbskips=3948398 seen_skips=0 seen.size=0
+wr=141 passes=10000000 gsize=77 refvalue=635 solsize=615 isskips=494508 deglbskips=4469845 seen_skips=0 seen.size=0
+wr=111 passes=10000000 gsize=64 refvalue=635 solsize=627 isskips=810648 deglbskips=4067281 seen_skips=0 seen.size=0
+wr=87 passes=10000000 gsize=70 refvalue=635 solsize=623 isskips=816012 deglbskips=4093318 seen_skips=0 seen.size=0
+wr=94 passes=10000000 gsize=105 refvalue=635 solsize=590 isskips=791958 deglbskips=4107724 seen_skips=0 seen.size=0
+wr=74 passes=10000000 gsize=79 refvalue=635 solsize=611 isskips=959969 deglbskips=3907873 seen_skips=0 seen.size=0
+wr=130 passes=10000000 gsize=71 refvalue=635 solsize=621 isskips=707289 deglbskips=4230473 seen_skips=0 seen.size=0
+wr=40 passes=10000000 gsize=86 refvalue=635 solsize=608 isskips=1048625 deglbskips=3814708 seen_skips=0 seen.size=0
+wr=30 passes=10000000 gsize=119 refvalue=635 solsize=577 isskips=826065 deglbskips=4054571 seen_skips=0 seen.size=0
+wr=53 passes=10000000 gsize=76 refvalue=635 solsize=616 isskips=944463 deglbskips=3886461 seen_skips=0 seen.size=0
+wr=85 passes=10000000 gsize=60 refvalue=635 solsize=625 isskips=898642 deglbskips=3957474 seen_skips=0 seen.size=0
+wr=66 passes=10000000 gsize=66 refvalue=635 solsize=618 isskips=981654 deglbskips=3887398 seen_skips=0 seen.size=0
+wr=36 passes=10000000 gsize=91 refvalue=635 solsize=601 isskips=883116 deglbskips=4009880 seen_skips=0 seen.size=0
+wr=126 passes=10000000 gsize=75 refvalue=635 solsize=613 isskips=1074479 deglbskips=3758621 seen_skips=0 seen.size=0
+wr=43 passes=10000000 gsize=78 refvalue=635 solsize=614 isskips=769515 deglbskips=4132056 seen_skips=0 seen.size=0
+wr=9 passes=10000000 gsize=74 refvalue=635 solsize=621 isskips=843987 deglbskips=4054321 seen_skips=0 seen.size=0
+wr=59 passes=10000000 gsize=62 refvalue=635 solsize=620 isskips=984402 deglbskips=3886736 seen_skips=0 seen.size=0
+wr=119 passes=10000000 gsize=61 refvalue=635 solsize=625 isskips=860870 deglbskips=3998639 seen_skips=0 seen.size=0
+wr=38 passes=10000000 gsize=85 refvalue=635 solsize=607 isskips=996583 deglbskips=3862634 seen_skips=0 seen.size=0
+wr=136 passes=10000000 gsize=86 refvalue=635 solsize=607 isskips=797716 deglbskips=4098876 seen_skips=0 seen.size=0
+wr=13 passes=10000000 gsize=74 refvalue=635 solsize=617 isskips=838096 deglbskips=4043652 seen_skips=0 seen.size=0
+wr=32 passes=10000000 gsize=83 refvalue=635 solsize=610 isskips=783573 deglbskips=4122290 seen_skips=0 seen.size=0
+wr=155 passes=10000000 gsize=80 refvalue=635 solsize=612 isskips=929720 deglbskips=3923900 seen_skips=0 seen.size=0
+wr=102 passes=10000000 gsize=95 refvalue=635 solsize=598 isskips=895193 deglbskips=3942920 seen_skips=0 seen.size=0
+wr=10 passes=10000000 gsize=91 refvalue=635 solsize=604 isskips=1022895 deglbskips=3828280 seen_skips=0 seen.size=0
+wr=71 passes=10000000 gsize=73 refvalue=635 solsize=614 isskips=842889 deglbskips=4041603 seen_skips=0 seen.size=0
+wr=23 passes=10000000 gsize=71 refvalue=635 solsize=620 isskips=1001202 deglbskips=3844929 seen_skips=0 seen.size=0
+wr=18 passes=10000000 gsize=75 refvalue=635 solsize=615 isskips=889225 deglbskips=3960517 seen_skips=0 seen.size=0
+wr=143 passes=10000000 gsize=73 refvalue=635 solsize=616 isskips=706668 deglbskips=4228986 seen_skips=0 seen.size=0
+wr=57 passes=10000000 gsize=87 refvalue=635 solsize=605 isskips=889532 deglbskips=3991717 seen_skips=0 seen.size=0
+wr=28 passes=10000000 gsize=77 refvalue=635 solsize=611 isskips=904369 deglbskips=3936055 seen_skips=0 seen.size=0
+wr=51 passes=10000000 gsize=67 refvalue=635 solsize=626 isskips=840354 deglbskips=3999418 seen_skips=0 seen.size=0
+wr=81 passes=10000000 gsize=71 refvalue=635 solsize=614 isskips=1039361 deglbskips=3777270 seen_skips=0 seen.size=0
+wr=117 passes=10000000 gsize=76 refvalue=635 solsize=614 isskips=1066206 deglbskips=3734320 seen_skips=0 seen.size=0
+wr=5 passes=10000000 gsize=72 refvalue=635 solsize=616 isskips=911817 deglbskips=3907651 seen_skips=0 seen.size=0
+wr=92 passes=10000000 gsize=88 refvalue=635 solsize=603 isskips=946825 deglbskips=3914937 seen_skips=0 seen.size=0
+wr=110 passes=10000000 gsize=89 refvalue=635 solsize=602 isskips=955802 deglbskips=3912095 seen_skips=0 seen.size=0
+wr=49 passes=10000000 gsize=80 refvalue=635 solsize=610 isskips=970614 deglbskips=3850391 seen_skips=0 seen.size=0
+wr=62 passes=10000000 gsize=63 refvalue=635 solsize=623 isskips=933587 deglbskips=3920219 seen_skips=0 seen.size=0
+wr=106 passes=10000000 gsize=74 refvalue=635 solsize=614 isskips=780281 deglbskips=4094322 seen_skips=0 seen.size=0
+wr=156 passes=10000000 gsize=74 refvalue=635 solsize=612 isskips=1031659 deglbskips=3787103 seen_skips=0 seen.size=0
+wr=129 passes=10000000 gsize=77 refvalue=635 solsize=615 isskips=662770 deglbskips=4286675 seen_skips=0 seen.size=0
+wr=7 passes=10000000 gsize=68 refvalue=635 solsize=619 isskips=964851 deglbskips=3862210 seen_skips=0 seen.size=0
+wr=142 passes=10000000 gsize=83 refvalue=635 solsize=609 isskips=722418 deglbskips=4199295 seen_skips=0 seen.size=0
+wr=140 passes=10000000 gsize=69 refvalue=635 solsize=624 isskips=682462 deglbskips=4236753 seen_skips=0 seen.size=0
+wr=124 passes=10000000 gsize=78 refvalue=635 solsize=615 isskips=814133 deglbskips=4053783 seen_skips=0 seen.size=0
+wr=123 passes=10000000 gsize=92 refvalue=635 solsize=598 isskips=1140539 deglbskips=3618343 seen_skips=0 seen.size=0
+wr=152 passes=10000000 gsize=67 refvalue=635 solsize=621 isskips=1076571 deglbskips=3756088 seen_skips=0 seen.size=0
+wr=151 passes=10000000 gsize=142 refvalue=635 solsize=555 isskips=945540 deglbskips=3888247 seen_skips=0 seen.size=0
+wr=72 passes=10000000 gsize=79 refvalue=635 solsize=607 isskips=850733 deglbskips=4015353 seen_skips=0 seen.size=0
+wr=14 passes=10000000 gsize=85 refvalue=635 solsize=604 isskips=989899 deglbskips=3836818 seen_skips=0 seen.size=0
+wr=70 passes=10000000 gsize=85 refvalue=635 solsize=602 isskips=1083983 deglbskips=3663914 seen_skips=0 seen.size=0
+wr=24 passes=10000000 gsize=93 refvalue=635 solsize=601 isskips=982924 deglbskips=3864810 seen_skips=0 seen.size=0
+wr=134 passes=10000000 gsize=71 refvalue=635 solsize=618 isskips=724213 deglbskips=4171784 seen_skips=0 seen.size=0
+wr=39 passes=10000000 gsize=78 refvalue=635 solsize=613 isskips=813214 deglbskips=4013435 seen_skips=0 seen.size=0
+wr=104 passes=10000000 gsize=70 refvalue=635 solsize=621 isskips=1133810 deglbskips=3602268 seen_skips=0 seen.size=0
+wr=89 passes=10000000 gsize=80 refvalue=635 solsize=612 isskips=906392 deglbskips=3927494 seen_skips=0 seen.size=0
+wr=44 passes=10000000 gsize=80 refvalue=635 solsize=613 isskips=886990 deglbskips=3919603 seen_skips=0 seen.size=0
+wr=149 passes=10000000 gsize=96 refvalue=635 solsize=597 isskips=995693 deglbskips=3793480 seen_skips=0 seen.size=0
+wr=154 passes=10000000 gsize=87 refvalue=635 solsize=602 isskips=999075 deglbskips=3832358 seen_skips=0 seen.size=0
+wr=121 passes=10000000 gsize=61 refvalue=635 solsize=623 isskips=1037464 deglbskips=3708931 seen_skips=0 seen.size=0
+wr=95 passes=10000000 gsize=68 refvalue=635 solsize=622 isskips=1003524 deglbskips=3835906 seen_skips=0 seen.size=0
+wr=31 passes=10000000 gsize=66 refvalue=635 solsize=619 isskips=939680 deglbskips=3877989 seen_skips=0 seen.size=0
+wr=77 passes=10000000 gsize=83 refvalue=635 solsize=609 isskips=1082555 deglbskips=3707354 seen_skips=0 seen.size=0
+wr=144 passes=10000000 gsize=83 refvalue=635 solsize=606 isskips=1072778 deglbskips=3742713 seen_skips=0 seen.size=0
+wr=34 passes=10000000 gsize=72 refvalue=635 solsize=613 isskips=1034975 deglbskips=3734494 seen_skips=0 seen.size=0
+wr=26 passes=10000000 gsize=76 refvalue=635 solsize=613 isskips=1186826 deglbskips=3566162 seen_skips=0 seen.size=0
+wr=150 passes=10000000 gsize=56 refvalue=635 solsize=627 isskips=1064204 deglbskips=3706674 seen_skips=0 seen.size=0
+wr=54 passes=10000000 gsize=71 refvalue=635 solsize=619 isskips=1236062 deglbskips=3486663 seen_skips=0 seen.size=0
+wr=139 passes=10000000 gsize=88 refvalue=635 solsize=602 isskips=712974 deglbskips=4218576 seen_skips=0 seen.size=0
+wr=118 passes=10000000 gsize=83 refvalue=635 solsize=606 isskips=878520 deglbskips=3973962 seen_skips=0 seen.size=0
+wr=84 passes=10000000 gsize=80 refvalue=635 solsize=609 isskips=967329 deglbskips=3830695 seen_skips=0 seen.size=0
+wr=133 passes=10000000 gsize=62 refvalue=635 solsize=618 isskips=768782 deglbskips=4117200 seen_skips=0 seen.size=0
+wr=63 passes=10000000 gsize=53 refvalue=635 solsize=627 isskips=974309 deglbskips=3811315 seen_skips=0 seen.size=0
+wr=27 passes=10000000 gsize=70 refvalue=635 solsize=615 isskips=874168 deglbskips=3980693 seen_skips=0 seen.size=0
+wr=82 passes=10000000 gsize=91 refvalue=635 solsize=600 isskips=1098068 deglbskips=3674013 seen_skips=0 seen.size=0
+wr=25 passes=10000000 gsize=79 refvalue=635 solsize=612 isskips=1005916 deglbskips=3790588 seen_skips=0 seen.size=0
+wr=12 passes=10000000 gsize=55 refvalue=635 solsize=625 isskips=924635 deglbskips=3932600 seen_skips=0 seen.size=0
+wr=112 passes=10000000 gsize=66 refvalue=635 solsize=616 isskips=1073753 deglbskips=3661162 seen_skips=0 seen.size=0
+wr=22 passes=10000000 gsize=83 refvalue=635 solsize=610 isskips=912289 deglbskips=3919786 seen_skips=0 seen.size=0
+wr=145 passes=10000000 gsize=66 refvalue=635 solsize=620 isskips=1001446 deglbskips=3806891 seen_skips=0 seen.size=0
+wr=78 passes=10000000 gsize=74 refvalue=635 solsize=611 isskips=1123203 deglbskips=3624132 seen_skips=0 seen.size=0
+wr=76 passes=10000000 gsize=94 refvalue=635 solsize=601 isskips=1018089 deglbskips=3826872 seen_skips=0 seen.size=0
+wr=11 passes=10000000 gsize=60 refvalue=635 solsize=624 isskips=1238111 deglbskips=3466713 seen_skips=0 seen.size=0
+wr=75 passes=10000000 gsize=62 refvalue=635 solsize=619 isskips=895657 deglbskips=3943456 seen_skips=0 seen.size=0
+wr=109 passes=10000000 gsize=77 refvalue=635 solsize=614 isskips=989781 deglbskips=3831555 seen_skips=0 seen.size=0
+wr=52 passes=10000000 gsize=77 refvalue=635 solsize=612 isskips=1071989 deglbskips=3631819 seen_skips=0 seen.size=0
+wr=113 passes=10000000 gsize=59 refvalue=635 solsize=619 isskips=1121486 deglbskips=3604776 seen_skips=0 seen.size=0
+wr=125 passes=10000000 gsize=107 refvalue=635 solsize=586 isskips=1085366 deglbskips=3634644 seen_skips=0 seen.size=0
+wr=128 passes=10000000 gsize=83 refvalue=635 solsize=609 isskips=943779 deglbskips=3917515 seen_skips=0 seen.size=0
+wr=138 passes=10000000 gsize=81 refvalue=635 solsize=610 isskips=811286 deglbskips=4074097 seen_skips=0 seen.size=0
+wr=93 passes=10000000 gsize=64 refvalue=635 solsize=618 isskips=1042962 deglbskips=3739575 seen_skips=0 seen.size=0
+wr=58 passes=10000000 gsize=72 refvalue=635 solsize=614 isskips=1229437 deglbskips=3426535 seen_skips=0 seen.size=0
+wr=116 passes=10000000 gsize=66 refvalue=635 solsize=617 isskips=1112827 deglbskips=3542895 seen_skips=0 seen.size=0
+wr=69 passes=10000000 gsize=71 refvalue=635 solsize=617 isskips=1109361 deglbskips=3628021 seen_skips=0 seen.size=0
+wr=137 passes=10000000 gsize=76 refvalue=635 solsize=617 isskips=782792 deglbskips=4117559 seen_skips=0 seen.size=0
+wr=148 passes=10000000 gsize=71 refvalue=635 solsize=615 isskips=1110144 deglbskips=3616731 seen_skips=0 seen.size=0
+wr=135 passes=10000000 gsize=72 refvalue=635 solsize=618 isskips=1000722 deglbskips=3815210 seen_skips=0 seen.size=0
+wr=90 passes=10000000 gsize=60 refvalue=635 solsize=625 isskips=913669 deglbskips=3935210 seen_skips=0 seen.size=0
+wr=79 passes=10000000 gsize=100 refvalue=635 solsize=594 isskips=1187040 deglbskips=3510693 seen_skips=0 seen.size=0
+wr=114 passes=10000000 gsize=79 refvalue=635 solsize=611 isskips=1232280 deglbskips=3457396 seen_skips=0 seen.size=0
+wr=73 passes=10000000 gsize=90 refvalue=635 solsize=597 isskips=1266083 deglbskips=3377443 seen_skips=0 seen.size=0
+wr=1 passes=10000000 gsize=49 refvalue=635 solsize=621 isskips=1351353 deglbskips=2817871 seen_skips=0 seen.size=0
+wr=132 passes=10000000 gsize=53 refvalue=635 solsize=628 isskips=1025791 deglbskips=3796093 seen_skips=0 seen.size=0
+wr=98 passes=10000000 gsize=77 refvalue=635 solsize=615 isskips=1180131 deglbskips=3543116 seen_skips=0 seen.size=0
+wr=158 passes=10000000 gsize=71 refvalue=635 solsize=618 isskips=740623 deglbskips=4148567 seen_skips=0 seen.size=0
+wr=131 passes=10000000 gsize=92 refvalue=635 solsize=600 isskips=1037833 deglbskips=3759522 seen_skips=0 seen.size=0
+wr=21 passes=20000000 gsize=105 refvalue=635 solsize=590 isskips=870416 deglbskips=9097491 seen_skips=0 seen.size=0
+wr=100 passes=20000000 gsize=93 refvalue=635 solsize=600 isskips=1168282 deglbskips=8758227 seen_skips=0 seen.size=0
+wr=127 passes=20000000 gsize=83 refvalue=635 solsize=608 isskips=1241896 deglbskips=8663534 seen_skips=0 seen.size=0
+wr=15 passes=20000000 gsize=84 refvalue=635 solsize=611 isskips=1659114 deglbskips=8249679 seen_skips=0 seen.size=0
+wr=65 passes=20000000 gsize=78 refvalue=635 solsize=614 isskips=2280053 deglbskips=7611034 seen_skips=0 seen.size=0
+wr=19 passes=20000000 gsize=114 refvalue=635 solsize=582 isskips=1034220 deglbskips=8904370 seen_skips=0 seen.size=0
+wr=4 passes=20000000 gsize=88 refvalue=635 solsize=607 isskips=1373240 deglbskips=8520079 seen_skips=0 seen.size=0
+wr=107 passes=20000000 gsize=70 refvalue=635 solsize=623 isskips=1056422 deglbskips=8873080 seen_skips=0 seen.size=0
+wr=157 passes=20000000 gsize=95 refvalue=635 solsize=598 isskips=1506220 deglbskips=8380216 seen_skips=0 seen.size=0
+wr=68 passes=20000000 gsize=107 refvalue=635 solsize=587 isskips=1615888 deglbskips=8279363 seen_skips=0 seen.size=0
+wr=96 passes=20000000 gsize=82 refvalue=635 solsize=610 isskips=1262660 deglbskips=8648287 seen_skips=0 seen.size=0
+wr=159 passes=20000000 gsize=56 refvalue=635 solsize=626 isskips=1577436 deglbskips=8303384 seen_skips=0 seen.size=0
+wr=8 passes=20000000 gsize=68 refvalue=635 solsize=622 isskips=1262309 deglbskips=8654445 seen_skips=0 seen.size=0
+wr=17 passes=20000000 gsize=114 refvalue=635 solsize=582 isskips=1265254 deglbskips=8633480 seen_skips=0 seen.size=0
+wr=61 passes=20000000 gsize=78 refvalue=635 solsize=613 isskips=1389524 deglbskips=8513211 seen_skips=0 seen.size=0
+wr=50 passes=20000000 gsize=77 refvalue=635 solsize=616 isskips=1359840 deglbskips=8537335 seen_skips=0 seen.size=0
+wr=45 passes=20000000 gsize=79 refvalue=635 solsize=614 isskips=1689412 deglbskips=8168056 seen_skips=0 seen.size=0
+wr=97 passes=20000000 gsize=65 refvalue=635 solsize=624 isskips=1519681 deglbskips=8361946 seen_skips=0 seen.size=0
+wr=88 passes=20000000 gsize=86 refvalue=635 solsize=609 isskips=1840560 deglbskips=8019654 seen_skips=0 seen.size=0
+wr=37 passes=20000000 gsize=64 refvalue=635 solsize=625 isskips=1576421 deglbskips=8285895 seen_skips=0 seen.size=0
+wr=16 passes=20000000 gsize=70 refvalue=635 solsize=620 isskips=1650062 deglbskips=8219276 seen_skips=0 seen.size=0
+wr=42 passes=20000000 gsize=74 refvalue=635 solsize=620 isskips=1564295 deglbskips=8271945 seen_skips=0 seen.size=0
+wr=91 passes=20000000 gsize=76 refvalue=635 solsize=614 isskips=1460140 deglbskips=8414689 seen_skips=0 seen.size=0
+wr=64 passes=20000000 gsize=71 refvalue=635 solsize=624 isskips=1889797 deglbskips=7979900 seen_skips=0 seen.size=0
+wr=3 passes=20000000 gsize=123 refvalue=635 solsize=573 isskips=1200786 deglbskips=8725579 seen_skips=0 seen.size=0
+wr=41 passes=20000000 gsize=81 refvalue=635 solsize=610 isskips=1410552 deglbskips=8472922 seen_skips=0 seen.size=0
+wr=60 passes=20000000 gsize=78 refvalue=635 solsize=611 isskips=1576135 deglbskips=8291478 seen_skips=0 seen.size=0
+wr=55 passes=20000000 gsize=111 refvalue=635 solsize=585 isskips=1302703 deglbskips=8606475 seen_skips=0 seen.size=0
+wr=146 passes=20000000 gsize=73 refvalue=635 solsize=619 isskips=1378884 deglbskips=8520641 seen_skips=0 seen.size=0
+wr=120 passes=20000000 gsize=75 refvalue=635 solsize=615 isskips=1527027 deglbskips=8349037 seen_skips=0 seen.size=0
+wr=29 passes=20000000 gsize=83 refvalue=635 solsize=606 isskips=1608281 deglbskips=8250007 seen_skips=0 seen.size=0
+wr=108 passes=20000000 gsize=119 refvalue=635 solsize=577 isskips=1570632 deglbskips=8296275 seen_skips=0 seen.size=0
+wr=47 passes=20000000 gsize=85 refvalue=635 solsize=610 isskips=1383931 deglbskips=8505303 seen_skips=0 seen.size=0
+wr=80 passes=20000000 gsize=79 refvalue=635 solsize=610 isskips=1469560 deglbskips=8405085 seen_skips=0 seen.size=0
+wr=46 passes=20000000 gsize=82 refvalue=635 solsize=612 isskips=1586402 deglbskips=8221444 seen_skips=0 seen.size=0
+wr=147 passes=20000000 gsize=86 refvalue=635 solsize=606 isskips=1670019 deglbskips=8169152 seen_skips=0 seen.size=0
+wr=83 passes=20000000 gsize=82 refvalue=635 solsize=612 isskips=1767650 deglbskips=8064585 seen_skips=0 seen.size=0
+wr=115 passes=20000000 gsize=93 refvalue=635 solsize=601 isskips=1428160 deglbskips=8451178 seen_skips=0 seen.size=0
+wr=141 passes=20000000 gsize=95 refvalue=635 solsize=595 isskips=1009661 deglbskips=8929500 seen_skips=0 seen.size=0
+wr=56 passes=20000000 gsize=66 refvalue=635 solsize=621 isskips=1512443 deglbskips=8334102 seen_skips=0 seen.size=0
+wr=33 passes=20000000 gsize=84 refvalue=635 solsize=608 isskips=1489408 deglbskips=8348252 seen_skips=0 seen.size=0
+wr=105 passes=20000000 gsize=83 refvalue=635 solsize=612 isskips=1437712 deglbskips=8379990 seen_skips=0 seen.size=0
+wr=35 passes=20000000 gsize=74 refvalue=635 solsize=613 isskips=1574137 deglbskips=8279860 seen_skips=0 seen.size=0
+wr=20 passes=20000000 gsize=77 refvalue=635 solsize=612 isskips=1494549 deglbskips=8350130 seen_skips=0 seen.size=0
+wr=43 passes=20000000 gsize=84 refvalue=635 solsize=609 isskips=1418347 deglbskips=8434398 seen_skips=0 seen.size=0
+wr=6 passes=20000000 gsize=83 refvalue=635 solsize=609 isskips=1449091 deglbskips=8393790 seen_skips=0 seen.size=0
+wr=101 passes=20000000 gsize=70 refvalue=635 solsize=622 isskips=1499442 deglbskips=8366311 seen_skips=0 seen.size=0
+wr=99 passes=20000000 gsize=76 refvalue=635 solsize=618 isskips=1591793 deglbskips=8269907 seen_skips=0 seen.size=0
+wr=86 passes=20000000 gsize=77 refvalue=635 solsize=615 isskips=1358889 deglbskips=8527672 seen_skips=0 seen.size=0
+wr=48 passes=20000000 gsize=83 refvalue=635 solsize=607 isskips=1649573 deglbskips=8192590 seen_skips=0 seen.size=0
+wr=103 passes=20000000 gsize=73 refvalue=635 solsize=618 isskips=1595502 deglbskips=8228969 seen_skips=0 seen.size=0
+wr=122 passes=20000000 gsize=88 refvalue=635 solsize=605 isskips=1759584 deglbskips=8042125 seen_skips=0 seen.size=0
+wr=130 passes=20000000 gsize=91 refvalue=635 solsize=601 isskips=1341930 deglbskips=8554499 seen_skips=0 seen.size=0
+wr=30 passes=20000000 gsize=64 refvalue=635 solsize=627 isskips=1619644 deglbskips=8192646 seen_skips=0 seen.size=0
+wr=67 passes=20000000 gsize=73 refvalue=635 solsize=620 isskips=1895114 deglbskips=7838544 seen_skips=0 seen.size=0
+wr=9 passes=20000000 gsize=73 refvalue=635 solsize=614 isskips=1561554 deglbskips=8288000 seen_skips=0 seen.size=0
+wr=36 passes=20000000 gsize=90 refvalue=635 solsize=604 isskips=1679357 deglbskips=8142597 seen_skips=0 seen.size=0
+wr=153 passes=20000000 gsize=87 refvalue=635 solsize=603 isskips=1630825 deglbskips=8194669 seen_skips=0 seen.size=0
+wr=40 passes=20000000 gsize=64 refvalue=635 solsize=619 isskips=2060178 deglbskips=7704604 seen_skips=0 seen.size=0
+wr=126 passes=20000000 gsize=66 refvalue=635 solsize=626 isskips=2034051 deglbskips=7708094 seen_skips=0 seen.size=0
+wr=2 passes=20000000 gsize=68 refvalue=635 solsize=616 isskips=1455116 deglbskips=8379035 seen_skips=0 seen.size=0
+wr=59 passes=20000000 gsize=69 refvalue=635 solsize=618 isskips=1888992 deglbskips=7910258 seen_skips=0 seen.size=0
+wr=74 passes=20000000 gsize=97 refvalue=635 solsize=597 isskips=1886225 deglbskips=7882098 seen_skips=0 seen.size=0
+wr=136 passes=20000000 gsize=73 refvalue=635 solsize=618 isskips=1498898 deglbskips=8335885 seen_skips=0 seen.size=0
+wr=111 passes=20000000 gsize=85 refvalue=635 solsize=606 isskips=1627375 deglbskips=8157898 seen_skips=0 seen.size=0
+wr=94 passes=20000000 gsize=91 refvalue=635 solsize=602 isskips=1565490 deglbskips=8265413 seen_skips=0 seen.size=0
+wr=87 passes=20000000 gsize=76 refvalue=635 solsize=617 isskips=1711631 deglbskips=8122036 seen_skips=0 seen.size=0
+wr=85 passes=20000000 gsize=78 refvalue=635 solsize=613 isskips=1791073 deglbskips=7966114 seen_skips=0 seen.size=0
+wr=32 passes=20000000 gsize=74 refvalue=635 solsize=615 isskips=1566374 deglbskips=8278602 seen_skips=0 seen.size=0
+wr=119 passes=20000000 gsize=72 refvalue=635 solsize=615 isskips=1743577 deglbskips=8001438 seen_skips=0 seen.size=0
+wr=66 passes=20000000 gsize=70 refvalue=635 solsize=615 isskips=1974873 deglbskips=7790732 seen_skips=0 seen.size=0
+wr=13 passes=20000000 gsize=73 refvalue=635 solsize=616 isskips=1633301 deglbskips=8171219 seen_skips=0 seen.size=0
+wr=51 passes=20000000 gsize=97 refvalue=635 solsize=598 isskips=1656884 deglbskips=8080924 seen_skips=0 seen.size=0
+wr=23 passes=20000000 gsize=88 refvalue=635 solsize=603 isskips=1934871 deglbskips=7803102 seen_skips=0 seen.size=0
+wr=38 passes=20000000 gsize=75 refvalue=635 solsize=613 isskips=2005731 deglbskips=7731375 seen_skips=0 seen.size=0
+wr=143 passes=20000000 gsize=92 refvalue=635 solsize=600 isskips=1464400 deglbskips=8414198 seen_skips=0 seen.size=0
+wr=102 passes=20000000 gsize=50 refvalue=635 solsize=628 isskips=1795952 deglbskips=7945030 seen_skips=0 seen.size=0
+wr=140 passes=20000000 gsize=82 refvalue=635 solsize=610 isskips=1350009 deglbskips=8520552 seen_skips=0 seen.size=0
+wr=71 passes=20000000 gsize=60 refvalue=635 solsize=618 isskips=1662241 deglbskips=8142454 seen_skips=0 seen.size=0
+wr=57 passes=20000000 gsize=84 refvalue=635 solsize=611 isskips=1780971 deglbskips=8010576 seen_skips=0 seen.size=0
+wr=53 passes=20000000 gsize=65 refvalue=635 solsize=624 isskips=2001286 deglbskips=7666461 seen_skips=0 seen.size=0
+wr=129 passes=20000000 gsize=64 refvalue=635 solsize=629 isskips=1292256 deglbskips=8622423 seen_skips=0 seen.size=0
+wr=49 passes=20000000 gsize=64 refvalue=635 solsize=625 isskips=1919252 deglbskips=7792529 seen_skips=0 seen.size=0
+wr=155 passes=20000000 gsize=63 refvalue=635 solsize=626 isskips=1867178 deglbskips=7866975 seen_skips=0 seen.size=0
+wr=28 passes=20000000 gsize=65 refvalue=635 solsize=625 isskips=1788482 deglbskips=7934900 seen_skips=0 seen.size=0
+wr=92 passes=20000000 gsize=75 refvalue=635 solsize=615 isskips=1808863 deglbskips=7973118 seen_skips=0 seen.size=0
+wr=134 passes=20000000 gsize=96 refvalue=635 solsize=598 isskips=1380862 deglbskips=8457252 seen_skips=0 seen.size=0
+wr=18 passes=20000000 gsize=88 refvalue=635 solsize=605 isskips=1788410 deglbskips=7958980 seen_skips=0 seen.size=0
+wr=142 passes=20000000 gsize=68 refvalue=635 solsize=617 isskips=1480237 deglbskips=8382649 seen_skips=0 seen.size=0
+wr=10 passes=20000000 gsize=86 refvalue=635 solsize=606 isskips=1997211 deglbskips=7733128 seen_skips=0 seen.size=0
+wr=156 passes=20000000 gsize=83 refvalue=635 solsize=610 isskips=1952614 deglbskips=7765768 seen_skips=0 seen.size=0
+wr=34 passes=20000000 gsize=67 refvalue=635 solsize=616 isskips=1905301 deglbskips=7758661 seen_skips=0 seen.size=0
+wr=110 passes=20000000 gsize=65 refvalue=635 solsize=622 isskips=1893879 deglbskips=7873881 seen_skips=0 seen.size=0
+wr=39 passes=20000000 gsize=62 refvalue=635 solsize=626 isskips=1526487 deglbskips=8190542 seen_skips=0 seen.size=0
+wr=62 passes=20000000 gsize=70 refvalue=635 solsize=617 isskips=1851814 deglbskips=7903754 seen_skips=0 seen.size=0
+wr=72 passes=20000000 gsize=70 refvalue=635 solsize=619 isskips=1603520 deglbskips=8190237 seen_skips=0 seen.size=0
+wr=151 passes=20000000 gsize=79 refvalue=635 solsize=613 isskips=1841866 deglbskips=7904207 seen_skips=0 seen.size=0
+wr=117 passes=20000000 gsize=79 refvalue=635 solsize=609 isskips=2158231 deglbskips=7487757 seen_skips=0 seen.size=0
+wr=124 passes=20000000 gsize=72 refvalue=635 solsize=620 isskips=1654062 deglbskips=8115082 seen_skips=0 seen.size=0
+wr=44 passes=20000000 gsize=73 refvalue=635 solsize=613 isskips=1701076 deglbskips=7994589 seen_skips=0 seen.size=0
+wr=7 passes=20000000 gsize=69 refvalue=635 solsize=624 isskips=1863976 deglbskips=7848026 seen_skips=0 seen.size=0
+wr=152 passes=20000000 gsize=71 refvalue=635 solsize=617 isskips=2143901 deglbskips=7571722 seen_skips=0 seen.size=0
+wr=123 passes=20000000 gsize=54 refvalue=635 solsize=628 isskips=2196733 deglbskips=7400043 seen_skips=0 seen.size=0
+wr=104 passes=20000000 gsize=81 refvalue=635 solsize=613 isskips=2205495 deglbskips=7364040 seen_skips=0 seen.size=0
+wr=5 passes=20000000 gsize=60 refvalue=635 solsize=625 isskips=1854795 deglbskips=7808593 seen_skips=0 seen.size=0
+wr=70 passes=20000000 gsize=70 refvalue=635 solsize=621 isskips=2048923 deglbskips=7557538 seen_skips=0 seen.size=0
+wr=144 passes=20000000 gsize=90 refvalue=635 solsize=603 isskips=2051603 deglbskips=7651006 seen_skips=0 seen.size=0
+wr=81 passes=20000000 gsize=72 refvalue=635 solsize=617 isskips=2120571 deglbskips=7526597 seen_skips=0 seen.size=0
+wr=25 passes=20000000 gsize=69 refvalue=635 solsize=617 isskips=1901105 deglbskips=7790254 seen_skips=0 seen.size=0
+wr=121 passes=20000000 gsize=78 refvalue=635 solsize=613 isskips=1975177 deglbskips=7602390 seen_skips=0 seen.size=0
+wr=24 passes=20000000 gsize=52 refvalue=635 solsize=632 isskips=2013704 deglbskips=7697151 seen_skips=0 seen.size=0
+wr=14 passes=20000000 gsize=63 refvalue=635 solsize=625 isskips=1948399 deglbskips=7753137 seen_skips=0 seen.size=0
+wr=139 passes=20000000 gsize=73 refvalue=635 solsize=615 isskips=1434542 deglbskips=8434271 seen_skips=0 seen.size=0
+wr=31 passes=20000000 gsize=64 refvalue=635 solsize=624 isskips=1883735 deglbskips=7804040 seen_skips=0 seen.size=0
+wr=63 passes=20000000 gsize=116 refvalue=635 solsize=579 isskips=1846698 deglbskips=7814260 seen_skips=0 seen.size=0
+wr=149 passes=20000000 gsize=71 refvalue=635 solsize=618 isskips=2015863 deglbskips=7621240 seen_skips=0 seen.size=0
+wr=133 passes=20000000 gsize=61 refvalue=635 solsize=627 isskips=1567721 deglbskips=8224368 seen_skips=0 seen.size=0
+wr=54 passes=20000000 gsize=75 refvalue=635 solsize=615 isskips=2475994 deglbskips=7064398 seen_skips=0 seen.size=0
+wr=118 passes=20000000 gsize=74 refvalue=635 solsize=613 isskips=1679333 deglbskips=8080528 seen_skips=0 seen.size=0
+wr=78 passes=20000000 gsize=88 refvalue=635 solsize=603 isskips=2196660 deglbskips=7399069 seen_skips=0 seen.size=0
+wr=89 passes=20000000 gsize=56 refvalue=635 solsize=632 isskips=1872089 deglbskips=7827250 seen_skips=0 seen.size=0
+wr=95 passes=20000000 gsize=70 refvalue=635 solsize=623 isskips=2060318 deglbskips=7654181 seen_skips=0 seen.size=0
+wr=150 passes=20000000 gsize=76 refvalue=635 solsize=614 isskips=2120577 deglbskips=7489237 seen_skips=0 seen.size=0
+wr=27 passes=20000000 gsize=95 refvalue=635 solsize=597 isskips=1710826 deglbskips=8047601 seen_skips=0 seen.size=0
+wr=77 passes=20000000 gsize=78 refvalue=635 solsize=613 isskips=2144846 deglbskips=7489329 seen_skips=0 seen.size=0
+wr=26 passes=20000000 gsize=80 refvalue=635 solsize=613 isskips=2319033 deglbskips=7270821 seen_skips=0 seen.size=0
+wr=22 passes=20000000 gsize=51 refvalue=635 solsize=629 isskips=1800966 deglbskips=7907471 seen_skips=0 seen.size=0
+wr=12 passes=20000000 gsize=78 refvalue=635 solsize=611 isskips=1795906 deglbskips=7976892 seen_skips=0 seen.size=0
+wr=76 passes=20000000 gsize=67 refvalue=635 solsize=618 isskips=2036354 deglbskips=7705462 seen_skips=0 seen.size=0
+wr=137 passes=20000000 gsize=73 refvalue=635 solsize=619 isskips=1585222 deglbskips=8241916 seen_skips=0 seen.size=0
+wr=106 passes=20000000 gsize=56 refvalue=635 solsize=625 isskips=1632841 deglbskips=8114290 seen_skips=0 seen.size=0
+wr=145 passes=20000000 gsize=64 refvalue=635 solsize=626 isskips=1947448 deglbskips=7734613 seen_skips=0 seen.size=0
+wr=82 passes=20000000 gsize=67 refvalue=635 solsize=625 isskips=2165180 deglbskips=7442777 seen_skips=0 seen.size=0
+wr=154 passes=20000000 gsize=62 refvalue=635 solsize=620 isskips=2061576 deglbskips=7617460 seen_skips=0 seen.size=0
+wr=135 passes=20000000 gsize=63 refvalue=635 solsize=627 isskips=1899469 deglbskips=7808844 seen_skips=0 seen.size=0
+wr=128 passes=20000000 gsize=61 refvalue=635 solsize=624 isskips=1850367 deglbskips=7922832 seen_skips=0 seen.size=0
+wr=84 passes=20000000 gsize=69 refvalue=635 solsize=622 isskips=1954870 deglbskips=7689252 seen_skips=0 seen.size=0
+wr=75 passes=20000000 gsize=80 refvalue=635 solsize=610 isskips=1725959 deglbskips=8004242 seen_skips=0 seen.size=0
+wr=112 passes=20000000 gsize=60 refvalue=635 solsize=627 isskips=2083775 deglbskips=7471735 seen_skips=0 seen.size=0
+wr=113 passes=20000000 gsize=67 refvalue=635 solsize=616 isskips=2181337 deglbskips=7364887 seen_skips=0 seen.size=0
+wr=125 passes=20000000 gsize=55 refvalue=635 solsize=629 isskips=2110311 deglbskips=7418810 seen_skips=0 seen.size=0
+wr=138 passes=20000000 gsize=65 refvalue=635 solsize=617 isskips=1647826 deglbskips=8153604 seen_skips=0 seen.size=0
+wr=148 passes=20000000 gsize=81 refvalue=635 solsize=610 isskips=2182746 deglbskips=7357344 seen_skips=0 seen.size=0
+wr=93 passes=20000000 gsize=64 refvalue=635 solsize=625 isskips=2027300 deglbskips=7609546 seen_skips=0 seen.size=0
+wr=11 passes=20000000 gsize=67 refvalue=635 solsize=620 isskips=2430059 deglbskips=7057957 seen_skips=0 seen.size=0
+wr=52 passes=20000000 gsize=69 refvalue=635 solsize=618 isskips=2051068 deglbskips=7464610 seen_skips=0 seen.size=0
+wr=69 passes=20000000 gsize=69 refvalue=635 solsize=623 isskips=2182036 deglbskips=7386526 seen_skips=0 seen.size=0
+wr=58 passes=20000000 gsize=53 refvalue=635 solsize=627 isskips=2433233 deglbskips=6937211 seen_skips=0 seen.size=0
+wr=116 passes=20000000 gsize=112 refvalue=635 solsize=580 isskips=2171606 deglbskips=7215572 seen_skips=0 seen.size=0
+wr=90 passes=20000000 gsize=80 refvalue=635 solsize=609 isskips=1716437 deglbskips=8042259 seen_skips=0 seen.size=0
+wr=132 passes=20000000 gsize=77 refvalue=635 solsize=616 isskips=2023907 deglbskips=7693106 seen_skips=0 seen.size=0
+wr=73 passes=20000000 gsize=84 refvalue=635 solsize=604 isskips=2435915 deglbskips=6996646 seen_skips=0 seen.size=0
+wr=114 passes=20000000 gsize=77 refvalue=635 solsize=615 isskips=2468799 deglbskips=7000471 seen_skips=0 seen.size=0
+wr=109 passes=20000000 gsize=66 refvalue=635 solsize=622 isskips=2065823 deglbskips=7570310 seen_skips=0 seen.size=0
+wr=79 passes=20000000 gsize=80 refvalue=635 solsize=610 isskips=2385514 deglbskips=7110879 seen_skips=0 seen.size=0
+wr=98 passes=20000000 gsize=77 refvalue=635 solsize=614 isskips=2388630 deglbskips=7125007 seen_skips=0 seen.size=0
+wr=158 passes=20000000 gsize=60 refvalue=635 solsize=621 isskips=1512028 deglbskips=8306742 seen_skips=0 seen.size=0
+wr=1 passes=20000000 gsize=72 refvalue=635 solsize=611 isskips=2691052 deglbskips=5771522 seen_skips=0 seen.size=0
+wr=131 passes=20000000 gsize=66 refvalue=635 solsize=623 isskips=2109393 deglbskips=7517892 seen_skips=0 seen.size=0
+wr=21 passes=30000000 gsize=84 refvalue=635 solsize=609 isskips=1213240 deglbskips=13746928 seen_skips=0 seen.size=0
+wr=100 passes=30000000 gsize=68 refvalue=635 solsize=624 isskips=1838530 deglbskips=13068264 seen_skips=0 seen.size=0
+wr=127 passes=30000000 gsize=78 refvalue=635 solsize=611 isskips=1818358 deglbskips=13055367 seen_skips=0 seen.size=0
+wr=15 passes=30000000 gsize=75 refvalue=635 solsize=619 isskips=2749881 deglbskips=12131749 seen_skips=0 seen.size=0
+wr=65 passes=30000000 gsize=88 refvalue=635 solsize=607 isskips=3640029 deglbskips=11201137 seen_skips=0 seen.size=0
+wr=19 passes=30000000 gsize=83 refvalue=635 solsize=611 isskips=1574123 deglbskips=13337565 seen_skips=0 seen.size=0
+wr=68 passes=30000000 gsize=74 refvalue=635 solsize=618 isskips=2387669 deglbskips=12482994 seen_skips=0 seen.size=0
+wr=157 passes=30000000 gsize=64 refvalue=635 solsize=619 isskips=2258398 deglbskips=12593759 seen_skips=0 seen.size=0
+wr=4 passes=30000000 gsize=93 refvalue=635 solsize=600 isskips=2086621 deglbskips=12754163 seen_skips=0 seen.size=0
+wr=107 passes=30000000 gsize=74 refvalue=635 solsize=620 isskips=1557653 deglbskips=13346337 seen_skips=0 seen.size=0
+wr=159 passes=30000000 gsize=86 refvalue=635 solsize=607 isskips=2439947 deglbskips=12392525 seen_skips=0 seen.size=0
+wr=96 passes=30000000 gsize=79 refvalue=635 solsize=615 isskips=1835810 deglbskips=13046613 seen_skips=0 seen.size=0
+wr=8 passes=30000000 gsize=76 refvalue=635 solsize=619 isskips=1871800 deglbskips=13014153 seen_skips=0 seen.size=0
+wr=50 passes=30000000 gsize=96 refvalue=635 solsize=599 isskips=1916608 deglbskips=12955371 seen_skips=0 seen.size=0
+wr=61 passes=30000000 gsize=71 refvalue=635 solsize=618 isskips=2029337 deglbskips=12842880 seen_skips=0 seen.size=0
+wr=17 passes=30000000 gsize=76 refvalue=635 solsize=617 isskips=1915183 deglbskips=12944819 seen_skips=0 seen.size=0
+wr=16 passes=30000000 gsize=73 refvalue=635 solsize=622 isskips=2415434 deglbskips=12410330 seen_skips=0 seen.size=0
+wr=88 passes=30000000 gsize=87 refvalue=635 solsize=607 isskips=2736161 deglbskips=12078368 seen_skips=0 seen.size=0
+wr=97 passes=30000000 gsize=83 refvalue=635 solsize=610 isskips=2265371 deglbskips=12576208 seen_skips=0 seen.size=0
+wr=37 passes=30000000 gsize=100 refvalue=635 solsize=595 isskips=2321159 deglbskips=12498556 seen_skips=0 seen.size=0
+wr=45 passes=30000000 gsize=77 refvalue=635 solsize=613 isskips=2527292 deglbskips=12273143 seen_skips=0 seen.size=0
+wr=91 passes=30000000 gsize=77 refvalue=635 solsize=613 isskips=2196753 deglbskips=12639758 seen_skips=0 seen.size=0
+wr=3 passes=30000000 gsize=78 refvalue=635 solsize=616 isskips=1769961 deglbskips=13131459 seen_skips=0 seen.size=0
+wr=64 passes=30000000 gsize=83 refvalue=635 solsize=611 isskips=2959412 deglbskips=11867979 seen_skips=0 seen.size=0
+wr=42 passes=30000000 gsize=93 refvalue=635 solsize=602 isskips=2284583 deglbskips=12491092 seen_skips=0 seen.size=0
+wr=60 passes=30000000 gsize=65 refvalue=635 solsize=621 isskips=2304691 deglbskips=12523934 seen_skips=0 seen.size=0
+wr=41 passes=30000000 gsize=79 refvalue=635 solsize=612 isskips=2169390 deglbskips=12667882 seen_skips=0 seen.size=0
+wr=146 passes=30000000 gsize=85 refvalue=635 solsize=609 isskips=2086279 deglbskips=12775101 seen_skips=0 seen.size=0
+wr=55 passes=30000000 gsize=80 refvalue=635 solsize=612 isskips=2017816 deglbskips=12855584 seen_skips=0 seen.size=0
+wr=83 passes=30000000 gsize=66 refvalue=635 solsize=628 isskips=2699925 deglbskips=12087920 seen_skips=0 seen.size=0
+wr=29 passes=30000000 gsize=88 refvalue=635 solsize=604 isskips=2353766 deglbskips=12452596 seen_skips=0 seen.size=0
+wr=141 passes=30000000 gsize=78 refvalue=635 solsize=609 isskips=1553210 deglbskips=13363543 seen_skips=0 seen.size=0
+wr=47 passes=30000000 gsize=64 refvalue=635 solsize=625 isskips=2073032 deglbskips=12778156 seen_skips=0 seen.size=0
+wr=46 passes=30000000 gsize=68 refvalue=635 solsize=621 isskips=2286808 deglbskips=12462056 seen_skips=0 seen.size=0
+wr=120 passes=30000000 gsize=89 refvalue=635 solsize=603 isskips=2344630 deglbskips=12485630 seen_skips=0 seen.size=0
+wr=108 passes=30000000 gsize=70 refvalue=635 solsize=620 isskips=2288990 deglbskips=12532858 seen_skips=0 seen.size=0
+wr=9 passes=30000000 gsize=66 refvalue=635 solsize=628 isskips=2360512 deglbskips=12438095 seen_skips=0 seen.size=0
+wr=43 passes=30000000 gsize=95 refvalue=635 solsize=599 isskips=2054718 deglbskips=12756015 seen_skips=0 seen.size=0
+wr=33 passes=30000000 gsize=75 refvalue=635 solsize=613 isskips=2162557 deglbskips=12623442 seen_skips=0 seen.size=0
+wr=20 passes=30000000 gsize=92 refvalue=635 solsize=603 isskips=2185645 deglbskips=12611602 seen_skips=0 seen.size=0
+wr=35 passes=30000000 gsize=84 refvalue=635 solsize=609 isskips=2320205 deglbskips=12493260 seen_skips=0 seen.size=0
+wr=130 passes=30000000 gsize=68 refvalue=635 solsize=622 isskips=2008361 deglbskips=12846856 seen_skips=0 seen.size=0
+wr=80 passes=30000000 gsize=72 refvalue=635 solsize=619 isskips=2208764 deglbskips=12615554 seen_skips=0 seen.size=0
+wr=147 passes=30000000 gsize=82 refvalue=635 solsize=609 isskips=2519593 deglbskips=12243730 seen_skips=0 seen.size=0
+wr=115 passes=30000000 gsize=63 refvalue=635 solsize=628 isskips=2205220 deglbskips=12626976 seen_skips=0 seen.size=0
+wr=56 passes=30000000 gsize=89 refvalue=635 solsize=606 isskips=2339558 deglbskips=12437851 seen_skips=0 seen.size=0
+wr=103 passes=30000000 gsize=86 refvalue=635 solsize=604 isskips=2391486 deglbskips=12380792 seen_skips=0 seen.size=0
+wr=6 passes=30000000 gsize=67 refvalue=635 solsize=621 isskips=2220363 deglbskips=12549749 seen_skips=0 seen.size=0
+wr=101 passes=30000000 gsize=77 refvalue=635 solsize=613 isskips=2252930 deglbskips=12553308 seen_skips=0 seen.size=0
+wr=105 passes=30000000 gsize=89 refvalue=635 solsize=605 isskips=2175797 deglbskips=12567480 seen_skips=0 seen.size=0
+wr=122 passes=30000000 gsize=65 refvalue=635 solsize=628 isskips=2628405 deglbskips=12106623 seen_skips=0 seen.size=0
+wr=99 passes=30000000 gsize=80 refvalue=635 solsize=610 isskips=2378563 deglbskips=12432461 seen_skips=0 seen.size=0
+wr=86 passes=30000000 gsize=75 refvalue=635 solsize=616 isskips=2074858 deglbskips=12767640 seen_skips=0 seen.size=0
+wr=36 passes=30000000 gsize=74 refvalue=635 solsize=616 isskips=2449901 deglbskips=12308705 seen_skips=0 seen.size=0
+wr=30 passes=30000000 gsize=96 refvalue=635 solsize=598 isskips=2418962 deglbskips=12331348 seen_skips=0 seen.size=0
+wr=48 passes=30000000 gsize=85 refvalue=635 solsize=608 isskips=2549608 deglbskips=12223322 seen_skips=0 seen.size=0
+wr=40 passes=30000000 gsize=61 refvalue=635 solsize=629 isskips=3015484 deglbskips=11673276 seen_skips=0 seen.size=0
+wr=136 passes=30000000 gsize=76 refvalue=635 solsize=618 isskips=2253972 deglbskips=12521342 seen_skips=0 seen.size=0
+wr=59 passes=30000000 gsize=100 refvalue=635 solsize=593 isskips=2797720 deglbskips=11932845 seen_skips=0 seen.size=0
+wr=67 passes=30000000 gsize=61 refvalue=635 solsize=624 isskips=2821216 deglbskips=11821794 seen_skips=0 seen.size=0
+wr=2 passes=30000000 gsize=80 refvalue=635 solsize=610 isskips=2114558 deglbskips=12669426 seen_skips=0 seen.size=0
+wr=74 passes=30000000 gsize=62 refvalue=635 solsize=626 isskips=2803067 deglbskips=11874545 seen_skips=0 seen.size=0
+wr=32 passes=30000000 gsize=89 refvalue=635 solsize=605 isskips=2349244 deglbskips=12441725 seen_skips=0 seen.size=0
+wr=13 passes=30000000 gsize=89 refvalue=635 solsize=603 isskips=2437610 deglbskips=12305973 seen_skips=0 seen.size=0
+wr=153 passes=30000000 gsize=96 refvalue=635 solsize=597 isskips=2511221 deglbskips=12239403 seen_skips=0 seen.size=0
+wr=140 passes=30000000 gsize=69 refvalue=635 solsize=624 isskips=2060879 deglbskips=12754509 seen_skips=0 seen.size=0
+wr=85 passes=30000000 gsize=80 refvalue=635 solsize=613 isskips=2626923 deglbskips=12060792 seen_skips=0 seen.size=0
+wr=126 passes=30000000 gsize=75 refvalue=635 solsize=619 isskips=3030033 deglbskips=11614315 seen_skips=0 seen.size=0
+wr=51 passes=30000000 gsize=73 refvalue=635 solsize=618 isskips=2470274 deglbskips=12190672 seen_skips=0 seen.size=0
+wr=87 passes=30000000 gsize=75 refvalue=635 solsize=617 isskips=2615398 deglbskips=12139546 seen_skips=0 seen.size=0
+wr=129 passes=30000000 gsize=99 refvalue=635 solsize=597 isskips=1942141 deglbskips=12937693 seen_skips=0 seen.size=0
+wr=94 passes=30000000 gsize=96 refvalue=635 solsize=597 isskips=2370194 deglbskips=12397087 seen_skips=0 seen.size=0
+wr=142 passes=30000000 gsize=88 refvalue=635 solsize=604 isskips=2179762 deglbskips=12644459 seen_skips=0 seen.size=0
+wr=111 passes=30000000 gsize=75 refvalue=635 solsize=614 isskips=2474996 deglbskips=12223920 seen_skips=0 seen.size=0
+wr=134 passes=30000000 gsize=60 refvalue=635 solsize=629 isskips=2055636 deglbskips=12739840 seen_skips=0 seen.size=0
+wr=143 passes=30000000 gsize=74 refvalue=635 solsize=619 isskips=2293549 deglbskips=12521633 seen_skips=0 seen.size=0
+wr=38 passes=30000000 gsize=63 refvalue=635 solsize=626 isskips=2940279 deglbskips=11710696 seen_skips=0 seen.size=0
+wr=23 passes=30000000 gsize=91 refvalue=635 solsize=604 isskips=2850397 deglbskips=11804851 seen_skips=0 seen.size=0
+wr=119 passes=30000000 gsize=78 refvalue=635 solsize=614 isskips=2646835 deglbskips=11993775 seen_skips=0 seen.size=0
+wr=66 passes=30000000 gsize=89 refvalue=635 solsize=603 isskips=2993040 deglbskips=11674514 seen_skips=0 seen.size=0
+wr=155 passes=30000000 gsize=59 refvalue=635 solsize=628 isskips=2785604 deglbskips=11859754 seen_skips=0 seen.size=0
+wr=49 passes=30000000 gsize=70 refvalue=635 solsize=621 isskips=2823868 deglbskips=11793536 seen_skips=0 seen.size=0
+wr=71 passes=30000000 gsize=64 refvalue=635 solsize=624 isskips=2474531 deglbskips=12261860 seen_skips=0 seen.size=0
+wr=102 passes=30000000 gsize=73 refvalue=635 solsize=620 isskips=2688773 deglbskips=11957148 seen_skips=0 seen.size=0
+wr=57 passes=30000000 gsize=50 refvalue=635 solsize=633 isskips=2714863 deglbskips=11992272 seen_skips=0 seen.size=0
+wr=10 passes=30000000 gsize=81 refvalue=635 solsize=612 isskips=2945832 deglbskips=11686393 seen_skips=0 seen.size=0
+wr=28 passes=30000000 gsize=74 refvalue=635 solsize=620 isskips=2678867 deglbskips=11936225 seen_skips=0 seen.size=0
+wr=92 passes=30000000 gsize=54 refvalue=635 solsize=631 isskips=2689475 deglbskips=12016060 seen_skips=0 seen.size=0
+wr=53 passes=30000000 gsize=69 refvalue=635 solsize=622 isskips=2996712 deglbskips=11542044 seen_skips=0 seen.size=0
+wr=156 passes=30000000 gsize=80 refvalue=635 solsize=614 isskips=2907645 deglbskips=11712819 seen_skips=0 seen.size=0
+wr=110 passes=30000000 gsize=78 refvalue=635 solsize=614 isskips=2801088 deglbskips=11881602 seen_skips=0 seen.size=0
+wr=124 passes=30000000 gsize=79 refvalue=635 solsize=612 isskips=2426574 deglbskips=12278033 seen_skips=0 seen.size=0
+wr=18 passes=30000000 gsize=102 refvalue=635 solsize=593 isskips=2694117 deglbskips=11954017 seen_skips=0 seen.size=0
+wr=5 passes=30000000 gsize=90 refvalue=635 solsize=602 isskips=2679881 deglbskips=11901691 seen_skips=0 seen.size=0
+wr=34 passes=30000000 gsize=90 refvalue=635 solsize=604 isskips=2903585 deglbskips=11626686 seen_skips=0 seen.size=0
+wr=151 passes=30000000 gsize=76 refvalue=635 solsize=615 isskips=2789054 deglbskips=11851035 seen_skips=0 seen.size=0
+wr=39 passes=30000000 gsize=69 refvalue=635 solsize=618 isskips=2319044 deglbskips=12283468 seen_skips=0 seen.size=0
+wr=133 passes=30000000 gsize=84 refvalue=635 solsize=603 isskips=2315421 deglbskips=12418166 seen_skips=0 seen.size=0
+wr=152 passes=30000000 gsize=69 refvalue=635 solsize=622 isskips=3101957 deglbskips=11521783 seen_skips=0 seen.size=0
+wr=144 passes=30000000 gsize=69 refvalue=635 solsize=617 isskips=2994020 deglbskips=11615560 seen_skips=0 seen.size=0
+wr=44 passes=30000000 gsize=70 refvalue=635 solsize=621 isskips=2537792 deglbskips=12058624 seen_skips=0 seen.size=0
+wr=104 passes=30000000 gsize=58 refvalue=635 solsize=627 isskips=3210516 deglbskips=11212476 seen_skips=0 seen.size=0
+wr=62 passes=30000000 gsize=67 refvalue=635 solsize=616 isskips=2839606 deglbskips=11804446 seen_skips=0 seen.size=0
+wr=117 passes=30000000 gsize=68 refvalue=635 solsize=617 isskips=3286809 deglbskips=11222925 seen_skips=0 seen.size=0
+wr=139 passes=30000000 gsize=102 refvalue=635 solsize=590 isskips=2117706 deglbskips=12704454 seen_skips=0 seen.size=0
+wr=7 passes=30000000 gsize=69 refvalue=635 solsize=620 isskips=2844328 deglbskips=11746570 seen_skips=0 seen.size=0
+wr=24 passes=30000000 gsize=80 refvalue=635 solsize=610 isskips=2941591 deglbskips=11686074 seen_skips=0 seen.size=0
+wr=118 passes=30000000 gsize=67 refvalue=635 solsize=619 isskips=2422395 deglbskips=12271296 seen_skips=0 seen.size=0
+wr=123 passes=30000000 gsize=54 refvalue=635 solsize=621 isskips=3181249 deglbskips=11286965 seen_skips=0 seen.size=0
+wr=72 passes=30000000 gsize=66 refvalue=635 solsize=617 isskips=2484014 deglbskips=12209913 seen_skips=0 seen.size=0
+wr=137 passes=30000000 gsize=82 refvalue=635 solsize=610 isskips=2370330 deglbskips=12389932 seen_skips=0 seen.size=0
+wr=121 passes=30000000 gsize=66 refvalue=635 solsize=623 isskips=2902718 deglbskips=11528118 seen_skips=0 seen.size=0
+wr=25 passes=30000000 gsize=63 refvalue=635 solsize=622 isskips=2813297 deglbskips=11766586 seen_skips=0 seen.size=0
+wr=70 passes=30000000 gsize=68 refvalue=635 solsize=623 isskips=3030673 deglbskips=11446663 seen_skips=0 seen.size=0
+wr=14 passes=30000000 gsize=96 refvalue=635 solsize=596 isskips=2899481 deglbskips=11714588 seen_skips=0 seen.size=0
+wr=31 passes=30000000 gsize=80 refvalue=635 solsize=613 isskips=2789860 deglbskips=11785759 seen_skips=0 seen.size=0
+wr=22 passes=30000000 gsize=61 refvalue=635 solsize=620 isskips=2636600 deglbskips=11979494 seen_skips=0 seen.size=0
+wr=81 passes=30000000 gsize=61 refvalue=635 solsize=621 isskips=3168904 deglbskips=11348339 seen_skips=0 seen.size=0
+wr=89 passes=30000000 gsize=64 refvalue=635 solsize=618 isskips=2836555 deglbskips=11762967 seen_skips=0 seen.size=0
+wr=128 passes=30000000 gsize=80 refvalue=635 solsize=614 isskips=2767745 deglbskips=11914148 seen_skips=0 seen.size=0
+wr=150 passes=30000000 gsize=79 refvalue=635 solsize=616 isskips=3153934 deglbskips=11319368 seen_skips=0 seen.size=0
+wr=95 passes=30000000 gsize=76 refvalue=635 solsize=613 isskips=3152152 deglbskips=11438296 seen_skips=0 seen.size=0
+wr=63 passes=30000000 gsize=70 refvalue=635 solsize=620 isskips=2758655 deglbskips=11766759 seen_skips=0 seen.size=0
+wr=78 passes=30000000 gsize=91 refvalue=635 solsize=602 isskips=3284642 deglbskips=11163975 seen_skips=0 seen.size=0
+wr=27 passes=30000000 gsize=63 refvalue=635 solsize=617 isskips=2565524 deglbskips=12109786 seen_skips=0 seen.size=0
+wr=149 passes=30000000 gsize=75 refvalue=635 solsize=617 isskips=3070529 deglbskips=11421314 seen_skips=0 seen.size=0
+wr=54 passes=30000000 gsize=78 refvalue=635 solsize=612 isskips=3813231 deglbskips=10533432 seen_skips=0 seen.size=0
+wr=12 passes=30000000 gsize=85 refvalue=635 solsize=605 isskips=2783619 deglbskips=11884658 seen_skips=0 seen.size=0
+wr=26 passes=30000000 gsize=81 refvalue=635 solsize=611 isskips=3407824 deglbskips=11047483 seen_skips=0 seen.size=0
+wr=75 passes=30000000 gsize=63 refvalue=635 solsize=624 isskips=2455735 deglbskips=12208678 seen_skips=0 seen.size=0
+wr=77 passes=30000000 gsize=72 refvalue=635 solsize=614 isskips=3219893 deglbskips=11282578 seen_skips=0 seen.size=0
+wr=84 passes=30000000 gsize=61 refvalue=635 solsize=631 isskips=2916610 deglbskips=11609379 seen_skips=0 seen.size=0
+wr=135 passes=30000000 gsize=131 refvalue=635 solsize=566 isskips=2888360 deglbskips=11689337 seen_skips=0 seen.size=0
+wr=106 passes=30000000 gsize=62 refvalue=635 solsize=625 isskips=2375923 deglbskips=12288115 seen_skips=0 seen.size=0
+wr=148 passes=30000000 gsize=96 refvalue=635 solsize=600 isskips=3210456 deglbskips=11165985 seen_skips=0 seen.size=0
+wr=154 passes=30000000 gsize=87 refvalue=635 solsize=603 isskips=3043641 deglbskips=11530886 seen_skips=0 seen.size=0
+wr=145 passes=30000000 gsize=87 refvalue=635 solsize=602 isskips=2877865 deglbskips=11697077 seen_skips=0 seen.size=0
+wr=138 passes=30000000 gsize=80 refvalue=635 solsize=615 isskips=2520953 deglbskips=12197701 seen_skips=0 seen.size=0
+wr=113 passes=30000000 gsize=63 refvalue=635 solsize=627 isskips=3231467 deglbskips=11173152 seen_skips=0 seen.size=0
+wr=82 passes=30000000 gsize=91 refvalue=635 solsize=599 isskips=3245257 deglbskips=11216653 seen_skips=0 seen.size=0
+wr=93 passes=30000000 gsize=61 refvalue=635 solsize=621 isskips=2974865 deglbskips=11559845 seen_skips=0 seen.size=0
+wr=76 passes=30000000 gsize=79 refvalue=635 solsize=610 isskips=3107648 deglbskips=11534258 seen_skips=0 seen.size=0
+wr=11 passes=30000000 gsize=73 refvalue=635 solsize=616 isskips=3598100 deglbskips=10714895 seen_skips=0 seen.size=0
+wr=69 passes=30000000 gsize=76 refvalue=635 solsize=615 isskips=3226469 deglbskips=11198453 seen_skips=0 seen.size=0
+wr=132 passes=30000000 gsize=60 refvalue=635 solsize=629 isskips=3017683 deglbskips=11602737 seen_skips=0 seen.size=0
+wr=125 passes=30000000 gsize=76 refvalue=635 solsize=615 isskips=3176194 deglbskips=11170765 seen_skips=0 seen.size=0
+wr=90 passes=30000000 gsize=73 refvalue=635 solsize=619 isskips=2461120 deglbskips=12231301 seen_skips=0 seen.size=0
+wr=112 passes=30000000 gsize=61 refvalue=635 solsize=619 isskips=3143203 deglbskips=11242749 seen_skips=0 seen.size=0
+wr=52 passes=30000000 gsize=73 refvalue=635 solsize=619 isskips=3093507 deglbskips=11234047 seen_skips=0 seen.size=0
+wr=58 passes=30000000 gsize=68 refvalue=635 solsize=615 isskips=3572891 deglbskips=10569840 seen_skips=0 seen.size=0
+wr=116 passes=30000000 gsize=102 refvalue=635 solsize=589 isskips=3220497 deglbskips=10939420 seen_skips=0 seen.size=0
+wr=114 passes=30000000 gsize=71 refvalue=635 solsize=614 isskips=3707023 deglbskips=10562288 seen_skips=0 seen.size=0
+wr=109 passes=30000000 gsize=69 refvalue=635 solsize=623 isskips=3104849 deglbskips=11403503 seen_skips=0 seen.size=0
+wr=73 passes=30000000 gsize=97 refvalue=635 solsize=596 isskips=3603864 deglbskips=10624806 seen_skips=0 seen.size=0
+wr=98 passes=30000000 gsize=73 refvalue=635 solsize=617 isskips=3510404 deglbskips=10854193 seen_skips=0 seen.size=0
+wr=79 passes=30000000 gsize=74 refvalue=635 solsize=612 isskips=3578386 deglbskips=10762602 seen_skips=0 seen.size=0
+wr=158 passes=30000000 gsize=76 refvalue=635 solsize=615 isskips=2226467 deglbskips=12542508 seen_skips=0 seen.size=0
+wr=131 passes=30000000 gsize=99 refvalue=635 solsize=594 isskips=3257915 deglbskips=11190096 seen_skips=0 seen.size=0
+wr=1 passes=30000000 gsize=60 refvalue=635 solsize=618 isskips=4014009 deglbskips=8794691 seen_skips=0 seen.size=0
+wr=21 passes=40000000 gsize=70 refvalue=635 solsize=625 isskips=1591464 deglbskips=18360046 seen_skips=0 seen.size=0
+wr=100 passes=40000000 gsize=102 refvalue=635 solsize=593 isskips=2821536 deglbskips=17057395 seen_skips=0 seen.size=0
+wr=15 passes=40000000 gsize=86 refvalue=635 solsize=607 isskips=4115963 deglbskips=15720683 seen_skips=0 seen.size=0
+wr=127 passes=40000000 gsize=70 refvalue=635 solsize=622 isskips=2496671 deglbskips=17341508 seen_skips=0 seen.size=0
+wr=65 passes=40000000 gsize=79 refvalue=635 solsize=614 isskips=5205238 deglbskips=14599061 seen_skips=0 seen.size=0
+wr=19 passes=40000000 gsize=107 refvalue=635 solsize=588 isskips=2114859 deglbskips=17781032 seen_skips=0 seen.size=0
+wr=68 passes=40000000 gsize=72 refvalue=635 solsize=614 isskips=3304694 deglbskips=16537467 seen_skips=0 seen.size=0
+wr=107 passes=40000000 gsize=75 refvalue=635 solsize=620 isskips=1958981 deglbskips=17928843 seen_skips=0 seen.size=0
+wr=157 passes=40000000 gsize=93 refvalue=635 solsize=601 isskips=3162980 deglbskips=16656299 seen_skips=0 seen.size=0
+wr=4 passes=40000000 gsize=91 refvalue=635 solsize=604 isskips=2668492 deglbskips=17137409 seen_skips=0 seen.size=0
+wr=159 passes=40000000 gsize=78 refvalue=635 solsize=613 isskips=3263008 deglbskips=16540843 seen_skips=0 seen.size=0
+wr=96 passes=40000000 gsize=77 refvalue=635 solsize=613 isskips=2416693 deglbskips=17434208 seen_skips=0 seen.size=0
+wr=17 passes=40000000 gsize=75 refvalue=635 solsize=613 isskips=2488339 deglbskips=17341794 seen_skips=0 seen.size=0
+wr=88 passes=40000000 gsize=82 refvalue=635 solsize=611 isskips=3762544 deglbskips=16009850 seen_skips=0 seen.size=0
+wr=16 passes=40000000 gsize=87 refvalue=635 solsize=608 isskips=3186671 deglbskips=16606734 seen_skips=0 seen.size=0
+wr=50 passes=40000000 gsize=75 refvalue=635 solsize=615 isskips=2547456 deglbskips=17291042 seen_skips=0 seen.size=0
+wr=61 passes=40000000 gsize=95 refvalue=635 solsize=601 isskips=2681344 deglbskips=17155253 seen_skips=0 seen.size=0
+wr=8 passes=40000000 gsize=68 refvalue=635 solsize=626 isskips=2575445 deglbskips=17267506 seen_skips=0 seen.size=0
+wr=37 passes=40000000 gsize=76 refvalue=635 solsize=617 isskips=3095433 deglbskips=16686409 seen_skips=0 seen.size=0
+wr=97 passes=40000000 gsize=71 refvalue=635 solsize=620 isskips=3112764 deglbskips=16687360 seen_skips=0 seen.size=0
+wr=64 passes=40000000 gsize=72 refvalue=635 solsize=623 isskips=4110405 deglbskips=15672594 seen_skips=0 seen.size=0
+wr=91 passes=40000000 gsize=75 refvalue=635 solsize=620 isskips=2981293 deglbskips=16822139 seen_skips=0 seen.size=0
+wr=3 passes=40000000 gsize=72 refvalue=635 solsize=621 isskips=2288765 deglbskips=17590686 seen_skips=0 seen.size=0
+wr=45 passes=40000000 gsize=94 refvalue=635 solsize=601 isskips=3268056 deglbskips=16491816 seen_skips=0 seen.size=0
+wr=42 passes=40000000 gsize=75 refvalue=635 solsize=614 isskips=3006714 deglbskips=16716242 seen_skips=0 seen.size=0
+wr=146 passes=40000000 gsize=95 refvalue=635 solsize=600 isskips=2663108 deglbskips=17175719 seen_skips=0 seen.size=0
+wr=141 passes=40000000 gsize=72 refvalue=635 solsize=622 isskips=2018905 deglbskips=17882301 seen_skips=0 seen.size=0
+wr=60 passes=40000000 gsize=74 refvalue=635 solsize=620 isskips=3046420 deglbskips=16744784 seen_skips=0 seen.size=0
+wr=83 passes=40000000 gsize=70 refvalue=635 solsize=624 isskips=3747398 deglbskips=15979839 seen_skips=0 seen.size=0
+wr=55 passes=40000000 gsize=72 refvalue=635 solsize=620 isskips=2640069 deglbskips=17211112 seen_skips=0 seen.size=0
+wr=29 passes=40000000 gsize=64 refvalue=635 solsize=620 isskips=3030649 deglbskips=16741579 seen_skips=0 seen.size=0
+wr=41 passes=40000000 gsize=72 refvalue=635 solsize=619 isskips=2932922 deglbskips=16854458 seen_skips=0 seen.size=0
+wr=130 passes=40000000 gsize=84 refvalue=635 solsize=605 isskips=2612374 deglbskips=17211942 seen_skips=0 seen.size=0
+wr=9 passes=40000000 gsize=71 refvalue=635 solsize=622 isskips=3174737 deglbskips=16578231 seen_skips=0 seen.size=0
+wr=108 passes=40000000 gsize=70 refvalue=635 solsize=622 isskips=2999866 deglbskips=16781910 seen_skips=0 seen.size=0
+wr=46 passes=40000000 gsize=84 refvalue=635 solsize=609 isskips=3010951 deglbskips=16672904 seen_skips=0 seen.size=0
+wr=101 passes=40000000 gsize=81 refvalue=635 solsize=614 isskips=2894516 deglbskips=16870579 seen_skips=0 seen.size=0
+wr=43 passes=40000000 gsize=73 refvalue=635 solsize=621 isskips=2702399 deglbskips=17066446 seen_skips=0 seen.size=0
+wr=80 passes=40000000 gsize=76 refvalue=635 solsize=616 isskips=2952470 deglbskips=16827354 seen_skips=0 seen.size=0
+wr=47 passes=40000000 gsize=76 refvalue=635 solsize=615 isskips=2856330 deglbskips=16946743 seen_skips=0 seen.size=0
+wr=20 passes=40000000 gsize=88 refvalue=635 solsize=607 isskips=2867104 deglbskips=16883076 seen_skips=0 seen.size=0
+wr=33 passes=40000000 gsize=70 refvalue=635 solsize=623 isskips=2833859 deglbskips=16896705 seen_skips=0 seen.size=0
+wr=120 passes=40000000 gsize=68 refvalue=635 solsize=621 isskips=3158985 deglbskips=16626809 seen_skips=0 seen.size=0
+wr=105 passes=40000000 gsize=61 refvalue=635 solsize=625 isskips=2819658 deglbskips=16876597 seen_skips=0 seen.size=0
+wr=35 passes=40000000 gsize=90 refvalue=635 solsize=599 isskips=3090192 deglbskips=16681702 seen_skips=0 seen.size=0
+wr=147 passes=40000000 gsize=79 refvalue=635 solsize=611 isskips=3314188 deglbskips=16388585 seen_skips=0 seen.size=0
+wr=6 passes=40000000 gsize=73 refvalue=635 solsize=621 isskips=2948001 deglbskips=16762162 seen_skips=0 seen.size=0
+wr=136 passes=40000000 gsize=77 refvalue=635 solsize=613 isskips=2943562 deglbskips=16789456 seen_skips=0 seen.size=0
+wr=56 passes=40000000 gsize=72 refvalue=635 solsize=621 isskips=3082549 deglbskips=16648711 seen_skips=0 seen.size=0
+wr=99 passes=40000000 gsize=81 refvalue=635 solsize=611 isskips=3111136 deglbskips=16652644 seen_skips=0 seen.size=0
+wr=103 passes=40000000 gsize=74 refvalue=635 solsize=618 isskips=3265543 deglbskips=16439166 seen_skips=0 seen.size=0
+wr=86 passes=40000000 gsize=79 refvalue=635 solsize=616 isskips=2725846 deglbskips=17087081 seen_skips=0 seen.size=0
+wr=115 passes=40000000 gsize=67 refvalue=635 solsize=622 isskips=2974731 deglbskips=16811649 seen_skips=0 seen.size=0
+wr=122 passes=40000000 gsize=73 refvalue=635 solsize=613 isskips=3501825 deglbskips=16171760 seen_skips=0 seen.size=0
+wr=40 passes=40000000 gsize=72 refvalue=635 solsize=617 isskips=3954374 deglbskips=15666456 seen_skips=0 seen.size=0
+wr=140 passes=40000000 gsize=82 refvalue=635 solsize=609 isskips=2654799 deglbskips=17122511 seen_skips=0 seen.size=0
+wr=36 passes=40000000 gsize=101 refvalue=635 solsize=593 isskips=3185873 deglbskips=16518373 seen_skips=0 seen.size=0
+wr=48 passes=40000000 gsize=75 refvalue=635 solsize=613 isskips=3425586 deglbskips=16280166 seen_skips=0 seen.size=0
+wr=142 passes=40000000 gsize=85 refvalue=635 solsize=608 isskips=2824470 deglbskips=16963496 seen_skips=0 seen.size=0
+wr=129 passes=40000000 gsize=79 refvalue=635 solsize=612 isskips=2531148 deglbskips=17320531 seen_skips=0 seen.size=0
+wr=67 passes=40000000 gsize=88 refvalue=635 solsize=606 isskips=3728685 deglbskips=15825547 seen_skips=0 seen.size=0
+wr=74 passes=40000000 gsize=79 refvalue=635 solsize=613 isskips=3645875 deglbskips=15971133 seen_skips=0 seen.size=0
+wr=2 passes=40000000 gsize=78 refvalue=635 solsize=612 isskips=2742144 deglbskips=17001046 seen_skips=0 seen.size=0
+wr=30 passes=40000000 gsize=69 refvalue=635 solsize=624 isskips=3243313 deglbskips=16445207 seen_skips=0 seen.size=0
+wr=134 passes=40000000 gsize=81 refvalue=635 solsize=610 isskips=2700922 deglbskips=17055188 seen_skips=0 seen.size=0
+wr=32 passes=40000000 gsize=99 refvalue=635 solsize=596 isskips=3117521 deglbskips=16630510 seen_skips=0 seen.size=0
+wr=13 passes=40000000 gsize=64 refvalue=635 solsize=624 isskips=3217285 deglbskips=16476496 seen_skips=0 seen.size=0
+wr=59 passes=40000000 gsize=71 refvalue=635 solsize=614 isskips=3700922 deglbskips=15963865 seen_skips=0 seen.size=0
+wr=85 passes=40000000 gsize=55 refvalue=635 solsize=632 isskips=3476468 deglbskips=16137391 seen_skips=0 seen.size=0
+wr=94 passes=40000000 gsize=65 refvalue=635 solsize=623 isskips=3087334 deglbskips=16637184 seen_skips=0 seen.size=0
+wr=143 passes=40000000 gsize=62 refvalue=635 solsize=629 isskips=3048872 deglbskips=16726094 seen_skips=0 seen.size=0
+wr=126 passes=40000000 gsize=82 refvalue=635 solsize=611 isskips=3932662 deglbskips=15633957 seen_skips=0 seen.size=0
+wr=153 passes=40000000 gsize=86 refvalue=635 solsize=605 isskips=3383815 deglbskips=16306305 seen_skips=0 seen.size=0
+wr=38 passes=40000000 gsize=79 refvalue=635 solsize=614 isskips=3831460 deglbskips=15739506 seen_skips=0 seen.size=0
+wr=111 passes=40000000 gsize=92 refvalue=635 solsize=601 isskips=3294983 deglbskips=16337355 seen_skips=0 seen.size=0
+wr=87 passes=40000000 gsize=66 refvalue=635 solsize=622 isskips=3562293 deglbskips=16106409 seen_skips=0 seen.size=0
+wr=119 passes=40000000 gsize=81 refvalue=635 solsize=612 isskips=3474433 deglbskips=16094596 seen_skips=0 seen.size=0
+wr=23 passes=40000000 gsize=73 refvalue=635 solsize=620 isskips=3772136 deglbskips=15799152 seen_skips=0 seen.size=0
+wr=51 passes=40000000 gsize=104 refvalue=635 solsize=591 isskips=3366347 deglbskips=16192206 seen_skips=0 seen.size=0
+wr=102 passes=40000000 gsize=71 refvalue=635 solsize=620 isskips=3537710 deglbskips=16013890 seen_skips=0 seen.size=0
+wr=57 passes=40000000 gsize=78 refvalue=635 solsize=611 isskips=3585063 deglbskips=16057677 seen_skips=0 seen.size=0
+wr=71 passes=40000000 gsize=69 refvalue=635 solsize=620 isskips=3302536 deglbskips=16364809 seen_skips=0 seen.size=0
+wr=66 passes=40000000 gsize=79 refvalue=635 solsize=613 isskips=4009873 deglbskips=15563746 seen_skips=0 seen.size=0
+wr=10 passes=40000000 gsize=74 refvalue=635 solsize=620 isskips=3869859 deglbskips=15677072 seen_skips=0 seen.size=0
+wr=155 passes=40000000 gsize=82 refvalue=635 solsize=609 isskips=3774237 deglbskips=15767850 seen_skips=0 seen.size=0
+wr=110 passes=40000000 gsize=74 refvalue=635 solsize=617 isskips=3600174 deglbskips=16015118 seen_skips=0 seen.size=0
+wr=28 passes=40000000 gsize=89 refvalue=635 solsize=606 isskips=3530416 deglbskips=15994087 seen_skips=0 seen.size=0
+wr=92 passes=40000000 gsize=73 refvalue=635 solsize=620 isskips=3550863 deglbskips=16090241 seen_skips=0 seen.size=0
+wr=49 passes=40000000 gsize=60 refvalue=635 solsize=630 isskips=3844452 deglbskips=15658570 seen_skips=0 seen.size=0
+wr=124 passes=40000000 gsize=79 refvalue=635 solsize=612 isskips=3258428 deglbskips=16384824 seen_skips=0 seen.size=0
+wr=156 passes=40000000 gsize=86 refvalue=635 solsize=607 isskips=3852663 deglbskips=15674367 seen_skips=0 seen.size=0
+wr=53 passes=40000000 gsize=66 refvalue=635 solsize=623 isskips=4013167 deglbskips=15413106 seen_skips=0 seen.size=0
+wr=5 passes=40000000 gsize=78 refvalue=635 solsize=614 isskips=3586866 deglbskips=15898816 seen_skips=0 seen.size=0
+wr=133 passes=40000000 gsize=84 refvalue=635 solsize=611 isskips=3087328 deglbskips=16590248 seen_skips=0 seen.size=0
+wr=34 passes=40000000 gsize=68 refvalue=635 solsize=619 isskips=3870731 deglbskips=15552673 seen_skips=0 seen.size=0
+wr=18 passes=40000000 gsize=110 refvalue=635 solsize=586 isskips=3624448 deglbskips=15940850 seen_skips=0 seen.size=0
+wr=139 passes=40000000 gsize=64 refvalue=635 solsize=624 isskips=2756233 deglbskips=17029626 seen_skips=0 seen.size=0
+wr=104 passes=40000000 gsize=83 refvalue=635 solsize=610 isskips=4158940 deglbskips=15121533 seen_skips=0 seen.size=0
+wr=144 passes=40000000 gsize=62 refvalue=635 solsize=621 isskips=3885541 deglbskips=15633348 seen_skips=0 seen.size=0
+wr=151 passes=40000000 gsize=79 refvalue=635 solsize=614 isskips=3682172 deglbskips=15877900 seen_skips=0 seen.size=0
+wr=39 passes=40000000 gsize=74 refvalue=635 solsize=614 isskips=3036472 deglbskips=16482396 seen_skips=0 seen.size=0
+wr=152 passes=40000000 gsize=90 refvalue=635 solsize=602 isskips=4034918 deglbskips=15505410 seen_skips=0 seen.size=0
+wr=137 passes=40000000 gsize=79 refvalue=635 solsize=614 isskips=3045726 deglbskips=16666840 seen_skips=0 seen.size=0
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 66062842 ON cdr1963 CANCELLED AT 2021-04-08T11:38:30 ***
+slurmstepd: error: *** STEP 66062842.0 ON cdr1963 CANCELLED AT 2021-04-08T11:38:30 ***
