@@ -5,20 +5,20 @@ CMakeFiles/a.out.dir/fmt/src/format.cc.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/fmt/src/format.cc
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/fmt/src/format.cc
 CMakeFiles/a.out.dir/fmt/src/os.cc.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
  ../fmt/include/fmt/os.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/fmt/src/os.cc
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/fmt/src/os.cc
 CMakeFiles/a.out.dir/src/main.cpp.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
  ../include/argsparse/argparse.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/main.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/src/main.cpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/main.h
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/src/main.cpp
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
@@ -719,18 +719,18 @@ CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/topology_inln.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win_inln.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/MPI_Mutex.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/Utils.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/BranchHandler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/Graph.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ResultHolder.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ThreadPool.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VC_FPT_void.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VertexCover.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/args_handler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/main.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/util.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/src/main_FPT_void.cpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/MPI_Mutex.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/Utils.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/BranchHandler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/Graph.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ResultHolder.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ThreadPool.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VC_FPT_void.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VertexCover.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/args_handler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/main.h
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/util.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/src/main_FPT_void.cpp
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
@@ -1431,18 +1431,18 @@ CMakeFiles/a.out.dir/src/main_non_void.cpp.o
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/topology_inln.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win_inln.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/MPI_Mutex.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/Utils.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/BranchHandler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/Graph.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ResultHolder.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ThreadPool.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VC_non_void.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VertexCover.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/args_handler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/main.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/util.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/src/main_non_void.cpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/MPI_Mutex.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/Utils.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/BranchHandler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/Graph.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ResultHolder.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ThreadPool.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VC_non_void.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VertexCover.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/args_handler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/main.h
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/util.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/src/main_non_void.cpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
@@ -2143,19 +2143,19 @@ CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/topology_inln.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win_inln.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/MPI_Mutex.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/Scheduler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/Utils.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/BranchHandler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/Graph.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ResultHolder.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ThreadPool.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VC_non_void_MPI.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VertexCover.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/args_handler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/main.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/util.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/src/main_non_void_MPI.cpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/MPI_Mutex.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/Scheduler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/Utils.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/BranchHandler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/Graph.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ResultHolder.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ThreadPool.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VC_non_void_MPI.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VertexCover.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/args_handler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/main.h
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/util.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/src/main_non_void_MPI.cpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
@@ -2856,18 +2856,18 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/topology_inln.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win_inln.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/MPI_Mutex.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/Utils.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/BranchHandler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/Graph.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ResultHolder.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ThreadPool.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VC_void.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VertexCover.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/args_handler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/main.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/util.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/src/main_void.cpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/MPI_Mutex.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/Utils.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/BranchHandler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/Graph.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ResultHolder.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ThreadPool.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VC_void.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VertexCover.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/args_handler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/main.h
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/util.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/src/main_void.cpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
@@ -3737,20 +3737,20 @@ CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/topology_inln.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win.h
  /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include/openmpi/ompi/mpi/cxx/win_inln.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/MPI_Mutex.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/Scheduler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules/Utils.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/BranchHandler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/Graph.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ResultHolder.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/ThreadPool.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VC_void_MPI.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VC_void_MPI_bitvec.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/VertexCover.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/args_handler.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/main.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/util.hpp
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/src/main_void_MPI.cpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/MPI_Mutex.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/Scheduler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules/Utils.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/BranchHandler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/Graph.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ResultHolder.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/ThreadPool.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VC_void_MPI.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VC_void_MPI_bitvec.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/VertexCover.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/args_handler.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/main.h
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/util.hpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/src/main_void_MPI.cpp
 CMakeFiles/a.out.dir/src/read_graphs.cpp.o
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include/main.h
- /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/src/read_graphs.cpp
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include/main.h
+ /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/src/read_graphs.cpp

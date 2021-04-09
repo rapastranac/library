@@ -1,4 +1,4 @@
-# Install script for directory: /home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library
+# Install script for directory: /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

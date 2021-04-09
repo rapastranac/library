@@ -2,9 +2,9 @@
 #SBATCH --job-name=p_hat1000_2
 #SBATCH --output=report/%x-%j.out
 #SBATCH --account=def-mlafond
-##SBATCH --nodes=3
-#SBATCH --tasks=10
-##SBATCH --ntasks-per-node=1
+#SBATCH --nodes=5
+##SBATCH --tasks=30
+#SBATCH --ntasks-per-node=32
 ##SBATCH --cpus-per-task=80
 ##SBATCH --mem=MaxMemPerNode         # memory limit per compute node
 ##SBATCH --mem-per-cpu=2000M        # memory; default unit is megabytes
@@ -31,7 +31,7 @@ echo "Starting run at: `date`"
 
 #srun ./a.out -N 2 -P 5 -I input/prob_4/600/0600_93
 #srun ./a.out -N 48 -P 4 -I input/edges22k.txt
-srun ./a.out -I input/DSJC500_5
+srun ./a.out -I input/p_hat1000_2
 # ---------------------------------------------------------------------
 echo "Finishing run at: `date`"
 # ---------------------------------------------------------------------

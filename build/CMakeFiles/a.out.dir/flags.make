@@ -6,5 +6,5 @@ CXX_FLAGS =  -fopenmp   -std=c++2a -fconcepts -O3 -std=gnu++2a
 
 CXX_DEFINES = -DBITVECTOR_VC -DBOOST_ALL_NO_LIB -DBOOST_CONTEXT_DYN_LINK -DBOOST_FIBER_DYN_LINK -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBOOST_SYSTEM_DYN_LINK -DMPI_ENABLED -DVC_VOID_MPI
 
-CXX_INCLUDES = -I/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include -I/home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/include -I/home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/MPI_Modules -I/home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/cereal -I/home/mlafond/projects/def-mlafond/mlafond/libvc_andres2/library/fmt/include -isystem /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/boost/1.72.0/include 
+CXX_INCLUDES = -I/cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/openmpi/4.0.3/include -I/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/include -I/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/MPI_Modules -I/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/cereal -I/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/fmt/include -isystem /cvmfs/soft.computecanada.ca/easybuild/software/2020/avx2/Compiler/intel2020/boost/1.72.0/include 
 
