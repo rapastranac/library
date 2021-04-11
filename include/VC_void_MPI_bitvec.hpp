@@ -90,18 +90,17 @@ class VC_void_MPI : public VertexCover
 	using HolderType = library::ResultHolder<void, int, gbitset, gbitset>;
 
 private:
-    //std::function<void(int, int, Graph &, void *)> _f;
     std::function<void(int, int, gbitset, gbitset, void *)> _f;
 
 public:
 
-	    vector<boost::unordered_set<pair<gbitset,int>>> seen;
-	    long is_skips;
-	    long deglb_skips;
-	    long seen_skips;
-	    
-	    unordered_map<int, gbitset> graphbits;
-	    long passes;
+	//vector<boost::unordered_set<pair<gbitset,int>>> seen;
+	long is_skips;
+	long deglb_skips;
+	long seen_skips;
+
+	unordered_map<int, gbitset> graphbits;
+	long passes;
 
 	VC_void_MPI()
 	{
@@ -120,10 +119,10 @@ public:
 		//this->branchHandler.setMaxThreads(numThreads);
 		this->branchHandler.functionIsVoid();
  
-		for (int i = 0; i <= numThreads; i++)
+		/*for (int i = 0; i <= numThreads; i++)
 		{
 			seen.push_back(boost::unordered_set<pair<gbitset,int>>());
-		}
+		}*/
 		
 			
 		
@@ -136,6 +135,9 @@ public:
 		{
 			deg_v.push_back(make_pair(it->second.size(), it->first));
 		}		
+		
+		
+		//for some reason, I decided to sort the vertices by degree.  I don't think it is useful.
 		std::sort(deg_v.begin(), deg_v.end());
 		map<int, int> remap;
 		for (int i = 0; i < deg_v.size(); i++)
@@ -189,7 +191,7 @@ public:
 	void mvcbitset(int id, int depth, gbitset bits_in_graph, gbitset cur_sol, void *parent)
 	{
 		passes++;
-		
+		branchHandler.dummyvar = passes;
 		
 		
 		/*cout<<bits_in_graph.size()<<endl;
@@ -201,9 +203,9 @@ public:
 		
 		if (passes % 1000000 == 0)
 		{
-			cout<<"passes="<<passes<<" gsize="<<bits_in_graph.count()<<" refvalue="<<branchHandler.getRefValue()<<" solsize="<<cur_sol.count()<<" isskips="<<is_skips<<" deglbskips="<<deglb_skips<<" seen_skips="<<seen_skips<<" seen.size="<<seen[id].size()<<endl;
+			cout<<"WR="<<branchHandler.getWorldRank()<<" ID="<<id<<" passes="<<passes<<" gsize="<<bits_in_graph.count()<<" refvalue="<<branchHandler.getBestVal()<<" solsize="<<cur_sol.count()<<" isskips="<<is_skips<<" deglbskips="<<deglb_skips<<endl;	//<<" seen_skips="<<seen_skips<<" seen.size="<<seen[id].size()<<endl;
 			//cout<<"ID="<<id<<" CSOL="<<cursol_size<<" REFVAL="<<branchHandler.getRefValue()<<endl;
-			
+			branchHandler.printDebugInfo();
 		}
 		
 		
@@ -217,13 +219,13 @@ public:
 		}
 
 		
-		if (cursol_size >= branchHandler.getRefValue())
+		if (cursol_size >= branchHandler.getBestVal())
 		{
 			return;
 		}
 		
 		
-		if (bits_in_graph.count() <= 90 && bits_in_graph.count() >= 120 )
+		/*if (bits_in_graph.count() <= 90 && bits_in_graph.count() >= 120 )
 		{
 			pair<gbitset, int> instance_key = make_pair(bits_in_graph, cursol_size);
 			if (seen[id].find(instance_key) != seen[id].end())
@@ -236,7 +238,7 @@ public:
 			{
 				seen[id].insert(instance_key);
 			}
-		}
+		}*/
 			
 		
 		//max degree dude
@@ -333,7 +335,6 @@ public:
 
 
 
-
 		int nbVertices = bits_in_graph.count(); 
 		if (nbVertices <= 1)
 		{
@@ -347,18 +348,17 @@ public:
 		int indsetub = (int)(0.5f * (1.0f + sqrt(tmp)));
 		int vclb = nbVertices - indsetub;
 
-		if (vclb + cursol_size >= branchHandler.getRefValue())
+
+		if (vclb + cursol_size >= branchHandler.getBestVal())
 		{
 			is_skips++;
 			return;
 		}
 		
-		
-		
 		int degLB = 0;//getDegLB(bits_in_graph, nbEdgesDoubleCounted/2);
 		degLB = (nbEdgesDoubleCounted/2)/maxdeg;
 		//cout<<"deglb="<<degLB<<" n="<<bits_in_graph.count()<<" refval="<<branchHandler.getRefValue()<<endl;
-		if (degLB + cursol_size >= branchHandler.getRefValue())
+		if (degLB + cursol_size >= branchHandler.getBestVal())
 		{
 			deglb_skips++;
 			return;
@@ -372,26 +372,25 @@ public:
 			//cout<<"MAXDEG 2 n="<<nbVertices<<endl;
 			return;
 		}*/
-
 		
 		int newDepth = depth + 1;
 		
-		HolderType hol_l(branchHandler, id, parent);
-		HolderType hol_r(branchHandler, id, parent);
+		HolderType hol_l(id, parent);
+		HolderType hol_r(id, parent);
 		
 		hol_l.setDepth(depth);
 		hol_r.setDepth(depth);
 		
-		int *referenceValue = branchHandler.getRefValueTest();
+		int bestVal = branchHandler.getBestVal();
 		
-		hol_l.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, referenceValue, &depth, &hol_l] {
+		hol_l.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, &bestVal, &depth, &hol_l] {
 			gbitset ingraph1 = bits_in_graph;
 			ingraph1.set(maxdeg_v, false);
 			gbitset sol1 = cur_sol;
 			sol1.set(maxdeg_v, true);
 			int solsize1 = cursol_size + 1;
 			
-			if (solsize1 < referenceValue[0])
+			if (solsize1 < bestVal)
 			{
 				hol_l.holdArgs(newDepth, ingraph1, sol1);
 				return true;
@@ -403,7 +402,7 @@ public:
 		
 		
 		
-		hol_r.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, referenceValue, &depth, &hol_r] {
+		hol_r.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, &bestVal, &depth, &hol_r] {
 			//right branch = take out v nbrs
 			gbitset ingraph2 = bits_in_graph;
 
@@ -412,7 +411,7 @@ public:
 			gbitset sol2 = cur_sol | nbrs;	//add all nbrs to solution
 			int solsize2 = cursol_size + nbrs.count();
 			
-			if (solsize2 < referenceValue[0])
+			if (solsize2 < bestVal)
 			{
 				hol_r.holdArgs(newDepth, ingraph2, sol2);
 				return true;
@@ -440,15 +439,15 @@ public:
 		if (hol_l.evaluate_branch_checkIn())
 		{
 		    
-#ifdef DLB
-			if (nbVertices <= 20)
-				branchHandler.push_multithreading<void>(_f, id, hol_l, true);
+			if (nbVertices <= 10)
+				branchHandler.push_multithreading(_f, id, hol_l);
 			else
-				branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer, true);
-#else
-			branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer);
-#endif
+				branchHandler.push_multiprocess(_f, id, hol_l, user_serializer);
 		  
+		}
+		else
+		{
+			
 		}
 
 		//cout<<"ok sol1 done, going to sol2 val="<<solsize2;
@@ -456,15 +455,11 @@ public:
 		
 		
 		if (hol_r.evaluate_branch_checkIn()){
-	#ifdef DLB
-		    branchHandler.forward<void>(_f, id, hol_r, true);
-	#else
-		    branchHandler.forward<void>(_f, id, hol_r);
-	#endif
+		    branchHandler.forward(_f, id, hol_r);
 		}
 		else
 		{
-			//cout<<" (did not actually go)"<<endl;
+			
 		}
 		
 		//cout<<"depth="<<depth<<" done"<<endl;
@@ -478,32 +473,6 @@ public:
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
 private:
 
@@ -513,52 +482,14 @@ private:
 	{
 		if (solsize == 0)
 			return;
-		auto condition1 = [this](int refValGlobal, int refValLocal) {
-			return (leaves == 0) && (refValLocal < refValGlobal) ? true : false;
-		};
-		//if condition1 complies, then ifCond1 is called
-		auto ifCond1 = [&]() {
-			foundAtDepth = depth;
-			string col1 = fmt::format("MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("process {}, thread {}", branchHandler.getRankID(), id);
-			cout << std::internal
-				 << std::setfill('.')
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			//outFile(col1, col2);
-			++leaves;
-		};
-
-		auto condition2 = [](int refValGlobal, int refValLocal) {
-			return refValLocal < refValGlobal ? true : false;
-		};
-
-		auto ifCond2 = [&]() {
-			foundAtDepth = depth;
-			string col1 = fmt::format("B MVC found so far has {} elements", branchHandler.getRefValue());
-			string col2 = fmt::format("B process {}, thread {}", branchHandler.getRankID(), id);
-			cout << std::internal
-				 << col1
-				 << std::setw(wide - col1.size())
-				 << col2
-				 << "\n";
-
-			//outFile(col1, col2);
-			if (depth > measured_Depth)
-			{
-				measured_Depth = depth;
-			}
-
-			++leaves;
-		};
-
-		branchHandler.replace_refValGlobal_If<void>(solsize, condition1, ifCond1, cur_sol, user_serializer); // thread safe
-		branchHandler.replace_refValGlobal_If<void>(solsize, condition2, ifCond2, cur_sol, user_serializer);
-
-
+			
+			
+		if (solsize < branchHandler.getBestVal())
+		{
+			branchHandler.setBestVal(solsize);
+		
+		}
+			
 		return;
 	}
     

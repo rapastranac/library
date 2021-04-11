@@ -1,4 +1,4 @@
-#ifdef VC_VOID_MPI
+
 
 #include "../include/main.h"
 #include "../include/Graph.hpp"
@@ -28,21 +28,38 @@
 
 
 
-#ifdef BITVECTOR_VC
+
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 
+
+			/*int provided;
+			MPI_Init_thread(NULL, NULL, MPI_THREAD_SERIALIZED, &provided);
+			if (provided < MPI_THREAD_SERIALIZED)
+			{
+				cout<<"The threading support level is lesser than that demanded, got "<<provided<<endl;
+				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+			}*/
+			
+			
+			
+
 	using HolderType = library::ResultHolder<void, int, gbitset, gbitset>;
 
-	auto &handler = library::BranchHandler::getInstance(); // parallel library
+	auto &branchHandler = library::BranchHandler::getInstance(); // parallel library
+
+	branchHandler.init();
+	cout<<"NUMTHREADS="<<numThreads<<endl;
+	branchHandler.setMaxThreads(numThreads - 1);	//-1 to exclude current
+	cout<<"set max threads to "<<numThreads<<endl;
+	branchHandler.functionIsVoid();
+
 
 	Graph graph;
 	VC_void_MPI cover;
 
-	auto mainAlgo = std::bind(&VC_void_MPI::mvcbitset, &cover, _1, _2, _3, _4, _5); // target algorithm [all arguments]
-
-	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
-	int rank = scheduler.initMPI(NULL, NULL);					// initialize MPI and member variable linkin
+	auto function = std::bind(&VC_void_MPI::mvcbitset, &cover, _1, _2, _3, _4, _5); // target algorithm [all arguments]
+					// initialize MPI and member variable linkin
 												
 	graph.readEdges(filename);
 	//graph.preprocessing();	
@@ -55,198 +72,20 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	gbitset allzeros(gsize);
 	gbitset allones = ~allzeros;
 
-	handler.setRefValue(gsize);
+	//handler.setBestValue(gsize);
 	
-	scheduler.setThreadsPerNode(numThreads);
-	HolderType holder(handler, -1);
+
+	HolderType holder(-1);
 	holder.holdArgs(solsize, allones, allzeros);
-	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
+	
+	cout<<"Starting MPI node "<<branchHandler.getWorldRank()<<endl;
+	branchHandler.startMPINode(holder, function, user_serializer, user_deserializer);
 
-	// *****************************************************************************************
-	// this is a generic way of getting information from all the other processes after execution retuns
-	auto world_size = scheduler.getWorldSize();
-	std::vector<double> idleTime(world_size);
-	std::vector<size_t> threadRequests(world_size);
-
-	double idl_tm = 0;
-	size_t rqst = 0;
-
-	if (rank != 0)
-	{ //rank 0 does not run an instance of BranchHandler
-		idl_tm = handler.getPoolIdleTime();
-		rqst = handler.getNumberRequests();
-	}
-
-	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in
-	// a contiguos array
-	scheduler.allgather(idleTime.data(), &idl_tm, MPI_DOUBLE);
-	scheduler.allgather(threadRequests.data(), &rqst, MPI_UNSIGNED_LONG_LONG);
-
-	// *****************************************************************************************
-
-	if (rank == 0)
-	{
-		cout<<"DONE!"<<endl;
-		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
-
-		scheduler.printStats();
-
-		/*std::stringstream &result = scheduler.retrieveResult(); // returns a stringstream
-
-
-		gbitset solution;
-		int SIZE = result.str().size();
-		user_deserializer(result, solution);
-
-		cout<<"SOLSIZE="<<solution.count()<<endl;		*/
-		//auto cv = oGraph.postProcessing();
-		//fmt::print("Cover size : {} \n", cv.size());
-
-		double sum = 0;
-		for (size_t i = 1; i < world_size; i++)
-		{
-			//fmt::print("idleTime[{}]: {} \n", i, idleTime[i]);
-			sum += idleTime[i];
-		}
-		fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", sum);
-
-		// **************************************************************************
-		auto tasks_per_node = scheduler.executedTasksPerNode();
-
-		for (size_t rank = 1; rank < world_size; rank++)
-		{
-			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
-		}
-		fmt::print("\n\n\n");
-
-		for (size_t i = 1; i < world_size; i++)
-		{
-			fmt::print("rank {}, thread requests: {} \n", i, threadRequests[i]);
-		}
-
-		// **************************************************************************
-	}
-	scheduler.finalize();
+	
+	branchHandler.finalize();
 
 	return 0;
 }
 
 
 
-#else
-
-
-
-
-int main_void_MPI(int numThreads, int prob, std::string filename)
-{
-	using HolderType = library::ResultHolder<void, int, Graph>;
-
-	auto &handler = library::BranchHandler::getInstance(); // parallel library
-
-	Graph graph;
-	Graph oGraph;
-	VC_void_MPI cover;
-
-	auto mainAlgo = std::bind(&VC_void_MPI::mvc, &cover, _1, _2, _3, _4); // target algorithm [all arguments]
-	//graph.readEdges(file);
-
-	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
-	int rank = scheduler.initMPI(NULL, NULL);					// initialize MPI and member variable linkin
-																//HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
-
-	/* previous input and output required before following condition
-	thus, other nodes know the data type*/
-
-	HolderType holder(handler, -1); //it creates a ResultHolder, required to retrive result
-	int depth = 0;
-
-	graph.readEdges(filename);
-
-	//auto ss = user_serializer(graph);
-	//int buffer_size = ss.str().size();
-	//fmt::print("SIZE = {} \n", buffer_size);
-	//return 0;
-
-	int preSize = graph.preprocessing();
-
-	size_t k_mm = cover.maximum_matching(graph);
-
-	size_t k_uBound = graph.max_k();
-	size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
-	//cover.setMVCSize(k_prime);
-	handler.setRefValue(k_prime);
-
-	cover.init(graph, numThreads, filename, prob);
-
-	scheduler.setThreadsPerNode(numThreads);
-	holder.holdArgs(depth, graph);
-	scheduler.start<void>(mainAlgo, holder, user_serializer, user_deserializer);
-
-	// *****************************************************************************************
-	// this is a generic way of getting information from all the other processes after execution retuns
-	auto world_size = scheduler.getWorldSize();
-	std::vector<double> idleTime(world_size);
-	std::vector<size_t> threadRequests(world_size);
-
-	double idl_tm = 0;
-	size_t rqst = 0;
-
-	if (rank != 0)
-	{ //rank 0 does not run an instance of BranchHandler
-		idl_tm = handler.getPoolIdleTime();
-		rqst = handler.getNumberRequests();
-	}
-
-	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in
-	// a contiguos array
-	scheduler.allgather(idleTime.data(), &idl_tm, MPI_DOUBLE);
-	scheduler.allgather(threadRequests.data(), &rqst, MPI_UNSIGNED_LONG_LONG);
-
-	// *****************************************************************************************
-	//scheduler.finalize();
-	//return 0;
-
-	if (rank == 0)
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
-		scheduler.printStats();
-
-		std::stringstream result;
-		scheduler.retrieveResult(result); // returns a stringstream
-
-		user_deserializer(result, oGraph);
-		auto cv = oGraph.postProcessing();
-		fmt::print("Cover size : {} \n", cv.size());
-
-		double sum = 0;
-		for (int i = 1; i < world_size; i++)
-		{
-			sum += idleTime[i];
-		}
-		fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", sum);
-
-		// **************************************************************************
-		auto tasks_per_node = scheduler.executedTasksPerNode();
-
-		for (int rank = 1; rank < world_size; rank++)
-		{
-			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
-		}
-		fmt::print("\n");
-
-		for (int rank = 1; rank < world_size; rank++)
-		{
-			fmt::print("rank {}, thread requests: {} \n", rank, threadRequests[rank]);
-		}
-
-		fmt::print("\n\n\n");
-
-		// **************************************************************************
-	}
-	scheduler.finalize();
-	return 0;
-}
-#endif 		//end of bit vector flag
-
-#endif

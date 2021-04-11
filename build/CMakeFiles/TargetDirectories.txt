@@ -1,4 +1,4 @@
-/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build/CMakeFiles/rebuild_cache.dir
-/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build/CMakeFiles/edit_cache.dir
-/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build/CMakeFiles/test.dir
-/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build/CMakeFiles/a.out.dir
+/home/manuel/Documents/vcbitset/library/build/CMakeFiles/rebuild_cache.dir
+/home/manuel/Documents/vcbitset/library/build/CMakeFiles/edit_cache.dir
+/home/manuel/Documents/vcbitset/library/build/CMakeFiles/test.dir
+/home/manuel/Documents/vcbitset/library/build/CMakeFiles/a.out.dir

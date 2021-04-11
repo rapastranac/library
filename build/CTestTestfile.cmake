@@ -1,14 +1,14 @@
 # CMake generated Testfile for 
-# Source directory: /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library
-# Build directory: /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build
+# Source directory: /home/manuel/Documents/vcbitset/library
+# Build directory: /home/manuel/Documents/vcbitset/library/build
 # 
 # This file includes the relevant testing commands required for 
 # testing this directory and lists subdirectories to be tested as well.
 add_test(void "../tests/void/void.out" "-N" "5" "-I" "../input/prob_4/400/00400_1")
-set_tests_properties(void PROPERTIES  _BACKTRACE_TRIPLES "/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/CMakeLists.txt;80;add_test;/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/CMakeLists.txt;0;")
+set_tests_properties(void PROPERTIES  _BACKTRACE_TRIPLES "/home/manuel/Documents/vcbitset/library/CMakeLists.txt;81;add_test;/home/manuel/Documents/vcbitset/library/CMakeLists.txt;0;")
 add_test(non_void "../tests/non_void/non_void.out" "-N" "5" "-I" "../input/prob_4/400/00400_1")
-set_tests_properties(non_void PROPERTIES  _BACKTRACE_TRIPLES "/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/CMakeLists.txt;81;add_test;/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/CMakeLists.txt;0;")
+set_tests_properties(non_void PROPERTIES  _BACKTRACE_TRIPLES "/home/manuel/Documents/vcbitset/library/CMakeLists.txt;82;add_test;/home/manuel/Documents/vcbitset/library/CMakeLists.txt;0;")
 add_test(void_mpi "mpirun" "-n" "6" "../tests/void_MPI/void_mpi.out" "-N" "1" "-I" "../input/prob_4/400/00400_1")
-set_tests_properties(void_mpi PROPERTIES  _BACKTRACE_TRIPLES "/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/CMakeLists.txt;82;add_test;/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/CMakeLists.txt;0;")
+set_tests_properties(void_mpi PROPERTIES  _BACKTRACE_TRIPLES "/home/manuel/Documents/vcbitset/library/CMakeLists.txt;83;add_test;/home/manuel/Documents/vcbitset/library/CMakeLists.txt;0;")
 add_test(non_void_mpi "mpirun" "-n" "6" "../tests/non_void_MPI/non_void_mpi.out" "-N" "1" "-I" "../input/prob_4/400/00400_1")
-set_tests_properties(non_void_mpi PROPERTIES  _BACKTRACE_TRIPLES "/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/CMakeLists.txt;83;add_test;/home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/CMakeLists.txt;0;")
+set_tests_properties(non_void_mpi PROPERTIES  _BACKTRACE_TRIPLES "/home/manuel/Documents/vcbitset/library/CMakeLists.txt;84;add_test;/home/manuel/Documents/vcbitset/library/CMakeLists.txt;0;")

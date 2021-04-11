@@ -39,19 +39,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /cvmfs/soft.computecanada.ca/gentoo/2020/usr/bin/cmake
+CMAKE_COMMAND = /usr/bin/cmake
 
 # The command to remove a file.
-RM = /cvmfs/soft.computecanada.ca/gentoo/2020/usr/bin/cmake -E remove -f
+RM = /usr/bin/cmake -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library
+CMAKE_SOURCE_DIR = /home/manuel/Documents/vcbitset/library
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build
+CMAKE_BINARY_DIR = /home/manuel/Documents/vcbitset/library/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/b
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/cvmfs/soft.computecanada.ca/gentoo/2020/usr/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -70,7 +70,7 @@ rebuild_cache/fast: rebuild_cache
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/cvmfs/soft.computecanada.ca/gentoo/2020/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/usr/bin/cmake-gui -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -81,7 +81,7 @@ edit_cache/fast: edit_cache
 # Special rule for the target test
 test:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
-	/cvmfs/soft.computecanada.ca/gentoo/2020/usr/bin/ctest --force-new-ctest-process $(ARGS)
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
 .PHONY : test
 
 # Special rule for the target test
@@ -91,9 +91,9 @@ test/fast: test
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build/CMakeFiles /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/manuel/Documents/vcbitset/library/build/CMakeFiles /home/manuel/Documents/vcbitset/library/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mlafond/projects/def-mlafond/mlafond/vcbitvec/library/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/manuel/Documents/vcbitset/library/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

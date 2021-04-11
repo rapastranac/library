@@ -22,12 +22,10 @@ namespace library
 	template <typename _Ret, typename... Args>
 	class ResultHolder
 	{
-
 		friend class BranchHandler;
-		friend class Linker;
+
 
 	protected:
-		BranchHandler &branchHandler;
 
 		std::future<_Ret> expectedFut; // Unique_ptr check it out
 		std::any expected;			   // expected value
@@ -82,7 +80,7 @@ namespace library
 			auto root_cpy = static_cast<ResultHolder *>(*root); // cpy pointer to the current root
 			if (root_cpy->isVirtual)
 			{
-				branchHandler.assign_root(threadId, this);
+				BranchHandler::getInstance().assign_root(threadId, this);
 				parent = nullptr;
 
 				// at this point nobody should be pointing to the prior root
@@ -92,7 +90,7 @@ namespace library
 			}
 			else
 			{
-				branchHandler.assign_root(threadId, this);
+				BranchHandler::getInstance().assign_root(threadId, this);
 
 				// **************************************************************
 				// **************************************************************
@@ -115,30 +113,35 @@ namespace library
 		}
 
 	public:
+	
+		ResultHolder() : ResultHolder(-1)
+		{
+		
+		}
 		// default constructor, it has no parent, used for virtual roots
-		ResultHolder(library::BranchHandler &handler, int threadId) : branchHandler(handler)
+		ResultHolder(int threadId)
 		{
 			this->threadId = threadId;
-			this->id = branchHandler.getUniqueId();
+			this->id = BranchHandler::getInstance().getUniqueId();
 			//this->expectedFut.reset(new std::future<_Ret>);
 			this->itself = this;
 
-			branchHandler.assign_root(threadId, this);
-			this->root = &branchHandler.roots[threadId];
+			BranchHandler::getInstance().assign_root(threadId, this);
+			this->root = &BranchHandler::getInstance().roots[threadId];
 
 			this->isVirtual = true;
 		}
 
-		ResultHolder(library::BranchHandler &handler, int threadId, void *parent) : branchHandler(handler)
+		ResultHolder(int threadId, void *parent)
 		{
 			this->threadId = threadId;
-			this->id = branchHandler.getUniqueId();
+			this->id = BranchHandler::getInstance().getUniqueId();
 			//this->expectedFut.reset(new std::future<_Ret>);
 			itself = this;
 
 			if (parent)
 			{
-				this->root = &branchHandler.roots[threadId];
+				this->root = &BranchHandler::getInstance().roots[threadId];
 				this->parent = static_cast<ResultHolder *>(parent);
 				this->parent->children.push_back(this);
 			}
@@ -163,8 +166,8 @@ namespace library
 			//	printf("Destructor called for  id : %d \n", id);
 			//
 		}
-		ResultHolder(ResultHolder &&src) = delete;
-		ResultHolder(ResultHolder &src) = delete;
+		//ResultHolder(ResultHolder &&src) = delete;
+		//ResultHolder(ResultHolder &src) = delete;
 
 		//ResultHolder(ResultHolder &&src) noexcept
 		//{
@@ -226,7 +229,7 @@ namespace library
 
 		//14.7.3 Explicit specialization
 		//template<typename...Args>
-		void holdArgs(Args ...args)
+		void holdArgs(Args& ...args)
 		{
 			this->tup = std::make_tuple(std::forward<Args &&>(args)...);
 			//std::cout << typeid(tup).name() << "\n";
@@ -249,8 +252,8 @@ namespace library
 					must be decremented in one, also it should be locked before another thread
 					changes it, since it is atomic, this operation is already well defined*/
 
-				branchHandler.sumUpIdleTime(begin, end);
-				branchHandler.decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
+				BranchHandler::getInstance().sumUpIdleTime(begin, end);
+				BranchHandler::getInstance().decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
 			}
 			/*	This condition is relevant due to some functions might return empty values
 				which are not stored in std::any types	*/
@@ -266,14 +269,6 @@ namespace library
 			}
 		}
 
-		bool isFetchable()
-		{
-#ifdef MPI_ENABLED
-			return (isPushed || isForwarded || isMPISent) && !isRetrieved;
-#else
-			return (isPushed || isForwarded) && !isRetrieved;
-#endif
-		}
 
 		bool is_forwarded()
 		{
@@ -341,93 +336,7 @@ namespace library
 				return branch_checkIn();
 		}
 
-#ifdef MPI_ENABLED
 
-		template <typename F_deser>
-		_Ret get(F_deser &&f_deser)
-		{
-			if (isPushed)
-			{
-				std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-				expected = expectedFut.get();
-				std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-				/*If a thread comes in this scope, then it is clear that numThread
-					must be decremented in one, also it should be locked before another thread
-					changes it, since it is atomic, this operation is already well defined*/
-
-				branchHandler.sumUpIdleTime(begin, end);
-				branchHandler.decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
-			}
-			else if (isMPISent)
-			{
-				branchHandler.lock_mpi(); /* this blocks any other thread to use an MPI function since MPI_Recv is blocking
-												thus, mpi_thread_serialized is guaranteed */
-#ifdef DEBUG_COMMENTS
-				//printf("rank %d entered get() to retrieve from %d! \n", branchHandler.world_rank, dest_rank);
-				fmt::print("rank {} entered get() to retrieve from {}! \n", branchHandler.world_rank, dest_rank);
-#endif
-
-				MPI_Status status;
-				int Bytes;
-
-				MPI_Probe(dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI::CHAR, &Bytes);									  // receives total number of datatype elements of the message
-
-				char *in_buffer = new char[Bytes];
-				MPI_Recv(in_buffer, Bytes, MPI::CHAR, dest_rank, MPI::ANY_TAG, branchHandler.getCommunicator(), &status);
-
-#ifdef DEBUG_COMMENTS
-				//printf("rank %d received %d Bytes from %d! \n", branchHandler.world_rank, Bytes, dest_rank);
-				fmt::print("rank {} received {} Bytes from {}! \n", branchHandler.world_rank, Bytes, dest_rank);
-#endif
-
-				std::stringstream ss;
-				for (int i = 0; i < Bytes; i++)
-					ss << in_buffer[i];
-
-				_Ret temp;
-				f_deser(ss, temp);
-				delete[] in_buffer;
-
-				this->isRetrieved = true;
-
-				branchHandler.unlock_mpi(); /* release mpi mutex, thus, other threads are able to push to other nodes*/
-				return temp;
-			}
-			/*	This condition is relevant due to some functions might return empty values
-				which are not stored in std::any types	*/
-			if (this->expected.has_value())
-			{
-				this->isRetrieved = true;
-				return std::any_cast<_Ret>(expected);
-			}
-			else
-			{
-				//throw "This should not happen\n";
-				this->isRetrieved = true;
-				return {}; // returns empty object of type _Ret,
-			}
-		}
-
-		bool is_MPI_Sent()
-		{
-			return isMPISent;
-		}
-
-		void setMPISent(bool val, int dest_rank)
-		{
-			this->isMPISent = val;
-			this->dest_rank = dest_rank;
-		}
-
-	protected:
-		// MPI attributes ******
-		bool isMPISent = false; // flag to check if was sent via MPI
-		int dest_rank = -1;		// rank destination
-
-		// **********************
-
-#endif
 	};
 
 } // namespace library
