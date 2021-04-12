@@ -211,9 +211,9 @@ namespace library
 		{
 			
 				
-		
-			if (newval < bestValLocal)
-				cout<<"WR="<<scheduler.getWorldRank()<<" setbestval newval="<<newval<<" bestValLocal="<<bestValLocal<<" centerval="<<scheduler.getCenterBestVal()<<endl;
+			//calling getCenterBestVal without locking = window conflict
+			//if (newval < bestValLocal)
+			//	cout<<"WR="<<scheduler.getWorldRank()<<" setbestval newval="<<newval<<" bestValLocal="<<bestValLocal<<" centerval="<<scheduler.getCenterBestVal()<<endl;
 						
 			
 //ML : this could be avoided if we had a non-mpi scheduler class
