@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/manuel/Documents/vcbitset/library
+CMAKE_SOURCE_DIR = /home/manuel/Documents/vcmain/library
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/manuel/Documents/vcbitset/library/build
+CMAKE_BINARY_DIR = /home/manuel/Documents/vcmain/library/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/a.out.dir/depend.make
@@ -59,120 +59,120 @@ include CMakeFiles/a.out.dir/flags.make
 
 CMakeFiles/a.out.dir/src/main.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main.cpp.o: ../src/main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/a.out.dir/src/main.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main.cpp.o -c /home/manuel/Documents/vcbitset/library/src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/a.out.dir/src/main.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main.cpp.o -c /home/manuel/Documents/vcmain/library/src/main.cpp
 
 CMakeFiles/a.out.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/src/main.cpp > CMakeFiles/a.out.dir/src/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/src/main.cpp > CMakeFiles/a.out.dir/src/main.cpp.i
 
 CMakeFiles/a.out.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/src/main.cpp -o CMakeFiles/a.out.dir/src/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/src/main.cpp -o CMakeFiles/a.out.dir/src/main.cpp.s
 
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../src/main_FPT_void.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o -c /home/manuel/Documents/vcbitset/library/src/main_FPT_void.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o -c /home/manuel/Documents/vcmain/library/src/main_FPT_void.cpp
 
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/src/main_FPT_void.cpp > CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/src/main_FPT_void.cpp > CMakeFiles/a.out.dir/src/main_FPT_void.cpp.i
 
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/src/main_FPT_void.cpp -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/src/main_FPT_void.cpp -o CMakeFiles/a.out.dir/src/main_FPT_void.cpp.s
 
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../src/main_non_void.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/a.out.dir/src/main_non_void.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_non_void.cpp.o -c /home/manuel/Documents/vcbitset/library/src/main_non_void.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/a.out.dir/src/main_non_void.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_non_void.cpp.o -c /home/manuel/Documents/vcmain/library/src/main_non_void.cpp
 
 CMakeFiles/a.out.dir/src/main_non_void.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_non_void.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/src/main_non_void.cpp > CMakeFiles/a.out.dir/src/main_non_void.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/src/main_non_void.cpp > CMakeFiles/a.out.dir/src/main_non_void.cpp.i
 
 CMakeFiles/a.out.dir/src/main_non_void.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_non_void.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/src/main_non_void.cpp -o CMakeFiles/a.out.dir/src/main_non_void.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/src/main_non_void.cpp -o CMakeFiles/a.out.dir/src/main_non_void.cpp.s
 
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../src/main_non_void_MPI.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o -c /home/manuel/Documents/vcbitset/library/src/main_non_void_MPI.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o -c /home/manuel/Documents/vcmain/library/src/main_non_void_MPI.cpp
 
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/src/main_non_void_MPI.cpp > CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/src/main_non_void_MPI.cpp > CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.i
 
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/src/main_non_void_MPI.cpp -o CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/src/main_non_void_MPI.cpp -o CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.s
 
 CMakeFiles/a.out.dir/src/main_void.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../src/main_void.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/a.out.dir/src/main_void.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_void.cpp.o -c /home/manuel/Documents/vcbitset/library/src/main_void.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/a.out.dir/src/main_void.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_void.cpp.o -c /home/manuel/Documents/vcmain/library/src/main_void.cpp
 
 CMakeFiles/a.out.dir/src/main_void.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_void.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/src/main_void.cpp > CMakeFiles/a.out.dir/src/main_void.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/src/main_void.cpp > CMakeFiles/a.out.dir/src/main_void.cpp.i
 
 CMakeFiles/a.out.dir/src/main_void.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_void.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/src/main_void.cpp -o CMakeFiles/a.out.dir/src/main_void.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/src/main_void.cpp -o CMakeFiles/a.out.dir/src/main_void.cpp.s
 
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../src/main_void_MPI.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o -c /home/manuel/Documents/vcbitset/library/src/main_void_MPI.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o -c /home/manuel/Documents/vcmain/library/src/main_void_MPI.cpp
 
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/src/main_void_MPI.cpp > CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/src/main_void_MPI.cpp > CMakeFiles/a.out.dir/src/main_void_MPI.cpp.i
 
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/src/main_void_MPI.cpp -o CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/src/main_void_MPI.cpp -o CMakeFiles/a.out.dir/src/main_void_MPI.cpp.s
 
 CMakeFiles/a.out.dir/src/read_graphs.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/read_graphs.cpp.o: ../src/read_graphs.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/read_graphs.cpp.o -c /home/manuel/Documents/vcbitset/library/src/read_graphs.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/read_graphs.cpp.o -c /home/manuel/Documents/vcmain/library/src/read_graphs.cpp
 
 CMakeFiles/a.out.dir/src/read_graphs.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/read_graphs.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/src/read_graphs.cpp > CMakeFiles/a.out.dir/src/read_graphs.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/src/read_graphs.cpp > CMakeFiles/a.out.dir/src/read_graphs.cpp.i
 
 CMakeFiles/a.out.dir/src/read_graphs.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/read_graphs.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/src/read_graphs.cpp -o CMakeFiles/a.out.dir/src/read_graphs.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/src/read_graphs.cpp -o CMakeFiles/a.out.dir/src/read_graphs.cpp.s
 
 CMakeFiles/a.out.dir/fmt/src/format.cc.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/fmt/src/format.cc.o: ../fmt/src/format.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/a.out.dir/fmt/src/format.cc.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/fmt/src/format.cc.o -c /home/manuel/Documents/vcbitset/library/fmt/src/format.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/a.out.dir/fmt/src/format.cc.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/fmt/src/format.cc.o -c /home/manuel/Documents/vcmain/library/fmt/src/format.cc
 
 CMakeFiles/a.out.dir/fmt/src/format.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/fmt/src/format.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/fmt/src/format.cc > CMakeFiles/a.out.dir/fmt/src/format.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/fmt/src/format.cc > CMakeFiles/a.out.dir/fmt/src/format.cc.i
 
 CMakeFiles/a.out.dir/fmt/src/format.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/fmt/src/format.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/fmt/src/format.cc -o CMakeFiles/a.out.dir/fmt/src/format.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/fmt/src/format.cc -o CMakeFiles/a.out.dir/fmt/src/format.cc.s
 
 CMakeFiles/a.out.dir/fmt/src/os.cc.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/fmt/src/os.cc.o: ../fmt/src/os.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/a.out.dir/fmt/src/os.cc.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/fmt/src/os.cc.o -c /home/manuel/Documents/vcbitset/library/fmt/src/os.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/a.out.dir/fmt/src/os.cc.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/fmt/src/os.cc.o -c /home/manuel/Documents/vcmain/library/fmt/src/os.cc
 
 CMakeFiles/a.out.dir/fmt/src/os.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/fmt/src/os.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcbitset/library/fmt/src/os.cc > CMakeFiles/a.out.dir/fmt/src/os.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/manuel/Documents/vcmain/library/fmt/src/os.cc > CMakeFiles/a.out.dir/fmt/src/os.cc.i
 
 CMakeFiles/a.out.dir/fmt/src/os.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/fmt/src/os.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcbitset/library/fmt/src/os.cc -o CMakeFiles/a.out.dir/fmt/src/os.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/manuel/Documents/vcmain/library/fmt/src/os.cc -o CMakeFiles/a.out.dir/fmt/src/os.cc.s
 
 # Object files for target a.out
 a_out_OBJECTS = \
@@ -207,7 +207,7 @@ a_out_EXTERNAL_OBJECTS =
 ../a.out: /usr/lib/x86_64-linux-gnu/libboost_context.so.1.71.0
 ../a.out: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
 ../a.out: CMakeFiles/a.out.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/manuel/Documents/vcbitset/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable ../a.out"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/manuel/Documents/vcmain/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable ../a.out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/a.out.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -220,6 +220,6 @@ CMakeFiles/a.out.dir/clean:
 .PHONY : CMakeFiles/a.out.dir/clean
 
 CMakeFiles/a.out.dir/depend:
-	cd /home/manuel/Documents/vcbitset/library/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/manuel/Documents/vcbitset/library /home/manuel/Documents/vcbitset/library /home/manuel/Documents/vcbitset/library/build /home/manuel/Documents/vcbitset/library/build /home/manuel/Documents/vcbitset/library/build/CMakeFiles/a.out.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/manuel/Documents/vcmain/library/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/manuel/Documents/vcmain/library /home/manuel/Documents/vcmain/library /home/manuel/Documents/vcmain/library/build /home/manuel/Documents/vcmain/library/build /home/manuel/Documents/vcmain/library/build/CMakeFiles/a.out.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/a.out.dir/depend
 

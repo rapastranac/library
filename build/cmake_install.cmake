@@ -1,4 +1,4 @@
-# Install script for directory: /home/manuel/Documents/vcbitset/library
+# Install script for directory: /home/manuel/Documents/vcmain/library
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/manuel/Documents/vcbitset/library/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/manuel/Documents/vcmain/library/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

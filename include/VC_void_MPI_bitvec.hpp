@@ -205,7 +205,7 @@ public:
 		{
 			cout<<"WR="<<branchHandler.getWorldRank()<<" ID="<<id<<" passes="<<passes<<" gsize="<<bits_in_graph.count()<<" refvalue="<<branchHandler.getBestVal()<<" solsize="<<cur_sol.count()<<" isskips="<<is_skips<<" deglbskips="<<deglb_skips<<endl;	//<<" seen_skips="<<seen_skips<<" seen.size="<<seen[id].size()<<endl;
 			//cout<<"ID="<<id<<" CSOL="<<cursol_size<<" REFVAL="<<branchHandler.getRefValue()<<endl;
-			branchHandler.printDebugInfo();
+			//branchHandler.printDebugInfo();
 		}
 		
 		
