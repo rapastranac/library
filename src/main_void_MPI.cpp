@@ -20,9 +20,9 @@
 #include <string>
 #include <vector>
 
-void foo(int id, int depth, float value, void *parent)
+void foo(int id, int depth, float value, void *)
 {
-	fmt::print("Hello from foo, id : {}\n");
+	fmt::print("Hello from foo, id : {} depth : {} value : {}\n", id, depth, value);
 }
 
 int main_void_MPI(int numThreads, int prob, std::string filename)
