@@ -359,7 +359,7 @@ protected:
 	}
 
 protected:
-	library::BranchHandler &branchHandler = library::BranchHandler::getInstance();
+	GemPBA::BranchHandler &branchHandler = GemPBA::BranchHandler::getInstance();
 
 	Graph graph;
 	Graph graph_res;

@@ -45,7 +45,7 @@ auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 
 class VC_void_MPI : public VertexCover
 {
-	using HolderType = library::ResultHolder<void, int, Graph>;
+	using HolderType = GemPBA::ResultHolder<void, int, Graph>;
 
 private:
 	std::function<void(int, int, Graph, void *)> _f;
@@ -131,19 +131,11 @@ public:
 		{
 			if (SIZE > 30)
 			{
-#ifdef DLB
-				branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer, true);
-#else
-				branchHandler.push_multiprocess<void>(_f, id, hol_l, user_serializer);
-#endif
+				branchHandler.try_push<void>(_f, id, hol_l, user_serializer);
 			}
 			else
 			{
-#ifdef DLB
-				branchHandler.push_multithreading<void>(_f, id, hol_l, true);
-#else
-				branchHandler.push_multithreading<void>(_f, id, hol_l);
-#endif
+				branchHandler.try_push<void>(_f, id, hol_l);
 			}
 		}
 		/*

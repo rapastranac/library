@@ -22,7 +22,7 @@
 int main_FPT_void(int numThreads, int prob, std::string filename)
 {
 
-    auto &handler = library::BranchHandler::getInstance(); // parallel library
+    auto &handler = GemPBA::BranchHandler::getInstance(); // parallel GemPBA
 
     Graph graph;
     Graph oGraph;

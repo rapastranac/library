@@ -23,9 +23,41 @@ int format_float(char* buf, std::size_t size, const char* format, int precision,
   return precision < 0 ? snprintf_ptr(buf, size, format, value)
                        : snprintf_ptr(buf, size, format, precision, value);
 }
+
+template FMT_API dragonbox::decimal_fp<float> dragonbox::to_decimal(float x)
+    FMT_NOEXCEPT;
+template FMT_API dragonbox::decimal_fp<double> dragonbox::to_decimal(double x)
+    FMT_NOEXCEPT;
+
+// DEPRECATED! This function exists for ABI compatibility.
+template <typename Char>
+typename basic_format_context<std::back_insert_iterator<buffer<Char>>,
+                              Char>::iterator
+vformat_to(buffer<Char>& buf, basic_string_view<Char> format_str,
+           basic_format_args<basic_format_context<
+               std::back_insert_iterator<buffer<type_identity_t<Char>>>,
+               type_identity_t<Char>>>
+               args) {
+  using iterator = std::back_insert_iterator<buffer<char>>;
+  using context = basic_format_context<
+      std::back_insert_iterator<buffer<type_identity_t<Char>>>,
+      type_identity_t<Char>>;
+  auto out = iterator(buf);
+  format_handler<iterator, Char, context> h(out, format_str, args, {});
+  parse_format_string<false>(format_str, h);
+  return out;
+}
+template basic_format_context<std::back_insert_iterator<buffer<char>>,
+                              char>::iterator
+vformat_to(buffer<char>&, string_view,
+           basic_format_args<basic_format_context<
+               std::back_insert_iterator<buffer<type_identity_t<char>>>,
+               type_identity_t<char>>>);
 }  // namespace detail
 
-template struct FMT_INSTANTIATION_DEF_API detail::basic_data<void>;
+// Clang doesn't allow dllexport on template instantiation definitions:
+// https://reviews.llvm.org/D61118.
+template struct detail::basic_data<void>;
 
 // Workaround a bug in MSVC2013 that prevents instantiation of format_float.
 int (*instantiate_format_float)(double, int, detail::float_specs,
@@ -44,9 +76,9 @@ template FMT_API char detail::decimal_point_impl(locale_ref);
 
 template FMT_API void detail::buffer<char>::append(const char*, const char*);
 
-template FMT_API FMT_BUFFER_CONTEXT(char)::iterator detail::vformat_to(
+template FMT_API void detail::vformat_to(
     detail::buffer<char>&, string_view,
-    basic_format_args<FMT_BUFFER_CONTEXT(char)>);
+    basic_format_args<FMT_BUFFER_CONTEXT(char)>, detail::locale_ref);
 
 template FMT_API int detail::snprintf_float(double, int, detail::float_specs,
                                             detail::buffer<char>&);

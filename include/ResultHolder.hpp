@@ -7,6 +7,9 @@
 * rapastranac@gmail.com
 */
 
+#include <mpi.h>
+#include <stdio.h>
+
 #include <fmt/format.h>
 
 #include <any>
@@ -15,7 +18,7 @@
 #include <functional>
 #include <memory>
 
-namespace library
+namespace GemPBA
 {
 	class BranchHandler;
 
@@ -116,7 +119,7 @@ namespace library
 
 	public:
 		// default constructor, it has no parent, used for virtual roots
-		ResultHolder(library::BranchHandler &handler, int threadId) : branchHandler(handler)
+		ResultHolder(GemPBA::BranchHandler &handler, int threadId) : branchHandler(handler)
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
@@ -129,7 +132,7 @@ namespace library
 			this->isVirtual = true;
 		}
 
-		ResultHolder(library::BranchHandler &handler, int threadId, void *parent) : branchHandler(handler)
+		ResultHolder(GemPBA::BranchHandler &handler, int threadId, void *parent) : branchHandler(handler)
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
@@ -226,7 +229,7 @@ namespace library
 
 		//14.7.3 Explicit specialization
 		//template<typename...Args>
-		void holdArgs(Args ...args)
+		void holdArgs(Args... args)
 		{
 			this->tup = std::make_tuple(std::forward<Args &&>(args)...);
 			//std::cout << typeid(tup).name() << "\n";
@@ -412,6 +415,12 @@ namespace library
 		bool is_MPI_Sent()
 		{
 			return isMPISent;
+		}
+
+		void setMPISent(bool val = true)
+		{
+			this->isMPISent = val;
+			//this->dest_rank = dest_rank;
 		}
 
 		void setMPISent(bool val, int dest_rank)

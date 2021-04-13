@@ -17,23 +17,15 @@ else ()
   target_compile_definitions(gmock PUBLIC GTEST_HAS_PTHREAD=0)
 endif ()
 
-target_compile_definitions(gmock PUBLIC GTEST_LANG_CXX11=0)
+target_compile_definitions(gmock PUBLIC GTEST_LANG_CXX11=1)
 
 if (MSVC)
-  # Workaround a bug in implementation of variadic templates in MSVC11.
-  target_compile_definitions(gmock PUBLIC _VARIADIC_MAX=10)
-  
   # Disable MSVC warnings of _CRT_INSECURE_DEPRECATE functions.
   target_compile_definitions(gmock PRIVATE _CRT_SECURE_NO_WARNINGS)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # Disable MSVC warnings of POSIX functions.
     target_compile_options(gmock PUBLIC -Wno-deprecated-declarations)
   endif ()
-endif ()
-
-# GTest doesn't detect <tuple> with clang.
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  target_compile_definitions(gmock PUBLIC GTEST_USE_OWN_TR1_TUPLE=1)
 endif ()
 
 # Silence MSVC tr1 deprecation warning in gmock.
@@ -87,12 +79,11 @@ function(add_fmt_test name)
   add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
+add_fmt_test(args-test)
 add_fmt_test(assert-test)
 add_fmt_test(chrono-test)
 add_fmt_test(color-test)
 add_fmt_test(core-test)
-add_fmt_test(grisu-test)
-target_compile_definitions(grisu-test PRIVATE FMT_USE_GRISU=1)
 add_fmt_test(gtest-extra-test)
 add_fmt_test(format-test mock-allocator.h)
 if (MSVC)
@@ -105,11 +96,28 @@ add_fmt_test(locale-test)
 add_fmt_test(ostream-test)
 add_fmt_test(compile-test)
 add_fmt_test(printf-test)
-add_fmt_test(custom-formatter-test)
 add_fmt_test(ranges-test)
 add_fmt_test(scan-test)
 
-if (NOT MSVC_BUILD_STATIC)
+if (NOT MSVC)
+  # FMT_ENFORCE_COMPILE_STRING is not supported under MSVC due to compiler bugs.
+  add_fmt_test(enforce-compile-string-test)
+  target_compile_definitions(enforce-compile-string-test PRIVATE
+                             -DFMT_ENFORCE_COMPILE_STRING)
+endif ()
+
+if (NOT DEFINED MSVC_STATIC_RUNTIME AND MSVC)
+  foreach (flag_var
+			 CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+			 CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+	if (${flag_var} MATCHES "^(/|-)(MT|MTd)")
+	  set(MSVC_STATIC_RUNTIME ON)
+	  break()
+	endif()
+  endforeach()
+endif()
+
+if (NOT MSVC_STATIC_RUNTIME)
   add_fmt_executable(posix-mock-test
     posix-mock-test.cc ../src/format.cc ${TEST_MAIN_SRC})
   target_include_directories(
@@ -140,7 +148,7 @@ endif ()
 
 message(STATUS "FMT_PEDANTIC: ${FMT_PEDANTIC}")
 
-if (FMT_PEDANTIC)
+if (FMT_PEDANTIC AND CXX_STANDARD LESS 20)
   # MSVC fails to compile GMock when C++17 is enabled.
   if (FMT_HAS_VARIANT AND NOT MSVC)
     add_fmt_test(std-format-test)
@@ -195,6 +203,7 @@ if (FMT_PEDANTIC AND NOT WIN32)
     --build-makeprogram ${CMAKE_MAKE_PROGRAM}
     --build-options
     "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+    "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}"
     "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
     "-DFMT_DIR=${PROJECT_BINARY_DIR}"
     "-DPEDANTIC_COMPILE_FLAGS=${PEDANTIC_COMPILE_FLAGS}"

@@ -10,7 +10,7 @@
 #include <tuple>
 #include <utility>
 
-//This is just a library to handle arguments
+//This is just a GemPBA to handle arguments
 
 namespace std
 {
@@ -173,6 +173,10 @@ namespace std
 		//	return unpack_tuple(f, t, std::make_index_sequence<size>{});
 		//}
 		/*------- General unpack tuple and passes arguments to callable ----->end*/
+
+		void apply_pool(){
+			
+		}
 	};
 
 } // namespace std

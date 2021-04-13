@@ -150,7 +150,7 @@ public:
 		std::memcpy(L.data(), &section[0], Nl * sizeof(size_t)); //faster than loops
 		std::memcpy(R.data(), &section[middle], Nr * sizeof(size_t));
 
-		library::ResultHolder<std::vector<size_t>, std::vector<size_t>> hl(branchHandler);
+		GemPBA::ResultHolder<std::vector<size_t>, std::vector<size_t>> hl(branchHandler);
 		//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		hl.holdArgs(L);
 #ifndef MPI_TAG
@@ -172,7 +172,7 @@ public:
 	}
 
 private:
-	library::BranchHandler &branchHandler = library::BranchHandler::getInstance();
+	GemPBA::BranchHandler &branchHandler = GemPBA::BranchHandler::getInstance();
 	std::function<std::vector<size_t>(int, std::vector<size_t> &)> _f;
 	std::vector<size_t> unsorted;
 	std::vector<size_t> sorted;

@@ -12,9 +12,7 @@
 //#include "pool_include.hpp"
 #include "ThreadPool.hpp"
 
-#include "../MPI_Modules/Utils.hpp"
 #ifdef MPI_ENABLED
-#include "../MPI_Modules/MPI_Mutex.hpp"
 #include <mpi.h>
 #include <stdio.h>
 #endif
@@ -36,19 +34,19 @@
 #include <typeinfo>
 #include <utility>
 
-namespace library
+namespace GemPBA
 {
 	template <typename _Ret, typename... Args>
 	class ResultHolder;
 
-	class Scheduler;
+	class IPC_Handler;
 
 	class BranchHandler
 	{
 		template <typename _Ret, typename... Args>
-		friend class library::ResultHolder;
+		friend class GemPBA::ResultHolder;
 
-		friend class Scheduler;
+		friend class IPC_Handler;
 
 	protected:
 		void sumUpIdleTime(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
@@ -1002,32 +1000,6 @@ namespace library
 				std::args_handler::unpack_and_push_void(thread_pool, f, upperHolder->getArgs());
 				return true; // top holder found
 			}
-			//checkRightSiblings(&holder); // this decrements parent's children
-			return false; // top holder not found
-		}
-
-		template <typename _ret, typename F, typename Holder,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool try_top_holder(std::unique_lock<std::mutex> &lck, F &&f, Holder &holder)
-		{
-			Holder *upperHolder = checkParent(&holder);
-			if (upperHolder)
-			{
-				if (!upperHolder->evaluate_branch_checkIn())
-				{
-					upperHolder->setDiscard();
-					return true;
-				}
-
-				this->requests++;
-				this->busyThreads++;
-				upperHolder->setPushStatus();
-				lck.unlock();
-				auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
-				upperHolder->hold_future(std::move(ret));
-				return true; // top holder found
-			}
-			//checkRightSiblings(&holder); // this decrements parent's children
 			return false; // top holder not found
 		}
 
@@ -1041,32 +1013,16 @@ namespace library
 				if (!upperHolder->evaluate_branch_checkIn())
 				{
 					upperHolder->setDiscard();
-					//fmt::print("*********************************Deadlock reached!!\n");
-					char empty = 'a';
-					int TAG = 2;
-					int err = MPI_Ssend(&empty, 1, MPI_CHAR, dest_rank, TAG, *world_Comm); // send buffer
-					if (err != MPI_SUCCESS)
-						fmt::print("buffer failed to sent from rank {} to rank {}! \n", world_rank, dest_rank);
-					return true; //true is creating deadlocks
+					return true;
 				}
 
-				upperHolder->setMPISent(true, dest_rank);
+				//if (ipc_handler.try_next_node(f_serial, upperHolder->getArgs()))
+				//{
+				//	upperHolder->setMPISent();
+				//}
 
-				std::stringstream _stream;
-				auto __f = std::bind_front(f_serial, std::ref(_stream));
-				std::apply(__f, upperHolder->getArgs());
-				int bytes = _stream.str().size(); // number of bytes
-
-				int err = MPI_Ssend(_stream.str().data(), bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
-				if (err != MPI_SUCCESS)
-					fmt::print("buffer failed to sent from rank {} to rank {}! \n", world_rank, dest_rank);
-
-#ifdef DEBUG_COMMENTS
-				fmt::print("process {} forwarded top-holder to process {} \n", world_rank, dest_rank);
-#endif
 				return true; // top holder found
 			}
-			//checkRightSiblings(&holder); // this decrements parent's children
 			return false; // top holder not found
 		}
 
@@ -1171,6 +1127,34 @@ namespace library
 			return _flag; // this is for user's tracking pursposes if applicable
 		}
 
+		template <typename _ret, typename F, typename Holder>
+		bool try_push(F &&f, int id, Holder &holder)
+		{
+			bool _flag = false;
+			/* false means that current holder was not able to be pushed 
+				because a top holder was pushed instead, this false allows
+				to keep trying to find a top holder in the case of an
+				available thread*/
+			while (!_flag)
+				_flag = push_multithreading<_ret>(f, id, holder);
+
+			return _flag; // this is for user's tracking pursposes if applicable
+		}
+
+		template <typename _ret, typename F, typename Holder, typename Serializer>
+		bool try_push(F &&f, int id, Holder &holder, Serializer &&serializer)
+		{
+			bool _flag = false;
+			/* false means that current holder was not able to be pushed 
+				because a top holder was pushed instead, this false allows
+				to keep trying to find a top holder in the case of an
+				available thread*/
+			while (!_flag)
+				_flag = push_multiprocess<_ret>(f, id, holder, serializer);
+
+			return _flag; // this is for user's tracking pursposes if applicable
+		}
+
 #ifdef MPI_ENABLED
 
 		bool is_node_available()
@@ -1189,8 +1173,8 @@ namespace library
  		return 0, for normal success with an available process
  		return 1, for failure with no available process
  		return 2, for DLB succes with an available process*/
-		template <typename Holder, typename F_SERIAL>
-		int try_another_process(Holder &holder, F_SERIAL &&f_serial)
+		template <typename Holder, typename Serializer>
+		int try_another_process(Holder &holder, Serializer &&f_serial)
 		{
 			int signal = 0;
 			//std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
@@ -1257,18 +1241,53 @@ namespace library
 			return 1; //this return is necessary only due to function extraction
 		}
 
-		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
+		template <typename _ret, typename F, typename Holder, typename Serializer,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		bool push_multiprocess(F &&f, int id, Holder &holder, Serializer &&serializer)
 		{
+			/*This lock must be adquired before checking the condition,	
+			even though busyThreads is atomic*/
+			std::unique_lock<std::mutex> lck(mtx);
+			if (busyThreads < thread_pool.size())
+			{
+				if (is_DLB)
+				{
+					bool res = try_top_holder<_ret>(lck, f, holder);
+					if (res)
+						return false; // if top holder found, then it should
+									  // return false to keep trying another top holder
 
-			int r = try_another_process(holder, f_serial);
-			if (r == 0)
-				return true; // top holder pushed to another rank
-			if (r == 2)
-				return false; // current holder pushed to another rank
+					checkRightSiblings(&holder); // this decrements parent's children
+				}
 
-			return push_multithreading<_ret>(f, id, holder); //no rank available
+				//if (ipc_handler.try_next_node(serializer, holder.getArgs()))
+				//{
+				//	holder.setMPISent();
+				//	holder.prune();
+				//	lck.unlock();
+				//	return true;
+				//}
+
+				//after this line, only leftMost holder should be pushed
+				this->requests++;
+				this->busyThreads++;
+				holder.setPushStatus();
+				holder.prune();
+				lck.unlock();
+
+				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
+				return true;
+			}
+			else
+			{
+				lck.unlock();
+				if (is_DLB)
+					this->forward<_ret>(f, id, holder, true);
+				else
+					this->forward<_ret>(f, id, holder);
+
+				return true;
+			}
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
@@ -1375,6 +1394,32 @@ namespace library
 			this->thread_pool.setExternNumThreads(&this->busyThreads);
 		}
 
+		/* 	input: this method receives the main algorithm and a deserializer.
+			return:  a lambda object who is in charge of receiving a raw buffer, this 
+			lambda object will deserialize the buffer and create a new Holder containing
+			the deserialized arguments. Lambda object will push to thread pool and it
+			will return a pointer to the holder
+			*/
+		template <typename _Ret, typename... Args>
+		auto receive(auto &&callable, auto &&deserializer)
+		{
+			return [this, callable, deserializer](const char *buffer, const int count) {
+				using HolderType = GemPBA::ResultHolder<_Ret, Args...>;
+				HolderType *holder = new HolderType(*this, -1);
+
+				std::stringstream ss;
+				for (int i = 0; i < count; i++)
+					ss << buffer[i];
+
+				auto _deser = std::bind_front(deserializer, std::ref(ss));
+				std::apply(_deser, holder->getArgs());
+
+				try_push<_Ret>(callable, -1, *holder);
+
+				return holder;
+			};
+		}
+
 	private:
 		// thread safe: root creation or root switching
 		void assign_root(int threadId, void *root)
@@ -1458,6 +1503,7 @@ namespace library
 		int *refValueGlobal = nullptr; // shared with MPI
 
 #ifdef MPI_ENABLED
+
 		std::atomic<int> CHECKER{0};
 
 		std::mutex mtx_MPI;				  // mutex to ensure MPI_THREAD_SERIALIZED
@@ -1467,26 +1513,6 @@ namespace library
 		int *numAvailableNodes = nullptr; // remote memory synchronised by center node
 		int *nextNode = nullptr;		  // size 2 array nextNode[0]= new, nextNode[1]= old
 		MPI_Comm *world_Comm = nullptr;	  // world communicator MPI
-
-		void CHECK_MPI_MUTEX(int sum, int threadId)
-		{
-			this->CHECKER.fetch_add(sum, std::memory_order_relaxed);
-			int tmp = CHECKER.load();
-			if (tmp > 1 || tmp < 0)
-				fmt::print("rank {}, threadID {}, mutex has failed : CHECKER = {} \n", world_rank, threadId, tmp);
-		}
-
-		void linkMPIargs(int world_rank, int world_size, char *processor_name,
-						 int *numAvailableNodes, int *refValueGlobal, int *nextNode, MPI_Comm *world_Comm)
-		{
-			this->world_rank = world_rank;
-			this->world_size = world_size;
-			strncpy(this->processor_name, processor_name, 128);
-			this->numAvailableNodes = numAvailableNodes;
-			this->refValueGlobal = refValueGlobal;
-			this->nextNode = nextNode;
-			this->world_Comm = world_Comm;
-		}
 
 		/* if method receives data, this node is supposed to be totally idle */
 		template <typename _ret, typename Holder, typename F, typename Serialize, typename Deserialize>
@@ -1689,66 +1715,6 @@ namespace library
 
 #endif
 	};
-
-#ifdef MPI_ENABLED
-
-	int Scheduler::initMPI(int *argc, char *argv[])
-	{
-		// Initilialise MPI and ask for thread support
-		int provided;
-		MPI_Init_thread(argc, &argv, MPI_THREAD_SERIALIZED, &provided);
-		if (provided < MPI_THREAD_SERIALIZED)
-		{
-			fmt::print("The threading support level is lesser than that demanded.\n");
-			MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-		}
-
-		communicators();
-
-		int namelen;
-		MPI_Get_processor_name(processor_name, &namelen);
-		fmt::print("Process {} of {} is on {}\n", world_rank, world_size, processor_name);
-		win_allocate();
-
-		_branchHandler.linkMPIargs(world_rank, world_size, processor_name,
-								   numAvailableNodes, refValueGlobal, nextNode, &world_Comm);
-		return world_rank;
-	}
-
-	template <typename _ret, typename F, typename Holder, typename Serialize, typename Deserialize>
-	void Scheduler::start(F &&f, Holder &holder, Serialize &&serialize, Deserialize &&deserialize)
-	{
-#ifdef DEBUG_COMMENTS
-		fmt::print("About to start, {} / {}!! \n", world_rank, world_size);
-#endif
-
-		if (world_rank == 0)
-		{
-			start_time = MPI_Wtime();
-#ifdef DEBUG_COMMENTS
-			fmt::print("scheduler() launched!! \n");
-#endif
-			this->schedule(holder, serialize);
-			end_time = MPI_Wtime();
-		}
-		else
-		{
-			_branchHandler.setMaxThreads(threadsPerNode);
-			if (std::is_void<_ret>::value)
-				_branchHandler.functionIsVoid();
-
-			_branchHandler.receiveSeed<_ret, Holder>(f, serialize, deserialize);
-		}
-#ifdef DEBUG_COMMENTS
-		fmt::print("process {} waiting at barrier \n", world_rank);
-#endif
-		MPI_Barrier(world_Comm);
-#ifdef DEBUG_COMMENTS
-		fmt::print("process {} passed barrier \n", world_rank);
-#endif
-	}
-
-#endif
 
 } // namespace library
 

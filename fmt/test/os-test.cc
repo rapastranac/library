@@ -81,9 +81,9 @@ TEST(UtilTest, FormatWindowsError) {
   EXPECT_EQ(fmt::format("test: {}", utf8_message.str()),
             fmt::to_string(actual_message));
   actual_message.resize(0);
-  auto max_size = fmt::detail::max_value<size_t>();
+  auto max_size = fmt::detail::max_value<size_t>() / 2;
   fmt::detail::format_windows_error(actual_message, ERROR_FILE_EXISTS,
-                                    fmt::string_view(0, max_size));
+                                    fmt::string_view(nullptr, max_size));
   EXPECT_EQ(fmt::format("error {}", ERROR_FILE_EXISTS),
             fmt::to_string(actual_message));
 }
@@ -267,44 +267,68 @@ TEST(BufferedFileTest, CloseError) {
 }
 
 TEST(BufferedFileTest, Fileno) {
-  buffered_file f;
-#  ifndef __COVERITY__
-  // fileno on a null FILE pointer either crashes or returns an error.
-  // Disable Coverity because this is intentional.
-  EXPECT_DEATH_IF_SUPPORTED(
-      {
-        try {
-          f.fileno();
-        } catch (const fmt::system_error&) {
-          std::exit(1);
-        }
-      },
-      "");
-#  endif
-  f = open_buffered_file();
+  auto f = open_buffered_file();
   EXPECT_TRUE(f.fileno() != -1);
   file copy = file::dup(f.fileno());
   EXPECT_READ(copy, FILE_CONTENT);
 }
 
-TEST(DirectBufferedFileTest, Print) {
-  fmt::direct_buffered_file out(
-    "test-file", fmt::file::WRONLY | fmt::file::CREATE);
-  fmt::print(out, "The answer is {}.\n", 42);
+TEST(OStreamTest, Move) {
+  fmt::ostream out = fmt::output_file("test-file");
+  fmt::ostream moved(std::move(out));
+  moved.print("hello");
+}
+
+TEST(OStreamTest, MoveWhileHoldingData) {
+  {
+    fmt::ostream out = fmt::output_file("test-file");
+    out.print("Hello, ");
+    fmt::ostream moved(std::move(out));
+    moved.print("world!\n");
+  }
+  {
+    file in("test-file", file::RDONLY);
+    EXPECT_READ(in, "Hello, world!\n");
+  }
+}
+
+TEST(OStreamTest, Print) {
+  fmt::ostream out = fmt::output_file("test-file");
+  out.print("The answer is {}.\n", fmt::join(std::initializer_list<int>{42}, ", "));
   out.close();
   file in("test-file", file::RDONLY);
   EXPECT_READ(in, "The answer is 42.\n");
 }
 
-TEST(DirectBufferedFileTest, BufferBoundary) {
+TEST(OStreamTest, BufferBoundary) {
   auto str = std::string(4096, 'x');
-  fmt::direct_buffered_file out(
-    "test-file", fmt::file::WRONLY | fmt::file::CREATE);
-  fmt::print(out, "{}", str);
-  fmt::print(out, "{}", str);
+  fmt::ostream out = fmt::output_file("test-file");
+  out.print("{}", str);
+  out.print("{}", str);
   out.close();
   file in("test-file", file::RDONLY);
   EXPECT_READ(in, str + str);
+}
+
+TEST(OStreamTest, BufferSize) {
+  fmt::ostream out = fmt::output_file("test-file", fmt::buffer_size=1);
+  out.print("{}", "foo");
+  out.close();
+  file in("test-file", file::RDONLY);
+  EXPECT_READ(in, "foo");
+}
+
+TEST(OStreamTest, Truncate) {
+  {
+    fmt::ostream out = fmt::output_file("test-file");
+    out.print("0123456789");
+  }
+  {
+    fmt::ostream out = fmt::output_file("test-file");
+    out.print("foo");
+  }
+  file in("test-file", file::RDONLY);
+  EXPECT_EQ("foo", read(in, 4));
 }
 
 TEST(FileTest, DefaultCtor) {

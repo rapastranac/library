@@ -22,9 +22,9 @@
 
 int main_non_void_MPI(int numThreads, int prob, std::string filename)
 {
-	using HolderType = library::ResultHolder<Graph, int, Graph>;
+	using HolderType = GemPBA::ResultHolder<Graph, int, Graph>;
 
-	auto &handler = library::BranchHandler::getInstance(); // parallel library
+	auto &handler = GemPBA::BranchHandler::getInstance(); // parallel GemPBA
 
 	Graph graph;
 	Graph oGraph;
@@ -35,8 +35,8 @@ int main_non_void_MPI(int numThreads, int prob, std::string filename)
 	auto mainAlgo = std::bind(&VC_non_void_MPI::mvc, &cover, _1, _2, _3, _4); // target algorithm [all arguments]
 	//graph.readEdges(file);
 
-	auto &scheduler = library::Scheduler::getInstance(handler); // MPI Scheduler
-	int rank = scheduler.initMPI(NULL, NULL);					// initialize MPI and member variable linkin
+	auto &scheduler = GemPBA::Scheduler::getInstance(handler); // MPI Scheduler
+	int rank = scheduler.establish_IPC(NULL, NULL);					// initialize MPI and member variable linkin
 																//HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
 
 	/* previous input and output required before following condition
