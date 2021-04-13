@@ -5,6 +5,7 @@
 #include <functional>
 #include <tuple>
 
+//Generic Massive Parallelisation of Branching Algorithm
 namespace GemPBA
 {
 
@@ -23,10 +24,10 @@ namespace GemPBA
             std::apply(_serializer, tuple);
         }
 
-        void read_buffer(char *buf, auto &deserializer, auto &tuple)
+        void read_buffer(auto &deserializer, auto &tuple)
         {
-            auto _serializer = std::bind_front(deserializer, std::ref(ss));
-            std::apply(_serializer, tuple);
+            auto _deserializer = std::bind_front(deserializer, std::ref(ss));
+            std::apply(_deserializer, tuple);
         }
 
         StreamHandler &operator()(const char *buffer, const int SIZE) noexcept
@@ -42,6 +43,11 @@ namespace GemPBA
         {
             ss.str(std::string());
             ss.clear();
+        }
+
+        bool empty()
+        {
+            return ss.str().empty();
         }
 
         int size() const noexcept

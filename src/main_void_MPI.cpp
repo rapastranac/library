@@ -20,17 +20,25 @@
 #include <string>
 #include <vector>
 
-void foo(int id, int depth, float value, void *)
+auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
+
+using HolderType = GemPBA::ResultHolder<void, int, float>;
+
+void foo(int id, int depth, float value, void *parent)
 {
-	fmt::print("Hello from foo, id : {} depth : {} value : {}\n", id, depth, value);
+	if (depth > 10)
+	{
+		return;
+	}
+	fmt::print("rank {}, id : {} depth : {} value : {}\n", branchHandler.getRankID(), id, depth, value);
+	HolderType hol(branchHandler, id, parent);
+	hol.holdArgs(++depth, value * 2);
+	branchHandler.try_push<void>(foo, id, hol);
 }
 
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
-	using HolderType = GemPBA::ResultHolder<void, int, float>;
-
-	auto &handler = GemPBA::BranchHandler::getInstance(); // parallel library
 
 	Graph graph;
 	Graph oGraph;
@@ -39,23 +47,24 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	//auto mainAlgo = std::bind(&VC_void_MPI::mvc, &cover, _1, _2, _3, _4); // target algorithm [all arguments]
 
 	auto &ipc_handler = GemPBA::IPC_Handler::getInstance(); // MPI IPC_Handler
-	int rank = ipc_handler.establish_IPC(NULL, NULL);		// initialize MPI and member variable linkin
-															//HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
+	branchHandler.link_IPC_Handler(&ipc_handler);
+	int rank = ipc_handler.establish_IPC(NULL, NULL); // initialize MPI and member variable linkin
+													  //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
 
 	/* previous input and output required before following condition
 	thus, other nodes know the data type*/
 
-	HolderType holder(handler, -1); //it creates a ResultHolder, required to retrive result
+	HolderType holder(branchHandler, -1); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
 
 	graph.readEdges(filename);
 
 	// ******************************************************************
 	// temp for mini-cluster
-	if (rank == 1)
-		numThreads = 5; //cuz center is also in this machine
-	if (rank == 2)
-		numThreads = 4;
+	//if (rank == 1)
+	//	numThreads = 5; //cuz center is also in this machine
+	//if (rank == 2)
+	//	numThreads = 4;
 	// ******************************************************************
 
 	//int preSize = graph.preprocessing();
@@ -67,15 +76,16 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	ipc_handler.setThreadsPerNode(numThreads);
 	//holder.holdArgs(depth, graph);
-	holder.holdArgs(depth, 6.7);
+
+	float value = 5.7;
 	std::stringstream ss;
-	user_deserializer(std::ref(ss), depth, graph);
+	user_serializer(ss, depth, value);
 
 	if (rank == 0)
 		ipc_handler.start(ss.str().data(), ss.str().size());
 	else
 	{
-		auto receiver = handler.receive<void, int, float>(foo, user_deserializer);
+		auto receiver = branchHandler.construct_receiver<void, int, float>(foo, user_deserializer);
 		ipc_handler.listen(receiver);
 	}
 
@@ -92,8 +102,8 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	if (rank != 0)
 	{ //rank 0 does not run an instance of BranchHandler
-		idl_tm = handler.getPoolIdleTime();
-		rqst = handler.getNumberRequests();
+		idl_tm = branchHandler.getPoolIdleTime();
+		rqst = branchHandler.getNumberRequests();
 	}
 
 	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in

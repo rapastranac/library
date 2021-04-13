@@ -19,6 +19,9 @@
 #include <thread>
 #include <queue>
 
+#define TAG_TERMINATE
+//#define TAG
+
 namespace GemPBA
 {
 	template <typename _Ret, typename... Args>
@@ -141,6 +144,10 @@ namespace GemPBA
 		void listen(auto &&receiver)
 		{
 			int count_rcv = 0;
+			int nodes;
+			MPI_Bcast(&nodes, 1, MPI_INT, 0, world_Comm);
+			MPI_Barrier(world_Comm); // synchronise process in world group
+
 			while (true)
 			{
 				MPI_Status status;
@@ -153,15 +160,19 @@ namespace GemPBA
 				MPI_Recv(incoming_buffer, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
 
 				count_rcv++;
-				int src = status.MPI_SOURCE;
+				int src = status.MPI_SOURCE; // it might be useful for non-void functions
 
 				auto *holder = receiver(incoming_buffer, count); // holder might be useful for non-void functions
 
 				// buffers created by thread are to be sent with the next loop
 				while (true)
 				{
-					int TAG = 4; // TEMPORARY
-					MPI_Ssend(streamHandler.data(), streamHandler.size(), MPI_CHAR, nextProc[1], TAG, world_Comm);
+					if (!streamHandler.empty())
+					{
+						int TAG = 4; // TEMPORARY
+						MPI_Ssend(streamHandler.data(), streamHandler.size(), MPI_CHAR, nextProc[1], TAG, world_Comm);
+						streamHandler.clear();
+					}
 					// tell center node
 					wait();
 				}
@@ -170,7 +181,6 @@ namespace GemPBA
 			}
 		}
 
-	private:
 		void schedule(const char *buffer, const int SIZE)
 		{
 			std::vector<std::queue<int>> static_next(world_size); // static load balancing
@@ -182,7 +192,7 @@ namespace GemPBA
 			int busy = 0;
 			std::vector<int> aNodes(world_size, 1); // list of nodes availability
 			Bcast_availability(aNodes, nodes);
-			//sendSeed(static_next, aNodes, nodes, busy, holder, serialize);
+			sendSeed(static_next, aNodes, nodes, busy, buffer, SIZE);
 
 			int rcv_availability = 0;
 			tasks_per_node.resize(world_size, 0);
@@ -284,7 +294,6 @@ namespace GemPBA
 			// receive solution from other processes
 			fetchSolution();
 		}
-
 		bool try_next_node(auto &serializer, auto &tuple)
 		{
 			if (nextProc[0] != nextProc[1])

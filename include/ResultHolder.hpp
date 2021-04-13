@@ -119,7 +119,7 @@ namespace GemPBA
 
 	public:
 		// default constructor, it has no parent, used for virtual roots
-		ResultHolder(GemPBA::BranchHandler &handler, int threadId) : branchHandler(handler)
+		ResultHolder(GemPBA::BranchHandler &branchHandler, int threadId) : branchHandler(branchHandler)
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();
@@ -132,7 +132,7 @@ namespace GemPBA
 			this->isVirtual = true;
 		}
 
-		ResultHolder(GemPBA::BranchHandler &handler, int threadId, void *parent) : branchHandler(handler)
+		ResultHolder(GemPBA::BranchHandler &branchHandler, int threadId, void *parent) : branchHandler(branchHandler)
 		{
 			this->threadId = threadId;
 			this->id = branchHandler.getUniqueId();

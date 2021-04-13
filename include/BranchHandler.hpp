@@ -1260,13 +1260,13 @@ namespace GemPBA
 					checkRightSiblings(&holder); // this decrements parent's children
 				}
 
-				//if (ipc_handler.try_next_node(serializer, holder.getArgs()))
-				//{
-				//	holder.setMPISent();
-				//	holder.prune();
-				//	lck.unlock();
-				//	return true;
-				//}
+				if (ipc_handler->try_next_node(serializer, holder.getArgs()))
+				{
+					holder.setMPISent();
+					holder.prune();
+					lck.unlock();
+					return true;
+				}
 
 				//after this line, only leftMost holder should be pushed
 				this->requests++;
@@ -1401,7 +1401,7 @@ namespace GemPBA
 			will return a pointer to the holder
 			*/
 		template <typename _Ret, typename... Args>
-		auto receive(auto &&callable, auto &&deserializer)
+		auto construct_receiver(auto &&callable, auto &&deserializer)
 		{
 			return [this, callable, deserializer](const char *buffer, const int count) {
 				using HolderType = GemPBA::ResultHolder<_Ret, Args...>;
@@ -1491,18 +1491,24 @@ namespace GemPBA
 			return instance;
 		}
 
-	public:
 		~BranchHandler() = default;
 		BranchHandler(const BranchHandler &) = delete;
 		BranchHandler(BranchHandler &&) = delete;
 		BranchHandler &operator=(const BranchHandler &) = delete;
 		BranchHandler &operator=(BranchHandler &&) = delete;
 
+		void link_IPC_Handler(IPC_Handler *ipc_handler)
+		{
+			this->ipc_handler = ipc_handler;
+		}
+
 		/*----------------Singleton----------------->>end*/
 	protected:
 		int *refValueGlobal = nullptr; // shared with MPI
 
 #ifdef MPI_ENABLED
+
+		IPC_Handler *ipc_handler = nullptr;
 
 		std::atomic<int> CHECKER{0};
 

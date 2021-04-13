@@ -275,6 +275,10 @@ omp.h
 /home/andres/cloud/library/include/VC_void_MPI.hpp
 VertexCover.hpp
 /home/andres/cloud/library/include/VertexCover.hpp
+boost/archive/text_oarchive.hpp
+-
+boost/archive/text_iarchive.hpp
+-
 
 /home/andres/cloud/library/include/VertexCover.hpp
 boost/archive/text_oarchive.hpp
