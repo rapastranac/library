@@ -122,7 +122,7 @@ namespace library
 		ResultHolder(int threadId)
 		{
 			this->threadId = threadId;
-			this->id = BranchHandler::getInstance().getUniqueId();
+			//this->id = BranchHandler::getInstance().getUniqueId();
 			//this->expectedFut.reset(new std::future<_Ret>);
 			this->itself = this;
 
@@ -135,7 +135,7 @@ namespace library
 		ResultHolder(int threadId, void *parent)
 		{
 			this->threadId = threadId;
-			this->id = BranchHandler::getInstance().getUniqueId();
+			//this->id = BranchHandler::getInstance().getUniqueId();
 			//this->expectedFut.reset(new std::future<_Ret>);
 			itself = this;
 
@@ -253,7 +253,7 @@ namespace library
 					changes it, since it is atomic, this operation is already well defined*/
 
 				BranchHandler::getInstance().sumUpIdleTime(begin, end);
-				BranchHandler::getInstance().decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
+				//BranchHandler::getInstance().decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
 			}
 			/*	This condition is relevant due to some functions might return empty values
 				which are not stored in std::any types	*/

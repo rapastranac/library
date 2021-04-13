@@ -269,6 +269,9 @@ namespace library
 					if (err != MPI_SUCCESS)
 						cout<<"ERROR !  SENDING TASK FAILED!"<<endl;
 					
+					
+					MPI_Send(&i, 1, MPI_INT, 0, TAG_WORKSENT, MPI_COMM_WORLD);
+					
 					if (verbose > 0)
 						cout<<"WR="<<world_rank<<" DONE sending to "<<i<<endl;				
 					
@@ -406,14 +409,14 @@ namespace library
 					    	}
 					}
 				}
-				/*else if (status.MPI_TAG == TAG_WORKSENT)
+				else if (status.MPI_TAG == TAG_WORKSENT)
 				{
 					int workdest = number_buf[0];
 					if (verbose > 0)
 						cout<<cnow()<<"CENTER : received TAG_WORKSENT from "<<status.MPI_SOURCE<<" who sent work to "<<workdest<<endl;
 					
 					nodeStates[workdest] = STATE_WORKING;
-				}*/
+				}
 				else if (status.MPI_TAG == TAG_STARTEDWORKING)
 				{
 					if (verbose > 0)
@@ -590,15 +593,17 @@ namespace library
 				//wait until all work is finished
 				//TODO : cleaner way to do this?
 				long cptsleep = 0;
-				while (_branchHandler.hasBusyThreads())
+				while (_branchHandler.hasBusyThreads_nomutex())
 				{
-					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+					_branchHandler.wait();
+					
+					/*std::this_thread::sleep_for(std::chrono::milliseconds(100));
 					cptsleep++;
 					
 					if (cptsleep % 10 == 0)
 					{
 						cout<<"WR="<<world_rank<<" been sleepin for "<<cptsleep<<"cycles."<<endl;
-					}
+					}*/
 				}
 				
 				

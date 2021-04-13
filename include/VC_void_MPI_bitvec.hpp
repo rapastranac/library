@@ -117,7 +117,7 @@ public:
     		deglb_skips = 0;
     		seen_skips = 0;
 		//this->branchHandler.setMaxThreads(numThreads);
-		this->branchHandler.functionIsVoid();
+
  
 		/*for (int i = 0; i <= numThreads; i++)
 		{
@@ -191,7 +191,7 @@ public:
 	void mvcbitset(int id, int depth, gbitset bits_in_graph, gbitset cur_sol, void *parent)
 	{
 		passes++;
-		branchHandler.dummyvar = passes;
+		//branchHandler.dummyvar = passes;
 		
 		
 		/*cout<<bits_in_graph.size()<<endl;
@@ -381,9 +381,10 @@ public:
 		hol_l.setDepth(depth);
 		hol_r.setDepth(depth);
 		
-		int bestVal = branchHandler.getBestVal();
 		
-		hol_l.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, &bestVal, &depth, &hol_l] {
+		
+		hol_l.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, &depth, &hol_l] {
+			int bestVal = branchHandler.getBestVal();
 			gbitset ingraph1 = bits_in_graph;
 			ingraph1.set(maxdeg_v, false);
 			gbitset sol1 = cur_sol;
@@ -402,7 +403,8 @@ public:
 		
 		
 		
-		hol_r.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, &bestVal, &depth, &hol_r] {
+		hol_r.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, &depth, &hol_r] {
+			int bestVal = branchHandler.getBestVal();
 			//right branch = take out v nbrs
 			gbitset ingraph2 = bits_in_graph;
 
@@ -440,6 +442,8 @@ public:
 		{
 		    
 			if (nbVertices <= 10)
+				branchHandler.forward(_f, id, hol_l);
+			else if (nbVertices <= 20)
 				branchHandler.push_multithreading(_f, id, hol_l);
 			else
 				branchHandler.push_multiprocess(_f, id, hol_l, user_serializer);

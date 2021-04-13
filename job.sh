@@ -2,13 +2,13 @@
 #SBATCH --job-name=p_hat1000_2
 #SBATCH --output=report/%x-%j.out
 #SBATCH --account=def-mlafond
-##SBATCH --nodes=6
-#SBATCH --tasks=20
-##SBATCH --ntasks-per-node=1
-##SBATCH --cpus-per-task=4
+#SBATCH --nodes=5
+##SBATCH --tasks=50
+#SBATCH --ntasks-per-node=2
+#SBATCH --cpus-per-task=24
 ##SBATCH --mem=MaxMemPerNode         # memory limit per compute node
 ##SBATCH --mem-per-cpu=2000M        # memory; default unit is megabytes
-#SBATCH --time=0-00:30:00           # time (DD-HH:MM)
+#SBATCH --time=0-16:30:00           # time (DD-HH:MM)
 #SBATCH --mail-user=manuel.lafond@usherbrooke.ca
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
@@ -35,7 +35,7 @@ echo "Starting run at: `date`"
 #srun ./a.out -N 48 -P 4 -I input/edges22k.txt
 #srun ./a.out -N 80 -P 70 -I input/p_hat1000_2
 #mpiexec -n 20 ./a.out -I ./input/p_hat1000_2 -N 40
-srun ./a.out -I ./input/DSJC500_5
+srun ./a.out -I ./input/p_hat700_1 -N 24
 # ---------------------------------------------------------------------
 echo "Finishing run at: `date`"
 # ---------------------------------------------------------------------

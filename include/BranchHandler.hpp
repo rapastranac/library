@@ -165,12 +165,6 @@ namespace library
 			idleTime.fetch_add(time_tmp, std::memory_order_relaxed);
 		}
 
-		void decrementBusyThreads()
-		{
-			std::unique_lock lck(mtx);
-			--this->busyThreads;
-		}
-
 
 		double getPoolIdleTime()
 		{
@@ -199,13 +193,6 @@ namespace library
 			return nanoseconds * 1.0e-9; // convert to seconds
 		}
 
-		size_t getUniqueId()
-		{
-			std::unique_lock<std::mutex> lck(mtx);
-			++idCounter;
-			lck.unlock();
-			return idCounter;
-		}
 
 		void setBestVal(int newval)
 		{
@@ -219,6 +206,7 @@ namespace library
 //ML : this could be avoided if we had a non-mpi scheduler class
 #ifdef MPI_ENABLED
 			std::unique_lock<std::mutex> lck(mtx);	
+
 			if (newval < scheduler.getCenterBestVal())
 			{
 				scheduler.setCenterBestVal(newval);
@@ -232,6 +220,7 @@ namespace library
 			
 				
 			std::unique_lock<std::mutex> lck2(mtx);
+
 			if (newval < bestValLocal)
 			{
 				bestValLocal = newval;
@@ -245,21 +234,19 @@ namespace library
 		
 		int getBestVal()
 		{
-			//should be thread safe, but in the worst case we return a slightly outdated value
-			//std::unique_lock<std::mutex> lck(mtx);
-			//int bval = min(bestValLocal, scheduler.getCenterBestVal());
-			//lck.unlock();
-			//return bval;
+
 			
 			int bval = bestValLocal;
 			
+			
+			
 			if (mtx.try_lock())
 			{
-				bestValLocal = min(bval, scheduler.getCenterBestVal());
+				bval = min(bval, scheduler.getCenterBestVal());
 				mtx.unlock();
 			}
 			
-			return bestValLocal;
+			return bval;
 		}
 		
 		
@@ -763,13 +750,13 @@ namespace library
 		{
 			/*This lock must be acquired before checking the condition,	
 			even though busyThreads is atomic*/
-			//std::unique_lock<std::mutex> lck(mtx);
-			
+
+
 			if (busyThreads < thread_pool.size())	//don't even try to lock if this doesn't pass, then make sure we lock
 			{	
 
-				//if (mtx.try_lock())
-				std::unique_lock<std::mutex> lck(mtx);
+				if (mtx.try_lock())
+				//std::unique_lock<std::mutex> lck(mtx);
 				{
 
 					if (busyThreads < thread_pool.size())
@@ -791,14 +778,15 @@ namespace library
 						holder.setPushStatus();
 						holder.prune();
 
-						//mtx.unlock();
-						lck.unlock();
+						mtx.unlock();
+						//lck.unlock();
+
 
 						std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
 						return true;
 					}
-					lck.unlock();
-					//mtx.unlock();
+					//lck.unlock();
+					mtx.unlock();
 				}
 			}
 
@@ -864,13 +852,15 @@ namespace library
 				because a top holder was pushed instead, this false allows
 				to keep trying to find a top holder in the case of an
 				available thread*/
+			int cpt = 0;
 			while (!flag)
+			{
 				flag = push_multithreading(f, id, holder);
+				cpt++;
+			}
 
 			return flag; // this is for user's tracking pursposes if applicable
 		}
-
-#ifdef MPI_ENABLED
 
 		/*
  		return 0, for normal success with an available process
@@ -880,14 +870,14 @@ namespace library
 		int try_another_process(Holder &holder, F_SERIAL &&serializer)
 		{
 			
-			//if (mtx.try_lock())
-			std::unique_lock<std::mutex> lck(mtx);
+			if (mtx.try_lock())
+			//std::unique_lock<std::mutex> lck(mtx);
 			{
 
 				bool res = scheduler.sendHolderToNode(holder, serializer);
 				
-				//mtx.unlock();
-				lck.unlock();
+				mtx.unlock();
+				//lck.unlock();
 				if (res)
 				{
 					return 0;
@@ -985,7 +975,6 @@ namespace library
 		}*/
 
 
-#endif
 		// no DLB begin **********************************************************************
 		template <typename F, typename Holder>
 		void forward(F &&f, int threadId, Holder &holder)
