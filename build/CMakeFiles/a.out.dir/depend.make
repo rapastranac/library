@@ -219,7 +219,7 @@ CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../fmt/include/fmt/core.h
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../fmt/include/fmt/format-inl.h
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../fmt/include/fmt/format.h
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/ResultHolder.hpp
-CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../MPI_Modules/IPC_Handler.hpp
+CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../MPI_Modules/MPI_Scheduler.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../MPI_Modules/StreamHandler.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/BranchHandler.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/Graph.hpp

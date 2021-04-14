@@ -108,7 +108,7 @@ functional
 memory
 -
 
-/home/andres/cloud/library/MPI_Modules/IPC_Handler.hpp
+/home/andres/cloud/library/MPI_Modules/MPI_Scheduler.hpp
 StreamHandler.hpp
 /home/andres/cloud/library/MPI_Modules/StreamHandler.hpp
 ResultHolder.hpp
@@ -349,8 +349,8 @@ vector
 /home/andres/cloud/library/include/main.h
 ../include/Graph.hpp
 /home/andres/cloud/library/include/Graph.hpp
-../MPI_Modules/IPC_Handler.hpp
-/home/andres/cloud/library/MPI_Modules/IPC_Handler.hpp
+../MPI_Modules/MPI_Scheduler.hpp
+/home/andres/cloud/library/MPI_Modules/MPI_Scheduler.hpp
 ../include/VC_void_MPI.hpp
 /home/andres/cloud/library/include/VC_void_MPI.hpp
 ../include/ResultHolder.hpp

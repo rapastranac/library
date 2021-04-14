@@ -1,6 +1,6 @@
 #pragma once
-#ifndef IPC_HANDLER_HPP
-#define IPC_HANDLER_HPP
+#ifndef MPI_SCHEDULER_HPP
+#define MPI_SCHEDULER_HPP
 
 #include "StreamHandler.hpp"
 #include <ResultHolder.hpp>
@@ -39,13 +39,13 @@ namespace GemPBA
 	class ResultHolder;
 
 	// inter process communication handler
-	class IPC_Handler
+	class MPI_Scheduler
 	{
 
 	public:
-		static IPC_Handler &getInstance()
+		static MPI_Scheduler &getInstance()
 		{
-			static IPC_Handler instance;
+			static MPI_Scheduler instance;
 			return instance;
 		}
 
@@ -175,7 +175,8 @@ namespace GemPBA
 					fmt::print("rank {} exited\n", world_rank);
 					break;
 				}
-				requestNextNode();
+				notifyStateToCenter();
+
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, src);
 				//  push to the thread pool *********************************************************************
 				auto *holder = receiver(incoming_buffer, count); // holder might be useful for non-void functions
@@ -211,43 +212,33 @@ namespace GemPBA
 		}
 
 		// if current node has no assigned node already, a nextNode request is made to center
-		void requestNextNode()
+
+		void notifyStateToCenter()
 		{
-			if (nextNode[0] == -1)
-			{
-				{
-					int buffer = 0;
-					MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG_NEXT_NODE_REQUEST, world_Comm);
-				}
-				{
-					MPI_Status status;
-					int buffer = 0;
-					MPI_Recv(&buffer, 1, MPI_INT, 0, MPI_ANY_TAG, world_Comm, &status);
-					nextNode[0] = buffer; // if buffer == -1, there's no available node
-				}
-			}
+
+			int buffer = 0;
+			MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG_NEXT_NODE_REQUEST, world_Comm);
 		}
 
-		void notifyRunningToCenter(int src_rank)
+		void notifyRunningToCenter()
 		{
-			if (src_rank != 0)
-			{
-				int buf = 0;
-				MPI_Ssend(&buf, 1, MPI_INT, 0, TAG_RUNNING, world_Comm);
-			}
+			int buf = 0;
+			MPI_Ssend(&buf, 1, MPI_INT, 0, TAG_RUNNING, world_Comm);
 		}
 
 		void sendBufferToNextNode()
 		{
-			std::unique_lock<std::mutex> lck(mtx);
+			if (!streamHandler.empty())
+			{
+				std::unique_lock<std::mutex> lck(mtx);
 
-			fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
-			auto stringbuffer = streamHandler.string_buf();
+				fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
+				auto stringbuffer = streamHandler.string_buf();
 
-			MPI_Ssend(stringbuffer.data(), stringbuffer.size(), MPI_CHAR, newNode, 0, world_Comm);
-			streamHandler.clear();
-			fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
-
+				MPI_Ssend(stringbuffer.data(), stringbuffer.size(), MPI_CHAR, newNode, 0, world_Comm);
+				streamHandler.clear();
+				fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
+			}
 			//			node_request_signal = false;
 		}
 
@@ -732,7 +723,7 @@ namespace GemPBA
 		double end_time = 0;
 
 		/* singleton*/
-		IPC_Handler() {}
+		MPI_Scheduler() {}
 	};
 
 } // namespace GemPBA

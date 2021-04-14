@@ -39,14 +39,14 @@ namespace GemPBA
 	template <typename _Ret, typename... Args>
 	class ResultHolder;
 
-	class IPC_Handler;
+	class MPI_Scheduler;
 
 	class BranchHandler
 	{
 		template <typename _Ret, typename... Args>
 		friend class GemPBA::ResultHolder;
 
-		friend class IPC_Handler;
+		friend class MPI_Scheduler;
 
 	protected:
 		void add_on_idle_time(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
@@ -539,7 +539,7 @@ namespace GemPBA
 #ifdef MPI_ENABLED
 		int getRankID()
 		{
-			return ipc_handler->getRank();
+			return mpiScheduler->getRank();
 		}
 #endif
 		/* for void algorithms, this also calls the destructor of the pool*/
@@ -1240,7 +1240,7 @@ namespace GemPBA
 			{
 				//TODO implement DLB in here
 
-				if (ipc_handler->try_next_node(serializer, holder.getArgs()))
+				if (mpiScheduler->try_next_node(serializer, holder.getArgs()))
 				{
 					holder.setMPISent();
 					holder.prune();
@@ -1469,10 +1469,10 @@ namespace GemPBA
 		BranchHandler &operator=(const BranchHandler &) = delete;
 		BranchHandler &operator=(BranchHandler &&) = delete;
 
-		void link_IPC_Handler(IPC_Handler *ipc_handler)
+		void link_mpiScheduler(MPI_Scheduler *mpiScheduler)
 		{
-			this->ipc_handler = ipc_handler;
-			this->thread_pool.linkIPC_Handler(ipc_handler);
+			this->mpiScheduler = mpiScheduler;
+			this->thread_pool.link_mpiScheduler(mpiScheduler);
 		}
 
 		/*----------------Singleton----------------->>end*/
@@ -1481,7 +1481,7 @@ namespace GemPBA
 
 #ifdef MPI_ENABLED
 
-		IPC_Handler *ipc_handler = nullptr;
+		MPI_Scheduler *mpiScheduler = nullptr;
 
 		std::atomic<int> CHECKER{0};
 

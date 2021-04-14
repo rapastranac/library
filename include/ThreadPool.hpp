@@ -36,7 +36,7 @@
  * This thread pool spawns a single thread manually, and this one creates parallel region using openMP
  * */
 
-class GemPBA::IPC_Handler;
+class GemPBA::MPI_Scheduler;
 
 namespace ThreadPool
 {
@@ -170,9 +170,9 @@ namespace ThreadPool
             this->external_busy_threads = external_busy_threads;
         }
 
-        void linkIPC_Handler(GemPBA::IPC_Handler *ipc_handler)
+        void link_mpiScheduler(GemPBA::MPI_Scheduler *mpiScheduler)
         {
-            this->ipc_handler = ipc_handler;
+            this->mpiScheduler = mpiScheduler;
         }
 
         [[maybe_unused]] double getIdleTime()
@@ -295,8 +295,8 @@ namespace ThreadPool
                 this->exitWait = true;
                 this->cv_wait.notify_one(); // this only happens when pool finishes all its tasks
 
-                if (ipc_handler)
-                    ipc_handler->notifyHasNoTasks();
+                if (mpiScheduler)
+                    mpiScheduler->notifyHasNoTasks();
             }
         }
 
@@ -308,7 +308,7 @@ namespace ThreadPool
             this->isDone = false;
             this->idleTime = 0;
             this->external_busy_threads = nullptr;
-            this->ipc_handler = nullptr;
+            this->mpiScheduler = nullptr;
         }
 
         size_t SIZE;                         // number of threads in the thread pool
@@ -320,7 +320,7 @@ namespace ThreadPool
         std::atomic<bool> isDone;                // signalise that job is done
         std::atomic<bool> isInterrupted;         // signalise thread pool interruption
         std::atomic<int> *external_busy_threads; // let any external requester to know the current number of busy threads
-        GemPBA::IPC_Handler *ipc_handler;        // exclusive for GemPBA, used to notify that thread pool is idle
+        GemPBA::MPI_Scheduler *mpiScheduler;     // exclusive for GemPBA, used to notify that thread pool is idle
         std::atomic<long long> idleTime;         // total idle time that threads have been in sleeping mode
 
         std::mutex mtx;                  // controls tasks creation and their execution atomically
