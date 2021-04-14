@@ -56,6 +56,8 @@ namespace library
 		std::map<int, void *> roots; // every thread will be solving a sub tree, this point to their roots
 
 
+		
+
 		int bestValLocal; 
 #ifdef DLB
 		bool is_DLB = true;
@@ -92,7 +94,8 @@ namespace library
 		
 
 	public:
-		long dummyvar = 0;
+		int passes = 0;	//TODO : public var for testing purposes
+		
 		static BranchHandler &getInstance()
 		{
 			static BranchHandler instance;
@@ -207,7 +210,7 @@ namespace library
 #ifdef MPI_ENABLED
 			std::unique_lock<std::mutex> lck(mtx);	
 
-			if (newval < scheduler.getCenterBestVal())
+			if (newval < bestValLocal) //scheduler.getCenterBestVal())
 			{
 				scheduler.setCenterBestVal(newval);
 			}
@@ -793,7 +796,7 @@ namespace library
 			
 			this->forward(f, id, holder);
 			
-			return true;
+			return false;
 
 		}
 
@@ -877,15 +880,15 @@ namespace library
 				bool res = scheduler.sendHolderToNode(holder, serializer);
 				
 				mtx.unlock();
-				//lck.unlock();
+				
 				if (res)
 				{
+					//lck.unlock();
 					return 0;
 				}
 				
-				
-				
 			}
+			//lck.unlock();
 			
 			return 1;
 		}
@@ -927,7 +930,7 @@ namespace library
 
 		void printDebugInfo()
 		{
-			scheduler.printDebugInfo();
+			//scheduler.printDebugInfo();
 		}
 
 
@@ -945,7 +948,33 @@ namespace library
 
 			return push_multithreading(f, id, holder); //no rank available
 			
+			
 		}
+		
+		
+		
+		/*
+		template <typename F, typename Holder, typename F_SERIAL>
+		void push(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		{
+			
+			bool res = push_multiprocess(f, id, holder, f_serial);
+			if (res)
+				return;
+			
+			res = push_multithreading(f, id, holder);
+			if (res)
+				return;
+			
+			
+			
+			forward(f, id, holder);
+			
+			
+		}
+		*/
+		
+		
 
 		template <typename F, typename Holder, typename F_SERIAL>
 		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial, bool)

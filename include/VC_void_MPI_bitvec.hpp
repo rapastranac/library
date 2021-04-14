@@ -191,7 +191,7 @@ public:
 	void mvcbitset(int id, int depth, gbitset bits_in_graph, gbitset cur_sol, void *parent)
 	{
 		passes++;
-		//branchHandler.dummyvar = passes;
+		branchHandler.passes = passes;
 		
 		
 		/*cout<<bits_in_graph.size()<<endl;
@@ -201,7 +201,7 @@ public:
 		
 		int cursol_size = cur_sol.count();
 		
-		if (passes % 1000000 == 0)
+		if (passes % 20000000 == 0)
 		{
 			cout<<"WR="<<branchHandler.getWorldRank()<<" ID="<<id<<" passes="<<passes<<" gsize="<<bits_in_graph.count()<<" refvalue="<<branchHandler.getBestVal()<<" solsize="<<cur_sol.count()<<" isskips="<<is_skips<<" deglbskips="<<deglb_skips<<endl;	//<<" seen_skips="<<seen_skips<<" seen.size="<<seen[id].size()<<endl;
 			//cout<<"ID="<<id<<" CSOL="<<cursol_size<<" REFVAL="<<branchHandler.getRefValue()<<endl;
@@ -441,9 +441,9 @@ public:
 		if (hol_l.evaluate_branch_checkIn())
 		{
 		    
-			if (nbVertices <= 10)
+			if (nbVertices <= 5)
 				branchHandler.forward(_f, id, hol_l);
-			else if (nbVertices <= 20)
+			else if (nbVertices <= 50)
 				branchHandler.push_multithreading(_f, id, hol_l);
 			else
 				branchHandler.push_multiprocess(_f, id, hol_l, user_serializer);
