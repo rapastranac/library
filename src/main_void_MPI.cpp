@@ -24,19 +24,19 @@ auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 
 using HolderType = GemPBA::ResultHolder<void, int, float>;
 
-void foo(int id, int depth, float value, void *parent)
+void foo(int id, int depth, float treeIdx, void *parent)
 {
 	if (depth > 2)
 	{
 		return;
 	}
 	int newDepth = depth + 1;
-	fmt::print("rank {}, id : {} depth : {} value : {}\n", branchHandler.getRankID(), id, depth, value);
+	fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx);
 	HolderType hol(branchHandler, id, parent);
-	hol.holdArgs(newDepth, value * 2);
+	hol.holdArgs(newDepth, treeIdx + pow(2, depth));
 	branchHandler.try_push_MP<void>(foo, id, hol, user_serializer);
 
-	foo(id, newDepth, value, nullptr);
+	foo(id, newDepth, treeIdx, nullptr);
 }
 
 int main_void_MPI(int numThreads, int prob, std::string filename)
@@ -51,8 +51,8 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	auto &ipc_handler = GemPBA::IPC_Handler::getInstance(); // MPI IPC_Handler
 	branchHandler.link_IPC_Handler(&ipc_handler);
-	int rank = ipc_handler.establish_IPC(NULL, NULL); // initialize MPI and member variable linkin
-													  //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
+	int rank = ipc_handler.establishIPC(NULL, NULL); // initialize MPI and member variable linkin
+													 //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
 
 	/* previous input and output required before following condition
 	thus, other nodes know the data type*/
@@ -82,17 +82,17 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	holder.holdArgs(5, 7.8);
 
-	float value = 5.7;
+	float treeIdx = 1;
 	std::stringstream ss;
-	user_serializer(ss, depth, value);
+	user_serializer(ss, depth, treeIdx);
 
 	if (rank == 0)
 		ipc_handler.start(ss.str().data(), ss.str().size());
 	else
 	{
 		branchHandler.setMaxThreads(1);
-		auto receiver = branchHandler.construct_receiver<void, int, float>(foo, user_deserializer);
-		ipc_handler.listen(receiver);
+		auto bufferReceiver = branchHandler.construct_receiver<void, int, float>(foo, user_deserializer);
+		ipc_handler.listen(bufferReceiver);
 	}
 
 	ipc_handler.barrier();

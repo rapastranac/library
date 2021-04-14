@@ -110,16 +110,16 @@ namespace ctpl
 						std::unique_ptr<std::function<void(int threadId)>> func(_f);
 						(*_f)(threadId);
 
-						if (this->externNumThreads)
+						if (this->external_busy_threads)
 						{
 							std::unique_lock<std::mutex> lock(this->mtx);
-							--(*this->externNumThreads);
+							--(*this->external_busy_threads);
 						}
 
 						if (_flag)
 						{
 							this->kill_q.push(threadId);
-							this->cv2.notify_one();
+							this->cv_wait.notify_one();
 							return; // Thread returns even if the queue is not empty yet
 						}
 						else
@@ -131,7 +131,7 @@ namespace ctpl
 					++this->nWaiting;
 
 					if (nWaiting.load() == this->size() && running)
-						this->cv2.notify_one(); // this only happens when pool finishes all its tasks
+						this->cv_wait.notify_one(); // this only happens when pool finishes all its tasks
 
 					this->cv.wait(lock, [this, &_f, &isPop, &_flag]() { // all threads go into sleep mode when pool is launched
 						isPop = this->q.pop(_f);
@@ -139,13 +139,13 @@ namespace ctpl
 					});
 					end = std::chrono::steady_clock::now();
 
-					sumUpIdleTime(begin, end); // this only measures the threads idle time
+					add_on_idle_time(begin, end); // this only measures the threads idle time
 					--this->nWaiting;
 
 					if (!isPop)
 					{
 						this->kill_q.push(threadId); //It enqueues the order in which the threads return
-						this->cv2.notify_one();		 //It notifies to the thread that requested interruption, If applicable.
+						this->cv_wait.notify_one();		 //It notifies to the thread that requested interruption, If applicable.
 
 						return; // if the queue is empty and this->isDone == true or *flag then return
 					}

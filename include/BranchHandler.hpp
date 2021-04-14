@@ -49,7 +49,7 @@ namespace GemPBA
 		friend class IPC_Handler;
 
 	protected:
-		void sumUpIdleTime(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
+		void add_on_idle_time(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
 		{
 			double time_tmp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 			idleTime.fetch_add(time_tmp, std::memory_order_relaxed);
@@ -1356,7 +1356,15 @@ namespace GemPBA
 			this->thread_pool.setExternNumThreads(&this->busyThreads);
 		}
 
-		/* 	input: this method receives the main algorithm and a deserializer.
+		/* 	
+			types must be passed through the brackets construct_receiver<_Ret, Args...>(..), so it's
+			known at compile time.
+			
+			_Ret: stands for the return type of the main function
+			Args...: is the type list of original type of the function, without considering int id, and void* parent
+			
+			input: this method receives the main algorithm and a deserializer.
+			
 			return:  a lambda object who is in charge of receiving a raw buffer, this 
 			lambda object will deserialize the buffer and create a new Holder containing
 			the deserialized arguments. Lambda object will push to thread pool and it

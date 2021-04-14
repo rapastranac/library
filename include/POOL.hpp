@@ -207,8 +207,8 @@ namespace POOL
 				if (threads.empty())
 					break;
 
-				std::unique_lock<std::mutex> lck(this->mtx2);
-				cv2.wait(lck, [this, &isPop, &_id]() {
+				std::unique_lock<std::mutex> lck(this->mtx_wait);
+				cv_wait.wait(lck, [this, &isPop, &_id]() {
 					isPop = this->kill_q.pop(_id);
 					return isPop;
 				});
@@ -226,8 +226,8 @@ namespace POOL
 		{
 			/* There might be a lost wake up if main thread does not
 				solve at least a branch. To be checked out*/
-			std::unique_lock<std::mutex> lck(this->mtx2);
-			cv2.wait(lck, [this]() {
+			std::unique_lock<std::mutex> lck(this->mtx_wait);
+			cv_wait.wait(lck, [this]() {
 				bool flag = false;
 
 				if (nWaiting.load() == size() && running)
@@ -261,9 +261,9 @@ namespace POOL
 
 		virtual void clear_queue() = 0;
 
-		void setExternNumThreads(std::atomic<int> *externNumThreads)
+		void setExternNumThreads(std::atomic<int> *external_busy_threads)
 		{
-			this->externNumThreads = externNumThreads;
+			this->external_busy_threads = external_busy_threads;
 		}
 
 		double getIdleTime()
@@ -272,7 +272,7 @@ namespace POOL
 		}
 
 	protected:
-		void sumUpIdleTime(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
+		void add_on_idle_time(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
 		{
 			long long temp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 			idleTime.fetch_add(temp, std::memory_order_relaxed);
@@ -299,15 +299,15 @@ namespace POOL
 
 		std::atomic<bool> isDone;
 		std::atomic<bool> isInterrupted;
-		std::atomic<int> *externNumThreads = nullptr;
+		std::atomic<int> *external_busy_threads = nullptr;
 		std::atomic<long long> idleTime;
 
 		std::mutex mtx;
-		std::mutex mtx2;
+		std::mutex mtx_wait;
 		std::condition_variable cv;
-		std::condition_variable cv2;
+		std::condition_variable cv_wait;
 
-		/*mtx2 and cv2 let main thread (or any other) know
+		/*mtx_wait and cv_wait let main thread (or any other) know
 		that a new thread (that has received the signal to finish)
 		has been enqueued to kill_q */
 

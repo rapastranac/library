@@ -252,7 +252,7 @@ namespace GemPBA
 					must be decremented in one, also it should be locked before another thread
 					changes it, since it is atomic, this operation is already well defined*/
 
-				branchHandler.sumUpIdleTime(begin, end);
+				branchHandler.add_on_idle_time(begin, end);
 				branchHandler.decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
 			}
 			/*	This condition is relevant due to some functions might return empty values
@@ -358,7 +358,7 @@ namespace GemPBA
 					must be decremented in one, also it should be locked before another thread
 					changes it, since it is atomic, this operation is already well defined*/
 
-				branchHandler.sumUpIdleTime(begin, end);
+				branchHandler.add_on_idle_time(begin, end);
 				branchHandler.decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
 			}
 			else if (isMPISent)

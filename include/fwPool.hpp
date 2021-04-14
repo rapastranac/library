@@ -119,7 +119,7 @@ namespace fwPool
 						if (_flag)
 						{
 							this->kill_q.push(threadId);
-							this->cv2.notify_one();
+							this->cv_wait.notify_one();
 							return;
 						}
 						else
@@ -128,7 +128,7 @@ namespace fwPool
 
 					std::unique_lock<std::mutex> lock(mtx);
 					++this->nWaiting;
-					this->cv2.notify_one();
+					this->cv_wait.notify_one();
 					cv.wait(lock, [this, &_fun, &isPop, &_flag]() {
 						isPop = q.pop(_fun);
 						return isPop || this->isDone || _flag;
@@ -141,7 +141,7 @@ namespace fwPool
 					if (!isPop)
 					{
 						this->kill_q.push(threadId);
-						this->cv2.notify_one();
+						this->cv_wait.notify_one();
 
 						return;
 					}

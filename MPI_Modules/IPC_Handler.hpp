@@ -21,14 +21,24 @@
 
 #define TAG_TERMINATE 3
 #define TAG_AVAILABLE 4
+#define TAG_PUSH_REQUEST 5
+#define TAG_RESULT_REQUEST 6
+#define TAG_NO_RESULT 7
+#define TAG_REF_VAL_REQUEST 8
+#define TAG_REF_VAL_UPDATE 9
+#define TAG_RUNNING 22
+#define TAG_NEXT_NODE_REQUEST 23
+
+#define STATE_RUNNING 1
+#define STATE_ASSIGNED 2
+#define STATE_AVAILABLE 3
 
 namespace GemPBA
 {
 	template <typename _Ret, typename... Args>
 	class ResultHolder;
 
-	class BranchHandler;
-
+	// inter process communication handler
 	class IPC_Handler
 	{
 
@@ -44,7 +54,7 @@ namespace GemPBA
 			this->threadsPerNode = threadsPerNode;
 		}
 
-		int establish_IPC(int *argc, char *argv[])
+		int establishIPC(int *argc, char *argv[])
 		{
 			// Initilialise MPI and ask for thread support
 			int provided;
@@ -56,12 +66,12 @@ namespace GemPBA
 				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
 			}
 
-			communicators();
+			createCommunicators();
 
 			int namelen;
 			MPI_Get_processor_name(processor_name, &namelen);
 			fmt::print("Process {} of {} is on {}\n", world_rank, world_size, processor_name);
-			win_allocate();
+			allocateMPI();
 
 			return world_rank;
 		}
@@ -79,7 +89,7 @@ namespace GemPBA
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {}, before deallocate \n", world_rank);
 #endif
-			win_deallocate();
+			deallocateMPI();
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {}, after deallocate \n", world_rank);
 #endif
@@ -157,64 +167,102 @@ namespace GemPBA
 				MPI_Recv(incoming_buffer, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
 				count_rcv++;
 				int src = status.MPI_SOURCE; // it might be useful for non-void functions
+				int TAG = status.MPI_TAG;
 
+				if (TAG == TAG_TERMINATE)
+				{
+					delete incoming_buffer;
+					fmt::print("rank {} exited\n", world_rank);
+					break;
+				}
+				requestNextNode();
+				fmt::print("rank {}, received buffer from rank {}\n", world_rank, src);
 				//  push to the thread pool *********************************************************************
 				auto *holder = receiver(incoming_buffer, count); // holder might be useful for non-void functions
 				// **********************************************************************************************
 
 				// buffers created by thread are to be sent with the next loop
-				while (!idle_node_signal)
+				while (true)
 				{
-					if (!streamHandler.empty())
-					{
-						fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
-						int TAG = 4; // TEMPORARY
-						auto stringbuffer = streamHandler.string_buf();
-
-						MPI_Ssend(stringbuffer.data(), stringbuffer.size(), MPI_CHAR, newNode, TAG, world_Comm);
-						streamHandler.clear();
-						fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
-					}
-
-					// tell center node
+					sendBufferToNextNode();
+					// TODO tell center node
 					wait();
-					fmt::print("rank {}, notification received, sending buffer to rank {}\n", world_rank, nextNode[1]);
+					if (notifyAvlToCenter())
+						break;
+
+					fmt::print("rank {}, notification received, sending buffer to rank {}\n", world_rank, newNode);
 				}
 
 				delete holder;
+				delete incoming_buffer;
 			}
 		}
 
-		void schedule(const char *buffer, const int SIZE)
+		bool notifyAvlToCenter()
 		{
-			std::vector<std::queue<int>> static_next(world_size); // static load balancing
-			std::vector<int> dynamic_next(world_size, -1);		  // when static is no longer useful
-			built_processes_tree(static_next);
+			if (idle_node_signal)
+			{
+				int buffer = 0;
+				MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG_AVAILABLE, world_Comm);
+				idle_node_signal = false;
+				return true;
+			}
+			return false;
+		}
 
-			std::vector<int> requesting(world_size, 1);
-			int nodes = world_size - 1; // number of available nodes -- private to this method
-			int busy = 0;
-			std::vector<int> aNodes(world_size, 1); // list of nodes availability
+		// if current node has no assigned node already, a nextNode request is made to center
+		void requestNextNode()
+		{
+			if (nextNode[0] == -1)
+			{
+				{
+					int buffer = 0;
+					MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG_NEXT_NODE_REQUEST, world_Comm);
+				}
+				{
+					MPI_Status status;
+					int buffer = 0;
+					MPI_Recv(&buffer, 1, MPI_INT, 0, MPI_ANY_TAG, world_Comm, &status);
+					nextNode[0] = buffer; // if buffer == -1, there's no available node
+				}
+			}
+		}
 
-			sendSeed(static_next, aNodes, nodes, busy, buffer, SIZE);
+		void notifyRunningToCenter(int src_rank)
+		{
+			if (src_rank != 0)
+			{
+				int buf = 0;
+				MPI_Ssend(&buf, 1, MPI_INT, 0, TAG_RUNNING, world_Comm);
+			}
+		}
+
+		void sendBufferToNextNode()
+		{
+			std::unique_lock<std::mutex> lck(mtx);
+
+			fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
+			auto stringbuffer = streamHandler.string_buf();
+
+			MPI_Ssend(stringbuffer.data(), stringbuffer.size(), MPI_CHAR, newNode, 0, world_Comm);
+			streamHandler.clear();
+			fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
+
+			//			node_request_signal = false;
+		}
+
+		void schedule(const char *SEED, const int SEED_SIZE)
+		{
+			builtProcessesTopology();
+			//std::vector<int> requesting(world_size, 1);
+			sendSeed(nWorking, SEED, SEED_SIZE);
 
 			int rcv_availability = 0;
 			tasks_per_node.resize(world_size, 0);
 
-			/*
-					TAG scenarios:
-					TAG == 2 discarded
-					TAG == 3 termination signal
-					TAG == 4 availability report
-					TAG == 5 push request
-					TAG == 6 result request
-					TAG == 7 no result from rank
-					TAG == 8 reference value update, TAG == 9 for actual update
-				*/
-
 			while (true)
 			{
-				//fmt::print("nodes {}, busy {} \n", nodes, busy);
+				//fmt::print("nodes {}, nWorking {} \n", nodes, nWorking);
 				MPI_Status status;
 				int buffer;
 				MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
@@ -222,39 +270,40 @@ namespace GemPBA
 				int src_rank = status.MPI_SOURCE;
 				int TAG = status.MPI_TAG;
 
-				if (TAG == 4)
+				switch (TAG)
+				{
+				case TAG_AVAILABLE:
 				{
 					++rcv_availability;
-#ifdef DEBUG_COMMENTS
-					fmt::print("rank {} availability received {} times\n", world_rank, rcv_availability);
-#endif
-					if (aNodes[src_rank] == 1)
-						fmt::print("***********************ERROR************************** aNodes[{}] == 1\n ", src_rank);
-					aNodes[src_rank] = 1;
-					++nodes;
-					--busy;
-					BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
+					//#ifdef DEBUG_COMMENTS
+					//					fmt::print("rank {} availability received {} times\n", world_rank, rcv_availability);
+					//#endif
+					//					if (nodeState[src_rank] == STATE_AVAILABLE)
+					//						fmt::print("***********************ERROR************************** aNodes[{}] == 1\n ", src_rank);
+					nodeState[src_rank] = STATE_AVAILABLE;
+					--nWorking;
+					++nAvailable;
+					//bcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
 				}
-				else if (TAG == 5)
-				{
-					requesting[src_rank] = 1;
-
-					if (nodes > 0)
-					{
-
-						reply_requesters(requesting, static_next, aNodes, nodes, busy, src_rank);
-
-						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes  (not doing anything relevant for now)
-						++approvedRequests;
-					}
-					else // this scenarios should not happen anymore
-					{
-						BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
-						++failedRequests;
-					}
-					++totalRequests;
-				}
-				else if (TAG == 8)
+				break;
+					//case TAG_PUSH_REQUEST:
+					//{
+					//	requesting[src_rank] = 1;
+					//	if (nodes > 0)
+					//	{
+					//		//reply_requesters(requesting, static_next, aNodes, nodes, nWorking, src_rank);
+					//		bcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes  (not doing anything relevant for now)
+					//		++approvedRequests;
+					//	}
+					//	else // this scenarios should not happen anymore
+					//	{
+					//		bcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
+					//		++failedRequests;
+					//	}
+					//	++totalRequests;
+					//}
+					//break;
+				case TAG_REF_VAL_REQUEST:
 				{
 					// send ref value global
 					MPI_Ssend(refValueGlobal, 1, MPI_INT, src_rank, 0, world_Comm);
@@ -262,14 +311,34 @@ namespace GemPBA
 					// receive either the update ref value global or just pass
 					MPI_Recv(&buffer, 1, MPI_INT, src_rank, MPI_ANY_TAG, world_Comm, &status);
 					int TAG2 = status.MPI_TAG;
-					if (TAG2 == 9)
+					if (TAG2 == TAG_REF_VAL_UPDATE)
 					{
 						refValueGlobal[0] = buffer;
-						BcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
+						bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
 					}
 				}
+				break;
 
-				if (breakLoop(nodes, busy))
+				case TAG_RUNNING:
+				{
+				}
+				break;
+
+				case TAG_NEXT_NODE_REQUEST:
+				{
+					nodeState[src_rank] = STATE_RUNNING;
+					++nWorking;
+
+					int nxt = isAvailable();
+					nodeState[nxt] = STATE_ASSIGNED;
+
+					--nAvailable;
+					MPI_Ssend(&nxt, 1, MPI_INT, src_rank, 0, world_Comm);
+				}
+				break;
+				}
+
+				if (breakLoop())
 					break;
 			}
 
@@ -287,110 +356,89 @@ namespace GemPBA
 			fetchSolution();
 		}
 
-		void shift_left(int *v, const int size)
+		void shift_left(int v[], const int size)
 		{
-			for (int i = 1; i < size; i++)
+			for (int i = 0; i < (size - 1); i++)
 			{
-				if (i == (size - 1)) // this should not happen
-				{
-					v[i] = -1;
-					v[i - 1] = v[i];
-				}
-				else if (v[i] == -1)
-				{
-					break; // there's no more data
-				}
+				if (v[i] != -1)
+					v[i] = v[i + 1]; // shift one cell to the left
 				else
-				{
-					v[i - 1] = v[i]; // shift one cell to the left
-				}
+					break; // no more data
 			}
 		}
 
 		bool try_next_node(auto &serializer, auto &tuple)
 		{
+			while (isTransmitting)
+				;
 			std::unique_lock<std::mutex> lck(mtx);
-			if (!awake) //to avoid a lost wake up
+
+			if (nextNode[0] != -1)
 			{
-				if (nextNode[0] != nextNode[1])
-				{
-					awake = true;
-					newNode = nextNode[0];
-					streamHandler.build_buffer(serializer, tuple);
-					shift_left(nextNode, world_size);
-					notify_node_request();
-					return true;
-				}
+				newNode = nextNode[0];
+				streamHandler.build_buffer(serializer, tuple);
+				shift_left(nextNode, world_size);
+				notifyNodeRequest();
+				return true;
 			}
+
 			return false;
 		}
 
-		void notify_idle_node()
+		void notifyNodeRequest()
 		{
-			fmt::print("rank {} about to be notified as idle\n", world_rank);
-			std::unique_lock<std::mutex> lck(mtx);
-			idle_node_signal = true;
-			cv.notify_one();
-			fmt::print("rank {} notified as idle\n", world_rank);
-		}
-
-		void notify_node_request()
-		{
+			isTransmitting = true;
 			node_request_signal = true;
 			cv.notify_one();
 		}
 
-		void notify_has_no_tasks()
+		void notifyHasNoTasks()
 		{
+			//fmt::print("rank {} about to notify out of tasks\n", world_rank);
 			std::unique_lock<std::mutex> lck(mtx);
 			no_tasks_signal = true;
 			cv.notify_one();
+			//fmt::print("rank {} notified out of tasks\n", world_rank);
 		}
 
 		void wait()
 		{
 			std::unique_lock<std::mutex> lck(mtx);
-			awake = false;
+			isTransmitting = false;
 			cv.wait(lck, [this]() {
-				if (node_request_signal || no_tasks_signal)
-				{
-					node_request_signal = false;
-					no_tasks_signal = false;
-					return true;
-				}
-				return false || idle_node_signal;
+				return false || node_request_signal || no_tasks_signal;
 			});
 		}
 
-		void built_processes_tree(std::vector<std::queue<int>> &static_next)
+		void builtProcessesTopology()
 		{
 			int numNodes = world_size - 1;
+			nAvailable = world_size - 1;
 			// this loop builds the tree distribution
 			for (int depth = 0; depth < log2(numNodes); depth++)
 			{
 				for (int rank = 1; rank <= pow(2, depth); rank++)
 				{
-					int child = next_node(numNodes, rank, depth);
-					static_next[rank].push(child);
+					int child = getNextNode(numNodes, rank, depth);
+					nodesTopology[rank].insert(child);
 					fmt::print("process: {}, child: {}\n", rank, child);
 				}
 			}
 			// put into nodes
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				int it = 0;
-				while (!static_next[rank].empty())
+				int offset = 0;
+				for (auto &child : nodesTopology[rank])
 				{
-					int child = static_next[rank].front();
-					static_next[rank].pop();
-					fmt::print("rank: {}, child: {}\n", rank, child);
-					put(&child, 1, rank, MPI_INT, it, win_NextNode);
-					it++;
+					put(&child, 1, rank, MPI_INT, offset, win_NextNode);
+					nodeState[child] = STATE_ASSIGNED;
+					--nAvailable;
+					++offset;
 				}
 			}
 		}
 
-		int next_node(int numNodes, int rank, int depth)
+		int getNextNode(int numNodes, int rank, int depth)
 		{
 			int child = rank + pow(2, depth);
 
@@ -403,7 +451,7 @@ namespace GemPBA
 		void reply_requesters(std::vector<int> &requesting,
 							  std::vector<std::queue<int>> &static_next,
 							  std::vector<int> aNodes,
-							  int nodes, int busy, int src_rank)
+							  int nodes, int nWorking, int src_rank)
 		{
 			static bool flag = true;
 			static int count = world_size - 1;
@@ -422,7 +470,7 @@ namespace GemPBA
 
 			for (int rank = 1; rank < world_size - 1; rank++)
 			{
-				int k = isAvailable(aNodes);
+				int k = isAvailable();
 
 				if (k == -1)
 					break; // no more available nodes
@@ -432,7 +480,7 @@ namespace GemPBA
 
 				aNodes[k] = 0;
 				--nodes;
-				++busy;
+				++nWorking;
 				put(&k, 1, src_rank, MPI_INT, 0, win_NextNode); // puts the next available node, worker does not need to receive
 				tasks_per_node[k]++;
 			}
@@ -453,36 +501,32 @@ namespace GemPBA
 		// first synchronisation, thus rank 0 is aware of other availability
 		// the purpose is to broadcast the total availability to other ranks
 		void
-		Bcast_availability(std::vector<int> &aNodes, int &nodes)
+		bcastAvailability(std::vector<int> &aNodes, int &nodes)
 		{
 			aNodes[0] = 0;
 			MPI_Bcast(&nodes, 1, MPI_INT, 0, world_Comm);
 			MPI_Barrier(world_Comm); // synchronise process in world group
 		}
 
-		int isAvailable(std::vector<int> &aNodes)
+		int isAvailable()
 		{
-			int r = -1;
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				if (aNodes[rank] == 1)
-				{
-					r = rank;
-					break;
-				}
+				if (nodeState[rank] == STATE_AVAILABLE)
+					return rank;
 			}
-			return r; // this should not happen
+			return -1; // this should not happen
 		}
 
 		// this sends the termination signal
-		bool breakLoop(const int &nodes, const int &busy)
+		bool breakLoop()
 		{
 			//std::this_thread::sleep_for(std::chrono::milliseconds(10)); // 4 testing
-			//fmt::print("test, busyNodes = {}\n", busyNodes[0]);
+			//fmt::print("test, nWorking = {}\n", nWorking[0]);
 
-			if (nodes == (world_size - 1) && busy == 0)
+			if (nAvailable == (world_size - 1) && nWorking == 0)
 			{
-				fmt::print("Termination achieved: nodes {}, busy {} \n", nodes, busy);
+				fmt::print("Termination achieved: nodes {}, nWorking {} \n", nAvailable, nWorking);
 				return true; //termination .. TODO to guarantee it reaches 0 only once
 			}
 			return false;
@@ -545,25 +589,13 @@ namespace GemPBA
 			}
 		}
 
-		void sendSeed(std::vector<std::queue<int>> &static_next, std::vector<int> &aNodes, int &nodes, int &busy, const char *buffer, const int COUNT)
+		void sendSeed(int &nWorking, const char *buffer, const int COUNT)
 		{
 			const int dest = 1;
 			// global synchronisation **********************
-			--nodes;
-			++busy;
-			aNodes[dest] = 0;
-			BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
-
-			// *********************************************
-
-			// put next node *******************************
-			if (!static_next[dest].empty()) // there might be a single worker
-			{
-				int next = static_next[dest].front();
-				static_next[dest].pop();
-				aNodes[next] = 0; // prioritized for node 1
-				put(&next, 1, dest, MPI_INT, 0, win_NextNode);
-			}
+			++nWorking;
+			--nAvailable;
+			nodeState[dest] = STATE_RUNNING;
 			// *********************************************
 
 			int err = MPI_Ssend(buffer, COUNT, MPI_CHAR, dest, 0, world_Comm); // send buffer
@@ -582,7 +614,7 @@ namespace GemPBA
 		}
 
 		//generic put blocking RMA
-		void BcastPut(const void *origin_addr, int count, MPI_Datatype mpi_datatype, MPI_Aint offset, MPI_Win &window)
+		void bcastPut(const void *origin_addr, int count, MPI_Datatype mpi_datatype, MPI_Aint offset, MPI_Win &window)
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
@@ -593,7 +625,7 @@ namespace GemPBA
 			}
 		}
 
-		void communicators()
+		void createCommunicators()
 		{
 			MPI_Comm_dup(MPI_COMM_WORLD, &world_Comm); // world communicator for this library
 
@@ -610,7 +642,7 @@ namespace GemPBA
 			MPI_Comm_dup(world_Comm, &numNodes_Comm);
 		}
 
-		void win_allocate()
+		void allocateMPI()
 		{
 			MPI_Barrier(world_Comm);
 			// applicable for all the processes
@@ -622,7 +654,7 @@ namespace GemPBA
 			MPI_Barrier(world_Comm);
 		}
 
-		void win_deallocate()
+		void deallocateMPI()
 		{
 			MPI_Win_free(&win_NumNodes);
 			MPI_Win_free(&win_refValueGlobal);
@@ -633,6 +665,7 @@ namespace GemPBA
 		void init()
 		{
 			numAvailableNodes[0] = 0;
+			nodeState.resize(world_size, STATE_AVAILABLE);
 
 			for (int i = 0; i < world_size; i++)
 			{
@@ -657,9 +690,14 @@ namespace GemPBA
 		int world_size;			  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
 
+		int nWorking = 0;
+		int nAvailable = 0;
+		std::vector<int> nodeState;					// state of the nodes : running, assgined or available
+		std::map<int, std::set<int>> nodesTopology; // order map and set, determine next node to push to
+
 		std::mutex mtx;
 		std::condition_variable cv;
-		bool awake = false;
+		bool isTransmitting = false;
 		bool node_request_signal = false;
 		bool no_tasks_signal = false;
 		bool idle_node_signal = false;
