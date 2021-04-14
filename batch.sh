@@ -17,7 +17,7 @@ echo "Starting run at: `date`"
 #mpirun -hostfile hostfile -np 3 ./a.out -N 1 -P 5 -I input/prob_4/400/00400_1
 #mpirun -hostfile hostfile -np 3 ./a.out -N 1 -P 5 -I input/DSJC500_5
 
-mpirun -n 2 xterm -fa 'Monospace' -bg white -fg black -fs 12 -display :0 -e gdb -x gdb_commands --args a.out
+mpirun -n 5 xterm -fa 'Monospace' -bg white -fg black -fs 12 -display :0 -e gdb -x gdb_commands --args a.out
 
 # ---------------------------------------------------------------------
 echo "Finishing run at: `date`"

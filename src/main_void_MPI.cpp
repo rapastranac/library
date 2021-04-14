@@ -26,14 +26,17 @@ using HolderType = GemPBA::ResultHolder<void, int, float>;
 
 void foo(int id, int depth, float value, void *parent)
 {
-	if (depth > 10)
+	if (depth > 2)
 	{
 		return;
 	}
+	int newDepth = depth + 1;
 	fmt::print("rank {}, id : {} depth : {} value : {}\n", branchHandler.getRankID(), id, depth, value);
 	HolderType hol(branchHandler, id, parent);
-	hol.holdArgs(++depth, value * 2);
-	branchHandler.try_push<void>(foo, id, hol);
+	hol.holdArgs(newDepth, value * 2);
+	branchHandler.try_push_MP<void>(foo, id, hol, user_serializer);
+
+	foo(id, newDepth, value, nullptr);
 }
 
 int main_void_MPI(int numThreads, int prob, std::string filename)
@@ -77,6 +80,8 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	ipc_handler.setThreadsPerNode(numThreads);
 	//holder.holdArgs(depth, graph);
 
+	holder.holdArgs(5, 7.8);
+
 	float value = 5.7;
 	std::stringstream ss;
 	user_serializer(ss, depth, value);
@@ -85,6 +90,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		ipc_handler.start(ss.str().data(), ss.str().size());
 	else
 	{
+		branchHandler.setMaxThreads(1);
 		auto receiver = branchHandler.construct_receiver<void, int, float>(foo, user_deserializer);
 		ipc_handler.listen(receiver);
 	}

@@ -1,6 +1,7 @@
 #ifndef STREAMHANDLER_HPP
 #define STREAMHANDLER_HPP
 
+#include <string>
 #include <sstream>
 #include <functional>
 #include <tuple>
@@ -55,9 +56,9 @@ namespace GemPBA
             return ss.str().size();
         }
 
-        char *data() noexcept
+        std::string string_buf()
         {
-            return ss.str().data();
+            return ss.str();
         }
     };
 }

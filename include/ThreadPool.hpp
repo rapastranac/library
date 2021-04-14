@@ -36,6 +36,8 @@
  * This thread pool spawns a single thread manually, and this one creates parallel region using openMP
  * */
 
+class GemPBA::IPC_Handler;
+
 namespace ThreadPool
 {
 
@@ -168,6 +170,11 @@ namespace ThreadPool
             this->externNumThreads = externNumThreads;
         }
 
+        void linkIPC_Handler(GemPBA::IPC_Handler *ipc_handler)
+        {
+            this->ipc_handler = ipc_handler;
+        }
+
         [[maybe_unused]] double getIdleTime()
         {
             return ((double)idleTime.load() * 1.0e-9); //seconds
@@ -264,6 +271,9 @@ namespace ThreadPool
                 {
                     this->exitWait = true;
                     this->cv2.notify_one(); // this only happens when pool finishes all its tasks
+
+                    if (ipc_handler)
+                        ipc_handler->notify_idle_node();
                 }
 
                 this->cv.wait(lock,
@@ -289,6 +299,7 @@ namespace ThreadPool
             this->isDone = false;
             this->idleTime = 0;
             this->externNumThreads = nullptr;
+            this->ipc_handler = nullptr;
         }
 
         size_t SIZE = 0;
@@ -300,6 +311,7 @@ namespace ThreadPool
         std::atomic<bool> isDone;
         std::atomic<bool> isInterrupted;
         std::atomic<int> *externNumThreads;
+        GemPBA::IPC_Handler *ipc_handler;
         std::atomic<long long> idleTime;
 
         std::mutex mtx;              // controls tasks creation and their execution atomically

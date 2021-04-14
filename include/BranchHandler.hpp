@@ -536,16 +536,12 @@ namespace GemPBA
 		{
 			return requests.load();
 		}
-
+#ifdef MPI_ENABLED
 		int getRankID()
 		{
-#ifdef MPI_ENABLED
-			return world_rank;
-#else
-			return -1;
-#endif
+			return ipc_handler->getRank();
 		}
-
+#endif
 		/* for void algorithms, this also calls the destructor of the pool*/
 		/*void wait_and_finish()
 		{
@@ -1128,7 +1124,7 @@ namespace GemPBA
 		}
 
 		template <typename _ret, typename F, typename Holder>
-		bool try_push(F &&f, int id, Holder &holder)
+		bool try_push_MT(F &&f, int id, Holder &holder)
 		{
 			bool _flag = false;
 			/* false means that current holder was not able to be pushed 
@@ -1142,15 +1138,12 @@ namespace GemPBA
 		}
 
 		template <typename _ret, typename F, typename Holder, typename Serializer>
-		bool try_push(F &&f, int id, Holder &holder, Serializer &&serializer)
+		bool try_push_MP(F &&f, int id, Holder &holder, Serializer &&serializer)
 		{
-			bool _flag = false;
-			/* false means that current holder was not able to be pushed 
-				because a top holder was pushed instead, this false allows
-				to keep trying to find a top holder in the case of an
-				available thread*/
-			while (!_flag)
-				_flag = push_multiprocess<_ret>(f, id, holder, serializer);
+			bool _flag = push_multiprocess(id, holder, serializer);
+
+			if (!_flag)
+				return try_push_MT<_ret>(f, id, holder);
 
 			return _flag; // this is for user's tracking pursposes if applicable
 		}
@@ -1241,53 +1234,22 @@ namespace GemPBA
 			return 1; //this return is necessary only due to function extraction
 		}
 
-		template <typename _ret, typename F, typename Holder, typename Serializer,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_multiprocess(F &&f, int id, Holder &holder, Serializer &&serializer)
+		bool push_multiprocess(int id, auto &holder, auto &&serializer)
 		{
-			/*This lock must be adquired before checking the condition,	
-			even though busyThreads is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-			if (busyThreads < thread_pool.size())
+			if (mtx_MPI.try_lock()) // if mutex acquired, other threads will avoid this section
 			{
-				if (is_DLB)
-				{
-					bool res = try_top_holder<_ret>(lck, f, holder);
-					if (res)
-						return false; // if top holder found, then it should
-									  // return false to keep trying another top holder
-
-					checkRightSiblings(&holder); // this decrements parent's children
-				}
+				//TODO implement DLB in here
 
 				if (ipc_handler->try_next_node(serializer, holder.getArgs()))
 				{
 					holder.setMPISent();
 					holder.prune();
-					lck.unlock();
+					mtx_MPI.unlock(); // end critical section
 					return true;
 				}
-
-				//after this line, only leftMost holder should be pushed
-				this->requests++;
-				this->busyThreads++;
-				holder.setPushStatus();
-				holder.prune();
-				lck.unlock();
-
-				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
-				return true;
+				mtx_MPI.unlock(); // end critical section
 			}
-			else
-			{
-				lck.unlock();
-				if (is_DLB)
-					this->forward<_ret>(f, id, holder, true);
-				else
-					this->forward<_ret>(f, id, holder);
-
-				return true;
-			}
+			return false;
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
@@ -1409,12 +1371,14 @@ namespace GemPBA
 
 				std::stringstream ss;
 				for (int i = 0; i < count; i++)
+				{
 					ss << buffer[i];
+				}
 
 				auto _deser = std::bind_front(deserializer, std::ref(ss));
 				std::apply(_deser, holder->getArgs());
 
-				try_push<_Ret>(callable, -1, *holder);
+				try_push_MT<_Ret>(callable, -1, *holder);
 
 				return holder;
 			};
@@ -1500,6 +1464,7 @@ namespace GemPBA
 		void link_IPC_Handler(IPC_Handler *ipc_handler)
 		{
 			this->ipc_handler = ipc_handler;
+			this->thread_pool.linkIPC_Handler(ipc_handler);
 		}
 
 		/*----------------Singleton----------------->>end*/

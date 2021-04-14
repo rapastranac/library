@@ -131,11 +131,11 @@ public:
 		{
 			if (SIZE > 30)
 			{
-				branchHandler.try_push<void>(_f, id, hol_l, user_serializer);
+				branchHandler.try_push_MP<void>(_f, id, hol_l, user_serializer);
 			}
 			else
 			{
-				branchHandler.try_push<void>(_f, id, hol_l);
+				branchHandler.try_push_MT<void>(_f, id, hol_l);
 			}
 		}
 		/*

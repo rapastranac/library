@@ -19,8 +19,8 @@
 #include <thread>
 #include <queue>
 
-#define TAG_TERMINATE
-//#define TAG
+#define TAG_TERMINATE 3
+#define TAG_AVAILABLE 4
 
 namespace GemPBA
 {
@@ -144,9 +144,6 @@ namespace GemPBA
 		void listen(auto &&receiver)
 		{
 			int count_rcv = 0;
-			int nodes;
-			MPI_Bcast(&nodes, 1, MPI_INT, 0, world_Comm);
-			MPI_Barrier(world_Comm); // synchronise process in world group
 
 			while (true)
 			{
@@ -158,23 +155,30 @@ namespace GemPBA
 
 				char *incoming_buffer = new char[count];
 				MPI_Recv(incoming_buffer, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
-
 				count_rcv++;
 				int src = status.MPI_SOURCE; // it might be useful for non-void functions
 
+				//  push to the thread pool *********************************************************************
 				auto *holder = receiver(incoming_buffer, count); // holder might be useful for non-void functions
+				// **********************************************************************************************
 
 				// buffers created by thread are to be sent with the next loop
-				while (true)
+				while (!idle_node_signal)
 				{
 					if (!streamHandler.empty())
 					{
+						fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
 						int TAG = 4; // TEMPORARY
-						MPI_Ssend(streamHandler.data(), streamHandler.size(), MPI_CHAR, nextProc[1], TAG, world_Comm);
+						auto stringbuffer = streamHandler.string_buf();
+
+						MPI_Ssend(stringbuffer.data(), stringbuffer.size(), MPI_CHAR, newNode, TAG, world_Comm);
 						streamHandler.clear();
+						fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
 					}
+
 					// tell center node
 					wait();
+					fmt::print("rank {}, notification received, sending buffer to rank {}\n", world_rank, nextNode[1]);
 				}
 
 				delete holder;
@@ -191,7 +195,7 @@ namespace GemPBA
 			int nodes = world_size - 1; // number of available nodes -- private to this method
 			int busy = 0;
 			std::vector<int> aNodes(world_size, 1); // list of nodes availability
-			Bcast_availability(aNodes, nodes);
+
 			sendSeed(static_next, aNodes, nodes, busy, buffer, SIZE);
 
 			int rcv_availability = 0;
@@ -230,13 +234,8 @@ namespace GemPBA
 					++nodes;
 					--busy;
 					BcastPut(&nodes, 1, MPI_INT, 0, win_NumNodes); // Broadcast number of nodes
-
-					if (breakLoop(nodes, busy))
-						break;
-
-					continue;
 				}
-				if (TAG == 5)
+				else if (TAG == 5)
 				{
 					requesting[src_rank] = 1;
 
@@ -254,13 +253,8 @@ namespace GemPBA
 						++failedRequests;
 					}
 					++totalRequests;
-
-					if (breakLoop(nodes, busy))
-						break;
-
-					continue;
 				}
-				if (TAG == 8)
+				else if (TAG == 8)
 				{
 					// send ref value global
 					MPI_Ssend(refValueGlobal, 1, MPI_INT, src_rank, 0, world_Comm);
@@ -273,12 +267,10 @@ namespace GemPBA
 						refValueGlobal[0] = buffer;
 						BcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
 					}
-
-					if (breakLoop(nodes, busy))
-						break;
-
-					continue;
 				}
+
+				if (breakLoop(nodes, busy))
+					break;
 			}
 
 			//terminate
@@ -294,41 +286,86 @@ namespace GemPBA
 			// receive solution from other processes
 			fetchSolution();
 		}
+
+		void shift_left(int *v, const int size)
+		{
+			for (int i = 1; i < size; i++)
+			{
+				if (i == (size - 1)) // this should not happen
+				{
+					v[i] = -1;
+					v[i - 1] = v[i];
+				}
+				else if (v[i] == -1)
+				{
+					break; // there's no more data
+				}
+				else
+				{
+					v[i - 1] = v[i]; // shift one cell to the left
+				}
+			}
+		}
+
 		bool try_next_node(auto &serializer, auto &tuple)
 		{
-			if (nextProc[0] != nextProc[1])
+			std::unique_lock<std::mutex> lck(mtx);
+			if (!awake) //to avoid a lost wake up
 			{
-				streamHandler.build_buffer(serializer, tuple);
-				nextProc[1] = nextProc[0];
-				notify();
-				return true;
+				if (nextNode[0] != nextNode[1])
+				{
+					awake = true;
+					newNode = nextNode[0];
+					streamHandler.build_buffer(serializer, tuple);
+					shift_left(nextNode, world_size);
+					notify_node_request();
+					return true;
+				}
 			}
 			return false;
 		}
 
-		void notify()
+		void notify_idle_node()
 		{
-			signal = true;
+			fmt::print("rank {} about to be notified as idle\n", world_rank);
+			std::unique_lock<std::mutex> lck(mtx);
+			idle_node_signal = true;
+			cv.notify_one();
+			fmt::print("rank {} notified as idle\n", world_rank);
+		}
+
+		void notify_node_request()
+		{
+			node_request_signal = true;
+			cv.notify_one();
+		}
+
+		void notify_has_no_tasks()
+		{
+			std::unique_lock<std::mutex> lck(mtx);
+			no_tasks_signal = true;
 			cv.notify_one();
 		}
 
 		void wait()
 		{
 			std::unique_lock<std::mutex> lck(mtx);
+			awake = false;
 			cv.wait(lck, [this]() {
-				if (signal)
+				if (node_request_signal || no_tasks_signal)
 				{
-					signal = false;
+					node_request_signal = false;
+					no_tasks_signal = false;
 					return true;
 				}
-				return false;
+				return false || idle_node_signal;
 			});
 		}
 
 		void built_processes_tree(std::vector<std::queue<int>> &static_next)
 		{
 			int numNodes = world_size - 1;
-
+			// this loop builds the tree distribution
 			for (int depth = 0; depth < log2(numNodes); depth++)
 			{
 				for (int rank = 1; rank <= pow(2, depth); rank++)
@@ -338,14 +375,17 @@ namespace GemPBA
 					fmt::print("process: {}, child: {}\n", rank, child);
 				}
 			}
-
-			for (int i = 1; i < world_size; i++)
+			// put into nodes
+			for (int rank = 1; rank < world_size; rank++)
 			{
-				while (!static_next[i].empty())
+				int it = 0;
+				while (!static_next[rank].empty())
 				{
-					int child = static_next[i].front();
-					static_next[i].pop();
-					fmt::print("rank: {}, child: {}\n", i, child);
+					int child = static_next[rank].front();
+					static_next[rank].pop();
+					fmt::print("rank: {}, child: {}\n", rank, child);
+					put(&child, 1, rank, MPI_INT, it, win_NextNode);
+					it++;
 				}
 			}
 		}
@@ -560,11 +600,11 @@ namespace GemPBA
 			MPI_Comm_size(world_Comm, &this->world_size);
 			MPI_Comm_rank(world_Comm, &this->world_rank);
 
-			if (world_size < 2)
+			/*if (world_size < 2)
 			{
 				fmt::print("At least two processes required !!\n");
 				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-			}
+			}*/
 
 			MPI_Comm_group(world_Comm, &world_group); // world group, all ranks
 			MPI_Comm_dup(world_Comm, &numNodes_Comm);
@@ -576,7 +616,7 @@ namespace GemPBA
 			// applicable for all the processes
 			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &numAvailableNodes, &win_NumNodes);
 			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
-			MPI_Win_allocate(2 * sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &nextNode, &win_NextNode);
+			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &nextNode, &win_NextNode);
 
 			init();
 			MPI_Barrier(world_Comm);
@@ -593,13 +633,21 @@ namespace GemPBA
 		void init()
 		{
 			numAvailableNodes[0] = 0;
-			nextNode[0] = -1; // -1 one means it has no next node assigned
-			nextNode[1] = -1; // -1 one means it has no next node assigned
+
+			for (int i = 0; i < world_size; i++)
+			{
+				nextNode[i] = -1; // -1 one means it has no next node assigned
+			}
 
 			if (world_rank == 0)
 			{
 				bestResults.resize(world_size);
 			}
+		}
+
+		int getRank()
+		{
+			return world_rank;
 		}
 
 	private:
@@ -609,12 +657,15 @@ namespace GemPBA
 		int world_size;			  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
 
-		int *nextProc = nullptr;
 		std::mutex mtx;
 		std::condition_variable cv;
-		bool signal = false;
+		bool awake = false;
+		bool node_request_signal = false;
+		bool no_tasks_signal = false;
+		bool idle_node_signal = false;
+		int newNode;
 
-		StreamHandler streamHandler;
+		StreamHandler streamHandler; // threads in BranchHandler build this buffer when there's an available node
 
 		MPI_Win win_NumNodes;		// window for the number of available nodes
 		MPI_Win win_refValueGlobal; // window to send reference value global
