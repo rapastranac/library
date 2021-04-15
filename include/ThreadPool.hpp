@@ -7,6 +7,8 @@
 
 #include "fmt/format.h"
 
+#include "Queue.hpp"
+
 #include <any>
 #include <atomic>
 #include <exception>
@@ -40,42 +42,6 @@ class GemPBA::MPI_Scheduler;
 
 namespace ThreadPool
 {
-
-    namespace detail
-    {
-        template <class T>
-        class Queue
-        {
-        public:
-            bool push(T const &value)
-            {
-                std::unique_lock<std::mutex> lock(this->mtx);
-                this->q.push(value);
-                return true;
-            }
-
-            // deletes the retrieved element, do not use for non integral types
-            bool pop(T &v)
-            {
-                std::unique_lock<std::mutex> lock(this->mtx);
-                if (this->q.empty())
-                    return false;
-                v = this->q.front();
-                this->q.pop();
-                return true;
-            }
-
-            bool empty()
-            {
-                std::unique_lock<std::mutex> lock(this->mtx);
-                return this->q.empty();
-            }
-
-        private:
-            std::queue<T> q;
-            std::mutex mtx;
-        };
-    } // namespace detail
 
     class Pool
     {
@@ -260,7 +226,7 @@ namespace ThreadPool
                 std::unique_lock<std::mutex> lock(this->mtx);
                 ++this->nWaiting;
 
-                notify_idle();
+                notify_no_tasks();
 
                 // all threads go into sleep mode when pool is launched
                 this->cv.wait(lock, [this, &_f, &isPop]() {
@@ -288,15 +254,15 @@ namespace ThreadPool
             }
         }
 
-        void notify_idle()
+        void notify_no_tasks()
         {
+            // this condition is met only when all threads are sleeping (no tasks)
             if (nWaiting.load() == this->size() && running)
             {
                 this->exitWait = true;
-                this->cv_wait.notify_one(); // this only happens when pool finishes all its tasks
-
+                this->cv_wait.notify_one();
                 if (mpiScheduler)
-                    mpiScheduler->notifyHasNoTasks();
+                    mpiScheduler->notifyTaskFunnelingExit();
             }
         }
 

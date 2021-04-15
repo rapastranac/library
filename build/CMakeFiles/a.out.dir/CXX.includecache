@@ -90,6 +90,14 @@ fmt/format.h
 format-inl.h
 ../fmt/include/fmt/format-inl.h
 
+../include/Queue.hpp
+queue
+-
+mutex
+-
+utility
+-
+
 ../include/ResultHolder.hpp
 mpi.h
 -
@@ -112,6 +120,8 @@ memory
 StreamHandler.hpp
 /home/andres/cloud/library/MPI_Modules/StreamHandler.hpp
 ResultHolder.hpp
+-
+Queue.hpp
 -
 condition_variable
 -
@@ -247,6 +257,8 @@ memory
 /home/andres/cloud/library/include/ThreadPool.hpp
 fmt/format.h
 /home/andres/cloud/library/include/fmt/format.h
+Queue.hpp
+/home/andres/cloud/library/include/Queue.hpp
 any
 -
 atomic

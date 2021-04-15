@@ -85,9 +85,10 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	float treeIdx = 1;
 	std::stringstream ss;
 	user_serializer(ss, depth, treeIdx);
+	std::string buffer = ss.str();
 
 	if (rank == 0)
-		mpiScheduler.start(ss.str().data(), ss.str().size());
+		mpiScheduler.start(buffer.data(), buffer.size());
 	else
 	{
 		branchHandler.setMaxThreads(1);

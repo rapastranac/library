@@ -1012,11 +1012,6 @@ namespace GemPBA
 					return true;
 				}
 
-				//if (ipc_handler.try_next_node(f_serial, upperHolder->getArgs()))
-				//{
-				//	upperHolder->setMPISent();
-				//}
-
 				return true; // top holder found
 			}
 			return false; // top holder not found
@@ -1240,7 +1235,7 @@ namespace GemPBA
 			{
 				//TODO implement DLB in here
 
-				if (mpiScheduler->try_next_node(serializer, holder.getArgs()))
+				if (mpiScheduler->tryPush(serializer, holder.getArgs()))
 				{
 					holder.setMPISent();
 					holder.prune();
