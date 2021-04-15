@@ -1,0 +1,112 @@
+
+Currently Loaded Modules:
+  1) CCconfig                 5) intel/2020.1.217 (t)   9) StdEnv/2020  (S)
+  2) gentoo/2020     (S)      6) ucx/1.8.0             10) boost/1.72.0 (t)
+  3) gcccore/.9.3.0  (H)      7) libfabric/1.10.1
+  4) imkl/2020.1.217 (math)   8) openmpi/4.0.3    (m)
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+core file size          (blocks, -c) unlimited
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 766569
+max locked memory       (kbytes, -l) unlimited
+max memory size         (kbytes, -m) 12582912
+open files                      (-n) 51200
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) unlimited
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 766569
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+Current working directory: /home/mlafond/projects/def-mlafond/mlafond/vcmain/library
+Starting run at: Wed Apr 14 07:45:59 PDT 2021
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=0 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=6 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=5 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=2 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=8 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=1 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=7 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=4 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=3 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=9 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Starting MPI node 6
+Starting MPI node 9
+Starting MPI node 2
+Starting MPI node 0
+Starting MPI node 5
+Starting MPI node 4
+Starting MPI node 1
+Starting MPI node 3
+Starting MPI node 7
+Starting MPI node 8
+WR=1 ID=9 passes=20000001 gsize=71 refvalue=635 solsize=616 isskips=2334075 deglbskips=7370915
+WR=6 ID=6 passes=20000004 gsize=39 refvalue=645 solsize=640 isskips=2962326 deglbskips=5723625
+WR=1 ID=21 passes=40000004 gsize=77 refvalue=635 solsize=613 isskips=4632640 deglbskips=14812349
+WR=6 ID=5 passes=40000006 gsize=60 refvalue=645 solsize=626 isskips=5803587 deglbskips=11681521
+WR=1 ID=20 passes=60000003 gsize=75 refvalue=635 solsize=621 isskips=6839610 deglbskips=22272898
+WR=6 ID=19 passes=60000007 gsize=54 refvalue=645 solsize=631 isskips=8645840 deglbskips=17626548
+slurmstepd: error: *** JOB 66762974 ON cdr2217 CANCELLED AT 2021-04-14T07:47:45 ***
+slurmstepd: error: *** STEP 66762974.0 ON cdr2217 CANCELLED AT 2021-04-14T07:47:45 ***

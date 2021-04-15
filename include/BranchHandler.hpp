@@ -242,11 +242,14 @@ namespace library
 			int bval = bestValLocal;
 			
 			
-			
-			if (mtx.try_lock())
+			int r = rand() % 100;	//most calls here lock uselessly
+			if (r == 0)
 			{
-				bval = min(bval, scheduler.getCenterBestVal());
-				mtx.unlock();
+				if (mtx.try_lock())
+				{
+					bval = min(bval, scheduler.getCenterBestVal());
+					mtx.unlock();
+				}
 			}
 			
 			return bval;
@@ -945,7 +948,7 @@ namespace library
 			if (r == 2)
 				return false; // current holder pushed to another rank
 
-
+			
 			return push_multithreading(f, id, holder); //no rank available
 			
 			

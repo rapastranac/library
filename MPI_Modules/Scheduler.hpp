@@ -87,6 +87,7 @@ namespace library
 		int *winbuf_waitingNodes = nullptr;
 
 		vector<int> assignments;
+		std::vector<int> nodeStates;
 
 
 		MPI_Group world_group;	// all ranks belong to this group
@@ -182,6 +183,7 @@ namespace library
 			
 			for (int i = 0; i < world_size; ++i)
 			{
+				nodeStates.push_back(STATE_WORKING);
 				assignments.push_back(-1);
 			}
 
@@ -247,6 +249,7 @@ namespace library
 		bool sendHolderToNode(Holder &holder, Serializer &&serializer)
 		{
 
+		
 			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, win_waitingNodes);
 			
 
@@ -262,6 +265,7 @@ namespace library
 					//First we let center know that we are sending work, and we wait for confirmation
 					if (verbose > 0)
 						cout<<"WR="<<world_rank<<" Sending TAG_WORKSENT"<<endl;
+					
 					MPI_Send(&i, 1, MPI_INT, 0, TAG_WORKSENT, MPI_COMM_WORLD);
 					
 					
@@ -279,7 +283,7 @@ namespace library
 					if (verbose > 0)
 						cout<<"WR="<<world_rank<<" sending to "<<i<<endl;
 					
-					int err = MPI_Ssend(stream.str().data(), Bytes, MPI_CHAR, i, TAG_TASK, MPI_COMM_WORLD); // send buffer
+					int err = MPI_Send(stream.str().data(), Bytes, MPI_CHAR, i, TAG_TASK, MPI_COMM_WORLD); // send buffer
 					
 					if (err != MPI_SUCCESS)
 						cout<<"ERROR !  SENDING TASK FAILED!"<<endl;
@@ -333,6 +337,20 @@ namespace library
 		}
 		
 		
+		void printCenterDebugInfo(string prefix = "")
+		{
+			cout<<cnow()<<"CENTER : "<<prefix<<", nodeStates = ";
+			for (int i : nodeStates)
+				cout<<i<<" ";
+			cout<<endl;
+			
+			cout<<cnow()<<"CENTER : "<<prefix<<", assignments = ";
+			for (int i : assignments)
+				cout<<i<<" ";
+			cout<<endl;
+		}
+		
+		
 		
 		
 		void runCenter()		//ML : previously known as schedule
@@ -349,7 +367,7 @@ namespace library
 			int rcv_availability = 0;
 			
 			
-			std::vector<int> nodeStates(world_size, STATE_WORKING);	//center thinks everyone is working, until they tell him that no
+			
 			
 			
 			int centerBestval = 9999999;	//TODO : not clean
@@ -363,15 +381,7 @@ namespace library
 
 				if (verbose > 0 || cptloops % 10000000 == 0)
 				{
-					cout<<cnow()<<"CENTER now receiving, nodeStates = ";
-					for (int i : nodeStates)
-						cout<<i<<" ";
-					cout<<endl;
-					
-					cout<<cnow()<<"CENTER : handling workers, assignments = ";
-					for (int i : assignments)
-						cout<<i<<" ";
-					cout<<endl;
+					printCenterDebugInfo("now receiving");
 					
 				}
 			
@@ -392,7 +402,7 @@ namespace library
 					assignments[status.MPI_SOURCE] = -1;
 					
 					
-					MPI_Send(&world_rank, 1, MPI_INT, status.MPI_SOURCE, TAG_AVAIL_ACK, MPI_COMM_WORLD);
+					//MPI_Send(&world_rank, 1, MPI_INT, status.MPI_SOURCE, TAG_AVAIL_ACK, MPI_COMM_WORLD);
 					
 					
 					for (int i  = 1; i < world_size; ++i)
@@ -455,24 +465,28 @@ namespace library
 					//optional : check whether source is the one truly assigned
 					if (nodeStates[workdest] != STATE_ASSIGNED)
 					{
-						throw "ERROR : RECEIVED TAG_WORKSENT FOR A NODE THAT IS NOT ASSIGNED";
+						
+						cout<<"ERROR : RECEIVED TAG_WORKSENT FOR A NODE THAT IS NOT ASSIGNED"<<endl;
+						printCenterDebugInfo("bad worksent");
+						return;
 					}
 					
-					nodeStates[workdest] = STATE_WORKSENT;
+					//nodeStates[workdest] = STATE_WORKSENT;
+					nodeStates[workdest] = STATE_WORKING;
 					assignments[workdest] = -1;
 					MPI_Send(&world_rank, 1, MPI_INT, status.MPI_SOURCE, TAG_WORKSENT_ACK, MPI_COMM_WORLD);
 					
 				}
-				else if (status.MPI_TAG == TAG_STARTEDWORKING)
+				/*else if (status.MPI_TAG == TAG_STARTEDWORKING)
 				{
 					if (verbose > 0)
 						cout<<cnow()<<"CENTER : received TAG_STARTEDWORKING from "<<status.MPI_SOURCE<<endl;
 					nodeStates[status.MPI_SOURCE] = STATE_WORKING;
 					assignments[status.MPI_SOURCE] = -1;
 					
-					MPI_Send(&world_rank, 1, MPI_INT, status.MPI_SOURCE, TAG_STARTEDWORKING_ACK, MPI_COMM_WORLD);
+					//MPI_Send(&world_rank, 1, MPI_INT, status.MPI_SOURCE, TAG_STARTEDWORKING_ACK, MPI_COMM_WORLD);
 					
-				}
+				}*/
 				else
 				{
 					cout<<cnow()<<"CENTER : received tag "<<status.MPI_TAG<<" from "<<status.MPI_SOURCE<<" but center doesn't know what to do."<<endl;
@@ -496,15 +510,7 @@ namespace library
 				
 				if (verbose > 0 || cptloops % 10000000 == 0)
 				{
-					cout<<cnow()<<"CENTER : handling workers, nodeStates = ";
-					for (int i : nodeStates)
-						cout<<i<<" ";
-					cout<<endl;
-					
-					cout<<cnow()<<"CENTER : handling workers, assignments = ";
-					for (int i : assignments)
-						cout<<i<<" ";
-					cout<<endl;
+					printCenterDebugInfo("handling assignments");
 					
 					
 				}
@@ -650,7 +656,7 @@ namespace library
 					std::this_thread::sleep_for(std::chrono::milliseconds(100));
 					cptsleep++;
 					
-					if (cptsleep % 10000 == 0)
+					if (cptsleep % 1000 == 0)
 					{
 						cout<<"WR="<<world_rank<<" been sleepin for "<<cptsleep*100<<"ms."<<endl;
 					}
@@ -669,16 +675,16 @@ namespace library
 				
 				MPI_Send(&world_rank, 1, MPI_INT, 0, TAG_AVAIL, MPI_COMM_WORLD);	//let center know we are available
 				
-				{
+				/*{
 					int buf;  MPI_Status st;
 					MPI_Recv(&buf, 1, MPI_INT, 0, TAG_AVAIL_ACK, MPI_COMM_WORLD, &st);
 					if (verbose > 0)
 						cout<<"WR="<<world_rank<<" Received TAG_AVAIL_ACK"<<endl;
-				}
+				}*/
 				
 				
 				//let assigned workers know that we have nothing for them, and they should move on to something else
-				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, win_waitingNodes);
+				/*MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, win_waitingNodes);
 				for (int i = 1; i < world_size; ++i)
 				{
 					
@@ -692,7 +698,7 @@ namespace library
 							cout<<cnow()<<"WR="<<world_rank<<" sending TAG_NOWORK to "<<i<<endl;
 						}
 						MPI_Send(&world_rank, 1, MPI_INT, i, TAG_NOWORK, MPI_COMM_WORLD);*/
-						
+				/*		
 						
 					}
 					else
@@ -701,7 +707,7 @@ namespace library
 					}
 				
 				}
-				MPI_Win_unlock(world_rank, win_waitingNodes);
+				MPI_Win_unlock(world_rank, win_waitingNodes);*/
 
 				
 				
@@ -764,7 +770,17 @@ namespace library
 					if (verbose > 0)
 					{
 						cout<<cnow()<<"WR="<<world_rank<<" received a task from "<<status.MPI_SOURCE<<endl;
+						
 					}
+					
+					MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, win_waitingNodes);
+					for (int i = 1; i < world_size; ++i)
+					{
+						winbuf_waitingNodes[i] = 0;
+						
+					}
+					
+					MPI_Win_unlock(world_rank, win_waitingNodes);
 				
 				
 					Holder holder(-1); // copy types
@@ -781,15 +797,15 @@ namespace library
 					
 					//ML EDIT : this has changed.  now the one who sent the work tells center to whom they sent
 					//we just got a task, so we must let center know we might want some help with that
-					MPI_Send(&world_rank, 1, MPI_INT, 0, TAG_STARTEDWORKING, MPI_COMM_WORLD);
+					//MPI_Send(&world_rank, 1, MPI_INT, 0, TAG_STARTEDWORKING, MPI_COMM_WORLD);
 					
 					
-					{
+					/*{
 						int buf; MPI_Status st;
 						MPI_Recv(&buf, 1, MPI_INT, 0, TAG_STARTEDWORKING_ACK, MPI_COMM_WORLD, &st);
 						if (verbose > 0)
 							cout<<"WR="<<world_rank<<" Received TAG_STARTEDWORKING_ACK"<<endl;
-					}
+					}*/
 					
 
 					

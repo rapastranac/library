@@ -44,7 +44,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 			
 			
 
-	using HolderType = library::ResultHolder<void, int, gbitset, gbitset>;
+	using HolderType = library::ResultHolder<void, int, gbitset, int>;
 
 	auto &branchHandler = library::BranchHandler::getInstance(); // parallel library
 
@@ -67,16 +67,18 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	cover.init(graph, numThreads, filename, prob);
 	cover.setGraph(graph);
 
-	int solsize = 0;
+	
 	int gsize = graph.adj.size() + 1;	//+1 cuz some files use node ids from 1 to n (instead of 0 to n - 1)
 	gbitset allzeros(gsize);
 	gbitset allones = ~allzeros;
 
 	//handler.setBestValue(gsize);
 	
-
+	int zero = 0;
+	int solsize = graph.size();
+	cout<<"solsize="<<solsize<<endl;
 	HolderType holder(-1);
-	holder.holdArgs(solsize, allones, allzeros);
+	holder.holdArgs(zero, allones, zero);
 	
 	cout<<"Starting MPI node "<<branchHandler.getWorldRank()<<endl;
 	branchHandler.startMPINode(holder, function, user_serializer, user_deserializer);

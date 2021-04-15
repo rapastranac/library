@@ -54,6 +54,8 @@ class VC_MPI;
 #define TAG_AVAIL 4
 #define TAG_OPTSOL 5
 #define TAG_STARTEDWORKING 6
+#define TAG_SENTWORK 7
+#define TAG_SENTWORK_ACK 8
 
 #define STATE_WORKING 1
 #define STATE_ASSIGNED 2
@@ -171,13 +173,14 @@ public:
 	
 	void checkTaskSending()
 	{
-		MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, winJobTakers);
+		
 		for (int i = 1; i < world_size; i++)
 		{
-			
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, world_rank, 0, winJobTakers);
 			if (winJobTakersBuf[i] == 1)
 			{
 				winJobTakersBuf[i] = 0;
+				MPI_Win_unlock(world_rank, winJobTakers);
 				if (tasks.empty())
 				{
 					
@@ -190,8 +193,12 @@ public:
 					tasks.pop_front();
 				}
 			}
+			else
+			{
+				MPI_Win_unlock(world_rank, winJobTakers);
+			}
 		}
-		MPI_Win_unlock(world_rank, winJobTakers);
+		
 	}
 	
 	
@@ -223,6 +230,15 @@ public:
 		/*cout<<"Rank "<<world_rank<<" sending task to "<<dest<<endl;
 		cout<<task.first<<endl<<task.second<<endl;*/
 		
+		
+		
+		
+		MPI_Send(&dest, 1, MPI_INT, 0, TAG_SENTWORK, MPI_COMM_WORLD);
+		
+		//cout<<"work sent, receiving"<<endl;
+		int buf; MPI_Status st;
+		MPI_Recv(&buf, 1, MPI_INT, 0, TAG_SENTWORK_ACK, MPI_COMM_WORLD, &st);
+		//cout<<"done receiving"<<endl;
 	
 		vector<int> ints;
 
@@ -340,9 +356,11 @@ public:
 
 			int* number_buf = (int*)malloc(sizeof(int) * number_amount);
 
+			//cout<<"CENTER receiving"<<endl;
+
 			MPI_Recv(number_buf, number_amount, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-			
+			//cout<<"CENTER got tag "<<status.MPI_TAG<<" from "<<status.MPI_SOURCE<<endl;
 			if (status.MPI_TAG == TAG_AVAIL)
 			{
 				//cout<<"CENTER : now available:  "<<status.MPI_SOURCE<<endl;
@@ -367,6 +385,17 @@ public:
 			else if (status.MPI_TAG == TAG_STARTEDWORKING)
 			{
 				states[status.MPI_SOURCE] = STATE_WORKING;
+			}
+			else if (status.MPI_TAG == TAG_SENTWORK)
+			{
+				int workdest = number_buf[0];
+
+				
+				//nodeStates[workdest] = STATE_WORKSENT;
+				states[workdest] = STATE_WORKING;
+				//assignments[workdest] = -1;
+				MPI_Send(&world_rank, 1, MPI_INT, status.MPI_SOURCE, TAG_SENTWORK_ACK, MPI_COMM_WORLD);
+				
 			}
 			
 			
@@ -399,8 +428,9 @@ public:
 					//cout<<"Putting one to "<< working[cptworking] << " at index "<<i<<endl;
 					MPI_Win_lock(MPI_LOCK_EXCLUSIVE, working[cptworking], 0, winJobTakers);
 					MPI_Put(&one, 1, MPI_INT, working[cptworking], i, 1, MPI_INT, winJobTakers); 
+					///cout<<"locking"<<endl;
 					MPI_Win_unlock(working[cptworking], winJobTakers);
-					
+					//cout<<"unlocking"<<endl;
 					
 					cptworking = (cptworking + 1) % working.size();
 					states[i] = STATE_ASSIGNED;
@@ -544,7 +574,7 @@ public:
 		
 		
 		
-		if (passes % 10000000 == 0)
+		if (passes % 1000000 == 0)
 		{
 			cout<<"wr="<<scheduler.world_rank<<" passes="<<passes<<" gsize="<<bits_in_graph.count()<<" refvalue="<<scheduler.getBestVal()<<" solsize="<<cur_sol.count()<<" isskips="<<is_skips<<" deglbskips="<<deglb_skips<<" seen_skips="<<seen_skips<<" seen.size="<<seen.size()<<endl;
 			//cout<<"ID="<<id<<" CSOL="<<cursol_size<<" REFVAL="<<branchHandler.getRefValue()<<endl;

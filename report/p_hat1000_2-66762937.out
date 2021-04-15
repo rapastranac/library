@@ -1,0 +1,166 @@
+
+Currently Loaded Modules:
+  1) CCconfig                 5) intel/2020.1.217 (t)   9) StdEnv/2020  (S)
+  2) gentoo/2020     (S)      6) ucx/1.8.0             10) boost/1.72.0 (t)
+  3) gcccore/.9.3.0  (H)      7) libfabric/1.10.1
+  4) imkl/2020.1.217 (math)   8) openmpi/4.0.3    (m)
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+core file size          (blocks, -c) unlimited
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 766569
+max locked memory       (kbytes, -l) unlimited
+max memory size         (kbytes, -m) 12582912
+open files                      (-n) 51200
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) unlimited
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 766569
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+Current working directory: /home/mlafond/projects/def-mlafond/mlafond/vcmain/library
+Starting run at: Wed Apr 14 07:35:01 PDT 2021
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=1 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=4 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=3 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=7 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=9 WS=10
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=0 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=5 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=2 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=6 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+argc: 5, threads: 24, prob : 4, filename: ./input/p_hat700_1 
+WR=8 WS=10
+NUMTHREADS=24
+NUMTHREADS=24
+Number of threads spawned : 23 
+set max threads to 24
+Number of threads spawned : 23 
+set max threads to 24
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Graph has 700 vertices and 60999 edges
+Starting MPI node 0
+Starting MPI node 3
+Starting MPI node 2
+Starting MPI node 8
+Starting MPI node 1
+Starting MPI node 7
+Starting MPI node 4
+Starting MPI node 9
+Starting MPI node 5
+Starting MPI node 6
+WR=6 ID=5 passes=20000004 gsize=81 refvalue=635 solsize=612 isskips=1738826 deglbskips=8335952
+WR=4 ID=15 passes=20000003 gsize=69 refvalue=645 solsize=624 isskips=2824466 deglbskips=5810815
+WR=1 ID=22 passes=20000003 gsize=79 refvalue=643 solsize=611 isskips=2608479 deglbskips=7040382
+WR=6 ID=20 passes=40000008 gsize=90 refvalue=635 solsize=604 isskips=2981773 deglbskips=17200618
+WR=4 ID=6 passes=40000006 gsize=85 refvalue=645 solsize=611 isskips=5628906 deglbskips=11651852
+WR=1 ID=16 passes=40000007 gsize=53 refvalue=643 solsize=627 isskips=5280186 deglbskips=13934080
+WR=6 ID=3 passes=60000009 gsize=67 refvalue=635 solsize=628 isskips=4154855 deglbskips=26182389
+WR=4 ID=16 passes=60000009 gsize=69 refvalue=645 solsize=623 isskips=8479191 deglbskips=17456243
+WR=1 ID=12 passes=60000007 gsize=63 refvalue=642 solsize=632 isskips=7987932 deglbskips=20928057
+WR=6 ID=1 passes=80000000 gsize=74 refvalue=635 solsize=621 isskips=5506668 deglbskips=34911722
+WR=4 ID=2 passes=80001784 gsize=57 refvalue=645 solsize=631 isskips=11313439 deglbskips=23347629
+WR=1 ID=22 passes=80000007 gsize=59 refvalue=642 solsize=631 isskips=10619855 deglbskips=28171216
+WR=6 ID=20 passes=100000008 gsize=109 refvalue=635 solsize=587 isskips=6975448 deglbskips=43591064
+WR=4 ID=7 passes=100000008 gsize=62 refvalue=635 solsize=630 isskips=14183706 deglbskips=29195447
+WR=1 ID=6 passes=100000008 gsize=77 refvalue=635 solsize=615 isskips=13231731 deglbskips=35369398
+WR=6 ID=18 passes=120000009 gsize=86 refvalue=635 solsize=606 isskips=8501012 deglbskips=52149841
+WR=4 ID=9 passes=120000005 gsize=66 refvalue=635 solsize=628 isskips=16891082 deglbskips=35380915
+WR=1 ID=19 passes=120001381 gsize=53 refvalue=642 solsize=633 isskips=15997114 deglbskips=42285734
+WR=6 ID=10 passes=140000000 gsize=78 refvalue=635 solsize=615 isskips=10387074 deglbskips=60281940
+WR=4 ID=19 passes=140000008 gsize=49 refvalue=645 solsize=632 isskips=19670313 deglbskips=41413457
+WR=4 ID=3 passes=140000061 gsize=81 refvalue=645 solsize=612 isskips=19670330 deglbskips=41413478
+WR=6 ID=16 passes=160000010 gsize=78 refvalue=635 solsize=615 isskips=12430393 deglbskips=68327170
+WR=1 ID=5 passes=140000007 gsize=74 refvalue=642 solsize=621 isskips=18756492 deglbskips=49240031
+WR=4 ID=5 passes=160000002 gsize=53 refvalue=635 solsize=632 isskips=22474122 deglbskips=47244634
+WR=6 ID=5 passes=180000002 gsize=84 refvalue=635 solsize=612 isskips=14930478 deglbskips=75583932
+WR=1 ID=6 passes=160002032 gsize=70 refvalue=635 solsize=623 isskips=21369983 deglbskips=56391691
+WR=6 ID=22 passes=200000007 gsize=64 refvalue=635 solsize=628 isskips=17639422 deglbskips=82924601
+WR=1 ID=22 passes=180000006 gsize=76 refvalue=642 solsize=613 isskips=23984646 deglbskips=63517752
+WR=6 ID=9 passes=220002292 gsize=81 refvalue=635 solsize=613 isskips=20609108 deglbskips=89826910
+WR=1 ID=2 passes=200001229 gsize=68 refvalue=642 solsize=622 isskips=26558245 deglbskips=70775845
+WR=6 ID=17 passes=240000005 gsize=77 refvalue=635 solsize=609 isskips=23437405 deglbskips=96838558
+WR=1 ID=19 passes=220000000 gsize=78 refvalue=635 solsize=610 isskips=29148831 deglbskips=77921915
+WR=6 ID=10 passes=260001104 gsize=49 refvalue=635 solsize=623 isskips=26004939 deglbskips=103400502
+WR=1 ID=8 passes=240000004 gsize=61 refvalue=642 solsize=629 isskips=31730136 deglbskips=85112337
+WR=6 ID=3 passes=280000005 gsize=107 refvalue=635 solsize=584 isskips=28651844 deglbskips=109901838
+WR=1 ID=13 passes=260000009 gsize=75 refvalue=635 solsize=618 isskips=34321023 deglbskips=92296641
+WR=6 ID=8 passes=300000002 gsize=60 refvalue=635 solsize=621 isskips=31241184 deglbskips=116439904
+WR=1 ID=6 passes=280000006 gsize=72 refvalue=635 solsize=615 isskips=36864525 deglbskips=99601685
+WR=6 ID=21 passes=320000004 gsize=37 refvalue=635 solsize=630 isskips=33421936 deglbskips=123795108
+WR=1 ID=11 passes=300001021 gsize=73 refvalue=642 solsize=617 isskips=39335696 deglbskips=107020599
+WR=6 ID=3 passes=340000012 gsize=67 refvalue=635 solsize=615 isskips=35819590 deglbskips=130718361
+WR=1 ID=11 passes=320000006 gsize=80 refvalue=642 solsize=614 isskips=41770788 deglbskips=114483114
+WR=6 ID=3 passes=360000008 gsize=56 refvalue=635 solsize=618 isskips=38268926 deglbskips=137606404
+WR=1 ID=9 passes=340002398 gsize=56 refvalue=635 solsize=625 isskips=44261112 deglbskips=121872267
+WR=6 ID=2 passes=380001790 gsize=66 refvalue=635 solsize=619 isskips=40855862 deglbskips=144142624
+WR=1 ID=6 passes=360000006 gsize=85 refvalue=642 solsize=607 isskips=46782010 deglbskips=129193469
+WR=6 ID=12 passes=400000003 gsize=55 refvalue=635 solsize=617 isskips=43330514 deglbskips=150926371
+WR=1 ID=14 passes=380000004 gsize=82 refvalue=642 solsize=608 isskips=49235495 deglbskips=136634872
+WR=6 ID=6 passes=420000002 gsize=61 refvalue=635 solsize=619 isskips=45776316 deglbskips=157809058
+WR=1 ID=19 passes=400000005 gsize=98 refvalue=642 solsize=598 isskips=51807411 deglbskips=143900081
+WR=6 ID=7 passes=440000004 gsize=53 refvalue=635 solsize=626 isskips=48261033 deglbskips=164543181
+WR=1 ID=9 passes=420000004 gsize=61 refvalue=642 solsize=625 isskips=54309943 deglbskips=151271798
+WR=6 ID=8 passes=460000010 gsize=51 refvalue=635 solsize=625 isskips=50740147 deglbskips=171393723
+WR=1 ID=2 passes=440000004 gsize=54 refvalue=635 solsize=634 isskips=56884386 deglbskips=158476597
+WR=6 ID=16 passes=480001166 gsize=74 refvalue=635 solsize=604 isskips=53161411 deglbskips=178266288
+WR=1 ID=4 passes=460001534 gsize=62 refvalue=642 solsize=624 isskips=59368057 deglbskips=165932391
+WR=6 ID=18 passes=500000006 gsize=77 refvalue=635 solsize=603 isskips=55688384 deglbskips=184956735
+WR=1 ID=7 passes=480000004 gsize=103 refvalue=642 solsize=592 isskips=61964827 deglbskips=173149952
+WR=1 ID=22 passes=500000002 gsize=57 refvalue=642 solsize=633 isskips=64590904 deglbskips=180330903
+WR=6 ID=18 passes=520000082 gsize=72 refvalue=635 solsize=615 isskips=58132388 deglbskips=191867900
+slurmstepd: error: *** JOB 66762937 ON cdr1991 CANCELLED AT 2021-04-14T07:47:34 ***
+slurmstepd: error: *** STEP 66762937.0 ON cdr1991 CANCELLED AT 2021-04-14T07:47:34 ***

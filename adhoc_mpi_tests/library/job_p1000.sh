@@ -4,7 +4,7 @@
 #SBATCH --account=def-mlafond
 #SBATCH --nodes=5
 ##SBATCH --tasks=200
-#SBATCH --ntasks-per-node=16
+#SBATCH --ntasks-per-node=32
 ##SBATCH --cpus-per-task=4
 ##SBATCH --mem=MaxMemPerNode         # memory limit per compute node
 ##SBATCH --mem-per-cpu=2000M        # memory; default unit is megabytes

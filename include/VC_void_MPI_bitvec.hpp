@@ -87,10 +87,10 @@ auto user_deserializer = [](std::stringstream &ss, auto &...args) {
 
 class VC_void_MPI : public VertexCover
 {
-	using HolderType = library::ResultHolder<void, int, gbitset, gbitset>;
+	using HolderType = library::ResultHolder<void, int, gbitset, int>;
 
 private:
-    std::function<void(int, int, gbitset, gbitset, void *)> _f;
+    std::function<void(int, int, gbitset&, int, void *)> _f;
 
 public:
 
@@ -188,7 +188,7 @@ public:
 	
 	
 	
-	void mvcbitset(int id, int depth, gbitset bits_in_graph, gbitset cur_sol, void *parent)
+	void mvcbitset(int id, int depth, gbitset& bits_in_graph, int solsize, void *parent)
 	{
 		passes++;
 		branchHandler.passes = passes;
@@ -199,11 +199,11 @@ public:
 		cout<<graphbits.size()<<endl;
 		cout<<graphbits[0].size()<<endl;*/
 		
-		int cursol_size = cur_sol.count();
+		int cursol_size = solsize;
 		
-		if (passes % 20000000 == 0)
+		if (passes % 1000000 == 0)
 		{
-			cout<<"WR="<<branchHandler.getWorldRank()<<" ID="<<id<<" passes="<<passes<<" gsize="<<bits_in_graph.count()<<" refvalue="<<branchHandler.getBestVal()<<" solsize="<<cur_sol.count()<<" isskips="<<is_skips<<" deglbskips="<<deglb_skips<<endl;	//<<" seen_skips="<<seen_skips<<" seen.size="<<seen[id].size()<<endl;
+			cout<<"WR="<<branchHandler.getWorldRank()<<" ID="<<id<<" passes="<<passes<<" gsize="<<bits_in_graph.count()<<" refvalue="<<branchHandler.getBestVal()<<" solsize="<<cursol_size<<" isskips="<<is_skips<<" deglbskips="<<deglb_skips<<endl;	//<<" seen_skips="<<seen_skips<<" seen.size="<<seen[id].size()<<endl;
 			//cout<<"ID="<<id<<" CSOL="<<cursol_size<<" REFVAL="<<branchHandler.getRefValue()<<endl;
 			//branchHandler.printDebugInfo();
 		}
@@ -214,7 +214,7 @@ public:
 		if (bits_in_graph.count() <= 1)
 		{
 			
-			terminate_condition_bits(cur_sol, cursol_size, id, depth);
+			terminate_condition_bits(cursol_size, id, depth);
 			return;
 		}
 
@@ -274,7 +274,7 @@ public:
 				else if (cnt == 1)
 				{
 					int the_nbr = nbrs.find_first();
-					cur_sol[the_nbr] = true;
+					//cur_sol[the_nbr] = true;
 					cursol_size++;
 					bits_in_graph[i] = false;
 					bits_in_graph[the_nbr] = false;
@@ -294,8 +294,8 @@ public:
 						int n2 = nbrs.find_next(n1);
 						if (graphbits[n1][n2])
 						{
-							cur_sol[n1] = true;
-							cur_sol[n2] = true;
+							//cur_sol[n1] = true;
+							//cur_sol[n2] = true;
 							bits_in_graph[i] = false;
 							bits_in_graph[n1] = false;
 							bits_in_graph[n2] = false;
@@ -339,7 +339,7 @@ public:
 		if (nbVertices <= 1)
 		{
 			//cout<<"terminating 2"<<endl;
-			terminate_condition_bits(cur_sol, cursol_size, id, depth);
+			terminate_condition_bits(cursol_size, id, depth);
 			return;
 		}
 		
@@ -365,13 +365,13 @@ public:
 		}
 		
 
-		/*if (maxdeg <= 2)
+		if (maxdeg <= 2)
 		{
 			//TODO : ACTUALLY COMPUTE THE CYCLES
-			terminate_condition_bits(cur_sol, cursol_size + nbVertices/2, id, depth);
+			terminate_condition_bits(cursol_size + nbVertices/2, id, depth);
 			//cout<<"MAXDEG 2 n="<<nbVertices<<endl;
 			return;
-		}*/
+		}
 		
 		int newDepth = depth + 1;
 		
@@ -383,17 +383,17 @@ public:
 		
 		
 		
-		hol_l.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, &depth, &hol_l] {
+		hol_l.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &newDepth, &depth, &hol_l] {
 			int bestVal = branchHandler.getBestVal();
 			gbitset ingraph1 = bits_in_graph;
 			ingraph1.set(maxdeg_v, false);
-			gbitset sol1 = cur_sol;
-			sol1.set(maxdeg_v, true);
+			//gbitset sol1 = cur_sol;
+			//sol1.set(maxdeg_v, true);
 			int solsize1 = cursol_size + 1;
 			
 			if (solsize1 < bestVal)
 			{
-				hol_l.holdArgs(newDepth, ingraph1, sol1);
+				hol_l.holdArgs(newDepth, ingraph1, solsize1);
 				return true;
 			}
 			else
@@ -403,19 +403,19 @@ public:
 		
 		
 		
-		hol_r.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &cur_sol, &newDepth, &depth, &hol_r] {
+		hol_r.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &newDepth, &depth, &hol_r] {
 			int bestVal = branchHandler.getBestVal();
 			//right branch = take out v nbrs
 			gbitset ingraph2 = bits_in_graph;
 
 			ingraph2 = bits_in_graph & (~graphbits[maxdeg_v]);
 			gbitset nbrs = (graphbits[maxdeg_v] & bits_in_graph);
-			gbitset sol2 = cur_sol | nbrs;	//add all nbrs to solution
+			//gbitset sol2 = cur_sol | nbrs;	//add all nbrs to solution
 			int solsize2 = cursol_size + nbrs.count();
 			
 			if (solsize2 < bestVal)
 			{
-				hol_r.holdArgs(newDepth, ingraph2, sol2);
+				hol_r.holdArgs(newDepth, ingraph2, solsize2);
 				return true;
 			}
 			else
@@ -443,7 +443,7 @@ public:
 		    
 			if (nbVertices <= 5)
 				branchHandler.forward(_f, id, hol_l);
-			else if (nbVertices <= 50)
+			else if (nbVertices <= 15)
 				branchHandler.push_multithreading(_f, id, hol_l);
 			else
 				branchHandler.push_multiprocess(_f, id, hol_l, user_serializer);
@@ -482,7 +482,7 @@ private:
 
     
 	
-	void terminate_condition_bits(gbitset &cur_sol, int solsize, int id, int depth)
+	void terminate_condition_bits(int solsize, int id, int depth)
 	{
 		if (solsize == 0)
 			return;
