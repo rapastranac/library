@@ -34,7 +34,9 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx);
 	HolderType hol(branchHandler, id, parent);
 	hol.holdArgs(newDepth, treeIdx + pow(2, depth));
-	branchHandler.try_push_MP<void>(foo, id, hol, user_serializer);
+	branchHandler.try_push_MP<void>(foo, id, hol, serializer);
+
+	std::this_thread::sleep_for(1s);
 
 	foo(id, newDepth, treeIdx, nullptr);
 }
@@ -52,7 +54,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	auto &mpiScheduler = GemPBA::MPI_Scheduler::getInstance(); // MPI MPI_Scheduler
 	branchHandler.link_mpiScheduler(&mpiScheduler);
 	int rank = mpiScheduler.establishIPC(NULL, NULL); // initialize MPI and member variable linkin
-													 //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
+													  //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
 
 	/* previous input and output required before following condition
 	thus, other nodes know the data type*/
@@ -84,7 +86,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	float treeIdx = 1;
 	std::stringstream ss;
-	user_serializer(ss, depth, treeIdx);
+	serializer(ss, depth, treeIdx);
 	std::string buffer = ss.str();
 
 	if (rank == 0)
@@ -92,8 +94,9 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	else
 	{
 		branchHandler.setMaxThreads(1);
-		auto bufferReceiver = branchHandler.construct_receiver<void, int, float>(foo, user_deserializer);
-		mpiScheduler.listen(bufferReceiver);
+		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, float>(foo, deserializer);
+		auto resultFetcher = branchHandler.constructResultFetcher();
+		mpiScheduler.listen(bufferDecoder, resultFetcher);
 	}
 
 	mpiScheduler.barrier();
@@ -127,10 +130,12 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
 		mpiScheduler.printStats();
 
-		std::stringstream result;
-		mpiScheduler.retrieveResult(result); // returns a stringstream
+		std::stringstream ss;
+		std::string buffer = mpiScheduler.retrieveResult(); // returns a stringstream
 
-		user_deserializer(result, oGraph);
+		ss << buffer;
+
+		deserializer(ss, oGraph);
 		auto cv = oGraph.postProcessing();
 		fmt::print("Cover size : {} \n", cv.size());
 

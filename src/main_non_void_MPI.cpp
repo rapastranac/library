@@ -62,7 +62,7 @@ int main_non_void_MPI(int numThreads, int prob, std::string filename)
 
 	scheduler.setThreadsPerNode(numThreads);
 	holder.holdArgs(depth, graph);
-	scheduler.start<Graph>(mainAlgo, holder, user_serializer, user_deserializer);
+	scheduler.start<Graph>(mainAlgo, holder, serializer, deserializer);
 
 	auto world_size = scheduler.getWorldSize();
 	std::vector<double> idleTime(world_size);
@@ -82,7 +82,7 @@ int main_non_void_MPI(int numThreads, int prob, std::string filename)
 		scheduler.retrieveResult(result); // returns a stringstream
 
 		int SIZE = result.str().size();
-		user_deserializer(result, oGraph);
+		deserializer(result, oGraph);
 		auto cv = oGraph.postProcessing();
 		printf("Cover size : %d \n", cv.size());
 

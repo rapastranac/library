@@ -1,20 +1,10 @@
-#b 112
-#b BranchHandler.hpp:446
-#b BranchHandler.hpp:1532
-#b BranchHandler.hpp:1249
-#b Scheduler.hpp:360
-#b VC_void_MPI.hpp:87 if depth==776
-#b VC_void_MPI.hpp:64
-#b main_void_MPI.cpp:37
-b IPC_Handler.hpp:258
-#b IPC_Handler.hpp:245 if newNode==4
+
+
 #b ThreadPool.hpp:270
 
-#b IPC_Handler.hpp:348
-#b VC_non_void_MPI.hpp:86
-#b BranchHandler.hpp:1350
+#b MPI_Scheduler.hpp:348
 #b BranchHandler.hpp:1385
-#b Scheduler.hpp:112
+#b MPI_Scheduler.hpp:469
 
 r
 #thread apply all generate-core-file

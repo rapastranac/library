@@ -26,12 +26,14 @@
 #define STATE_NEED_NXT_NODE 4
 
 #define ACTION_TERMINATE 5
-#define ACTION_PUSH_REQUEST 7
-#define ACTION_RESULT_REQUEST 8
-#define ACTION_NO_RESULT 9
-#define ACTION_REF_VAL_REQUEST 10
-#define ACTION_REF_VAL_UPDATE 11
-#define ACTION_NEXT_NODE_REQUEST 12
+#define ACTION_PUSH_REQUEST 6
+
+#define ACTION_REF_VAL_REQUEST 7
+#define ACTION_REF_VAL_UPDATE 8
+#define ACTION_NEXT_NODE_REQUEST 9
+
+#define TAG_HAS_RESULT 10
+#define TAG_NO_RESULT 11
 
 namespace GemPBA
 {
@@ -99,16 +101,13 @@ namespace GemPBA
 #endif
 		}
 
-		void retrieveResult(std::stringstream &ret)
+		std::string retrieveResult()
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				if (bestResults[rank].first == refValueGlobal[0])
 				{
-					int SIZE = bestResults[rank].second.str().size();
-					fmt::print("Stream retrieved, size : {} \n", SIZE);
-					ret << bestResults[rank].second.rdbuf();
-					break;
+					return bestResults[rank].second;
 				}
 			}
 		}
@@ -151,14 +150,14 @@ namespace GemPBA
 			MPI_Barrier(world_Comm);
 		}
 
-		void listen(auto &&receiver)
+		void listen(auto &&bufferDecoder, auto &&resultFetcher)
 		{
 			int count_rcv = 0;
 
 			while (true)
 			{
 				MPI_Status status;
-				int count; // bytes to be received
+				int count; // count to be received
 
 				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
 				MPI_Get_count(&status, MPI_CHAR, &count);					 // receives total number of datatype elements of the message
@@ -174,16 +173,19 @@ namespace GemPBA
 
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, status.MPI_SOURCE);
 				//  push to the thread pool *********************************************************************
-				auto *holder = receiver(incoming_buffer, count); // holder might be useful for non-void functions
+				auto *holder = bufferDecoder(incoming_buffer, count); // holder might be useful for non-void functions
 				// **********************************************************************************************
 
 				taskFunneling();
+				notifyStateAvailable();
 
 				delete holder;
 				delete incoming_buffer;
 			}
 
-			// TODO.. fetch result
+			// TODO.. send result
+
+			sendResultToCenter(resultFetcher);
 		}
 
 		void taskFunneling()
@@ -215,7 +217,7 @@ namespace GemPBA
 
 				if (termination)
 				{
-					printf("%d tasks processed\n", num);
+					fmt::print("rank {} processed {} tasks\n", world_rank, num);
 					break;
 				}
 			}
@@ -281,21 +283,17 @@ namespace GemPBA
 			{
 				delete buffer;
 				fmt::print("rank {} exited\n", world_rank);
+				MPI_Barrier(world_Comm);
 				return true;
 			}
 			return false;
 		}
 
-		bool notifyStateAvailable()
+		void notifyStateAvailable()
 		{
-			if (idle_node_signal)
-			{
-				int buffer = 0;
-				MPI_Send(&buffer, 1, MPI_INT, 0, STATE_AVAILABLE, world_Comm);
-				idle_node_signal = false;
-				return true;
-			}
-			return false;
+
+			int buffer = 0;
+			MPI_Send(&buffer, 1, MPI_INT, 0, STATE_AVAILABLE, world_Comm);
 		}
 
 		// if current node has no assigned node already, a nextNode request is made to center
@@ -322,7 +320,6 @@ namespace GemPBA
 			fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
 			MPI_Ssend(buffer.data(), buffer.size(), MPI_CHAR, newNode, 0, world_Comm);
 			fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
-
 		}
 
 		void shift_left(int v[], const int size)
@@ -372,6 +369,20 @@ namespace GemPBA
 				return -1;
 			else
 				return child;
+		}
+
+		void sendResultToCenter(auto &&resultFetcher)
+		{
+			auto [refVal, buffer] = resultFetcher();
+			if (buffer.starts_with("Empty"))
+			{
+				MPI_Send(buffer.data(), buffer.size(), MPI_CHAR, 0, TAG_NO_RESULT, world_Comm);
+			}
+			else
+			{
+				MPI_Send(buffer.data(), buffer.size(), MPI_CHAR, 0, TAG_HAS_RESULT, world_Comm);
+				MPI_Send(&refVal, 1, MPI_INT, 0, TAG_HAS_RESULT, world_Comm);
+			}
 		}
 
 		void schedule(const char *SEED, const int SEED_SIZE)
@@ -455,18 +466,25 @@ namespace GemPBA
 					break;
 			}
 
-			//terminate
-			// TAG == 3 termination signal
-
-			for (int rank = 1; rank < world_size; rank++)
-			{
-				char buffer = 'a';
-				MPI_Ssend(&buffer, 1, MPI_CHAR, rank, 3, world_Comm); // send positive signal
-			}
-			MPI_Barrier(world_Comm);
+			/*
+			after breaking the previous loop, all jobs are finished and the only remaining step
+			is notifying termination and fetching results
+			*/
+			notifyTermination();
 
 			// receive solution from other processes
 			fetchSolution();
+		}
+
+		void notifyTermination()
+		{
+			for (int rank = 1; rank < world_size; rank++)
+			{
+				char buffer[] = "termination signal";
+				int count = sizeof(buffer);
+				MPI_Send(&buffer, count, MPI_CHAR, rank, ACTION_TERMINATE, world_Comm); // send positive signal
+			}
+			MPI_Barrier(world_Comm);
 		}
 
 		void reply_requesters(std::vector<int> &requesting,
@@ -562,55 +580,53 @@ namespace GemPBA
 			{
 
 				MPI_Status status;
-				int Bytes;
+				int count;
 				// sender would not need to send data size before hand **********************************************
 				MPI_Probe(rank, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR, &Bytes);		   // receives total number of datatype elements of the message
+				MPI_Get_count(&status, MPI_CHAR, &count);		   // receives total number of datatype elements of the message
 				//***************************************************************************************************
 
-				char *buffer = new char[Bytes];
-				MPI_Recv(buffer, Bytes, MPI_CHAR, rank, MPI_ANY_TAG, world_Comm, &status);
+				char *buffer = new char[count];
+				MPI_Recv(buffer, count, MPI_CHAR, rank, MPI_ANY_TAG, world_Comm, &status);
 
 				int TAG = status.MPI_TAG;
 #ifdef DEBUG_COMMENTS
 				fmt::print("fetching result from rank {} \n", rank);
 #endif
-				char empty[] = "empty_buffer";
-				bool isEmpty = false;
-				int count = 1;
-				for (int i = 0; i < 12; i++)
-				{
-					if (buffer[i] == empty[i])
-					{
-						count++;
-						if (count == 12)
-							isEmpty = true;
-					}
-				}
 
-				if (isEmpty)
+				switch (status.MPI_TAG)
+				{
+				case TAG_HAS_RESULT:
+				{
+					fmt::print("solution received from {}, count : {}, refVal {} \n", rank, count, status.MPI_TAG);
+
+					std::stringstream ss;
+
+					for (int i = 0; i < count; i++)
+					{
+						ss << buffer[i];
+					}
+
+					bestResults[rank].first = TAG;		 // reference value corresponding to result
+					bestResults[rank].second = ss.str(); // best result so far from this rank
+
+					delete[] buffer;
+				}
+				break;
+
+				case TAG_NO_RESULT:
 				{
 					fmt::print("solution NOT received from rank {}\n", rank);
 					delete[] buffer;
 					continue;
 				}
-				fmt::print("solution received from {}, Bytes : {}, refVal {} \n", rank, Bytes, status.MPI_TAG);
-
-				auto &ss = bestResults[rank].second; // it should be empty
-
-				for (int i = 0; i < Bytes; i++)
-				{
-					ss << buffer[i];
+				break;
 				}
-
-				bestResults[rank].first = TAG; // reference value corresponding to result
-				//bestResults[rank].second = std::move(ss); // best result so far from this rank
-
-				delete[] buffer;
 			}
 		}
 
-		void sendSeed(int &nWorking, const char *buffer, const int COUNT)
+		void
+		sendSeed(int &nWorking, const char *buffer, const int COUNT)
 		{
 			const int dest = 1;
 			// global synchronisation **********************
@@ -738,8 +754,7 @@ namespace GemPBA
 		int *refValueGlobal = nullptr;	  // reference value to chose a best result
 		int *nextNode = nullptr;		  // potentially to replace numAvailableNodes
 
-		std::stringstream returnStream;
-		std::vector<std::pair<int, std::stringstream>> bestResults;
+		std::vector<std::pair<int, std::string>> bestResults;
 
 		size_t threadsPerNode = std::thread::hardware_concurrency(); // detects the number of logical processors in machine
 

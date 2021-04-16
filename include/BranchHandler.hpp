@@ -206,13 +206,13 @@ namespace GemPBA
 #ifdef DEBUG_COMMENTS
 					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 #endif
-					//int sz_before = bestRstream.second.str().size(); //testing only
+					//int sz_before = bestResultBuffer.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
 					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
-					bestRstream.first = refValueLocal;
-					bestRstream.second = std::move(ss);
+					bestResultBuffer.first = refValueLocal;
+					bestResultBuffer.second = std::move(ss);
 
 					//mpi_mutex->unlock(world_rank); // critical section ends
 					return true;
@@ -278,23 +278,19 @@ namespace GemPBA
 
 					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
 
-					auto &ss = bestRstream.second;
-					ss.str(std::string());
-					ss.clear();
-
+					std::stringstream ss;
 					f_serial(ss, result); // serialized result
 #ifdef DEBUG_COMMENTS
 					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
 #endif
-					//int sz_before = bestRstream.second.str().size(); //testing only
+					std::string buffer = ss.str();
 
-					int SIZE = ss.str().size();
+					int SIZE = buffer.size();
 					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
-					bestRstream.first = refValueLocal; // reference value of the potential solution
-					//bestRstream.second = std::move(ss); // serialized solution
+					bestResultBuffer.first = refValueLocal; // reference value of the potential solution
+					bestResultBuffer.second = buffer;		// serialized solution
 
-					//mpi_mutex->unlock(world_rank); // critical section ends
 					return true;
 				}
 
@@ -356,13 +352,13 @@ namespace GemPBA
 					auto ss = f_serial(result); // serialized result
 
 					//fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
-					//int sz_before = bestRstream.second.str().size(); //testing only
+					//int sz_before = bestResultBuffer.second.str().size(); //testing only
 
 					int SIZE = ss.str().size();
 					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
-					//bestRstream.first = refValueLocal;
-					//bestRstream.second = std::move(ss);
+					//bestResultBuffer.first = refValueLocal;
+					//bestResultBuffer.second = std::move(ss);
 
 					//mpi_mutex->unlock(world_rank); // critical section ends
 					return true;
@@ -426,13 +422,13 @@ namespace GemPBA
 					//auto ss = f_serial(result); // serialized result
 
 					//fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
-					//int sz_before = bestRstream.second.str().size(); //testing only
+					//int sz_before = bestResultBuffer.second.str().size(); //testing only
 
 					//int SIZE = ss.str().size();
 					//fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
 
-					//bestRstream.first = refValueLocal;
-					//bestRstream.second = std::move(ss);
+					//bestResultBuffer.first = refValueLocal;
+					//bestResultBuffer.second = std::move(ss);
 
 					//mpi_mutex->unlock(world_rank); // critical section ends
 					return true;
@@ -1352,7 +1348,7 @@ namespace GemPBA
 		}
 
 		/* 	
-			types must be passed through the brackets construct_receiver<_Ret, Args...>(..), so it's
+			types must be passed through the brackets constructBufferDecoder<_Ret, Args...>(..), so it's
 			known at compile time.
 			
 			_Ret: stands for the return type of the main function
@@ -1366,7 +1362,7 @@ namespace GemPBA
 			will return a pointer to the holder
 			*/
 		template <typename _Ret, typename... Args>
-		auto construct_receiver(auto &&callable, auto &&deserializer)
+		[[nodiscard]] auto constructBufferDecoder(auto &&callable, auto &&deserializer)
 		{
 			return [this, callable, deserializer](const char *buffer, const int count) {
 				using HolderType = GemPBA::ResultHolder<_Ret, Args...>;
@@ -1384,6 +1380,17 @@ namespace GemPBA
 				try_push_MT<_Ret>(callable, -1, *holder);
 
 				return holder;
+			};
+		}
+
+		// this returns a lambda function which returns the best results as raw data
+		[[nodiscard]] auto constructResultFetcher()
+		{
+			return [this]() {
+				if (bestResultBuffer.first == -1)
+					return std::make_pair(-1, static_cast<std::string>("Empty buffer, no result"));
+				else
+					return bestResultBuffer;
 			};
 		}
 
@@ -1411,7 +1418,7 @@ namespace GemPBA
 
 			//this->roots.resize(processor_count, nullptr);
 
-			this->bestRstream.first = -1; // this allows to avoid sending empty buffers
+			this->bestResultBuffer.first = -1; // this allows to avoid sending empty buffers
 		}
 
 		int appliedStrategy = -1;
@@ -1427,7 +1434,7 @@ namespace GemPBA
 		int max_push_depth;
 		std::once_flag isDoneFlag;
 		std::any bestR;
-		std::pair<int, std::stringstream> bestRstream;
+		std::pair<int, std::string> bestResultBuffer;
 #ifdef DLB
 		bool is_DLB = true;
 #else
@@ -1595,8 +1602,8 @@ namespace GemPBA
 				fmt::print("Cover size() : {}, sending to center \n", res.coverSize());
 #endif
 
-				bestRstream.first = refValueGlobal[0];
-				auto &ss = bestRstream.second; // it should be empty
+				bestResultBuffer.first = refValueGlobal[0];
+				auto &ss = bestResultBuffer.second; // it should be empty
 				serialize(ss, res);
 			}
 			else // some other node requested help and it is surely waiting for the return value
@@ -1627,28 +1634,29 @@ namespace GemPBA
 		// this should is supposed to be called only when all tasks are finished
 		void sendBestResultToCenter()
 		{
-			if (bestRstream.first == -1)
+			if (bestResultBuffer.first == -1)
 			{
 #ifdef DEBUG_COMMENTS
 				fmt::print("rank {} did not catch a best result \n", world_rank);
 #endif
 				char buffer[] = "empty_buffer";
-				MPI_Ssend(&buffer, 12, MPI_CHAR, 0, 0, *world_Comm);
+				int count = sizeof(buffer);
+				MPI_Ssend(&buffer, count, MPI_CHAR, 0, 0, *world_Comm);
 				// if a solution was not found, processes will synchronise in here
 				return;
 			}
 
-			//char *buffer = bestRstream.second.str().data(); //This does not work, SEGFAULT
-			int refVal = bestRstream.first;
-			int bytes = bestRstream.second.str().size();
+			//char *buffer = bestResultBuffer.second.str().data(); //This does not work, SEGFAULT
+			int refVal = bestResultBuffer.first;
+			int bytes = bestResultBuffer.second.size();
 
-			MPI_Ssend(bestRstream.second.str().data(), bytes, MPI_CHAR, 0, refVal, *world_Comm);
+			MPI_Ssend(bestResultBuffer.second.data(), bytes, MPI_CHAR, 0, refVal, *world_Comm);
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {} sent best result, bytes : {}, refVal : {}\n", world_rank, bytes, refVal);
 #endif
-			//reset bestRstream
-			//bestRstream.first = -1;		// reset condition to avoid sending empty buffers
-			//bestRstream.second.str(""); // clear stream, eventhough it's not necessary since this value is replaced when a better solution is found
+			//reset bestResultBuffer
+			//bestResultBuffer.first = -1;		// reset condition to avoid sending empty buffers
+			//bestResultBuffer.second.str(""); // clear stream, eventhough it's not necessary since this value is replaced when a better solution is found
 		}
 
 		void accumulate_mpi(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)

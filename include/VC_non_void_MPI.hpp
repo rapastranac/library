@@ -13,7 +13,7 @@ void helper_ser(auto &archive, auto &first, auto &...args)
 	helper_ser(archive, args...);
 }
 
-auto user_serializer = [](std::stringstream &ss, auto &&...args) {
+auto serializer = [](std::stringstream &ss, auto &&...args) {
 	/* here inside, user can implement its favourite serialization method given the
 	arguments pack and it must return a std::stream */
 	//cereal::BinaryOutputArchive archive(ss);
@@ -33,7 +33,7 @@ void helper_dser(auto &archive, auto &first, auto &...args)
 	helper_dser(archive, args...);
 }
 
-auto user_deserializer = [](std::stringstream &ss, auto &...args) {
+auto deserializer = [](std::stringstream &ss, auto &...args) {
 	/* here inside, the user can implement its favourite deserialization method given buffer
 	and the arguments pack*/
 	//cereal::BinaryInputArchive archive(ss);
@@ -179,23 +179,23 @@ public:
 		if (hol_l.evaluate_branch_checkIn())
 		{
 #ifdef DLB
-			branchHandler.push_multiprocess<Graph>(_f, id, hol_l, user_serializer, true);
+			branchHandler.push_multiprocess<Graph>(_f, id, hol_l, serializer, true);
 #else
-			branchHandler.push_multiprocess<Graph>(_f, id, hol_l, user_serializer);
+			branchHandler.push_multiprocess<Graph>(_f, id, hol_l, serializer);
 #endif
 		}
 
 		if (hol_r.evaluate_branch_checkIn())
 		{
 #ifdef DLB
-			r_right = branchHandler.forward<Graph>(_f, id, hol_r, user_deserializer, true);
+			r_right = branchHandler.forward<Graph>(_f, id, hol_r, deserializer, true);
 #else
 			r_right = branchHandler.forward<Graph>(_f, id, hol_r);
 #endif
 		}
 
 		if (hol_l.isFetchable())
-			r_left = hol_l.get(user_deserializer);
+			r_left = hol_l.get(deserializer);
 
 		return returnRes(r_left, r_right);
 	}
@@ -228,8 +228,8 @@ public:
 			++leaves;
 		};
 
-		bool rcnd1 = branchHandler.replace_refValGlobal_If<Graph>(graph.coverSize(), condition1, ifCond1, graph, user_serializer); // thread safe
-		bool rcnd2 = branchHandler.replace_refValGlobal_If<Graph>(graph.coverSize(), condition2, ifCond2, graph, user_serializer);
+		bool rcnd1 = branchHandler.replace_refValGlobal_If<Graph>(graph.coverSize(), condition1, ifCond1, graph, serializer); // thread safe
+		bool rcnd2 = branchHandler.replace_refValGlobal_If<Graph>(graph.coverSize(), condition2, ifCond2, graph, serializer);
 
 		if (rcnd1 || rcnd2)
 			return graph;
