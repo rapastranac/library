@@ -9,6 +9,8 @@
 #include "../include/ResultHolder.hpp"
 #include "../include/BranchHandler.hpp"
 
+#include "Tree.hpp"
+
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -36,14 +38,32 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	hol.holdArgs(newDepth, treeIdx + pow(2, depth));
 	branchHandler.try_push_MP<void>(foo, id, hol, serializer);
 
-	std::this_thread::sleep_for(1s);
+	//std::this_thread::sleep_for(1s);
 
 	foo(id, newDepth, treeIdx, nullptr);
 }
 
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
+
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
+	Tree tree(10);
+
+	tree[1].assignChild(2);
+	tree[1].assignChild(3);
+	tree[1].assignChild(5);
+	tree[1].assignChild(6);
+	tree[2].assignChild(4);
+
+	tree[1].pop_front();
+
+	for (auto &node : tree)
+	{
+		for (auto &it : node)
+		{
+			std::cout << it << std::endl;
+		}
+	}
 
 	Graph graph;
 	Graph oGraph;
@@ -90,13 +110,13 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	std::string buffer = ss.str();
 
 	if (rank == 0)
-		mpiScheduler.start(buffer.data(), buffer.size());
+		mpiScheduler.runCenter(buffer.data(), buffer.size());
 	else
 	{
 		branchHandler.setMaxThreads(1);
 		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, float>(foo, deserializer);
 		auto resultFetcher = branchHandler.constructResultFetcher();
-		mpiScheduler.listen(bufferDecoder, resultFetcher);
+		mpiScheduler.runNode(bufferDecoder, resultFetcher);
 	}
 
 	mpiScheduler.barrier();
@@ -130,15 +150,15 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
 		mpiScheduler.printStats();
 
-		std::stringstream ss;
-		std::string buffer = mpiScheduler.retrieveResult(); // returns a stringstream
-
-		ss << buffer;
-
-		deserializer(ss, oGraph);
-		auto cv = oGraph.postProcessing();
-		fmt::print("Cover size : {} \n", cv.size());
-
+		//std::stringstream ss;
+		//std::string buffer = mpiScheduler.retrieveResult(); // returns a stringstream
+		//
+		//ss << buffer;
+		//
+		//deserializer(ss, oGraph);
+		//auto cv = oGraph.postProcessing();
+		//fmt::print("Cover size : {} \n", cv.size());
+		//
 		double sum = 0;
 		for (int i = 1; i < world_size; i++)
 		{

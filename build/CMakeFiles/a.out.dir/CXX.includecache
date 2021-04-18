@@ -6,6 +6,12 @@
 
 #IncludeRegexTransform: 
 
+../MPI_Modules/Tree.hpp
+iostream
+-
+vector
+-
+
 ../fmt/include/fmt/args.h
 functional
 -
@@ -369,6 +375,8 @@ vector
 /home/andres/cloud/library/include/ResultHolder.hpp
 ../include/BranchHandler.hpp
 /home/andres/cloud/library/include/BranchHandler.hpp
+Tree.hpp
+/home/andres/cloud/library/src/Tree.hpp
 chrono
 -
 filesystem

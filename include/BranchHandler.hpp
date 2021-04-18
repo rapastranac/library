@@ -1388,7 +1388,7 @@ namespace GemPBA
 		{
 			return [this]() {
 				if (bestResultBuffer.first == -1)
-					return std::make_pair(-1, static_cast<std::string>("Empty buffer, no result"));
+					return std::make_pair(0, static_cast<std::string>("Empty buffer, no result"));
 				else
 					return bestResultBuffer;
 			};

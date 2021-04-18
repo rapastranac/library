@@ -25,15 +25,17 @@
 #define STATE_AVAILABLE 3
 #define STATE_NEED_NXT_NODE 4
 
-#define ACTION_TERMINATE 5
-#define ACTION_PUSH_REQUEST 6
+#define NO_NODE_ASSIGNED 5
 
-#define ACTION_REF_VAL_REQUEST 7
-#define ACTION_REF_VAL_UPDATE 8
-#define ACTION_NEXT_NODE_REQUEST 9
+#define ACTION_TERMINATE 6
+#define ACTION_PUSH_REQUEST 7
 
-#define TAG_HAS_RESULT 10
-#define TAG_NO_RESULT 11
+#define ACTION_REF_VAL_REQUEST 8
+#define ACTION_REF_VAL_UPDATE 9
+#define ACTION_NEXT_NODE_REQUEST 10
+
+#define TAG_HAS_RESULT 11
+#define TAG_NO_RESULT 12
 
 namespace GemPBA
 {
@@ -58,7 +60,7 @@ namespace GemPBA
 
 		int establishIPC(int *argc, char *argv[])
 		{
-			// Initilialise MPI and ask for thread support
+			// Initialise MPI and ask for thread support
 			int provided;
 			MPI_Init_thread(argc, &argv, MPI_THREAD_FUNNELED, &provided);
 
@@ -76,14 +78,6 @@ namespace GemPBA
 			allocateMPI();
 
 			return world_rank;
-		}
-
-		void start(const char *buffer, const int count)
-		{
-
-			start_time = MPI_Wtime();
-			schedule(buffer, count);
-			end_time = MPI_Wtime();
 		}
 
 		void finalize()
@@ -147,10 +141,11 @@ namespace GemPBA
 
 		void barrier()
 		{
-			MPI_Barrier(world_Comm);
+			if (world_Comm != MPI_COMM_NULL)
+				MPI_Barrier(world_Comm);
 		}
 
-		void listen(auto &&bufferDecoder, auto &&resultFetcher)
+		void runNode(auto &&bufferDecoder, auto &&resultFetcher)
 		{
 			int count_rcv = 0;
 
@@ -159,8 +154,10 @@ namespace GemPBA
 				MPI_Status status;
 				int count; // count to be received
 
-				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR, &count);					 // receives total number of datatype elements of the message
+				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm,
+						  &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI_CHAR,
+							  &count); // receives total number of datatype elements of the message
 
 				char *incoming_buffer = new char[count];
 				MPI_Recv(incoming_buffer, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
@@ -180,7 +177,7 @@ namespace GemPBA
 				notifyStateAvailable();
 
 				delete holder;
-				delete incoming_buffer;
+				delete[] incoming_buffer;
 			}
 
 			// TODO.. send result
@@ -203,7 +200,7 @@ namespace GemPBA
 
 					num++;
 					sendNextNode(*buffer);
-					notifyStateNeedNxtNode();
+					//notifyStateNeedNxtNode();
 
 					isPop = q.pop(buffer);
 				}
@@ -249,11 +246,11 @@ namespace GemPBA
 		}
 
 		/*
-		- this method attempts pushing to other nodes, only one buffer will be enqueued at a time
-		- if the taskFunneling is transmitting the buffer to another node, this method will return false
-			<< this is to avoid a lost wake up and enqueing more than one buffer at a time>>
-		- if previous conditions are met, then actual condition for pushing is evaluated nextNode[0] > 0
-		*/
+        - this method attempts pushing to other nodes, only one buffer will be enqueued at a time
+        - if the taskFunneling is transmitting the buffer to another node, this method will return false
+            << this is to avoid a lost wake up and enqueing more than one buffer at a time>>
+        - if previous conditions are met, then actual condition for pushing is evaluated nextNode[0] > 0
+        */
 		bool tryPush(auto &serializer, auto &tuple)
 		{
 			std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
@@ -281,7 +278,7 @@ namespace GemPBA
 		{
 			if (TAG == ACTION_TERMINATE)
 			{
-				delete buffer;
+				delete[] buffer;
 				fmt::print("rank {} exited\n", world_rank);
 				MPI_Barrier(world_Comm);
 				return true;
@@ -302,14 +299,15 @@ namespace GemPBA
 		{
 
 			int buffer = 0;
-			MPI_Send(&buffer, 1, MPI_INT, 0, STATE_NEED_NXT_NODE, world_Comm);
+			MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_NEED_NXT_NODE, world_Comm);
 		}
 
 		void notifyRunningState(int src)
 		{
 			if (src != 0)
 			{
-				MPI_Ssend(&src, 1, MPI_INT, 0, STATE_RUNNING, world_Comm);
+				int buffer = 0;
+				MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_RUNNING, world_Comm);
 			}
 		}
 
@@ -333,8 +331,9 @@ namespace GemPBA
 			}
 		}
 
-		void builtProcessesTopology()
+		void createNodesTopology()
 		{
+			world_size = 5;
 			int numNodes = world_size - 1;
 			nAvailable = world_size - 1;
 			// this loop builds the tree distribution
@@ -347,6 +346,10 @@ namespace GemPBA
 					fmt::print("process: {}, child: {}\n", rank, child);
 				}
 			}
+		}
+
+		void assignNodes()
+		{
 			// put into nodes
 			for (int rank = 1; rank < world_size; rank++)
 			{
@@ -385,10 +388,13 @@ namespace GemPBA
 			}
 		}
 
-		void schedule(const char *SEED, const int SEED_SIZE)
+		void runCenter(const char *SEED, const int SEED_SIZE)
 		{
-			builtProcessesTopology();
-			sendSeed(nWorking, SEED, SEED_SIZE);
+			start_time = MPI_Wtime();
+
+			createNodesTopology();
+			assignNodes();
+			sendSeed(SEED, SEED_SIZE);
 
 			int rcv_availability = 0;
 			tasks_per_node.resize(world_size, 0);
@@ -405,6 +411,12 @@ namespace GemPBA
 				case STATE_RUNNING: // received if and only if a worker receives from other but center
 				{
 					nodeState[status.MPI_SOURCE] = STATE_RUNNING;
+
+					for (int rank = 1; rank < world_size; ++rank)
+					{
+						if (nodesTopology[rank].contains(status.MPI_SOURCE))
+							nodesTopology[rank].erase(status.MPI_SOURCE);
+					}
 					++nWorking;
 				}
 				break;
@@ -412,11 +424,11 @@ namespace GemPBA
 				{
 					++rcv_availability;
 					nodeState[status.MPI_SOURCE] = STATE_AVAILABLE;
+
 					--nWorking;
 					++nAvailable;
 				}
 				break;
-
 				case STATE_NEED_NXT_NODE:
 				{
 					if (nodeState[status.MPI_SOURCE] != STATE_AVAILABLE) // in the case it has already returned
@@ -431,7 +443,6 @@ namespace GemPBA
 					}
 				}
 				break;
-
 				case ACTION_REF_VAL_REQUEST:
 				{
 					// send ref value global
@@ -447,7 +458,6 @@ namespace GemPBA
 					}
 				}
 				break;
-
 				case ACTION_NEXT_NODE_REQUEST:
 				{
 					nodeState[status.MPI_SOURCE] = STATE_RUNNING;
@@ -462,18 +472,32 @@ namespace GemPBA
 				break;
 				}
 
+				correctAssignedNodes();
+
 				if (breakLoop())
 					break;
 			}
 
 			/*
-			after breaking the previous loop, all jobs are finished and the only remaining step
-			is notifying termination and fetching results
-			*/
+            after breaking the previous loop, all jobs are finished and the only remaining step
+            is notifying termination and fetching results
+            */
 			notifyTermination();
 
 			// receive solution from other processes
 			fetchSolution();
+
+			end_time = MPI_Wtime();
+		}
+
+		void correctAssignedNodes()
+		{
+			for (int rank = 1; rank < world_size; rank++)
+			{
+				if (nodeState[rank] == STATE_ASSIGNED)
+				{
+				}
+			}
 		}
 
 		void notifyTermination()
@@ -487,60 +511,9 @@ namespace GemPBA
 			MPI_Barrier(world_Comm);
 		}
 
-		void reply_requesters(std::vector<int> &requesting,
-							  std::vector<std::queue<int>> &static_next,
-							  std::vector<int> aNodes,
-							  int nodes, int nWorking, int src_rank)
-		{
-			static bool flag = true;
-			static int count = world_size - 1;
-
-			if (flag)
-			{
-				if (!static_next[src_rank].empty()) // if empty, does not mean that all processes have
-				{
-					int next = static_next[src_rank].front();
-					static_next[src_rank].pop();
-					count--;
-					if (count == 0)
-						flag = false;
-				}
-			}
-
-			for (int rank = 1; rank < world_size - 1; rank++)
-			{
-				int k = isAvailable();
-
-				if (k == -1)
-					break; // no more available nodes
-
-				if (aNodes[k] == 0)
-					fmt::print("***********************ERROR************************** aNodes[{}] == 0\n ", k);
-
-				aNodes[k] = 0;
-				--nodes;
-				++nWorking;
-				put(&k, 1, src_rank, MPI_INT, 0, win_NextNode); // puts the next available node, worker does not need to receive
-				tasks_per_node[k]++;
-			}
-		}
-
-		void correct_dynamic_next(std::vector<int> &dynamic_next, std::vector<int> aNodes)
-		{
-			for (int rank = 1; rank < world_size; rank++)
-			{
-				if ((aNodes[rank] == 1) && (dynamic_next[rank] != -1))
-				{
-					int next = dynamic_next[rank];
-					if (aNodes[next] == 0)
-						aNodes[next] = 0;
-				}
-			}
-		}
 		// first synchronisation, thus rank 0 is aware of other availability
 		// the purpose is to broadcast the total availability to other ranks
-		void
-		bcastAvailability(std::vector<int> &aNodes, int &nodes)
+		void bcastAvailability(std::vector<int> &aNodes, int &nodes)
 		{
 			aNodes[0] = 0;
 			MPI_Bcast(&nodes, 1, MPI_INT, 0, world_Comm);
@@ -583,13 +556,13 @@ namespace GemPBA
 				int count;
 				// sender would not need to send data size before hand **********************************************
 				MPI_Probe(rank, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR, &count);		   // receives total number of datatype elements of the message
+				MPI_Get_count(&status, MPI_CHAR,
+							  &count); // receives total number of datatype elements of the message
 				//***************************************************************************************************
 
 				char *buffer = new char[count];
 				MPI_Recv(buffer, count, MPI_CHAR, rank, MPI_ANY_TAG, world_Comm, &status);
 
-				int TAG = status.MPI_TAG;
 #ifdef DEBUG_COMMENTS
 				fmt::print("fetching result from rank {} \n", rank);
 #endif
@@ -598,27 +571,28 @@ namespace GemPBA
 				{
 				case TAG_HAS_RESULT:
 				{
-					fmt::print("solution received from {}, count : {}, refVal {} \n", rank, count, status.MPI_TAG);
-
 					std::stringstream ss;
-
 					for (int i = 0; i < count; i++)
 					{
 						ss << buffer[i];
 					}
 
-					bestResults[rank].first = TAG;		 // reference value corresponding to result
+					int refValue;
+					MPI_Recv(&refValue, 1, MPI_INT, rank, TAG_HAS_RESULT, world_Comm, &status);
+
+					bestResults[rank].first = refValue;	 // reference value corresponding to result
 					bestResults[rank].second = ss.str(); // best result so far from this rank
 
 					delete[] buffer;
+
+					fmt::print("solution received from {}, count : {}, refVal {} \n", rank, count, status.MPI_TAG);
 				}
 				break;
 
 				case TAG_NO_RESULT:
 				{
-					fmt::print("solution NOT received from rank {}\n", rank);
 					delete[] buffer;
-					continue;
+					fmt::print("solution NOT received from rank {}\n", rank);
 				}
 				break;
 				}
@@ -626,7 +600,7 @@ namespace GemPBA
 		}
 
 		void
-		sendSeed(int &nWorking, const char *buffer, const int COUNT)
+		sendSeed(const char *buffer, const int COUNT)
 		{
 			const int dest = 1;
 			// global synchronisation **********************
@@ -642,12 +616,15 @@ namespace GemPBA
 			fmt::print("Seed sent \n");
 		}
 
-		void put(const void *origin_addr, int count, int dest_rank, MPI_Datatype mpi_datatype, MPI_Aint offset, MPI_Win &window)
+		void put(const void *origin_addr, int count, int dest_rank, MPI_Datatype mpi_datatype, MPI_Aint offset,
+				 MPI_Win &window)
 		{
-			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, dest_rank, 0, window);									   // open epoch
-			MPI_Put(origin_addr, count, mpi_datatype, dest_rank, offset, count, mpi_datatype, window); // put date through window
-			MPI_Win_flush(dest_rank, window);														   // complete RMA operation
-			MPI_Win_unlock(dest_rank, window);														   // close epoch
+			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, dest_rank, 0, window); // open epoch
+			MPI_Put(origin_addr, count, mpi_datatype, dest_rank, offset, count, mpi_datatype,
+					window); // put date through window
+			MPI_Win_flush(dest_rank,
+						  window);			   // complete RMA operation
+			MPI_Win_unlock(dest_rank, window); // close epoch
 		}
 
 		//generic put blocking RMA
@@ -655,10 +632,12 @@ namespace GemPBA
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, rank, 0, window);									  // open epoch
-				MPI_Put(origin_addr, count, mpi_datatype, rank, offset, count, mpi_datatype, window); // put date through window
-				MPI_Win_flush(rank, window);														  // complete RMA operation
-				MPI_Win_unlock(rank, window);														  // close epoch
+				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, rank, 0, window); // open epoch
+				MPI_Put(origin_addr, count, mpi_datatype, rank, offset, count, mpi_datatype,
+						window); // put date through window
+				MPI_Win_flush(rank,
+							  window);		  // complete RMA operation
+				MPI_Win_unlock(rank, window); // close epoch
 			}
 		}
 
@@ -670,10 +649,10 @@ namespace GemPBA
 			MPI_Comm_rank(world_Comm, &this->world_rank);
 
 			/*if (world_size < 2)
-			{
-				fmt::print("At least two processes required !!\n");
-				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-			}*/
+            {
+                fmt::print("At least two processes required !!\n");
+                MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            }*/
 
 			MPI_Comm_group(world_Comm, &world_group); // world group, all ranks
 			MPI_Comm_dup(world_Comm, &numNodes_Comm);
@@ -685,7 +664,8 @@ namespace GemPBA
 			// applicable for all the processes
 			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &numAvailableNodes, &win_NumNodes);
 			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
-			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &nextNode, &win_NextNode);
+			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &nextNode,
+							 &win_NextNode);
 
 			init();
 			MPI_Barrier(world_Comm);
@@ -729,14 +709,12 @@ namespace GemPBA
 
 		int nWorking = 0;
 		int nAvailable = 0;
-		std::vector<int> nodeState;					// state of the nodes : running, assgined or available
+		std::vector<int> nodeState;					// state of the nodes : running, assigned or available
 		std::map<int, std::set<int>> nodesTopology; // order map and set, determine next node to push to
 
 		std::mutex mtx;
 		std::condition_variable cv;
 		bool isTransmitting = false;
-		bool no_tasks_signal = false;
-		bool idle_node_signal = false;
 		int newNode;
 
 		detail::Queue<std::string *> q;
