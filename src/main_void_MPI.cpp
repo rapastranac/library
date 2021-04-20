@@ -28,7 +28,7 @@ using HolderType = GemPBA::ResultHolder<void, int, float>;
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
-	if (depth > 2)
+	if (depth > 5)
 	{
 		return;
 	}
@@ -47,18 +47,11 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
 
-	Tree tree(5);
-
-	tree[1].addNext(2);
-	tree[1].addNext(3);
-
-	tree[1].clear();
-
 	Graph graph;
 	Graph oGraph;
 	VC_void_MPI cover;
 
-	//auto mainAlgo = std::bind(&VC_void_MPI::mvc, &cover, _1, _2, _3, _4); // target algorithm [all arguments]
+	auto mainAlgo = std::bind(&VC_void_MPI::mvc, &cover, _1, _2, _3, _4); // target algorithm [all arguments]
 
 	auto &mpiScheduler = GemPBA::MPI_Scheduler::getInstance(); // MPI MPI_Scheduler
 	branchHandler.link_mpiScheduler(&mpiScheduler);
@@ -88,21 +81,23 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	//handler.setRefValue(k_prime);
 	//cover.init(graph, numThreads, filename, prob);
 
-	mpiScheduler.setThreadsPerNode(numThreads);
+	//mpiScheduler.setThreadsPerNode(numThreads);
 	//holder.holdArgs(depth, graph);
 
-	holder.holdArgs(5, 7.8);
-
+	// foo(int id, int depth, float treeIdx, void *parent) ********************
 	float treeIdx = 1;
 	std::stringstream ss;
 	serializer(ss, depth, treeIdx);
 	std::string buffer = ss.str();
 
+	// ************************************************************************
+
 	if (rank == 0)
 		mpiScheduler.runCenter(buffer.data(), buffer.size());
 	else
 	{
-		branchHandler.setMaxThreads(1);
+		branchHandler.setMaxThreads(numThreads);
+		branchHandler.functionIsVoid();
 		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, float>(foo, deserializer);
 		auto resultFetcher = branchHandler.constructResultFetcher();
 		mpiScheduler.runNode(bufferDecoder, resultFetcher);

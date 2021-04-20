@@ -93,7 +93,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : " -fopenmp -g"
+					"fragment" : " -fopenmp -g  "
 				},
 				{
 					"fragment" : "-pthread"
@@ -193,14 +193,6 @@
 				}
 			],
 			"language" : "CXX",
-			"languageStandard" : 
-			{
-				"backtraces" : 
-				[
-					1
-				],
-				"standard" : "20"
-			},
 			"sourceIndexes" : 
 			[
 				0,
@@ -233,12 +225,10 @@
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 2,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 2,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so",
 				"role" : "libraries"
 			},

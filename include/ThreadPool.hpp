@@ -66,13 +66,16 @@ namespace ThreadPool
         // numThreads must be >= 0
         void setSize(int numThreads)
         {
-            fmt::print("Number of threads spawned : {} \n", numThreads);
             this->SIZE = numThreads;
 
             auto f = [this, numThreads]() {
 
 #pragma omp parallel default(shared) num_threads(numThreads) // enter parallel region
                 {
+#pragma omp single
+                    {
+                        fmt::print("Number of threads spawned : {} \n", numThreads);
+                    }
                     int tid = omp_get_thread_num(); // get thread id
                     run(tid);                       // run thread pool
                 }                                   // leave parallel region
@@ -256,13 +259,16 @@ namespace ThreadPool
 
         void notify_no_tasks()
         {
-            // this condition is met only when all threads are sleeping (no tasks)
-            if (nWaiting.load() == this->size() && running)
+#pragma omp critical(only_one)
             {
-                this->exitWait = true;
-                this->cv_wait.notify_one();
-                if (mpiScheduler)
-                    mpiScheduler->notifyTaskFunnelingExit();
+                // this condition is met only when all threads are sleeping (no tasks)
+                if (nWaiting.load() == this->size() && running)
+                {
+                    this->exitWait = true;
+                    this->cv_wait.notify_one();
+                    if (mpiScheduler)
+                        mpiScheduler->notifyTaskFunnelingExit();
+                }
             }
         }
 

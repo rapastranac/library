@@ -2,7 +2,7 @@
 
 #b MPI_Scheduler.hpp:356
 #b BranchHandler.hpp:1385
-#b MPI_Scheduler.hpp:469
+b MPI_Scheduler.hpp:233 if isTransmitting
 
 r
 #thread apply all generate-core-file
