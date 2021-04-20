@@ -21,7 +21,8 @@ private:
             this->dummy = nullptr;
         }
 
-        void assignChild(int idx)
+        // this method allows to add next node,
+        void addNext(int idx)
         {
             if (!tree[idx].parent)
             {
@@ -50,6 +51,7 @@ private:
             }
         }
 
+        // tell if this node is assigned to another one
         bool isAssigned()
         {
             if (parent)
@@ -66,6 +68,7 @@ private:
                 return false;
         }
 
+        // this method return the next node id, it returns -1 if not available
         int getNext()
         {
             if (next)
@@ -74,6 +77,15 @@ private:
                 return -1;
         }
 
+        int getParent()
+        {
+            if (parent)
+                return parent->idx;
+            else
+                return -1;
+        }
+
+        // this method unlinks and pops out the next node, leaving the second one (if applicable) as the new next
         void pop_front()
         {
             if (next)
@@ -92,6 +104,7 @@ private:
                 {
                     next->parent = nullptr;
                     next = nullptr;
+                    last = nullptr;
                 }
                 --childrenCount;
             }
@@ -102,6 +115,15 @@ private:
             }
         }
 
+        void clear()
+        {
+            while (next)
+            {
+                pop_front();
+            }
+        }
+
+        // realease current node from its parent
         void release()
         {
             if (parent)
@@ -118,6 +140,11 @@ private:
                 std::cerr << "node " << idx << " is not assigned to any other node \n";
                 throw;
             }
+        }
+
+        int size()
+        {
+            return childrenCount;
         }
 
         class Iterator
@@ -176,12 +203,25 @@ private:
     std::vector<Node> C;
 
 public:
+    Tree() {}
     Tree(size_t size)
     {
         for (size_t i = 0; i < size; i++)
         {
             C.emplace_back(*this, (int)i);
         }
+    }
+
+    void resize(size_t size)
+    {
+        for (size_t i = 0; i < size; i++)
+        {
+            C.emplace_back(*this, (int)i);
+        }
+    }
+    size_t size()
+    {
+        return C.size();
     }
 
     Node &operator[](int idx)

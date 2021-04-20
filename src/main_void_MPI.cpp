@@ -45,25 +45,14 @@ void foo(int id, int depth, float treeIdx, void *parent)
 
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
-
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
-	Tree tree(10);
 
-	tree[1].assignChild(2);
-	tree[1].assignChild(3);
-	tree[1].assignChild(5);
-	tree[1].assignChild(6);
-	tree[2].assignChild(4);
+	Tree tree(5);
 
-	tree[1].pop_front();
+	tree[1].addNext(2);
+	tree[1].addNext(3);
 
-	for (auto &node : tree)
-	{
-		for (auto &it : node)
-		{
-			std::cout << it << std::endl;
-		}
-	}
+	tree[1].clear();
 
 	Graph graph;
 	Graph oGraph;

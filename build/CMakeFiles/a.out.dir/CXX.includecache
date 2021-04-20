@@ -125,6 +125,8 @@ memory
 /home/andres/cloud/library/MPI_Modules/MPI_Scheduler.hpp
 StreamHandler.hpp
 /home/andres/cloud/library/MPI_Modules/StreamHandler.hpp
+Tree.hpp
+/home/andres/cloud/library/MPI_Modules/Tree.hpp
 ResultHolder.hpp
 -
 Queue.hpp

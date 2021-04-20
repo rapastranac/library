@@ -3,6 +3,7 @@
 #define MPI_SCHEDULER_HPP
 
 #include "StreamHandler.hpp"
+#include "Tree.hpp"
 #include <ResultHolder.hpp>
 #include <Queue.hpp>
 
@@ -36,6 +37,8 @@
 
 #define TAG_HAS_RESULT 11
 #define TAG_NO_RESULT 12
+
+#define TIMEOUT_TIME 2
 
 namespace GemPBA
 {
@@ -333,7 +336,7 @@ namespace GemPBA
 
 		void createNodesTopology()
 		{
-			world_size = 5;
+			//world_size = 5;
 			int numNodes = world_size - 1;
 			nAvailable = world_size - 1;
 			// this loop builds the tree distribution
@@ -342,7 +345,8 @@ namespace GemPBA
 				for (int rank = 1; rank <= pow(2, depth); rank++)
 				{
 					int child = getNextNode(numNodes, rank, depth);
-					nodesTopology[rank].insert(child);
+					//nodesTopology[rank].insert(child);
+					processTree[rank].addNext(child);
 					fmt::print("process: {}, child: {}\n", rank, child);
 				}
 			}
@@ -354,7 +358,15 @@ namespace GemPBA
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				int offset = 0;
-				for (auto &child : nodesTopology[rank])
+				//for (auto &child : nodesTopology[rank])
+				//{
+				//	put(&child, 1, rank, MPI_INT, offset, win_NextNode);
+				//	nodeState[child] = STATE_ASSIGNED;
+				//	--nAvailable;
+				//	++offset;
+				//}
+
+				for (auto &child : processTree[rank])
 				{
 					put(&child, 1, rank, MPI_INT, offset, win_NextNode);
 					nodeState[child] = STATE_ASSIGNED;
@@ -388,6 +400,11 @@ namespace GemPBA
 			}
 		}
 
+		double difftime(double start, double end)
+		{
+			return end - start;
+		}
+
 		void runCenter(const char *SEED, const int SEED_SIZE)
 		{
 			start_time = MPI_Wtime();
@@ -401,44 +418,81 @@ namespace GemPBA
 
 			while (true)
 			{
-				//fmt::print("nodes {}, nWorking {} \n", nodes, nWorking);
+				//fmt::print("nodes {}, nRunning {} \n", nodes, nRunning);
 				MPI_Status status;
+				MPI_Request request;
 				int buffer;
-				MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
+				int ready;
+				//MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
+
+				double begin = MPI_Wtime();
+				MPI_Irecv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &request);
+
+				MPI_Test(&request, &ready, &status);
+
+				// Check whether the underlying communication had already taken place
+				int cycles = 0;
+				while (!ready && difftime(begin, MPI_Wtime()) < TIMEOUT_TIME)
+				{
+					std::this_thread::sleep_for(std::chrono::milliseconds(500));
+					MPI_Test(&request, &ready, &status);
+					cycles++;
+				}
+
+				if (!ready)
+				{
+					if (nRunning == 0)
+					{
+						// Cancellation due to TIMEOUT
+						MPI_Cancel(&request);
+						MPI_Request_free(&request);
+						printf("rank %d: receiving TIMEOUT, buffer : %d, cycles : %d\n", world_rank, buffer, cycles);
+						break;
+					}
+				}
 
 				switch (status.MPI_TAG)
 				{
 				case STATE_RUNNING: // received if and only if a worker receives from other but center
 				{
-					nodeState[status.MPI_SOURCE] = STATE_RUNNING;
+					nodeState[status.MPI_SOURCE] = STATE_RUNNING; // node was assigned, now it's running
 
-					for (int rank = 1; rank < world_size; ++rank)
+					if (processTree[status.MPI_SOURCE].isAssigned())
+						processTree[status.MPI_SOURCE].release();
+
+					if (!processTree[status.MPI_SOURCE].hasNext()) // checks if notifying node has a child to push to
 					{
-						if (nodesTopology[rank].contains(status.MPI_SOURCE))
-							nodesTopology[rank].erase(status.MPI_SOURCE);
+						int nxt = getAvailable();
+						if (nxt > 0)
+						{
+							put(&nxt, 1, status.MPI_SOURCE, MPI_INT, 0, win_NextNode);
+							nodeState[nxt] = STATE_ASSIGNED;
+							--nAvailable;
+						}
 					}
-					++nWorking;
+
+					++nRunning;
 				}
 				break;
 				case STATE_AVAILABLE:
 				{
 					++rcv_availability;
 					nodeState[status.MPI_SOURCE] = STATE_AVAILABLE;
-
-					--nWorking;
 					++nAvailable;
-				}
-				break;
-				case STATE_NEED_NXT_NODE:
-				{
-					if (nodeState[status.MPI_SOURCE] != STATE_AVAILABLE) // in the case it has already returned
+					--nRunning;
+
+					for (int rank = 1; rank < world_size; rank++)
 					{
-						nodeState[status.MPI_SOURCE] = STATE_NEED_NXT_NODE;
-						int nxt = isAvailable();
-						if (nxt > 0)
+						if (nodeState[rank] == STATE_RUNNING) // finds the first running node
 						{
-							put(&nxt, 1, status.MPI_SOURCE, MPI_INT, 0, win_NextNode);
-							nodeState[nxt] = STATE_ASSIGNED;
+							if (!processTree[rank].hasNext()) // checks if running node has a child to push to
+							{
+								put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0, win_NextNode); // assigns returning node to the running node
+								processTree[rank].addNext(status.MPI_SOURCE);				// assigns returning node to the running node
+								nodeState[status.MPI_SOURCE] = STATE_ASSIGNED;				// it flags returning node as assigned
+								--nAvailable;												// assigned, not available any more
+								break;														// breaks for-loop
+							}
 						}
 					}
 				}
@@ -458,24 +512,12 @@ namespace GemPBA
 					}
 				}
 				break;
-				case ACTION_NEXT_NODE_REQUEST:
-				{
-					nodeState[status.MPI_SOURCE] = STATE_RUNNING;
-					++nWorking;
-
-					int nxt = isAvailable();
-					nodeState[nxt] = STATE_ASSIGNED;
-
-					--nAvailable;
-					MPI_Ssend(&nxt, 1, MPI_INT, status.MPI_SOURCE, 0, world_Comm);
-				}
-				break;
 				}
 
-				correctAssignedNodes();
+				//if (breakLoop())
+				//	break;
 
-				if (breakLoop())
-					break;
+				//MPI_Request_free(&request);
 			}
 
 			/*
@@ -488,16 +530,6 @@ namespace GemPBA
 			fetchSolution();
 
 			end_time = MPI_Wtime();
-		}
-
-		void correctAssignedNodes()
-		{
-			for (int rank = 1; rank < world_size; rank++)
-			{
-				if (nodeState[rank] == STATE_ASSIGNED)
-				{
-				}
-			}
 		}
 
 		void notifyTermination()
@@ -520,7 +552,7 @@ namespace GemPBA
 			MPI_Barrier(world_Comm); // synchronise process in world group
 		}
 
-		int isAvailable()
+		int getAvailable()
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
@@ -534,11 +566,11 @@ namespace GemPBA
 		bool breakLoop()
 		{
 			//std::this_thread::sleep_for(std::chrono::milliseconds(10)); // 4 testing
-			//fmt::print("test, nWorking = {}\n", nWorking[0]);
+			//fmt::print("test, nRunning = {}\n", nRunning[0]);
 
-			if (nAvailable == (world_size - 1) && nWorking == 0)
+			if (nAvailable == (world_size - 1) && nRunning == 0)
 			{
-				fmt::print("Termination achieved: nodes {}, nWorking {} \n", nAvailable, nWorking);
+				fmt::print("Termination achieved: nodes {}, nRunning {} \n", nAvailable, nRunning);
 				return true; //termination .. TODO to guarantee it reaches 0 only once
 			}
 			return false;
@@ -604,7 +636,7 @@ namespace GemPBA
 		{
 			const int dest = 1;
 			// global synchronisation **********************
-			++nWorking;
+			++nRunning;
 			--nAvailable;
 			nodeState[dest] = STATE_RUNNING;
 			// *********************************************
@@ -683,6 +715,7 @@ namespace GemPBA
 		{
 			numAvailableNodes[0] = 0;
 			nodeState.resize(world_size, STATE_AVAILABLE);
+			processTree.resize(world_size);
 
 			for (int i = 0; i < world_size; i++)
 			{
@@ -707,10 +740,11 @@ namespace GemPBA
 		int world_size;			  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
 
-		int nWorking = 0;
+		int nRunning = 0;
 		int nAvailable = 0;
 		std::vector<int> nodeState;					// state of the nodes : running, assigned or available
 		std::map<int, std::set<int>> nodesTopology; // order map and set, determine next node to push to
+		Tree processTree;
 
 		std::mutex mtx;
 		std::condition_variable cv;
