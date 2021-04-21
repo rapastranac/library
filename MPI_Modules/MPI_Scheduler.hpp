@@ -38,7 +38,7 @@
 #define TAG_HAS_RESULT 11
 #define TAG_NO_RESULT 12
 
-#define TIMEOUT_TIME 4
+#define TIMEOUT_TIME 10
 
 namespace GemPBA
 {
@@ -172,6 +172,12 @@ namespace GemPBA
 
 				notifyRunningState();
 
+				if (isTransmitting)
+				{
+					fmt::print("rank {} is transmitting, received from {} this should not happen \n", world_rank, status.MPI_SOURCE);
+					throw;
+				}
+
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, status.MPI_SOURCE);
 				//  push to the thread pool *********************************************************************
 				auto *holder = bufferDecoder(incoming_buffer, count); // holder might be useful for non-void functions
@@ -214,23 +220,25 @@ namespace GemPBA
 					return isPop || exit;
 				});
 
-				if (exit)
+				if (!isPop && exit)
 				{
 					fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
 					break;
 				}
 			}
+			exit = false;
+			/* to reuse the task funneling, otherwise it will exit 
+			right away the second time the process receives a task*/
 		}
 
 		void notifyTaskFunnelingExit()
 		{
-			if (exit)
-				return;
-
-			exit = true;
-
 			while (isTransmitting)
 				;
+
+			if (exit)
+				return;
+			exit = true;
 
 			{
 				std::unique_lock<std::mutex> lck(mtx);
@@ -243,6 +251,12 @@ namespace GemPBA
 		{
 			auto pck = std::make_shared<std::string>(std::forward<std::string &&>(buffer));
 			auto _buffer = new std::string(*pck);
+			if (!q.empty())
+			{
+				fmt::print("ERROR: q is not empty !!!!\n");
+				throw;
+			}
+
 			q.push(_buffer);
 			cv.notify_one();
 		}
@@ -263,6 +277,8 @@ namespace GemPBA
 					isTransmitting = true;
 
 					newNode = nextNode[0];
+					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, newNode);
+					
 					shift_left(nextNode, world_size);
 					std::stringstream ss;
 					auto _serializer = std::bind_front(serializer, std::ref(ss));
@@ -313,10 +329,24 @@ namespace GemPBA
 		void sendNextNode(std::string &buffer)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
+			if (newNode > 0)
+			{
+				if (newNode == world_rank)
+				{
+					fmt::print("rank {} attempting to send to itself !!!\n", world_rank);
+					throw;
+				}
 
-			fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
-			MPI_Ssend(buffer.data(), buffer.size(), MPI_CHAR, newNode, 0, world_Comm);
-			fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
+				fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
+				MPI_Ssend(buffer.data(), buffer.size(), MPI_CHAR, newNode, 0, world_Comm);
+				fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
+				newNode = -1;
+			}
+			else
+			{
+				fmt::print("rank {}, target rank is {}, something happened\n", world_rank, newNode);
+				throw;
+			}
 		}
 
 		void shift_left(int v[], const int size)
@@ -341,9 +371,11 @@ namespace GemPBA
 				for (int rank = 1; rank <= pow(2, depth); rank++)
 				{
 					int child = getNextNode(numNodes, rank, depth);
-					//nodesTopology[rank].insert(child);
-					processTree[rank].addNext(child);
-					fmt::print("process: {}, child: {}\n", rank, child);
+					if (child > 0)
+					{
+						processTree[rank].addNext(child);
+						fmt::print("process: {}, child: {}\n", rank, child);
+					}
 				}
 			}
 		}
@@ -423,6 +455,7 @@ namespace GemPBA
 
 				double begin = MPI_Wtime();
 				MPI_Irecv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &request);
+
 			awaitPendingMsg:
 				MPI_Test(&request, &ready, &status);
 
@@ -430,7 +463,7 @@ namespace GemPBA
 				int cycles = 0;
 				while (!ready && difftime(begin, MPI_Wtime()) < TIMEOUT_TIME)
 				{
-					std::this_thread::sleep_for(std::chrono::milliseconds(500));
+					//std::this_thread::sleep_for(std::chrono::milliseconds(500));
 					MPI_Test(&request, &ready, &status);
 					cycles++;
 				}
@@ -469,6 +502,7 @@ namespace GemPBA
 						if (nxt > 0)
 						{
 							put(&nxt, 1, status.MPI_SOURCE, MPI_INT, 0, win_NextNode);
+							processTree[status.MPI_SOURCE].addNext(nxt);
 							nodeState[nxt] = STATE_ASSIGNED;
 							--nAvailable;
 						}
@@ -482,6 +516,9 @@ namespace GemPBA
 					nodeState[status.MPI_SOURCE] = STATE_AVAILABLE;
 					++nAvailable;
 					--nRunning;
+
+					if (processTree[status.MPI_SOURCE].isAssigned())
+						processTree[status.MPI_SOURCE].release();
 
 					fmt::print("rank {} reported available, nRunning :{}\n", status.MPI_SOURCE, nRunning);
 
@@ -755,7 +792,7 @@ namespace GemPBA
 		std::mutex mtx;
 		std::condition_variable cv;
 		bool isTransmitting = false;
-		int newNode;
+		int newNode = -1;
 
 		detail::Queue<std::string *> q;
 		bool exit = false;

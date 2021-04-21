@@ -1227,18 +1227,18 @@ namespace GemPBA
 
 		bool push_multiprocess(int id, auto &holder, auto &&serializer)
 		{
-			if (mtx_MPI.try_lock()) // if mutex acquired, other threads will avoid this section
+			std::unique_lock<std::mutex> lck(mtx_MPI, std::defer_lock);
+			if (lck.try_lock()) // if mutex acquired, other threads will avoid this section
 			{
 				//TODO implement DLB in here
-
 				if (mpiScheduler->tryPush(serializer, holder.getArgs()))
 				{
 					holder.setMPISent();
 					holder.prune();
-					mtx_MPI.unlock(); // end critical section
+					//mtx_MPI.unlock(); // end critical section
 					return true;
 				}
-				mtx_MPI.unlock(); // end critical section
+				//mtx_MPI.unlock(); // end critical section
 			}
 			return false;
 		}

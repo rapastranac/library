@@ -1,0 +1,69 @@
+
+Lmod is automatically replacing "intel/2020.1.217" with "gcc/9.3.0".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) openmpi/4.0.3
+
+
+Currently Loaded Modules:
+  1) CCconfig                 5) gcccore/.9.3.0   (H)   9) openmpi/4.0.3 (m)
+  2) gentoo/2020     (S)      6) gcc/9.3.0        (t)  10) boost/1.72.0  (t)
+  3) imkl/2020.1.217 (math)   7) ucx/1.8.0
+  4) StdEnv/2020     (S)      8) libfabric/1.10.1
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   m:     MPI implementations / Implémentations MPI
+   math:  Mathematical libraries / Bibliothèques mathématiques
+   t:     Tools for development / Outils de développement
+
+ 
+
+Current working directory: /lustre03/project/6054778/pasr1602/git/library
+Starting run at: Tue Apr 20 18:01:16 EDT 2021
+argc: 3, threads: 5, prob : 4, filename: input/prob_4/400/00400_1 
+Process 0 of 20 is on blg7510.int.ets1.calculquebec.ca
+process: 1, child: 2
+process: 1, child: 3
+process: 2, child: 4
+process: 1, child: 5
+process: 2, child: 6
+process: 3, child: 7
+process: 4, child: 8
+process: 1, child: 9
+process: 2, child: 10
+process: 3, child: 11
+process: 4, child: 12
+process: 5, child: 13
+process: 6, child: 14
+process: 7, child: 15
+process: 8, child: 16
+process: 1, child: 17
+process: 2, child: 18
+process: 3, child: 19
+process: 4, child: -1
+node -1 is already assigned to 4
+terminate called without an active exception
+[blg7510:158549] *** Process received signal ***
+[blg7510:158549] Signal: Aborted (6)
+[blg7510:158549] Signal code:  (-6)
+[blg7510:158549] [ 0] /cvmfs/soft.computecanada.ca/gentoo/2020/lib64/libpthread.so.0(+0x130f0)[0x2b7417a7c0f0]
+[blg7510:158549] [ 1] /cvmfs/soft.computecanada.ca/gentoo/2020/lib64/libc.so.6(gsignal+0x141)[0x2b7417ac1901]
+[blg7510:158549] [ 2] /cvmfs/soft.computecanada.ca/gentoo/2020/lib64/libc.so.6(abort+0x127)[0x2b7417aab56b]
+[blg7510:158549] [ 3] /cvmfs/soft.computecanada.ca/gentoo/2020/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/libstdc++.so.6(+0xa1877)[0x2b7417701877]
+[blg7510:158549] [ 4] /cvmfs/soft.computecanada.ca/gentoo/2020/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/libstdc++.so.6(+0xcfc06)[0x2b741772fc06]
+[blg7510:158549] [ 5] /cvmfs/soft.computecanada.ca/gentoo/2020/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/libstdc++.so.6(+0xcfc71)[0x2b741772fc71]
+[blg7510:158549] [ 6] /cvmfs/soft.computecanada.ca/gentoo/2020/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/libstdc++.so.6(__cxa_rethrow+0x49)[0x2b741772ff59]
+[blg7510:158549] [ 7] /lustre03/project/6054778/pasr1602/git/library/./a.out[0x42d1b7]
+[blg7510:158549] [ 8] /lustre03/project/6054778/pasr1602/git/library/./a.out[0x432642]
+[blg7510:158549] [ 9] /lustre03/project/6054778/pasr1602/git/library/./a.out[0x432857]
+[blg7510:158549] [10] /lustre03/project/6054778/pasr1602/git/library/./a.out[0x429358]
+[blg7510:158549] [11] /lustre03/project/6054778/pasr1602/git/library/./a.out[0x41736c]
+[blg7510:158549] [12] /cvmfs/soft.computecanada.ca/gentoo/2020/lib64/libc.so.6(__libc_start_main+0xeb)[0x2b7417aace1b]
+[blg7510:158549] [13] /lustre03/project/6054778/pasr1602/git/library/./a.out[0x416e1a]
+[blg7510:158549] *** End of error message ***
+srun: error: blg7510: task 0: Aborted (core dumped)
+srun: Job step aborted: Waiting up to 62 seconds for job step to finish.
+slurmstepd: error: *** JOB 18483979 ON blg7510 CANCELLED AT 2021-04-20T22:06:38 DUE TO TIME LIMIT ***

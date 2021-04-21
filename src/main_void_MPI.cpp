@@ -28,7 +28,7 @@ using HolderType = GemPBA::ResultHolder<void, int, float>;
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
-	if (depth > 5)
+	if (depth > 20)
 	{
 		return;
 	}
@@ -46,6 +46,15 @@ void foo(int id, int depth, float treeIdx, void *parent)
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
+
+	Tree tree(10);
+
+	tree[1].addNext(2);
+	tree[1].addNext(3);
+	tree[1].addNext(4);
+	tree[1].addNext(5);
+
+	tree[5].release();
 
 	Graph graph;
 	Graph oGraph;

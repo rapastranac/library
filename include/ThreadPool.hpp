@@ -5,7 +5,7 @@
 #ifndef OMP_THREADPOOL_H
 #define OMP_THREADPOOL_H
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include "Queue.hpp"
 
@@ -70,7 +70,7 @@ namespace ThreadPool
 
             auto f = [this, numThreads]() {
 
-#pragma omp parallel default(shared) num_threads(numThreads) // enter parallel region
+#pragma omp parallel default(none) num_threads(numThreads) shared(this) // enter parallel region
                 {
 #pragma omp single
                     {

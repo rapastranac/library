@@ -128,12 +128,31 @@ private:
         {
             if (parent)
             {
-                if (leftSibling)
+                if (leftSibling && rightSibling) // in the midle
                 {
-                    std::cerr << "attempt to release other than front\n";
-                    throw;
+                    leftSibling->rightSibling = rightSibling;
+                    rightSibling->leftSibling = leftSibling;
+                    rightSibling = nullptr;
+                    leftSibling = nullptr;
+                    --parent->childrenCount;
+                    parent = nullptr;
+
+                    //std::cerr << "attempt to release other than front\n";
+                    //throw;
                 }
-                parent->pop_front();
+                else if (leftSibling && !rightSibling) // last one
+                {
+                    leftSibling->rightSibling = nullptr;
+                    parent->last = leftSibling;
+                    leftSibling = nullptr;
+
+                    --parent->childrenCount;
+                    parent = nullptr;
+                }
+                else // the only one or the first one
+                {
+                    parent->pop_front();
+                }
             }
             else
             {
