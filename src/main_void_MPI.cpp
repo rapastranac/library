@@ -116,7 +116,6 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	else
 	{
 		branchHandler.setMaxThreads(numThreads);
-		branchHandler.functionIsVoid();
 		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, float>(foo, deserializer);
 		auto resultFetcher = branchHandler.constructResultFetcher();
 		mpiScheduler.runNode(bufferDecoder, resultFetcher);

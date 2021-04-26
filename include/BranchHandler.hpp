@@ -1017,15 +1017,6 @@ namespace GemPBA
 			return forward<_ret>(f, threadId, holder);
 		}
 
-		/*This syncronizes available threads in branchHandler with
-			busyThreads in pool, this is relevant when using void functions
-			because there is no need to call getResults(),
-			nevertheless this should be avoided when pushing void functions*/
-		void functionIsVoid()
-		{
-			this->thread_pool.setExternNumThreads(&this->busyThreads);
-		}
-
 		/* 	
 			types must be passed through the brackets constructBufferDecoder<_Ret, Args...>(..), so it's
 			known at compile time.
@@ -1156,7 +1147,6 @@ namespace GemPBA
 		void link_mpiScheduler(MPI_Scheduler *mpiScheduler)
 		{
 			this->mpiScheduler = mpiScheduler;
-			this->thread_pool.link_mpiScheduler(mpiScheduler);
 		}
 
 		/*----------------Singleton----------------->>end*/

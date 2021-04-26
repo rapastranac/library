@@ -134,16 +134,6 @@ namespace ThreadPool
                 delete _f; // empty the queue
         }
 
-        void setExternNumThreads(std::atomic<int> *external_busy_threads)
-        {
-            this->external_busy_threads = external_busy_threads;
-        }
-
-        void link_mpiScheduler(GemPBA::MPI_Scheduler *mpiScheduler)
-        {
-            this->mpiScheduler = mpiScheduler;
-        }
-
         [[maybe_unused]] double getIdleTime()
         {
             return ((double)idleTime.load() * 1.0e-9); //seconds
@@ -220,8 +210,6 @@ namespace ThreadPool
                     std::unique_ptr<std::function<void(int)>> func(_f); // acquire ownership of "_f"
                     (*_f)(threadId);
 
-                    //accumulate_external_busy_threads();
-
                     isPop = this->q.pop(_f);
                 }
                 // the queue is empty here, wait for the next command
@@ -246,18 +234,6 @@ namespace ThreadPool
             }
         }
 
-        /*
-        void accumulate_external_busy_threads()
-        {
-            if (external_busy_threads)
-            {
-#pragma omp critical(sync_external_threads)
-                {
-                    --(*external_busy_threads);
-                }
-            }
-        } */
-
         void notify_no_tasks()
         {
 #pragma omp critical(only_one)
@@ -267,8 +243,6 @@ namespace ThreadPool
                 {
                     this->exitWait = true;
                     this->cv_wait.notify_one();
-                    if (mpiScheduler)
-                        mpiScheduler->notifyTaskFunnelingExit();
                 }
             }
         }
@@ -280,8 +254,6 @@ namespace ThreadPool
             this->isInterrupted = false;
             this->isDone = false;
             this->idleTime = 0;
-            this->external_busy_threads = nullptr;
-            this->mpiScheduler = nullptr;
         }
 
         size_t SIZE;                         // number of threads in the thread pool
@@ -290,11 +262,9 @@ namespace ThreadPool
         bool running = false;                // running signal
         bool exitWait = false;               // wakeup signal for the thread invoking wait()
 
-        std::atomic<bool> isDone;                // signalise that job is done
-        std::atomic<bool> isInterrupted;         // signalise thread pool interruption
-        std::atomic<int> *external_busy_threads; // let any external requester to know the current number of busy threads
-        GemPBA::MPI_Scheduler *mpiScheduler;     // exclusive for GemPBA, used to notify that thread pool is idle
-        std::atomic<long long> idleTime;         // total idle time that threads have been in sleeping mode
+        std::atomic<bool> isDone;        // signalise that job is done
+        std::atomic<bool> isInterrupted; // signalise thread pool interruption
+        std::atomic<long long> idleTime; // total idle time that threads have been in sleeping mode
 
         std::mutex mtx;                  // controls tasks creation and their execution atomically
         std::mutex mtx_wait;             // synchronise with wait()
