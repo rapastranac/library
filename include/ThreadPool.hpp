@@ -220,7 +220,7 @@ namespace ThreadPool
                     std::unique_ptr<std::function<void(int)>> func(_f); // acquire ownership of "_f"
                     (*_f)(threadId);
 
-                    accumulate_external_busy_threads();
+                    //accumulate_external_busy_threads();
 
                     isPop = this->q.pop(_f);
                 }
@@ -246,6 +246,7 @@ namespace ThreadPool
             }
         }
 
+        /*
         void accumulate_external_busy_threads()
         {
             if (external_busy_threads)
@@ -255,7 +256,7 @@ namespace ThreadPool
                     --(*external_busy_threads);
                 }
             }
-        }
+        } */
 
         void notify_no_tasks()
         {

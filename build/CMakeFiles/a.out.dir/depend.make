@@ -29,7 +29,6 @@ CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../fmt/include/fmt/format.h
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../include/BranchHandler.hpp
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../include/Graph.hpp
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../include/Queue.hpp
-CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../include/ResultHolder.hpp
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../include/ThreadPool.hpp
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../include/VC_FPT_void.hpp
 CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o: ../include/VertexCover.hpp
@@ -78,7 +77,6 @@ CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../fmt/include/fmt/format.h
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../include/BranchHandler.hpp
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../include/Graph.hpp
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../include/Queue.hpp
-CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../include/ResultHolder.hpp
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../include/ThreadPool.hpp
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../include/VC_non_void.hpp
 CMakeFiles/a.out.dir/src/main_non_void.cpp.o: ../include/VertexCover.hpp
@@ -127,7 +125,6 @@ CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../fmt/include/fmt/format.h
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/BranchHandler.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/Graph.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/Queue.hpp
-CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/ResultHolder.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/ThreadPool.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/VC_non_void_MPI.hpp
 CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o: ../include/VertexCover.hpp
@@ -176,7 +173,6 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o: ../fmt/include/fmt/format.h
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/BranchHandler.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/Graph.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/Queue.hpp
-CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/ResultHolder.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/ThreadPool.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/VC_void.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/VertexCover.hpp
@@ -224,12 +220,10 @@ CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../fmt/include/fmt/core.h
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../fmt/include/fmt/format-inl.h
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../fmt/include/fmt/format.h
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/Queue.hpp
-CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/ResultHolder.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../MPI_Modules/MPI_Scheduler.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../MPI_Modules/StreamHandler.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/BranchHandler.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/Graph.hpp
-CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/ResultHolder.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/ThreadPool.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/VC_void_MPI.hpp
 CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o: ../include/VertexCover.hpp

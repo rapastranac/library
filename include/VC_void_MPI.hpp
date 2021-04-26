@@ -85,12 +85,13 @@ public:
 		int v = graph.id_max(false);
 		int SIZE = graph.size();
 
-		HolderType hol_l(branchHandler, id, parent);
-		HolderType hol_r(branchHandler, id, parent);
+		HolderType hol_l(dlb, id, parent);
+		HolderType hol_r(dlb, id, parent);
 		hol_l.setDepth(depth);
 		hol_r.setDepth(depth);
 #ifdef DLB
-		branchHandler.linkParent(id, parent, hol_l, hol_r);
+		dlb.linkParent(id, parent, hol_l, hol_r);
+
 #endif
 
 		int *referenceValue = branchHandler.getRefValueTest();

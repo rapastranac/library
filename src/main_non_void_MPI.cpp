@@ -36,7 +36,7 @@ int main_non_void_MPI(int numThreads, int prob, std::string filename)
 	//graph.readEdges(file);
 
 	auto &scheduler = GemPBA::Scheduler::getInstance(handler); // MPI Scheduler
-	int rank = scheduler.establishIPC(NULL, NULL);					// initialize MPI and member variable linkin
+	int rank = scheduler.init(NULL, NULL);					// initialize MPI and member variable linkin
 																//HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
 
 	/* previous input and output required before following condition

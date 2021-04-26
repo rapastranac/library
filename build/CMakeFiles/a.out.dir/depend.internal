@@ -30,7 +30,6 @@ CMakeFiles/a.out.dir/src/main_FPT_void.cpp.o
  /home/andres/cloud/library/include/BranchHandler.hpp
  /home/andres/cloud/library/include/Graph.hpp
  /home/andres/cloud/library/include/Queue.hpp
- /home/andres/cloud/library/include/ResultHolder.hpp
  /home/andres/cloud/library/include/ThreadPool.hpp
  /home/andres/cloud/library/include/VC_FPT_void.hpp
  /home/andres/cloud/library/include/VertexCover.hpp
@@ -79,7 +78,6 @@ CMakeFiles/a.out.dir/src/main_non_void.cpp.o
  /home/andres/cloud/library/include/BranchHandler.hpp
  /home/andres/cloud/library/include/Graph.hpp
  /home/andres/cloud/library/include/Queue.hpp
- /home/andres/cloud/library/include/ResultHolder.hpp
  /home/andres/cloud/library/include/ThreadPool.hpp
  /home/andres/cloud/library/include/VC_non_void.hpp
  /home/andres/cloud/library/include/VertexCover.hpp
@@ -128,7 +126,6 @@ CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o
  /home/andres/cloud/library/include/BranchHandler.hpp
  /home/andres/cloud/library/include/Graph.hpp
  /home/andres/cloud/library/include/Queue.hpp
- /home/andres/cloud/library/include/ResultHolder.hpp
  /home/andres/cloud/library/include/ThreadPool.hpp
  /home/andres/cloud/library/include/VC_non_void_MPI.hpp
  /home/andres/cloud/library/include/VertexCover.hpp
@@ -177,7 +174,6 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o
  /home/andres/cloud/library/include/BranchHandler.hpp
  /home/andres/cloud/library/include/Graph.hpp
  /home/andres/cloud/library/include/Queue.hpp
- /home/andres/cloud/library/include/ResultHolder.hpp
  /home/andres/cloud/library/include/ThreadPool.hpp
  /home/andres/cloud/library/include/VC_void.hpp
  /home/andres/cloud/library/include/VertexCover.hpp
@@ -225,12 +221,10 @@ CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
  ../include/Queue.hpp
- ../include/ResultHolder.hpp
  /home/andres/cloud/library/MPI_Modules/MPI_Scheduler.hpp
  /home/andres/cloud/library/MPI_Modules/StreamHandler.hpp
  /home/andres/cloud/library/include/BranchHandler.hpp
  /home/andres/cloud/library/include/Graph.hpp
- /home/andres/cloud/library/include/ResultHolder.hpp
  /home/andres/cloud/library/include/ThreadPool.hpp
  /home/andres/cloud/library/include/VC_void_MPI.hpp
  /home/andres/cloud/library/include/VertexCover.hpp

@@ -6,8 +6,9 @@
 
 #include "../include/VC_void_MPI.hpp"
 
-#include "../include/ResultHolder.hpp"
+#include "../include/resultholder/ResultHolder.hpp"
 #include "../include/BranchHandler.hpp"
+#include "../include/DLB_Handler.hpp"
 
 #include "Tree.hpp"
 
@@ -22,21 +23,29 @@
 #include <string>
 #include <vector>
 
+GemPBA::DLB_Handler &dlb = GemPBA::DLB_Handler::getInstance();
 auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 
 using HolderType = GemPBA::ResultHolder<void, int, float>;
+std::mutex mtx;
+size_t leaves = 0;
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
-	if (depth > 20)
+	if (depth > 10)
 	{
+		std::scoped_lock<std::mutex> lck(mtx);
+		leaves++;
 		return;
 	}
 	int newDepth = depth + 1;
-	fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx);
-	HolderType hol(branchHandler, id, parent);
-	hol.holdArgs(newDepth, treeIdx + pow(2, depth));
-	branchHandler.try_push_MP<void>(foo, id, hol, serializer);
+	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx);
+	HolderType hol_l(dlb, id, parent);
+	float newTreeIdx = treeIdx + pow(2, depth);
+	hol_l.holdArgs(newDepth, newTreeIdx);
+
+	//branchHandler.try_push_MP<void>(foo, id, hol, serializer);
+	branchHandler.try_push_MT<void>(foo, id, hol_l);
 
 	//std::this_thread::sleep_for(1s);
 
@@ -47,15 +56,6 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
 
-	Tree tree(10);
-
-	tree[1].addNext(2);
-	tree[1].addNext(3);
-	tree[1].addNext(4);
-	tree[1].addNext(5);
-
-	tree[5].release();
-
 	Graph graph;
 	Graph oGraph;
 	VC_void_MPI cover;
@@ -64,13 +64,23 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	auto &mpiScheduler = GemPBA::MPI_Scheduler::getInstance(); // MPI MPI_Scheduler
 	branchHandler.link_mpiScheduler(&mpiScheduler);
-	int rank = mpiScheduler.establishIPC(NULL, NULL); // initialize MPI and member variable linkin
-													  //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
+	int rank = mpiScheduler.init(NULL, NULL); // initialize MPI and member variable linkin
+											  //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
+
+	GemPBA::ResultHolder<int, float, bool> a(dlb, -1, nullptr);
+	branchHandler.setMaxThreads(6);
+	//foo(-1, 0, -1, nullptr);
+
+	branchHandler.try_push_MT<void>(foo, -1, a);
+	branchHandler.wait();
+	fmt::print("Leaves : {}\n", leaves);
+
+	return 0;
 
 	/* previous input and output required before following condition
 	thus, other nodes know the data type*/
 
-	HolderType holder(branchHandler, -1); //it creates a ResultHolder, required to retrive result
+	HolderType holder(dlb, -1); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
 
 	graph.readEdges(filename);

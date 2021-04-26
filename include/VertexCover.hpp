@@ -7,9 +7,10 @@
 
 #include "Graph.hpp"
 #include "BranchHandler.hpp"
-#include "ResultHolder.hpp"
+#include <resultholder/ResultHolder.hpp>
 #include "util.hpp"
 #include "fmt/core.h"
+#include "DLB_Handler.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -359,6 +360,7 @@ protected:
 	}
 
 protected:
+	GemPBA::DLB_Handler &dlb = GemPBA::DLB_Handler::getInstance();
 	GemPBA::BranchHandler &branchHandler = GemPBA::BranchHandler::getInstance();
 
 	Graph graph;

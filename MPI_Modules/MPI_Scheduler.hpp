@@ -4,7 +4,7 @@
 
 #include "StreamHandler.hpp"
 #include "Tree.hpp"
-#include <ResultHolder.hpp>
+#include <resultholder/ResultHolder.hpp>
 #include <Queue.hpp>
 
 #include <condition_variable>
@@ -61,7 +61,7 @@ namespace GemPBA
 			this->threadsPerNode = threadsPerNode;
 		}
 
-		int establishIPC(int *argc, char *argv[])
+		int init(int *argc, char *argv[])
 		{
 			// Initialise MPI and ask for thread support
 			int provided;
@@ -180,13 +180,13 @@ namespace GemPBA
 
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, status.MPI_SOURCE);
 				//  push to the thread pool *********************************************************************
-				auto *holder = bufferDecoder(incoming_buffer, count); // holder might be useful for non-void functions
+				//auto *holder = bufferDecoder(incoming_buffer, count); // holder might be useful for non-void functions
 				// **********************************************************************************************
 
 				taskFunneling();
 				notifyStateAvailable();
 
-				delete holder;
+				//delete holder;
 				delete[] incoming_buffer;
 			}
 
@@ -278,7 +278,7 @@ namespace GemPBA
 
 					newNode = nextNode[0];
 					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, newNode);
-					
+
 					shift_left(nextNode, world_size);
 					std::stringstream ss;
 					auto _serializer = std::bind_front(serializer, std::ref(ss));
