@@ -746,9 +746,9 @@ namespace GemPBA
 			{
 				if (is_DLB)
 				{
-					bool res = try_top_holder<_ret>(lck, f, holder);
-					if (res)
-						return false; //if top holder found, then it should return false to keep trying
+					//bool res = try_top_holder<_ret>(lck, f, holder);
+					//if (res)
+					//	return false; //if top holder found, then it should return false to keep trying
 
 					dlb.checkRightSiblings(&holder);
 				}
@@ -966,7 +966,7 @@ namespace GemPBA
 		_ret forward(F &&f, int threadId, Holder &holder)
 		{
 			holder.setForwardStatus();
-			holder.threadId = threadId;
+			//holder.threadId = threadId;
 			return std::args_handler::unpack_and_forward_non_void(f, threadId, holder.getArgs(), &holder);
 		}
 
@@ -1017,6 +1017,59 @@ namespace GemPBA
 			return forward<_ret>(f, threadId, holder);
 		}
 
+		template <typename _Ret, typename... Args>
+		void constructMediators(auto &&callable, auto &&serializer, auto &&deserializer)
+		{
+			using HolderType = GemPBA::ResultHolder<_Ret, Args...>;
+
+			/*
+				They are wrapped with smart pointer to free memory automatically
+
+				a	fetch the result from the holder (if applicable), serialize it and return it as a string buffer
+				b	deserialize a buffer and create the first task of the thread after the node receives a task from center
+				c	TODO ...
+			*/
+			std::shared_ptr<::function<std::string()>> a;
+
+			auto b = [this, &a, callable, serializer, deserializer](const char *buffer, const int count) {
+				std::shared_ptr<HolderType> holder = std::make_shared<HolderType>(dlb, -1);
+
+				std::stringstream ss;
+				for (int i = 0; i < count; i++)
+				{
+					ss << buffer[i];
+				}
+
+				auto _deser = std::bind_front(deserializer, std::ref(ss));
+				std::apply(_deser, holder->getArgs());
+
+				try_push_MT<_Ret>(callable, -1, *holder);
+
+				a = std::make_shared<std::function<std::string()>>([holder, serializer]() {
+					auto res = holder->get();
+					std::stringstream ss;
+					serializer(ss, res);
+					return ss.str();
+				});
+				return 0;
+			};
+
+			std::stringstream ss;
+			int id = -1;
+			float val = -1;
+			serializer(ss, id, val);
+			auto str = ss.str();
+			b(str.data(), str.size());
+
+			auto res = (*a)();
+
+			auto c = [this]() {};
+
+			auto d = []() {
+
+			};
+		}
+
 		/* 	
 			types must be passed through the brackets constructBufferDecoder<_Ret, Args...>(..), so it's
 			known at compile time.
@@ -1036,7 +1089,7 @@ namespace GemPBA
 		{
 			return [this, callable, deserializer](const char *buffer, const int count) {
 				using HolderType = GemPBA::ResultHolder<_Ret, Args...>;
-				//HolderType *holder = new HolderType(&this->dlb, -1);
+				HolderType *holder = new HolderType(dlb, -1);
 
 				std::stringstream ss;
 				for (int i = 0; i < count; i++)
@@ -1045,12 +1098,12 @@ namespace GemPBA
 				}
 
 				auto _deser = std::bind_front(deserializer, std::ref(ss));
-				//	std::apply(_deser, holder->getArgs());
+				std::apply(_deser, holder->getArgs());
 
-				//				try_push_MT<_Ret>(callable, -1, *holder);
+				try_push_MT<_Ret>(callable, -1, *holder);
 
-				//return holder;
-				return nullptr;
+				return holder;
+				//return nullptr;
 			};
 		}
 

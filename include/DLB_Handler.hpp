@@ -1,6 +1,7 @@
 #ifndef DLB_HANDLER_HPP
 #define DLB_HANDLER_HPP
 
+#include <atomic>
 #include <map>
 #include <mutex>
 
@@ -17,6 +18,7 @@ namespace GemPBA
     private:
         std::map<int, void *> roots; // every thread will be solving a sub tree, this point to their roots
         std::mutex mtx;
+        std::atomic<long long> idleTime{0};
 
         size_t idCounter = 0;
 
@@ -34,6 +36,12 @@ namespace GemPBA
             std::unique_lock<std::mutex> lck(mtx);
             ++idCounter;
             return idCounter;
+        }
+
+        void add_on_idle_time(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
+        {
+            double time_tmp = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+            idleTime.fetch_add(time_tmp, std::memory_order_relaxed);
         }
 
         // thread safe: root creation or root switching

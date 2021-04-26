@@ -32,7 +32,7 @@ size_t leaves = 0;
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
-	if (depth > 10)
+	if (depth > 3)
 	{
 		std::scoped_lock<std::mutex> lck(mtx);
 		leaves++;
@@ -52,6 +52,32 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	foo(id, newDepth, treeIdx, nullptr);
 }
 
+int bar(int id, int depth, float treeIdx, void *parent)
+{
+	using H_Type = GemPBA::ResultHolder<int, int, float>;
+
+	if (depth > 4)
+	{
+		std::scoped_lock<std::mutex> lck(mtx);
+		leaves++;
+		return leaves;
+	}
+	int newDepth = depth + 1;
+	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx);
+	H_Type hol_l(dlb, id, parent);
+	float newTreeIdx = treeIdx + pow(2, depth);
+	hol_l.holdArgs(newDepth, newTreeIdx);
+
+	//branchHandler.try_push_MP<void>(foo, id, hol, serializer);
+	branchHandler.try_push_MT<int>(bar, id, hol_l);
+
+	//std::this_thread::sleep_for(1s);
+	int r_left = bar(id, newDepth, treeIdx, nullptr);
+
+	int r_right = hol_l.get();
+	return r_left > r_right ? r_left : r_right;
+}
+
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
@@ -67,13 +93,25 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	int rank = mpiScheduler.init(NULL, NULL); // initialize MPI and member variable linkin
 											  //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
 
-	GemPBA::ResultHolder<int, float, bool> a(dlb, -1, nullptr);
+	//GemPBA::ResultHolder<int, int, float> hldr(dlb, -1, nullptr);
+	//float val = 845.515;
+	//hldr.holdArgs(val);
 	branchHandler.setMaxThreads(6);
-	//foo(-1, 0, -1, nullptr);
+	for (size_t i = 0; i < 1000; i++)
+	{
+		branchHandler.constructMediators<int, int, float>(bar, serializer, deserializer);
+	}
 
-	branchHandler.try_push_MT<void>(foo, -1, a);
-	branchHandler.wait();
-	fmt::print("Leaves : {}\n", leaves);
+	mpiScheduler.finalize();
+	return 0;
+	//foo(-1, 0, -1, nullptr);
+	auto res = bar(-1, 0, -1, nullptr);
+
+	//branchHandler.try_push_MT<int>(bar, -1, hldr);
+	//std::this_thread::sleep_for(1s); //emulates quick task
+	//branchHandler.wait();
+	fmt::print("Leaves : {}\n", res);
+	fmt::print("Thread calls : {}\n", branchHandler.getNumberRequests());
 
 	return 0;
 

@@ -59,6 +59,15 @@ namespace ThreadPool
         // number of idle threads
         int n_idle() { return this->nWaiting; }
 
+        bool hasFinished()
+        {
+            if (nWaiting.load() == SIZE && q.empty())
+                return true;
+
+            else
+                return false;
+        }
+
         [[nodiscard]] int size() const { return SIZE; }
 
         // change the number of threads in the pool
@@ -89,23 +98,22 @@ namespace ThreadPool
         /*	when pushing recursive functions that do not require to wait for merging
             or comparing results, then main thread will wait here until it gets the
             signal that threadPool has gone totally idle, which means that
-            the job has finished	*/
+            the job has finished
+
+            PROBLEM!!!
+            if the task pushed is solved so fast that the pusher thread has not reached wait(),
+            then there will be a lost wake up
+
+        */
         void wait()
         {
-            /* There might be a lost wake up if main thread does not
-                solve at least a branch. To be checked out*/
+
             std::unique_lock<std::mutex> lck(this->mtx_wait);
             cv_wait.wait(lck, [this]() {
-                bool flag = false;
-
-                if (exitWait)
-                {
-                    flag = true;
-                    this->exitWait = false;
-                }
-
-                return flag;
+                return exitWait && running;
             });
+            exitWait = false; // this allows to reuse the wait
+
 #ifdef DEBUG_COMMENTS
             printf("pool has finished its tasks \n");
 #endif

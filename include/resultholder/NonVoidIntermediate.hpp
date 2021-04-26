@@ -18,6 +18,16 @@ namespace GemPBA
     public:
         ResultHolderInt(DLB_Handler &dlb) : Base<Args...>(dlb) {}
 
+        void hold_future(std::future<_Ret> &&expectedFut)
+        {
+            this->expectedFut = std::move(expectedFut);
+        }
+
+        void hold_actual_result(_Ret &expected)
+        {
+            this->expected = std::move(expected);
+        }
+
         _Ret get()
         {
             if (this->isPushed)
@@ -30,7 +40,6 @@ namespace GemPBA
 					changes it, since it is atomic, this operation is already well defined*/
 
                 this->dlb.add_on_idle_time(begin, end);
-                this->dlb.decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
             }
 
             this->isRetrieved = true;
@@ -51,8 +60,7 @@ namespace GemPBA
 							must be decremented in one, also it should be locked before another thread
 							changes it, since it is atomic, this operation is already well defined*/
 
-                this->branchHandler.add_on_idle_time(begin, end);
-                this->branchHandler.decrementBusyThreads(); // this is reduced from ThreadPool when the callable type is VOID
+                this->dlb.add_on_idle_time(begin, end);
             }
             else if (this->isMPISent)
             {

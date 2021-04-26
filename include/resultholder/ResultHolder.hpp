@@ -115,7 +115,7 @@ namespace GemPBA
 			//if (isVirtual)
 			//	fmt::print("Destructor called for virtual root, id : {}, \t threadId :{}, \t depth : {} \n", id, threadId, depth);
 			//else
-			//	printf("Destructor called for  id : %d \n", id);
+			fmt::print("Destructor called for  id : {} \n", this->id);
 			//
 		}
 

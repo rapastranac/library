@@ -1,18 +1,17 @@
-#ifndef WRAPPER_HPP
-#define WRAPPER_HPP
+#ifndef MEDIATOR_HPP
+#define MEDIATOR_HPP
 
 #include <functional>
 #include <string>
 
-template <class BH>
 class Mediator
 {
 private:
-    BH &bh;
     std::function<void(char *, int)> &decoder;
+    std::function<std::string()> &fetcher;
 
 public:
-    explicit Mediator(BH &bh, auto &decoder) : bh(bh), decoder(decoder)
+    explicit Mediator(auto &decoder, auto &fetcher) : decoder(decoder), fetcher(fetcher)
     {
     }
 
@@ -23,12 +22,12 @@ public:
 
     std::string get()
     {
-        return bh.get();
+        return fetcher();
     }
 
     bool isDone()
     {
-        return bh.isDone();
+        return false; // bh.isDone();
     }
 };
 
