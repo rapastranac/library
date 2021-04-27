@@ -103,8 +103,9 @@ namespace GemPBA
 				// therefore, root in handler.roots[threadId] should change since
 				// no one else is supposed to be using it
 
-				//branchHandler.roots[threadId] = this; //
-				//this->root = &branchHandler.roots[threadId];
+				//branchHandler.roots[threadId] = this;
+				this->dlb.assign_root(threadId, this);
+				this->root = &dlb.roots[threadId];
 				return;
 			}
 		}
@@ -112,11 +113,10 @@ namespace GemPBA
 		~ResultHolder()
 		{
 
-			//if (isVirtual)
-			//	fmt::print("Destructor called for virtual root, id : {}, \t threadId :{}, \t depth : {} \n", id, threadId, depth);
+			if (this->isVirtual)
+				fmt::print("Destructor called for virtual root, id : {}, \t threadId :{}, \t depth : {} \n", this->id, this->threadId, this->depth);
 			//else
-			fmt::print("Destructor called for  id : {} \n", this->id);
-			//
+			//	fmt::print("Destructor called for  id : {} \n", this->id);
 		}
 
 		ResultHolder(ResultHolder &&src) = delete;

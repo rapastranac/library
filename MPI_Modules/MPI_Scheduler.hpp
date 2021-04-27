@@ -4,7 +4,6 @@
 
 #include "StreamHandler.hpp"
 #include "Tree.hpp"
-#include <resultholder/ResultHolder.hpp>
 #include <Queue.hpp>
 
 #include <condition_variable>
@@ -38,13 +37,10 @@
 #define TAG_HAS_RESULT 11
 #define TAG_NO_RESULT 12
 
-#define TIMEOUT_TIME 10
+#define TIMEOUT_TIME 5
 
 namespace GemPBA
 {
-	template <typename _Ret, typename... Args>
-	class ResultHolder;
-
 	// inter process communication handler
 	class MPI_Scheduler
 	{
@@ -109,6 +105,11 @@ namespace GemPBA
 			}
 		}
 
+		auto fetchResVec()
+		{
+			return bestResults;
+		}
+
 		void printStats()
 		{
 			fmt::print("\n \n \n");
@@ -148,7 +149,7 @@ namespace GemPBA
 				MPI_Barrier(world_Comm);
 		}
 
-		void runNode(auto &&bufferDecoder, auto &&resultFetcher)
+		void runNode(auto &branchHandler, auto &&bufferDecoder, auto &&resultFetcher, auto &&deserializer)
 		{
 			MPI_Barrier(world_Comm);
 			int count_rcv = 0;
@@ -180,10 +181,11 @@ namespace GemPBA
 
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, status.MPI_SOURCE);
 				//  push to the thread pool *********************************************************************
-				//auto *holder = bufferDecoder(incoming_buffer, count); // holder might be useful for non-void functions
+				auto *holder = bufferDecoder(incoming_buffer, count); // holder might be useful for non-void functions
+				fmt::print("rank {}, pushed buffer to thread pool \n", world_rank, status.MPI_SOURCE);
 				// **********************************************************************************************
 
-				taskFunneling();
+				taskFunneling(branchHandler);
 				notifyStateAvailable();
 
 				//delete holder;
@@ -195,7 +197,7 @@ namespace GemPBA
 			sendResultToCenter(resultFetcher);
 		}
 
-		void taskFunneling()
+		void taskFunneling(auto &branchHandler)
 		{
 			std::string *buffer;
 			bool isPop = q.pop(buffer);
@@ -211,39 +213,23 @@ namespace GemPBA
 					//notifyStateNeedNxtNode();
 
 					isPop = q.pop(buffer);
+
+					if (!isPop)
+						isTransmitting = false;
 				}
-
-				std::unique_lock<std::mutex> lck(mtx);
-				isTransmitting = false;
-				cv.wait(lck, [this, &buffer, &isPop]() {
-					isPop = q.pop(buffer);
-					return isPop || exit;
-				});
-
-				if (!isPop && exit)
+				if (!isPop && branchHandler.isDone())
 				{
-					fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
-					break;
+					std::this_thread::sleep_for(10ms);
+					isPop = q.pop(buffer);
+					if (!isPop)
+					{
+						fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
+						break;
+					}
 				}
 			}
-			exit = false;
 			/* to reuse the task funneling, otherwise it will exit 
 			right away the second time the process receives a task*/
-		}
-
-		void notifyTaskFunnelingExit()
-		{
-			while (isTransmitting)
-				;
-
-			if (exit)
-				return;
-			exit = true;
-
-			{
-				std::unique_lock<std::mutex> lck(mtx);
-				cv.notify_one();
-			}
 		}
 
 		// push a task to be sent via MPI
@@ -258,7 +244,6 @@ namespace GemPBA
 			}
 
 			q.push(_buffer);
-			cv.notify_one();
 		}
 
 		/*
@@ -267,7 +252,7 @@ namespace GemPBA
             << this is to avoid a lost wake up and enqueing more than one buffer at a time>>
         - if previous conditions are met, then actual condition for pushing is evaluated nextNode[0] > 0
         */
-		bool tryPush(auto &serializer, auto &tuple)
+		bool tryPush(auto &getBuffer)
 		{
 			std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
 			if (lck.try_lock() && !isTransmitting)
@@ -280,12 +265,8 @@ namespace GemPBA
 					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, newNode);
 
 					shift_left(nextNode, world_size);
-					std::stringstream ss;
-					auto _serializer = std::bind_front(serializer, std::ref(ss));
-					std::apply(_serializer, tuple);
-					auto buffer = ss.str();
 
-					push(std::move(buffer));
+					push(getBuffer());
 					return true;
 				}
 			}
@@ -658,7 +639,7 @@ namespace GemPBA
 
 					delete[] buffer;
 
-					fmt::print("solution received from {}, count : {}, refVal {} \n", rank, count, status.MPI_TAG);
+					fmt::print("solution received from {}, count : {}, refVal {} \n", rank, count, refValue);
 				}
 				break;
 
@@ -766,7 +747,7 @@ namespace GemPBA
 
 			if (world_rank == 0)
 			{
-				bestResults.resize(world_size);
+				bestResults.resize(world_size, std::make_pair(-1, std::string()));
 			}
 		}
 

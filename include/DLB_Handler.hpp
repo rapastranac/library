@@ -25,6 +25,10 @@ namespace GemPBA
         DLB_Handler() {}
 
     public:
+        void resetIdCounter() //TEMPO
+        {
+            idCounter = 0;
+        }
         static DLB_Handler &getInstance()
         {
             static DLB_Handler instance;

@@ -26,26 +26,32 @@
 GemPBA::DLB_Handler &dlb = GemPBA::DLB_Handler::getInstance();
 auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 
-using HolderType = GemPBA::ResultHolder<void, int, float>;
 std::mutex mtx;
 size_t leaves = 0;
 
+int k = 18;
+
 void foo(int id, int depth, float treeIdx, void *parent)
 {
-	if (depth > 3)
+	using HolderType = GemPBA::ResultHolder<void, int, float>;
+
+	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx); // node id in the tree
+
+	if (depth >= k)
 	{
 		std::scoped_lock<std::mutex> lck(mtx);
 		leaves++;
+		branchHandler.updateRefValue(leaves);
+		//fmt::print("rank {}, Leaves : {}\n", branchHandler.getRankID(), leaves);
 		return;
 	}
 	int newDepth = depth + 1;
-	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx);
 	HolderType hol_l(dlb, id, parent);
 	float newTreeIdx = treeIdx + pow(2, depth);
 	hol_l.holdArgs(newDepth, newTreeIdx);
 
-	//branchHandler.try_push_MP<void>(foo, id, hol, serializer);
-	branchHandler.try_push_MT<void>(foo, id, hol_l);
+	branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
+	//branchHandler.try_push_MT<void>(foo, id, hol_l);
 
 	//std::this_thread::sleep_for(1s);
 
@@ -96,27 +102,25 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	//GemPBA::ResultHolder<int, int, float> hldr(dlb, -1, nullptr);
 	//float val = 845.515;
 	//hldr.holdArgs(val);
-	branchHandler.setMaxThreads(6);
-	for (size_t i = 0; i < 1000; i++)
-	{
-		branchHandler.constructMediators<int, int, float>(bar, serializer, deserializer);
-	}
+	//branchHandler.setMaxThreads(6);
 
-	mpiScheduler.finalize();
-	return 0;
 	//foo(-1, 0, -1, nullptr);
-	auto res = bar(-1, 0, -1, nullptr);
+	//auto res = bar(-1, 0, -1, nullptr);
+
+	//while (!branchHandler.isDone())
+	//	fmt::print("Not done yet !!\n");
 
 	//branchHandler.try_push_MT<int>(bar, -1, hldr);
 	//std::this_thread::sleep_for(1s); //emulates quick task
 	//branchHandler.wait();
-	fmt::print("Leaves : {}\n", res);
-	fmt::print("Thread calls : {}\n", branchHandler.getNumberRequests());
+	//fmt::print("Leaves : {}\n", res);
+	//fmt::print("Thread calls : {}\n", branchHandler.getNumberRequests());
 
-	return 0;
+	//return 0;
 
 	/* previous input and output required before following condition
 	thus, other nodes know the data type*/
+	using HolderType = GemPBA::ResultHolder<void, int, float>;
 
 	HolderType holder(dlb, -1); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
@@ -148,15 +152,18 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	std::string buffer = ss.str();
 
 	// ************************************************************************
+	branchHandler.setRefValue(0);
+
+	//fmt::print("Eureka!!\n");
 
 	if (rank == 0)
 		mpiScheduler.runCenter(buffer.data(), buffer.size());
 	else
 	{
-		branchHandler.setMaxThreads(numThreads);
+		branchHandler.initThreadPool(numThreads);
 		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, float>(foo, deserializer);
 		auto resultFetcher = branchHandler.constructResultFetcher();
-		mpiScheduler.runNode(bufferDecoder, resultFetcher);
+		mpiScheduler.runNode(branchHandler, bufferDecoder, resultFetcher, deserializer);
 	}
 
 	mpiScheduler.barrier();
@@ -187,8 +194,21 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	if (rank == 0)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
+		auto solutions = mpiScheduler.fetchResVec();
+
+		int summation = 0;
+		for (size_t i = 0; i < mpiScheduler.getWorldSize(); i++)
+		{
+			if (solutions[i].first != -1)
+				summation += solutions[i].first;
+		}
+		fmt::print("\n\n");
+		fmt::print("Summation of refValGlobal : {}\n", summation);
+
+		//std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
 		mpiScheduler.printStats();
+
+		//print sumation of refValGlobal
 
 		//std::stringstream ss;
 		//std::string buffer = mpiScheduler.retrieveResult(); // returns a stringstream

@@ -76,22 +76,18 @@ namespace GemPBA
 	public:
 		double getPoolIdleTime()
 		{
-			return thread_pool.getIdleTime() / (double)processor_count;
+			return thread_pool->getIdleTime() / (double)processor_count;
 		}
 
 		int getMaxThreads() //ParBranchHandler::getInstance().MaxThreads() = 10;
 		{
-			return this->thread_pool.size();
+			return this->thread_pool->size();
 		}
 
-		void setMaxThreads(int poolSize)
+		void initThreadPool(int poolSize)
 		{
-			/*	I have not implemented yet the resize of other pool*/
-			//this->init();
 			this->processor_count = poolSize;
-			//this->_pool = new ctpl::Pool(poolSize);
-			this->thread_pool.setSize(poolSize);
-			//this->roots.resize(poolSize, nullptr);
+			thread_pool = std::make_unique<ThreadPool::Pool>(poolSize);
 		}
 
 		//seconds
@@ -115,12 +111,12 @@ namespace GemPBA
 		}
 
 	public:
-		template <typename Holder, typename... Args>
-		void linkParent(int threadId, void *parent, Holder &child, Args &...args)
-		{
-			if (is_DLB)
-				dlb.linkParent(threadId, parent, child, args...);
-		}
+		//template <typename Holder, typename... Args>
+		//void linkParent(int threadId, void *parent, Holder &child, Args &...args)
+		//{
+		//	if (is_DLB)
+		//		dlb.linkParent(threadId, parent, child, args...);
+		//}
 
 		/* POTENTIALLY TO REPLACE catchBestResult()
 		This is thread safe operation, user does not need  any mutex knowledge
@@ -519,7 +515,7 @@ namespace GemPBA
 #ifdef DEBUG_COMMENTS
 			fmt::print("Main thread interrupting pool \n");
 #endif
-			this->thread_pool.interrupt(true);
+			this->thread_pool->interrupt(true);
 		} */
 
 		/* for void algorithms, this allows to reuse the pool*/
@@ -528,12 +524,17 @@ namespace GemPBA
 #ifdef DEBUG_COMMENTS
 			fmt::print("Main thread waiting results \n");
 #endif
-			this->thread_pool.wait();
+			this->thread_pool->wait();
 		}
 
 		bool has_result()
 		{
 			return bestR.has_value();
+		}
+
+		bool isDone()
+		{
+			return thread_pool->hasFinished();
 		}
 
 		void clear_result()
@@ -547,22 +548,6 @@ namespace GemPBA
 
 			return std::any_cast<RESULT_TYPE>(bestR);
 		}
-
-		/*	bool isResultDone(bool isDone = false)
-		{
-			std::unique_lock<std::mutex> lck(mtx);
-			if (isDone)
-			{
-				std::call_once(isDoneFlag,
-							   [this]() {
-								   this->isDone = true;
-								   this->singal_interruption();
-							   });
-			}
-			if (this->isDone)
-				return true;
-			return false;
-		} */
 
 		void lock()
 		{
@@ -604,7 +589,21 @@ namespace GemPBA
 		}
 
 		//if multi-processing, then every process should call this method
+
 		void setRefValue(int refValue)
+		{
+			this->refValueGlobal = new int[1];
+			this->refValueGlobal[0] = refValue;
+		}
+
+		void updateRefValue(int val)
+		{
+			refValueGlobal[0] = val;
+			bestResultBuffer.first = val;
+			bestResultBuffer.second = std::to_string(val);
+		}
+
+		void setRefValueTTT(int refValue)
 		{
 
 #ifdef MPI_ENABLED
@@ -664,7 +663,7 @@ namespace GemPBA
 				upperHolder->setPushStatus();
 				lck.unlock();
 
-				std::args_handler::unpack_and_push_void(thread_pool, f, upperHolder->getArgs());
+				std::args_handler::unpack_and_push_void(*thread_pool, f, upperHolder->getArgs());
 				return true; // top holder found
 			}
 			return false; // top holder not found
@@ -698,8 +697,8 @@ namespace GemPBA
 			/*This lock must be adquired before checking the condition,	
 			even though busyThreads is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			//if (busyThreads < thread_pool.size())
-			if (thread_pool.n_idle() > 0)
+			//if (busyThreads < thread_pool->size())
+			if (thread_pool->n_idle() > 0)
 			{
 				if (is_DLB)
 				{
@@ -719,7 +718,7 @@ namespace GemPBA
 				dlb.prune(&holder);
 				lck.unlock();
 
-				std::args_handler::unpack_and_push_void(thread_pool, f, holder.getArgs());
+				std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
 				return true;
 			}
 			else
@@ -741,8 +740,8 @@ namespace GemPBA
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
 			std::unique_lock<std::mutex> lck(mtx);
-			//if (busyThreads < thread_pool.size())
-			if (thread_pool.n_idle() > 0)
+			//if (busyThreads < thread_pool->size())
+			if (thread_pool->n_idle() > 0)
 			{
 				if (is_DLB)
 				{
@@ -757,7 +756,7 @@ namespace GemPBA
 				holder.setPushStatus();
 
 				lck.unlock();
-				auto ret = std::args_handler::unpack_and_push_non_void(thread_pool, f, holder.getArgs());
+				auto ret = std::args_handler::unpack_and_push_non_void(*thread_pool, f, holder.getArgs());
 				holder.hold_future(std::move(ret));
 				return true;
 			}
@@ -909,7 +908,15 @@ namespace GemPBA
 			if (lck.try_lock()) // if mutex acquired, other threads will avoid this section
 			{
 				//TODO implement DLB_Handler in here
-				if (mpiScheduler->tryPush(serializer, holder.getArgs()))
+
+				auto getBuffer = [&serializer, &holder]() {
+					std::stringstream ss;
+					auto _serializer = std::bind_front(serializer, std::ref(ss));
+					std::apply(_serializer, holder.getArgs());
+					return ss.str();
+				};
+
+				if (mpiScheduler->tryPush(getBuffer))
 				{
 					holder.setMPISent();
 					//holder.prune();
@@ -1018,7 +1025,7 @@ namespace GemPBA
 		}
 
 		template <typename _Ret, typename... Args>
-		void constructMediators(auto &&callable, auto &&serializer, auto &&deserializer)
+		auto constructMediators(auto &&callable, auto &&serializer, auto &&deserializer)
 		{
 			using HolderType = GemPBA::ResultHolder<_Ret, Args...>;
 
@@ -1032,7 +1039,8 @@ namespace GemPBA
 			std::shared_ptr<::function<std::string()>> a;
 
 			auto b = [this, &a, callable, serializer, deserializer](const char *buffer, const int count) {
-				std::shared_ptr<HolderType> holder = std::make_shared<HolderType>(dlb, -1);
+				//std::shared_ptr<HolderType> holder = std::make_shared<HolderType>(dlb, -1);
+				HolderType *holder = new HolderType(dlb, -1);
 
 				std::stringstream ss;
 				for (int i = 0; i < count; i++)
@@ -1049,25 +1057,24 @@ namespace GemPBA
 					auto res = holder->get();
 					std::stringstream ss;
 					serializer(ss, res);
+					delete holder;
 					return ss.str();
 				});
 				return 0;
 			};
 
-			std::stringstream ss;
-			int id = -1;
-			float val = -1;
-			serializer(ss, id, val);
-			auto str = ss.str();
-			b(str.data(), str.size());
-
-			auto res = (*a)();
-
-			auto c = [this]() {};
-
-			auto d = []() {
-
+			auto c = [this]() {
+				return this->isDone();
 			};
+
+			auto d = [this]() {
+				if (bestResultBuffer.first == -1)
+					return std::make_pair(0, static_cast<std::string>("Empty buffer, no result"));
+				else
+					return bestResultBuffer;
+			};
+
+			return std::make_tuple(std::move(a), std::move(b), std::move(c), std::move(d));
 		}
 
 		/* 	
@@ -1134,7 +1141,6 @@ namespace GemPBA
 			this->processor_count = std::thread::hardware_concurrency();
 			this->busyThreads = 0;
 			this->idleTime = 0;
-			this->isDone = false;
 			this->max_push_depth = -1;
 			this->superFlag = false;
 			this->idCounter = 0;
@@ -1154,9 +1160,7 @@ namespace GemPBA
 
 		/*This section refers to the strategy wrapping a function
 			then pruning data to be use by the wrapped function<<---*/
-		bool isDone;
 		int max_push_depth;
-		std::once_flag isDoneFlag;
 		std::any bestR;
 		std::pair<int, std::string> bestResultBuffer;
 
@@ -1177,7 +1181,7 @@ namespace GemPBA
 		std::mutex mtx; //local mutex
 		std::condition_variable cv;
 		std::atomic<bool> superFlag;
-		ThreadPool::Pool thread_pool;
+		std::unique_ptr<ThreadPool::Pool> thread_pool;
 
 		BranchHandler()
 		{
@@ -1353,7 +1357,7 @@ namespace GemPBA
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		void reply(Serialize &&, Holder &, int)
 		{
-			thread_pool.wait();
+			thread_pool->wait();
 		}
 
 		// this should is supposed to be called only when all tasks are finished
