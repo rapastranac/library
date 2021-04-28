@@ -57,7 +57,7 @@ public:
                 branchHandler.wait(); // acts like a barrier
                 if (branchHandler.has_result())
                 {
-                    graph_res = branchHandler.retrieveResult<Graph>();
+                    graph_res = branchHandler.fetchSolution<Graph>();
                     branchHandler.clear_result();
                     cover = graph_res.postProcessing();
                     fmt::print("MVC {} found for k = {}, {}\n", cover.size(), k, true);

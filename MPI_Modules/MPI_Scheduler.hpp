@@ -15,6 +15,7 @@
 #include <mpi.h>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 #include <stdio.h>
 #include <time.h>
 #include <thread>
@@ -32,12 +33,13 @@
 
 #define ACTION_REF_VAL_REQUEST 8
 #define ACTION_REF_VAL_UPDATE 9
-#define ACTION_NEXT_NODE_REQUEST 10
+#define ACTION_MAXIMISE_REF_VALUE 10
+#define ACTION_MINIMISE_REF_VALUE 11
 
-#define TAG_HAS_RESULT 11
-#define TAG_NO_RESULT 12
+#define TAG_HAS_RESULT 12
+#define TAG_NO_RESULT 13
 
-#define TIMEOUT_TIME 10
+#define TIMEOUT_TIME 3
 
 namespace GemPBA
 {
@@ -94,7 +96,7 @@ namespace GemPBA
 #endif
 		}
 
-		std::string retrieveResult()
+		std::string fetchSolution()
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
@@ -147,26 +149,23 @@ namespace GemPBA
 				MPI_Barrier(world_Comm);
 		}
 
-		void runNode(auto &branchHandler, auto &&bufferDecoder, auto &&resultFetcher, auto &&deserializer)
+		void runNode(auto &branchHandler, auto &&bufferDecoder, auto &&resultFetcher, auto &&serializer)
 		{
 			MPI_Barrier(world_Comm);
-			int count_rcv = 0;
 
 			while (true)
 			{
 				MPI_Status status;
 				int count; // count to be received
 
-				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm,
-						  &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR,
-							  &count); // receives total number of datatype elements of the message
+				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI_CHAR, &count);					 // receives total number of datatype elements of the message
 
 				char *incoming_buffer = new char[count];
 				MPI_Recv(incoming_buffer, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
-				count_rcv++;
+				recvdMessages++;
 
-				if (terminate(status.MPI_TAG, incoming_buffer))
+				if (isTerminated(status.MPI_TAG, incoming_buffer))
 					break;
 
 				notifyRunningState();
@@ -192,7 +191,7 @@ namespace GemPBA
 
 			// TODO.. send result
 
-			sendResultToCenter(resultFetcher);
+			sendSolution(resultFetcher);
 		}
 
 		void taskFunneling(auto &branchHandler)
@@ -247,9 +246,8 @@ namespace GemPBA
 		}
 
 		/*
-        - this method attempts pushing to other nodes, only one buffer will be enqueued at a time
+        - this method attempts pushing to other nodes, only ONE buffer will be enqueued at a time
         - if the taskFunneling is transmitting the buffer to another node, this method will return false
-            << this is to avoid a lost wake up and enqueing more than one buffer at a time>>
         - if previous conditions are met, then actual condition for pushing is evaluated nextNode[0] > 0
         */
 		bool tryPush(auto &getBuffer)
@@ -274,7 +272,7 @@ namespace GemPBA
 			return false;
 		}
 
-		bool terminate(int TAG, char *buffer)
+		bool isTerminated(int TAG, char *buffer)
 		{
 			if (TAG == ACTION_TERMINATE)
 			{
@@ -322,6 +320,7 @@ namespace GemPBA
 			}
 		}
 
+		/* shift a position to left of an array, leaving -1 as default value*/
 		void shift_left(int v[], const int size)
 		{
 			for (int i = 0; i < (size - 1); i++)
@@ -352,21 +351,16 @@ namespace GemPBA
 				}
 			}
 		}
-
+		/*	each nodes has an array containing its children were it is going to send tasks,
+			this method puts the rank of these nodes into the array in the order that they
+			are supposed to help the parent 
+		*/
 		void assignNodes()
 		{
 			// put into nodes
 			for (int rank = 1; rank < world_size; rank++)
 			{
 				int offset = 0;
-				//for (auto &child : nodesTopology[rank])
-				//{
-				//	put(&child, 1, rank, MPI_INT, offset, win_NextNode);
-				//	nodeState[child] = STATE_ASSIGNED;
-				//	--nAvailable;
-				//	++offset;
-				//}
-
 				for (auto &child : processTree[rank])
 				{
 					put(&child, 1, rank, MPI_INT, offset, win_NextNode);
@@ -377,6 +371,9 @@ namespace GemPBA
 			}
 		}
 
+		/*	given a rank ID, this method returns its child
+			TODO .. adapt it for multi-branching
+		*/
 		int getNextNode(int numNodes, int rank, int depth)
 		{
 			int child = rank + pow(2, depth);
@@ -387,7 +384,8 @@ namespace GemPBA
 				return child;
 		}
 
-		void sendResultToCenter(auto &&resultFetcher)
+		/*	send solution attained from node to the center node */
+		void sendSolution(auto &&resultFetcher)
 		{
 			auto [refVal, buffer] = resultFetcher();
 			if (buffer.starts_with("Empty"))
@@ -401,11 +399,13 @@ namespace GemPBA
 			}
 		}
 
+		/* it returns the substraction between end and double*/
 		double difftime(double start, double end)
 		{
 			return end - start;
 		}
 
+		/*	run the center node */
 		void runCenter(const char *SEED, const int SEED_SIZE)
 		{
 			MPI_Barrier(world_Comm);
@@ -436,7 +436,6 @@ namespace GemPBA
 				int cycles = 0;
 				while (!ready && difftime(begin, MPI_Wtime()) < TIMEOUT_TIME)
 				{
-					//std::this_thread::sleep_for(std::chrono::milliseconds(500));
 					MPI_Test(&request, &ready, &status);
 					cycles++;
 				}
@@ -452,7 +451,7 @@ namespace GemPBA
 						break;
 					}
 					/* if it reaches this point, then there's still a pending message
-					so we center keeps trying to receive it without making another call
+					so the center keeps trying to receive it without making another call
 					to MPI_Irecv(..)
 					*/
 					goto awaitPendingMsg;
@@ -512,7 +511,7 @@ namespace GemPBA
 					}
 				}
 				break;
-				case ACTION_REF_VAL_REQUEST:
+				case ACTION_REF_VAL_UPDATE:
 				{
 					// send ref value global
 					MPI_Ssend(refValueGlobal, 1, MPI_INT, status.MPI_SOURCE, 0, world_Comm);
@@ -528,26 +527,21 @@ namespace GemPBA
 				}
 				break;
 				}
-
-				//if (breakLoop())
-				//	break;
-
-				//MPI_Request_free(&request);
 			}
 
 			/*
             after breaking the previous loop, all jobs are finished and the only remaining step
             is notifying exit and fetching results
             */
-			notifyexit();
+			notifyTermination();
 
 			// receive solution from other processes
-			fetchSolution();
+			receiveSolution();
 
 			end_time = MPI_Wtime();
 		}
 
-		void notifyexit()
+		void notifyTermination()
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
@@ -556,15 +550,6 @@ namespace GemPBA
 				MPI_Send(&buffer, count, MPI_CHAR, rank, ACTION_TERMINATE, world_Comm); // send positive signal
 			}
 			MPI_Barrier(world_Comm);
-		}
-
-		// first synchronisation, thus rank 0 is aware of other availability
-		// the purpose is to broadcast the total availability to other ranks
-		void bcastAvailability(std::vector<int> &aNodes, int &nodes)
-		{
-			aNodes[0] = 0;
-			MPI_Bcast(&nodes, 1, MPI_INT, 0, world_Comm);
-			MPI_Barrier(world_Comm); // synchronise process in world group
 		}
 
 		int getAvailable()
@@ -577,21 +562,8 @@ namespace GemPBA
 			return -1; // all nodes are running
 		}
 
-		// this sends the exit signal
-		bool breakLoop()
-		{
-			//std::this_thread::sleep_for(std::chrono::milliseconds(10)); // 4 testing
-			//fmt::print("test, nRunning = {}\n", nRunning[0]);
-
-			if (nAvailable == (world_size - 1) && nRunning == 0)
-			{
-				fmt::print("exit achieved: nodes {}, nRunning {} \n", nAvailable, nRunning);
-				return true; //exit .. TODO to guarantee it reaches 0 only once
-			}
-			return false;
-		}
-
-		void fetchSolution()
+		/*	receive solution from nodes */
+		void receiveSolution()
 		{
 			// order order order order
 			//int nodes = world_size - 1;
@@ -618,17 +590,13 @@ namespace GemPBA
 				{
 				case TAG_HAS_RESULT:
 				{
-					std::stringstream ss;
-					for (int i = 0; i < count; i++)
-					{
-						ss << buffer[i];
-					}
+					std::string buf(buffer, count);
 
 					int refValue;
 					MPI_Recv(&refValue, 1, MPI_INT, rank, TAG_HAS_RESULT, world_Comm, &status);
 
-					bestResults[rank].first = refValue;	 // reference value corresponding to result
-					bestResults[rank].second = ss.str(); // best result so far from this rank
+					bestResults[rank].first = refValue; // reference value corresponding to result
+					bestResults[rank].second = buf;		// best result so far from this rank
 
 					delete[] buffer;
 
@@ -646,8 +614,7 @@ namespace GemPBA
 			}
 		}
 
-		void
-		sendSeed(const char *buffer, const int COUNT)
+		void sendSeed(const char *buffer, const int COUNT)
 		{
 			const int dest = 1;
 			// global synchronisation **********************
@@ -749,6 +716,22 @@ namespace GemPBA
 			return world_rank;
 		}
 
+		void linkRefValue(int **refValueNodes)
+		{
+			if (refValueGlobal)
+				*refValueNodes = refValueGlobal;
+			else
+			{
+				fmt::print("Error, refValueGlobal has not been initialized in MPI_Scheduler.hpp\n");
+				throw std::runtime_error("Error, refValueGlobal has not been initialized in MPI_Scheduler.hpp\n");
+			}
+		}
+
+		void updateRefValue(int val, std::string_view keyword)
+		{
+			MPI_Ssend(&val, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
+		}
+
 	private:
 		int argc;
 		char **argv;
@@ -791,6 +774,7 @@ namespace GemPBA
 
 		// statistics
 		size_t totalRequests = 0;
+		size_t recvdMessages = 0;
 		double start_time = 0;
 		double end_time = 0;
 

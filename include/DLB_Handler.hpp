@@ -37,9 +37,8 @@ namespace GemPBA
 
         size_t getUniqueId()
         {
-            std::unique_lock<std::mutex> lck(mtx);
-            ++idCounter;
-            return idCounter;
+            std::scoped_lock<std::mutex> lck(mtx);
+            return ++idCounter;
         }
 
         void add_on_idle_time(std::chrono::steady_clock::time_point begin, std::chrono::steady_clock::time_point end)
@@ -51,7 +50,7 @@ namespace GemPBA
         // thread safe: root creation or root switching
         void assign_root(int threadId, void *root)
         {
-            std::unique_lock<std::mutex> lck(mtx);
+            std::scoped_lock<std::mutex> lck(mtx);
             roots[threadId] = root;
         }
 
@@ -344,9 +343,9 @@ namespace GemPBA
                 Holder *virtualRoot = new Holder(*this, threadId);
                 virtualRoot->setDepth(child.depth);
 
-                child.parent = static_cast<Holder *>(roots[threadId]);
                 {
-                    std::unique_lock<std::mutex> lck(mtx);
+                    std::scoped_lock<std::mutex> lck(mtx);
+                    child.parent = static_cast<Holder *>(roots[threadId]);
                     child.root = &roots[threadId];
                 }
                 virtualRoot->children.push_back(&child);
@@ -378,9 +377,8 @@ namespace GemPBA
             else
             {
                 this->assign_root(holder.threadId, &holder);
+                holder.parent = nullptr;
 
-                // **************************************************************
-                // **************************************************************
                 // **************************************************************
                 // I believe this is duplication of something that has already happened
                 // if a thread reach this point of a holder,
@@ -389,13 +387,6 @@ namespace GemPBA
 
                 //this->root = &branchHandler.roots[threadId];
                 // **************************************************************
-                // **************************************************************
-                // **************************************************************
-
-                //*(this->root) = this; //this changes the root for every node pointing to it
-
-                //this->root = &itself;
-                holder.parent = nullptr;
             }
         }
 

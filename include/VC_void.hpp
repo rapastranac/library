@@ -60,7 +60,7 @@ public:
             //************************************************
 
             branchHandler.wait();
-            graph_res = branchHandler.retrieveResult<Graph>();
+            graph_res = branchHandler.fetchSolution<Graph>();
             graph_res2 = graph_res;
             cover = graph_res.postProcessing();
         }

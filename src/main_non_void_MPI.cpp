@@ -79,7 +79,7 @@ int main_non_void_MPI(int numThreads, int prob, std::string filename)
 		scheduler.printStats();
 
 		std::stringstream result;
-		scheduler.retrieveResult(result); // returns a stringstream
+		scheduler.fetchSolution(result); // returns a stringstream
 
 		int SIZE = result.str().size();
 		deserializer(result, oGraph);

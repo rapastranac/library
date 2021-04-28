@@ -62,24 +62,13 @@ namespace GemPBA
 			idleTime.fetch_add(time_tmp, std::memory_order_relaxed);
 		}
 
-		void decrementBusyThreads()
-		{
-			std::unique_lock lck(mtx);
-			--this->busyThreads;
-		}
-
-		int whichStrategy()
-		{
-			return appliedStrategy;
-		}
-
 	public:
 		double getPoolIdleTime()
 		{
 			return thread_pool->getIdleTime() / (double)processor_count;
 		}
 
-		int getMaxThreads() //ParBranchHandler::getInstance().MaxThreads() = 10;
+		int getPoolSize() //ParBranchHandler::getInstance().MaxThreads() = 10;
 		{
 			return this->thread_pool->size();
 		}
@@ -97,405 +86,15 @@ namespace GemPBA
 			return nanoseconds * 1.0e-9; // convert to seconds
 		}
 
-		size_t getUniqueId()
+		void holdSolution(auto &bestR)
 		{
-			std::unique_lock<std::mutex> lck(mtx);
-			++idCounter;
-			return idCounter;
+			this->bestR = bestR;
 		}
 
 		template <typename T>
-		void catchBestResult(T &&bestR)
+		void holdSolution(T &solution, auto &serializer)
 		{
-			this->bestR = std::move(bestR);
-		}
-
-	public:
-		//template <typename Holder, typename... Args>
-		//void linkParent(int threadId, void *parent, Holder &child, Args &...args)
-		//{
-		//	if (is_DLB)
-		//		dlb.linkParent(threadId, parent, child, args...);
-		//}
-
-		/* POTENTIALLY TO REPLACE catchBestResult()
-		This is thread safe operation, user does not need  any mutex knowledge
-		refValueLocal is the value to compare with a global value, usually the result
-		Cond is a lambda function where the user writes its own contidion such that this values are updated or not
-		result is the most up-to-date result that complies with previous condition
-
-		reference values:
-		local : value found at the end of a leaf
-		global : best value within the same rank
-		global absolute: best value in the whole execution "There might be a delay"
-		*/
-#ifdef MPI_ENABLED
-
-		// overload to ignore second condition, nullptr must be passed
-		template <typename _ret, class C1, typename T, class F_SERIAL,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, std::nullptr_t, T &&result, F_SERIAL &&f_serial)
-		{
-			std::unique_lock<std::mutex> lck(mtx_MPI); // guarante MPI_THREAD_SERIALIZED
-#ifdef DEBUG_COMMENTS
-			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
-#endif
-
-			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
-			{
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {}, local condition satisfied refValueGlobal : {} vs refValueLocal : {} \n", world_rank, refValueGlobal[0], refValueLocal);
-#endif
-				// then, absolute global is checked
-				int refValueGlobalAbsolute;
-
-				// request to rank 0
-				int buffer = 1;
-				int TAG = 8; // rank 0 will send back its most up-to-date refValue
-				MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG, *world_Comm);
-				//receive value
-				MPI_Status status;
-				MPI_Recv(&refValueGlobalAbsolute, 1, MPI_INT, 0, MPI_ANY_TAG, *world_Comm, &status);
-
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {} got refValueGlobalAbsolute : {} \n", world_rank, refValueGlobalAbsolute);
-#endif
-
-				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
-				{
-					// updates global ref value, in this node, eventually broacasted by rank 0
-					this->refValueGlobal[0] = refValueLocal;
-
-					// send most up-to-date refValue to rank 0
-					TAG = 9;
-					MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, TAG, *world_Comm);
-#ifdef DEBUG_COMMENTS
-					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
-#endif
-					auto ss = f_serial(result); // serialized result
-#ifdef DEBUG_COMMENTS
-					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
-#endif
-					//int sz_before = bestResultBuffer.second.str().size(); //testing only
-
-					int SIZE = ss.str().size();
-					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
-
-					bestResultBuffer.first = refValueLocal;
-					bestResultBuffer.second = std::move(ss);
-
-					//mpi_mutex->unlock(world_rank); // critical section ends
-					return true;
-				}
-				// rank 0 still waits a reply
-				MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, 0, *world_Comm);
-
-				/* it might miss an absolute new val if this assignment is executed 
-				at the same time as rank 0 is broadcasting it */
-				this->refValueGlobal[0] = refValueGlobalAbsolute;
-
-				//mpi_mutex->unlock(world_rank);		 // critical section ends
-				return false;
-			}
-			else
-				return false;
-		}
-
-		/* a reference value is replaced based on the user's conditions. 
-			ifCond is used when the user wants to print out results or any other thing thread safely
-			ifCond is optional, if not passed, then nullptr should be passed in instead*/
-		template <typename _ret, class C1, class C2, typename T, class F_SERIAL,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result, F_SERIAL &&f_serial)
-		{
-			std::unique_lock<std::mutex> lck(mtx_MPI); // guaranteed MPI_THREAD_SERIALIZED
-#ifdef DEBUG_COMMENTS
-			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
-#endif
-
-			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
-			{
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {}, local condition satisfied refValueGlobal : {} vs refValueLocal : {} \n", world_rank, refValueGlobal[0], refValueLocal);
-#endif
-				// then, absolute global is checked
-				int refValueGlobalAbsolute;
-
-				//mpi_mutex->lock(world_rank); // critical section begins
-
-				// request to rank 0
-				int buffer = 1;
-				int TAG = 8; // rank 0 will send back its most up-to-date refValue
-				MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG, *world_Comm);
-				//receive value
-				MPI_Status status;
-				MPI_Recv(&refValueGlobalAbsolute, 1, MPI_INT, 0, 0, *world_Comm, &status);
-
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {} got refValueGlobalAbsolute : {} \n", world_rank, refValueGlobalAbsolute);
-#endif
-
-				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
-				{
-					// updates global ref value, in this node, eventually broacasted by rank 0
-					this->refValueGlobal[0] = refValueLocal;
-
-					ifCond();
-
-					// send most up-to-date refValue to rank 0
-					TAG = 9;
-					MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, TAG, *world_Comm);
-
-					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
-
-					std::stringstream ss;
-					f_serial(ss, result); // serialized result
-#ifdef DEBUG_COMMENTS
-					fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
-#endif
-					std::string buffer = ss.str();
-
-					int SIZE = buffer.size();
-					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
-
-					bestResultBuffer.first = refValueLocal; // reference value of the potential solution
-					bestResultBuffer.second = buffer;		// serialized solution
-
-					return true;
-				}
-
-				// rank 0 still waits a reply
-				MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, 0, *world_Comm);
-
-				/* it might miss an absolute new val if this assignment is executed 
-				at the same time as rank 0 is broadcasting it */
-				this->refValueGlobal[0] = refValueGlobalAbsolute;
-
-				//mpi_mutex->unlock(world_rank);		 // critical section ends
-				return false;
-			}
-			else
-				return false;
-		}
-
-		// overload to ignore second condition, nullptr must be passed
-		template <typename _ret, class C1, typename T, class F_SERIAL,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, std::nullptr_t, T &&result, F_SERIAL &&f_serial)
-		{
-			std::unique_lock<std::mutex> lck(mtx_MPI); // guarante MPI_THREAD_SERIALIZED
-#ifdef DEBUG_COMMENTS
-			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
-#endif
-
-			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
-			{
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {}, local condition satisfied refValueGlobal : {} vs refValueLocal : {} \n", world_rank, refValueGlobal[0], refValueLocal);
-#endif
-				// then, absolute global is checked
-				int refValueGlobalAbsolute;
-
-				// request to rank 0
-				int buffer = 1;
-				int TAG = 8; // rank 0 will send back its most up-to-date refValue
-				MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG, *world_Comm);
-				//receive value
-				MPI_Status status;
-				MPI_Recv(&refValueGlobalAbsolute, 1, MPI_INT, 0, MPI_ANY_TAG, *world_Comm, &status);
-
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {} got refValueGlobalAbsolute : {} \n", world_rank, refValueGlobalAbsolute);
-#endif
-
-				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
-				{
-					// updates global ref value, in this node, eventually broacasted by rank 0
-					this->refValueGlobal[0] = refValueLocal;
-
-					// send most up-to-date refValue to rank 0
-					TAG = 9;
-					MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, TAG, *world_Comm);
-
-					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
-
-					auto ss = f_serial(result); // serialized result
-
-					//fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
-					//int sz_before = bestResultBuffer.second.str().size(); //testing only
-
-					int SIZE = ss.str().size();
-					fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
-
-					//bestResultBuffer.first = refValueLocal;
-					//bestResultBuffer.second = std::move(ss);
-
-					//mpi_mutex->unlock(world_rank); // critical section ends
-					return true;
-				}
-
-				// rank 0 still waits a reply
-				MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, 0, *world_Comm);
-
-				/* it might miss an absolute new val if this assignment is executed 
-				at the same time as rank 0 is broadcasting it */
-				this->refValueGlobal[0] = refValueGlobalAbsolute;
-
-				//mpi_mutex->unlock(world_rank);		 // critical section ends
-				return false;
-			}
-			else
-				return false;
-		}
-
-		template <typename _ret, class C1, class C2, typename T, class F_SERIAL,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result, F_SERIAL &&f_serial)
-		{
-			std::unique_lock<std::mutex> lck(mtx_MPI); // guarante MPI_THREAD_SERIALIZED
-#ifdef DEBUG_COMMENTS
-			fmt::print("rank {} entered replace_refValGlobal_If(), acquired mutex \n", world_rank);
-#endif
-
-			if (Cond(refValueGlobal[0], refValueLocal)) // check global val in this node
-			{
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {}, local condition satisfied refValueGlobal : {} vs refValueLocal : {} \n", world_rank, refValueGlobal[0], refValueLocal);
-#endif
-				// then, absolute global is checked
-				int refValueGlobalAbsolute;
-
-				// request to rank 0
-				int buffer = 1;
-				int TAG = 8; // rank 0 will send back its most up-to-date refValue
-				MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG, *world_Comm);
-				//receive value
-				MPI_Status status;
-				MPI_Recv(&refValueGlobalAbsolute, 1, MPI_INT, 0, MPI_ANY_TAG, *world_Comm, &status);
-
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {} got refValueGlobalAbsolute : {} \n", world_rank, refValueGlobalAbsolute);
-#endif
-
-				if (Cond(refValueGlobalAbsolute, refValueLocal)) // compare absolute global value against local
-				{
-					// updates global ref value, in this node, eventually broacasted by rank 0
-					this->refValueGlobal[0] = refValueLocal;
-
-					ifCond();
-					// send most up-to-date refValue to rank 0
-					TAG = 9;
-					MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, TAG, *world_Comm);
-
-					fmt::print("rank {} updated refValueGlobalAbsolute to {} || {} \n", world_rank, refValueLocal, refValueGlobal[0]);
-
-					//auto ss = f_serial(result); // serialized result
-
-					//fmt::print("rank {}, cover size : {} \n", world_rank, result.coverSize());
-					//int sz_before = bestResultBuffer.second.str().size(); //testing only
-
-					//int SIZE = ss.str().size();
-					//fmt::print("rank {}, buffer size to be sent : {} \n", world_rank, SIZE);
-
-					//bestResultBuffer.first = refValueLocal;
-					//bestResultBuffer.second = std::move(ss);
-
-					//mpi_mutex->unlock(world_rank); // critical section ends
-					return true;
-				}
-
-				// rank 0 still waits a reply
-				MPI_Ssend(&refValueLocal, 1, MPI_INT, 0, 0, *world_Comm);
-
-				/* it might miss an absolute new val if this assignment is executed 
-				at the same time as rank 0 is broadcasting it */
-				this->refValueGlobal[0] = refValueGlobalAbsolute;
-
-				//mpi_mutex->unlock(world_rank);		 // critical section ends
-				return false;
-			}
-			else
-				return false;
-		}
-
-#endif
-
-		// overload to ignore second condition, nullptr must be passed
-		template <typename _ret, class C1, typename T,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, std::nullptr_t, T &&result)
-		{
-			std::unique_lock<std::mutex> lck(mtx);
-			if (Cond(refValueGlobal[0], refValueLocal))
-			{
-				this->refValueGlobal[0] = refValueLocal;
-				this->bestR = result;
-				return true;
-			}
-			else
-				return false;
-		}
-
-		/* a reference value is replaced based on the user's conditions. 
-			ifCond is used when the user wants to print out results or any other thing thread safely
-			ifCond is optional, if not passed, then nullptr should be passed in instead*/
-		template <typename _ret, class C1, class C2, typename T,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result)
-		{
-			std::unique_lock<std::mutex> lck(mtx);
-			if (Cond(refValueGlobal[0], refValueLocal))
-			{
-				this->refValueGlobal[0] = refValueLocal;
-				if (refValueLocal == 0)
-				{
-					int fgd = 3423; // testing, debugging
-				}
-				ifCond();
-
-				this->bestR = result; //it should move, this copy is only for testing
-				return true;
-			}
-			else
-				return false;
-		}
-
-		// overload to ignore second condition, nullptr must be passed
-		template <typename _ret, class C1, typename T,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, std::nullptr_t, T &&result)
-		{
-			std::unique_lock<std::mutex> lck(mtx);
-			if (Cond(refValueGlobal[0], refValueLocal))
-			{
-				this->refValueGlobal[0] = refValueLocal;
-				return true;
-			}
-			else
-				return false;
-		}
-		/* a reference value is replaced based on the user's conditions. 
-			ifCond is used when the user wants to print out results or any other thing thread safely
-			ifCond is optional, if not passed, then nullptr should be passed in instead*/
-		template <typename _ret, class C1, class C2, typename T,
-				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool replace_refValGlobal_If(int refValueLocal, C1 &&Cond, C2 &&ifCond, T &&result)
-		{
-			std::unique_lock<std::mutex> lck(mtx);
-			if (Cond(refValueGlobal[0], refValueLocal))
-			{
-				this->refValueGlobal[0] = refValueLocal;
-				ifCond();
-				return true;
-			}
-			else
-				return false;
-		}
-
-		//BETA: It restricts the maximum recursion depth
-		void setMaxDepth(int max_push_depth)
-		{
-			this->max_push_depth = max_push_depth;
+			this->bestResultBuffer.second = serializer(solution);
 		}
 
 		size_t getNumberRequests()
@@ -508,15 +107,6 @@ namespace GemPBA
 			return mpiScheduler->getRank();
 		}
 #endif
-		/* for void algorithms, this also calls the destructor of the pool*/
-		/*void wait_and_finish()
-		{
-
-#ifdef DEBUG_COMMENTS
-			fmt::print("Main thread interrupting pool \n");
-#endif
-			this->thread_pool->interrupt(true);
-		} */
 
 		/* for void algorithms, this allows to reuse the pool*/
 		void wait()
@@ -543,7 +133,7 @@ namespace GemPBA
 		}
 
 		template <typename RESULT_TYPE>
-		[[nodiscard]] auto retrieveResult() -> RESULT_TYPE
+		[[nodiscard]] auto fetchSolution() -> RESULT_TYPE
 		{ // fetching results caught by the library=
 
 			return std::any_cast<RESULT_TYPE>(bestR);
@@ -581,19 +171,26 @@ namespace GemPBA
 
 		int getRefValue()
 		{
-			//std::stringstream ss;
-			//ss << "refValueGlobal address : " << refValueGlobal << "\n";
-			//ss << "About to retrieve refValueGlobal \n";
-			//std::cout << ss.str();
-			return refValueGlobal[0];
+			if (refValueGlobal)
+				return refValueGlobal[0];
+			else
+			{
+				fmt::print("Error, refValueGlobal has not been initialized in BranchHandler.hpp \n");
+				throw std::runtime_error("Error, refValueGlobal has not been initialized in BranchHandler.hpp\n");
+			}
 		}
 
 		//if multi-processing, then every process should call this method
-
 		void setRefValue(int refValue)
 		{
+
+#ifdef MPI_ENABLED
+			mpiScheduler->linkRefValue(&refValueGlobal);
+			this->refValueGlobal[0] = refValue;
+#else
 			this->refValueGlobal = new int[1];
 			this->refValueGlobal[0] = refValue;
+#endif
 		}
 
 		void updateRefValue(int val)
@@ -603,42 +200,12 @@ namespace GemPBA
 			bestResultBuffer.second = std::to_string(val);
 		}
 
-		void setRefValueTTT(int refValue)
+		void updateRefValue(int val, std::string_view keyword)
 		{
-
-#ifdef MPI_ENABLED
-
-			// since all processes pass by here, then MPI_Bcast is effective
-			this->refValueGlobal[0] = refValue;
-#ifdef DEBUG_COMMENTS
-			fmt::print("rank {}, refValueGlobal has been set : {} at {} \n", world_rank, refValueGlobal[0], fmt::ptr(refValueGlobal));
-#endif
-			if (world_rank == 0)
-			{
-				int err = MPI_Bcast(refValueGlobal, 1, MPI_INT, 0, *world_Comm);
-				if (err != MPI_SUCCESS)
-					fmt::print("rank {}, broadcast unsucessful with err = {} \n", world_rank, err);
-#ifdef DEBUG_COMMENTS
-				fmt::print("refValueGlobal broadcasted: {} at {} \n", refValueGlobal[0], fmt::ptr(refValueGlobal));
-#endif
-			}
-			else
-			{
-				int err = MPI_Bcast(refValueGlobal, 1, MPI_INT, 0, *world_Comm);
-				if (err != MPI_SUCCESS)
-					fmt::print("rank {}, broadcast unsucessful with err = {} \n", world_rank, err);
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {}, refValueGlobal received: {} at {} \n", world_rank, refValueGlobal[0], fmt::ptr(refValueGlobal));
-#endif
-			}
-
-			MPI_Barrier(*world_Comm);
-
-#else
-
-			this->refValueGlobal = new int[1];
-			this->refValueGlobal[0] = refValue;
-#endif
+			mpiScheduler->updateRefValue(val, keyword);
+			refValueGlobal[0] = val;
+			bestResultBuffer.first = val;
+			bestResultBuffer.second = std::to_string(val);
 		}
 
 		/*begin<<------casting strategies -------------------------*/
@@ -659,7 +226,6 @@ namespace GemPBA
 				}
 
 				this->requests++;
-				this->busyThreads++;
 				upperHolder->setPushStatus();
 				lck.unlock();
 
@@ -714,7 +280,6 @@ namespace GemPBA
 
 					//after this line, only leftMost holder should be pushed
 					this->requests++;
-					this->busyThreads++;
 					holder.setPushStatus();
 					//holder.prune();
 					dlb.prune(&holder);
@@ -753,7 +318,6 @@ namespace GemPBA
 					dlb.checkRightSiblings(&holder);
 				}
 				this->requests++;
-				busyThreads++;
 				holder.setPushStatus();
 
 				lck.unlock();
@@ -831,78 +395,6 @@ namespace GemPBA
 			return false; // center has not had time to put any target yet
 		}
 
-		/*
- 		return 0, for normal success with an available process
- 		return 1, for failure with no available process
- 		return 2, for DLB_Handler succes with an available process*/
-		template <typename Holder, typename Serializer>
-		int try_another_process(Holder &holder, Serializer &&f_serial)
-		{
-			int signal = 0;
-			//std::unique_lock<std::mutex> mpi_lck(mtx_MPI, std::defer_lock); // this guarantees mpi_thread_serialized
-			if (mtx_MPI.try_lock())
-			{
-				CHECK_MPI_MUTEX(1, holder.getThreadId());
-				//fmt::print("rank {}, numAvailableNodes : {} \n", world_rank, numAvailableNodes[0]);
-
-				if (is_node_available()) // center node is in charge of broadcasting this number
-				{
-
-					//mpi_mutex->unlock(0, world_rank);
-
-					int dest_rank = nextNode[0]; // this is the available node, sent by center node as a tag
-					nextNode[1] = nextNode[0];	 // this is safe because center won't put anything until this worker notifies it
-
-					int buffer = 1;
-					int TAG = 5;
-					MPI_Ssend(&buffer, 1, MPI_INT, 0, TAG, *world_Comm); // this worker notifies that nextNode has been used up
-
-#ifdef DEBUG_COMMENTS
-					fmt::print("process {} received ID {}\n", world_rank, dest_rank);
-#endif
-
-					///****************************
-					if (is_DLB)
-					{
-						bool r = try_top_holder(holder, f_serial, dest_rank);
-						if (r)
-						{
-							CHECK_MPI_MUTEX(-1, holder.getThreadId());
-							mtx_MPI.unlock();
-							return 2;
-						}
-
-						dlb.checkRightSiblings(&holder); // this decrements parent's children
-					}
-					///****************************
-
-					holder.setMPISent(true, dest_rank);
-
-					std::stringstream _stream;								 // temporary stream to hold bytes
-					auto __f = std::bind_front(f_serial, std::ref(_stream)); // handy dandy to use std::apply here below
-					std::apply(__f, holder.getArgs());						 // serialization
-
-					int bytes = _stream.str().size(); // number of bytes
-
-					int err = MPI_Ssend(_stream.str().data(), bytes, MPI_CHAR, dest_rank, 0, *world_Comm); // send buffer
-					if (err != MPI_SUCCESS)
-						fmt::print("buffer failed to send from rank {} to rank {}! \n", world_rank, dest_rank);
-
-#ifdef DEBUG_COMMENTS
-					fmt::print("process {} forwarded to process {} \n", world_rank, dest_rank);
-#endif
-					CHECK_MPI_MUTEX(-1, holder.getThreadId());
-					mtx_MPI.unlock();
-
-					return 0;
-				}
-
-				CHECK_MPI_MUTEX(-1, holder.getThreadId());
-				mtx_MPI.unlock(); // this ensures to unlock it even if (is_node_available() == false)
-			}
-			return 1; //this return is necessary only due to function extraction
-		}
-
 		bool push_multiprocess(int id, auto &holder, auto &&serializer)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI, std::defer_lock);
@@ -911,10 +403,7 @@ namespace GemPBA
 				//TODO implement DLB_Handler in here
 
 				auto getBuffer = [&serializer, &holder]() {
-					std::stringstream ss;
-					auto _serializer = std::bind_front(serializer, std::ref(ss));
-					std::apply(_serializer, holder.getArgs());
-					return ss.str();
+					return std::apply(serializer, holder.getArgs());
 				};
 
 				if (mpiScheduler->tryPush(getBuffer))
@@ -1138,28 +627,18 @@ namespace GemPBA
 		void init()
 		{
 			this->processor_count = std::thread::hardware_concurrency();
-			this->busyThreads = 0;
 			this->idleTime = 0;
-			this->max_push_depth = -1;
 			this->superFlag = false;
 			this->idCounter = 0;
 			this->requests = 0;
-
-			//this->roots.resize(processor_count, nullptr);
-
 			this->bestResultBuffer.first = -1; // this allows to avoid sending empty buffers
 		}
 
-		int appliedStrategy = -1;
 		std::atomic<size_t> idCounter;
 		std::atomic<size_t> requests;
 
-		std::map<int, void *> roots; // every thread will be solving a sub tree, this point to their roots
-		std::mutex root_mtx;
-
 		/*This section refers to the strategy wrapping a function
 			then pruning data to be use by the wrapped function<<---*/
-		int max_push_depth;
 		std::any bestR;
 		std::pair<int, std::string> bestResultBuffer;
 
@@ -1176,7 +655,6 @@ namespace GemPBA
 
 		unsigned int processor_count;
 		std::atomic<long long> idleTime;
-		std::atomic<int> busyThreads;
 		std::mutex mtx; //local mutex
 		std::condition_variable cv;
 		std::atomic<bool> superFlag;
@@ -1213,8 +691,6 @@ namespace GemPBA
 
 		MPI_Scheduler *mpiScheduler = nullptr;
 
-		std::atomic<int> CHECKER{0};
-
 		std::mutex mtx_MPI;				  // mutex to ensure MPI_THREAD_SERIALIZED
 		int world_rank = -1;			  // get the rank of the process
 		int world_size = -1;			  // get the number of processes/nodes
@@ -1222,97 +698,6 @@ namespace GemPBA
 		int *numAvailableNodes = nullptr; // remote memory synchronised by center node
 		int *nextNode = nullptr;		  // size: world_size array nextNode[0]= {new,-1,-1,-1... -1}
 		MPI_Comm *world_Comm = nullptr;	  // world communicator MPI
-
-		/* if method receives data, this node is supposed to be totally idle */
-		template <typename _ret, typename Holder, typename F, typename Serialize, typename Deserialize>
-		void receiveSeed(F &&f, Serialize &&serialize, Deserialize &&deserialize)
-		{
-			int count_rcv = 0;
-
-			std::string msg = "avalaibleNodes[" + std::to_string(world_rank) + "]";
-			int signal = 1;
-
-			MPI_Bcast(numAvailableNodes, 1, MPI_INT, 0, *world_Comm);
-			MPI_Barrier(*world_Comm); // synchronise processes in world group
-
-			fmt::print("rank {} synchronised, num workers = {} \n", world_rank, numAvailableNodes[0]);
-
-			int send_availability = 0;
-
-			while (true)
-			{
-				MPI_Status status;
-				/* if a thread passes succesfully this method, library gets ready to receive data*/
-#ifdef DEBUG_COMMENTS
-				fmt::print("Receiver called on process {}, avl processes {} \n", world_rank, numAvailableNodes[0]);
-				fmt::print("Receiver on {} ready to receive \n", world_rank);
-#endif
-				int bytes; // bytes to be received
-
-				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR, &bytes);					  // receives total number of datatype elements of the message
-
-				char *in_buffer = new char[bytes];
-				MPI_Recv(in_buffer, bytes, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, *world_Comm, &status);
-
-				count_rcv++;
-				int src = status.MPI_SOURCE;
-#ifdef DEBUG_COMMENTS
-				fmt::print("process {} has rcvd from {}, {} times \n", world_rank, src, count_rcv);
-				fmt::print("Receiver on {}, received {} bytes from {} \n", world_rank, bytes, src);
-#endif
-				if (status.MPI_TAG == 2)
-				{
-					delete[] in_buffer;
-					int err = MPI_Ssend(&signal, 1, MPI_INT, 0, 4, *world_Comm);
-					if (err != MPI_SUCCESS)
-						fmt::print("rank {} failed to notify availability \n");
-
-					++send_availability;
-#ifdef DEBUG_COMMENTS
-					fmt::print("rank {} availability sent {} times\n", world_rank, send_availability);
-#endif
-					continue;
-				}
-				if (status.MPI_TAG == 3)
-				{
-					delete[] in_buffer;
-					fmt::print("Exit tag received on process {} \n", world_rank); // loop termination
-#ifdef DEBUG_COMMENTS
-					fmt::print("rank {} about to send best result to center \n", world_rank);
-#endif
-					MPI_Barrier(*world_Comm);
-					sendBestResultToCenter();
-					break;
-				}
-
-				Holder holder(*this, -1); // copy types
-
-				std::stringstream ss;
-				for (int i = 0; i < bytes; i++)
-					ss << in_buffer[i];
-
-				auto _deser = std::bind_front(deserialize, std::ref(ss));
-				std::apply(_deser, holder.getArgs());
-
-				delete[] in_buffer;
-
-				push_multithreading<_ret>(f, -1, holder); // first push, node is idle
-
-				reply<_ret>(serialize, holder, src);
-#ifdef DEBUG_COMMENTS
-				fmt::print("Passed on process {} \n", world_rank);
-#endif
-				int err = MPI_Ssend(&signal, 1, MPI_INT, 0, 4, *world_Comm);
-				if (err != MPI_SUCCESS)
-					fmt::print("rank {} failed to notify availability \n");
-
-				++send_availability;
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {} availability sent {} times\n", world_rank, send_availability);
-#endif
-			}
-		}
 
 		template <typename _ret, typename Holder, typename Serialize,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
@@ -1357,55 +742,6 @@ namespace GemPBA
 		void reply(Serialize &&, Holder &, int)
 		{
 			thread_pool->wait();
-		}
-
-		// this should is supposed to be called only when all tasks are finished
-		void sendBestResultToCenter()
-		{
-			if (bestResultBuffer.first == -1)
-			{
-#ifdef DEBUG_COMMENTS
-				fmt::print("rank {} did not catch a best result \n", world_rank);
-#endif
-				char buffer[] = "empty_buffer";
-				int count = sizeof(buffer);
-				MPI_Ssend(&buffer, count, MPI_CHAR, 0, 0, *world_Comm);
-				// if a solution was not found, processes will synchronise in here
-				return;
-			}
-
-			//char *buffer = bestResultBuffer.second.str().data(); //This does not work, SEGFAULT
-			int refVal = bestResultBuffer.first;
-			int bytes = bestResultBuffer.second.size();
-
-			MPI_Ssend(bestResultBuffer.second.data(), bytes, MPI_CHAR, 0, refVal, *world_Comm);
-#ifdef DEBUG_COMMENTS
-			fmt::print("rank {} sent best result, bytes : {}, refVal : {}\n", world_rank, bytes, refVal);
-#endif
-			//reset bestResultBuffer
-			//bestResultBuffer.first = -1;		// reset condition to avoid sending empty buffers
-			//bestResultBuffer.second.str(""); // clear stream, eventhough it's not necessary since this value is replaced when a better solution is found
-		}
-
-		void accumulate_mpi(int buffer, int origin_count, MPI_Datatype mpi_datatype, int target_rank, MPI_Aint offset, MPI_Win &window, std::string msg)
-		{
-#ifdef DEBUG_COMMENTS
-			fmt::print("{} about to accumulate on {}\n", world_rank, msg.c_str());
-#endif
-			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, 0, window);
-
-			MPI_Accumulate(&buffer, origin_count, mpi_datatype, target_rank, offset, 1, mpi_datatype, MPI_SUM, window);
-#ifdef DEBUG_COMMENTS
-			fmt::print("{} about to unlock RMA on {} \n", world_rank, target_rank);
-#endif
-			MPI_Win_flush(target_rank, window);
-#ifdef DEBUG_COMMENTS
-			fmt::print("{} between flush and unlock \n", world_rank);
-#endif
-			MPI_Win_unlock(target_rank, window);
-#ifdef DEBUG_COMMENTS
-			fmt::print("{}, by {}\n", msg.c_str(), world_rank);
-#endif
 		}
 
 		void fetch_and_op(const void *origin_addr, void *result_addr,

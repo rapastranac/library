@@ -29,7 +29,7 @@ auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 std::mutex mtx;
 size_t leaves = 0;
 
-int k = 28;
+int k = 10;
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
@@ -50,11 +50,11 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	float newTreeIdx = treeIdx + pow(2, depth);
 	hol_l.holdArgs(newDepth, newTreeIdx);
 
-	if (depth < 4)
+	if (depth < 5)
 		branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
 	else
-		foo(id, newDepth, newTreeIdx, nullptr);
-	//branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
+		//	foo(id, newDepth, newTreeIdx, nullptr);
+		branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
 
 	//std::this_thread::sleep_for(1s);
 
@@ -150,14 +150,10 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	// foo(int id, int depth, float treeIdx, void *parent) ********************
 	float treeIdx = 1;
-	std::stringstream ss;
-	serializer(ss, depth, treeIdx);
-	std::string buffer = ss.str();
+	std::string buffer = serializer(depth, treeIdx);
 
 	// ************************************************************************
 	branchHandler.setRefValue(0);
-
-	//fmt::print("Eureka!!\n");
 
 	if (rank == 0)
 		mpiScheduler.runCenter(buffer.data(), buffer.size());
@@ -166,7 +162,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		branchHandler.initThreadPool(numThreads);
 		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, float>(foo, deserializer);
 		auto resultFetcher = branchHandler.constructResultFetcher();
-		mpiScheduler.runNode(branchHandler, bufferDecoder, resultFetcher, deserializer);
+		mpiScheduler.runNode(branchHandler, bufferDecoder, resultFetcher, serializer);
 	}
 
 	mpiScheduler.barrier();
@@ -214,7 +210,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		//print sumation of refValGlobal
 
 		//std::stringstream ss;
-		//std::string buffer = mpiScheduler.retrieveResult(); // returns a stringstream
+		//std::string buffer = mpiScheduler.fetchSolution(); // returns a stringstream
 		//
 		//ss << buffer;
 		//

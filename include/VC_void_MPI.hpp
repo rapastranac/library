@@ -13,13 +13,15 @@ void helper_ser(auto &archive, auto &first, auto &...args)
 	helper_ser(archive, args...);
 }
 
-auto serializer = [](std::stringstream &ss, auto &&...args) {
+auto serializer = [](auto &&...args) {
 	/* here inside, user can implement its favourite serialization method given the
-	arguments pack and it must return a std::stream */
+	arguments pack and it must return a std::string */
+	std::stringstream ss;
 	//cereal::BinaryOutputArchive archive(ss);
 	//archive(args...);
 	boost::archive::text_oarchive archive(ss);
 	helper_ser(archive, args...);
+	return ss.str();
 };
 
 void helper_dser(auto &archive, auto &first)
@@ -181,8 +183,8 @@ public:
 			++leaves;
 		};
 
-		branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition1, ifCond1, graph, serializer); // thread safe
-		branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition2, ifCond2, graph, serializer); // thread safe
+		//branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition1, ifCond1, graph, serializer); // thread safe
+		//branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition2, ifCond2, graph, serializer); // thread safe
 
 		return;
 	}
