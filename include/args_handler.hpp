@@ -70,7 +70,7 @@ namespace std
 		static auto helper(ThreadPool::Pool &pool, F &&f, Args &...args)
 		{
 			//int size = sizeof...(args); //testing
-			auto lambda = [&](int, Args... args, void *) {
+			auto lambda = [&](int, Args&... args, void *) {
 				//id is ignored due to ctpl stuff
 				//holder tracker (last parameter) is not passed when pushed
 				return pool.push(f, args..., nullptr);

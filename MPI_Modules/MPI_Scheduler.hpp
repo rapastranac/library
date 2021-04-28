@@ -37,7 +37,7 @@
 #define TAG_HAS_RESULT 11
 #define TAG_NO_RESULT 12
 
-#define TIMEOUT_TIME 5
+#define TIMEOUT_TIME 10
 
 namespace GemPBA
 {
@@ -219,7 +219,7 @@ namespace GemPBA
 				}
 				if (!isPop && branchHandler.isDone())
 				{
-					std::this_thread::sleep_for(10ms);
+					//std::this_thread::sleep_for(10ms);
 					isPop = q.pop(buffer);
 					if (!isPop)
 					{

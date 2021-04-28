@@ -29,7 +29,7 @@ auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 std::mutex mtx;
 size_t leaves = 0;
 
-int k = 18;
+int k = 28;
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {

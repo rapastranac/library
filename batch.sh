@@ -21,13 +21,14 @@ echo "Starting run at: `date`"
 #mpirun --oversubscribe -n 5 --bind-to core --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out
 #mpirun -hostfile hostfile -np 10 ./a.out -N 1
 #mpirun -n 5  --bind-to core --map-by numa --report-bindings ./a.out
-#mpirun -n 5 -host manager:3,node1:2  --bind-to core --map-by numa:PE=2 --report-bindings ./a.out -N 2
+mpirun -n 2 -host manager:1,node1:1  --bind-to core --map-by numa:PE=4 --report-bindings ./a.out -N 4
 #mpirun -n 5 -host manager:3,node1:2 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings ./a.out -N 2
 #mpirun -n 17 -hostfile hostfile xterm -fa 'Monospace' -bg white -fg black -fs 12 -display :0 -e gdb -x gdb_commands --args a.out
 
 #mpirun -n 9 -hostfile hostfile a.out >LOG
 
-mpirun --oversubscribe -n 5 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings a.out -N 10
+#mpirun -n 5 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings a.out -N 1
+#mpirun --oversubscribe -n 5 a.out -N 10
 
 #mpirun -n 5 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -display :0 -e gdb -x gdb_commands --args a.out -N 10
 # ---------------------------------------------------------------------

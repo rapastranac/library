@@ -696,41 +696,42 @@ namespace GemPBA
 		{
 			/*This lock must be adquired before checking the condition,	
 			even though busyThreads is atomic*/
-			std::unique_lock<std::mutex> lck(mtx);
-			//if (busyThreads < thread_pool->size())
-			if (thread_pool->n_idle() > 0)
+			std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
+
+			if (lck.try_lock())
 			{
-				if (is_DLB)
+				if (thread_pool->n_idle() > 0)
 				{
-					bool res = try_top_holder<_ret>(lck, f, holder);
-					if (res)
-						return false; // if top holder found, then it should
-									  // return false to keep trying another top holder
+					if (is_DLB)
+					{
+						bool res = try_top_holder<_ret>(lck, f, holder);
+						if (res)
+							return false; // if top holder found, then it should
+										  // return false to keep trying another top holder
 
-					dlb.checkRightSiblings(&holder); // this decrements parent's children
+						dlb.checkRightSiblings(&holder); // this decrements parent's children
+					}
+
+					//after this line, only leftMost holder should be pushed
+					this->requests++;
+					this->busyThreads++;
+					holder.setPushStatus();
+					//holder.prune();
+					dlb.prune(&holder);
+					lck.unlock();
+
+					std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
+					return true;
 				}
-
-				//after this line, only leftMost holder should be pushed
-				this->requests++;
-				this->busyThreads++;
-				holder.setPushStatus();
-				//holder.prune();
-				dlb.prune(&holder);
 				lck.unlock();
-
-				std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
-				return true;
 			}
+
+			if (is_DLB)
+				this->forward<_ret>(f, id, holder, true);
 			else
-			{
-				lck.unlock();
-				if (is_DLB)
-					this->forward<_ret>(f, id, holder, true);
-				else
-					this->forward<_ret>(f, id, holder);
+				this->forward<_ret>(f, id, holder);
 
-				return true;
-			}
+			return true;
 		}
 
 		template <typename _ret, typename F, typename Holder,
@@ -921,10 +922,8 @@ namespace GemPBA
 					holder.setMPISent();
 					//holder.prune();
 					dlb.prune(&holder);
-					//mtx_MPI.unlock(); // end critical section
 					return true;
 				}
-				//mtx_MPI.unlock(); // end critical section
 			}
 			return false;
 		}
