@@ -40,7 +40,7 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 41,
+				"line" : 45,
 				"parent" : 0
 			},
 			{
@@ -100,15 +100,31 @@
 				},
 				{
 					"backtrace" : 3,
-					"fragment" : "-std=c++2a"
+					"fragment" : "-g"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wpedantic"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fexceptions"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-pthread"
 				},
 				{
 					"backtrace" : 3,
 					"fragment" : "-fconcepts"
-				},
-				{
-					"backtrace" : 3,
-					"fragment" : "-O3"
 				},
 				{
 					"fragment" : "-std=gnu++2a"

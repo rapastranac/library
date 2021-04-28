@@ -1220,7 +1220,7 @@ namespace GemPBA
 		int world_size = -1;			  // get the number of processes/nodes
 		char processor_name[128];		  // name of the node
 		int *numAvailableNodes = nullptr; // remote memory synchronised by center node
-		int *nextNode = nullptr;		  // size 2 array nextNode[0]= new, nextNode[1]= old
+		int *nextNode = nullptr;		  // size: world_size array nextNode[0]= {new,-1,-1,-1... -1}
 		MPI_Comm *world_Comm = nullptr;	  // world communicator MPI
 
 		/* if method receives data, this node is supposed to be totally idle */

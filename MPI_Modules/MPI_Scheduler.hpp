@@ -217,9 +217,12 @@ namespace GemPBA
 					if (!isPop)
 						isTransmitting = false;
 				}
+				isPop = q.pop(buffer);
+
 				if (!isPop && branchHandler.isDone())
 				{
-					//std::this_thread::sleep_for(10ms);
+					/* by the time the thread realises that the thread pool has no more tasks, 
+						there might be another buffer pushed, which should be verify in the next line*/
 					isPop = q.pop(buffer);
 					if (!isPop)
 					{
@@ -269,6 +272,7 @@ namespace GemPBA
 					push(getBuffer());
 					return true;
 				}
+				lck.unlock(); // NEVER FORGET THIS ONE
 			}
 			return false;
 		}

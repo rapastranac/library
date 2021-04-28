@@ -61,10 +61,9 @@ namespace ThreadPool
 
         bool hasFinished()
         {
-            std::scoped_lock<std::mutex> lck(mtx);
+            std::unique_lock<std::mutex> lck(mtx);
             if (nWaiting.load() == SIZE && q.empty())
                 return true;
-
             else
                 return false;
         }
