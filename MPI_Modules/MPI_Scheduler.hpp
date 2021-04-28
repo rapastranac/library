@@ -116,8 +116,6 @@ namespace GemPBA
 			fmt::print("*****************************************************\n");
 			fmt::print("Elapsed time : {:4.3f} \n", elapsedTime());
 			fmt::print("Total number of requests : {} \n", totalRequests);
-			fmt::print("Number of approved requests : {} \n", approvedRequests);
-			fmt::print("Number of failed requests : {} \n", failedRequests);
 			fmt::print("*****************************************************\n");
 			fmt::print("\n \n \n");
 		}
@@ -210,7 +208,6 @@ namespace GemPBA
 
 					nTasks++;
 					sendNextNode(*buffer);
-					//notifyStateNeedNxtNode();
 
 					isPop = q.pop(buffer);
 
@@ -222,7 +219,7 @@ namespace GemPBA
 				if (!isPop && branchHandler.isDone())
 				{
 					/* by the time the thread realises that the thread pool has no more tasks, 
-						there might be another buffer pushed, which should be verify in the next line*/
+						there might be another buffer pushed, which should be verified in the next line*/
 					isPop = q.pop(buffer);
 					if (!isPop)
 					{
@@ -294,15 +291,6 @@ namespace GemPBA
 			int buffer = 0;
 			MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_AVAILABLE, world_Comm);
 			fmt::print("rank {} entered notifyStateAvailable()\n", world_rank);
-		}
-
-		// if current node has no assigned node already, a nextNode request is made to center
-
-		void notifyStateNeedNxtNode()
-		{
-
-			int buffer = 0;
-			MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_NEED_NXT_NODE, world_Comm);
 		}
 
 		void notifyRunningState()
@@ -493,6 +481,7 @@ namespace GemPBA
 						}
 					}
 					tasks_per_node[status.MPI_SOURCE]++;
+					totalRequests++;
 				}
 				break;
 				case STATE_AVAILABLE:
@@ -802,8 +791,6 @@ namespace GemPBA
 
 		// statistics
 		size_t totalRequests = 0;
-		size_t approvedRequests = 0;
-		size_t failedRequests = 0;
 		double start_time = 0;
 		double end_time = 0;
 

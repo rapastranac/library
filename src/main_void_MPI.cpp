@@ -50,10 +50,10 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	float newTreeIdx = treeIdx + pow(2, depth);
 	hol_l.holdArgs(newDepth, newTreeIdx);
 
-	//if (depth < 4)
-	branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
-	//else
-	//	foo(id, newDepth, newTreeIdx, nullptr);
+	if (depth < 4)
+		branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
+	else
+		foo(id, newDepth, newTreeIdx, nullptr);
 	//branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
 
 	//std::this_thread::sleep_for(1s);
