@@ -3,38 +3,39 @@
 	{
 		"generator" : 
 		{
+			"multiConfig" : false,
 			"name" : "Unix Makefiles"
 		},
 		"paths" : 
 		{
-			"cmake" : "/usr/bin/cmake",
-			"cpack" : "/usr/bin/cpack",
-			"ctest" : "/usr/bin/ctest",
-			"root" : "/usr/share/cmake-3.16"
+			"cmake" : "/snap/clion/151/bin/cmake/linux/bin/cmake",
+			"cpack" : "/snap/clion/151/bin/cmake/linux/bin/cpack",
+			"ctest" : "/snap/clion/151/bin/cmake/linux/bin/ctest",
+			"root" : "/snap/clion/151/bin/cmake/linux/share/cmake-3.19"
 		},
 		"version" : 
 		{
 			"isDirty" : false,
 			"major" : 3,
-			"minor" : 16,
-			"patch" : 3,
-			"string" : "3.16.3",
+			"minor" : 19,
+			"patch" : 2,
+			"string" : "3.19.2",
 			"suffix" : ""
 		}
 	},
 	"objects" : 
 	[
 		{
-			"jsonFile" : "codemodel-v2-f71e6b0897924a1c7a53.json",
+			"jsonFile" : "codemodel-v2-6dd21b5f6e3e7d524d7f.json",
 			"kind" : "codemodel",
 			"version" : 
 			{
 				"major" : 2,
-				"minor" : 0
+				"minor" : 2
 			}
 		},
 		{
-			"jsonFile" : "cache-v2-2b24acaacc6de80e9087.json",
+			"jsonFile" : "cache-v2-2d2e11c093a2744a70dd.json",
 			"kind" : "cache",
 			"version" : 
 			{
@@ -67,7 +68,7 @@
 				"responses" : 
 				[
 					{
-						"jsonFile" : "cache-v2-2b24acaacc6de80e9087.json",
+						"jsonFile" : "cache-v2-2d2e11c093a2744a70dd.json",
 						"kind" : "cache",
 						"version" : 
 						{
@@ -76,12 +77,12 @@
 						}
 					},
 					{
-						"jsonFile" : "codemodel-v2-f71e6b0897924a1c7a53.json",
+						"jsonFile" : "codemodel-v2-6dd21b5f6e3e7d524d7f.json",
 						"kind" : "codemodel",
 						"version" : 
 						{
 							"major" : 2,
-							"minor" : 0
+							"minor" : 2
 						}
 					},
 					{

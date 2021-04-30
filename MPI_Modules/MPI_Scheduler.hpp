@@ -159,8 +159,10 @@ namespace GemPBA
 				MPI_Status status;
 				int count; // count to be received
 
-				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR, &count);					 // receives total number of datatype elements of the message
+				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm,
+						  &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI_CHAR,
+							  &count); // receives total number of datatype elements of the message
 
 				char *incoming_buffer = new char[count];
 				MPI_Recv(incoming_buffer, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
@@ -226,8 +228,8 @@ namespace GemPBA
 
 				if (!isPop && branchHandler.isDone())
 				{
-					/* by the time the thread realises that the thread pool has no more tasks, 
-						another buffer there might have been pushed, which should be verified in the next line*/
+					/* by the time the thread realises that the thread pool has no more tasks,
+                        another buffer there might have been pushed, which should be verified in the next line*/
 					isPop = q.pop(message);
 					if (!isPop)
 					{
@@ -236,8 +238,8 @@ namespace GemPBA
 					}
 				}
 			}
-			/* to reuse the task funneling, otherwise it will exit 
-			right away the second time the process receives a task*/
+			/* to reuse the task funneling, otherwise it will exit
+            right away the second time the process receives a task*/
 		}
 
 		bool isChanged(int newVal, int oldVal)
@@ -257,7 +259,8 @@ namespace GemPBA
 				if (!success)
 					MPI_Ssend(&mostUpToDate, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
 			}
-			else if (isChanged(branchHandler.refValue(), refValueGlobal[0])) // this process has attained a better value
+			else if (isChanged(branchHandler.refValue(),
+							   refValueGlobal[0])) // this process has attained a better value
 			{
 				int temp = branchHandler.refValue();
 				MPI_Ssend(&temp, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
@@ -295,7 +298,8 @@ namespace GemPBA
 					transmitting = true;
 
 					dest_rank_tmp = next_process[0];
-					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, dest_rank_tmp);
+					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank,
+							   dest_rank_tmp);
 					shift_left(next_process, world_size);
 					push(getBuffer());
 
@@ -385,10 +389,11 @@ namespace GemPBA
 				}
 			}
 		}
+
 		/*	each nodes has an array containing its children were it is going to send tasks,
-			this method puts the rank of these nodes into the array in the order that they
-			are supposed to help the parent 
-		*/
+            this method puts the rank of these nodes into the array in the order that they
+            are supposed to help the parent
+        */
 		void assignNodes()
 		{
 			// put into nodes
@@ -406,8 +411,8 @@ namespace GemPBA
 		}
 
 		/*	given a rank ID, this method returns its child
-			TODO .. adapt it for multi-branching
-		*/
+            TODO .. adapt it for multi-branching
+        */
 		int getNextNode(int numNodes, int rank, int depth)
 		{
 			int child = rank + pow(2, depth);
@@ -454,44 +459,15 @@ namespace GemPBA
 
 			while (true)
 			{
-				//fmt::print("nodes {}, nRunning {} \n", nodes, nRunning);
+				int buffer;
 				MPI_Status status;
 				MPI_Request request;
-				int buffer;
 				int ready;
-				//MPI_Recv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
-
 				double begin = MPI_Wtime();
 				MPI_Irecv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &request);
 
-				int cycles = 0;
-				while (true)
-				{
-					MPI_Test(&request, &ready, &status);
-					// Check whether the underlying communication had already taken place
-					while (!ready && difftime(begin, MPI_Wtime()) < TIMEOUT_TIME)
-					{
-						MPI_Test(&request, &ready, &status);
-						cycles++;
-					}
-
-					if (!ready)
-					{
-						if (nRunning == 0)
-						{
-							// Cancellation due to TIMEOUT
-							MPI_Cancel(&request);
-							MPI_Request_free(&request);
-							printf("rank %d: receiving TIMEOUT, buffer : %d, cycles : %d\n", world_rank, buffer, cycles);
-							exitLoop = true;
-						}
-					}
-					else
-						break;
-				}
-				if (exitLoop)
+				if (!awaitMessage(buffer, ready, begin, status, request))
 					break;
-
 
 				switch (status.MPI_TAG)
 				{
@@ -537,11 +513,13 @@ namespace GemPBA
 						{
 							if (!processTree[rank].hasNext()) // checks if running node has a child to push to
 							{
-								put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0, win_nextProcess); // assigns returning node to the running node
-								processTree[rank].addNext(status.MPI_SOURCE);				   // assigns returning node to the running node
-								processState[status.MPI_SOURCE] = STATE_ASSIGNED;			   // it flags returning node as assigned
-								--nAvailable;												   // assigned, not available any more
-								break;														   // breaks for-loop
+								put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0,
+									win_nextProcess); // assigns returning node to the running node
+								processTree[rank].addNext(
+									status.MPI_SOURCE);							  // assigns returning node to the running node
+								processState[status.MPI_SOURCE] = STATE_ASSIGNED; // it flags returning node as assigned
+								--nAvailable;									  // assigned, not available any more
+								break;											  // breaks for-loop
 							}
 						}
 					}
@@ -550,8 +528,8 @@ namespace GemPBA
 				case ACTION_REF_VAL_UPDATE:
 				{
 					/* if center reaches this point, for sure nodes have attained a better reference value
-						or they are not up-to-date, thus it is required to broadcast it whether this value
-						changes or not  */
+                            or they are not up-to-date, thus it is required to broadcast it whether this value
+                            changes or not  */
 					bool signal;
 
 					if (maximisation)
@@ -565,7 +543,8 @@ namespace GemPBA
 					{
 						static int success = 0;
 						success++;
-						fmt::print("refValueGlobal updated to : {} by rank {} \n", refValueGlobal[0], status.MPI_SOURCE);
+						fmt::print("refValueGlobal updated to : {} by rank {} \n", refValueGlobal[0],
+								   status.MPI_SOURCE);
 						fmt::print("SUCCESS updates : {}\n", success);
 					}
 					else
@@ -589,6 +568,36 @@ namespace GemPBA
 			receiveSolution();
 
 			end_time = MPI_Wtime();
+		}
+
+		// return false if message not received, which is signal of termination
+		bool awaitMessage(int buffer, int &ready, double begin, MPI_Status &status, MPI_Request &request)
+		{
+			int cycles = 0;
+			while (true)
+			{
+				MPI_Test(&request, &ready, &status);
+				// Check whether the underlying communication had already taken place
+				while (!ready && (difftime(begin, MPI_Wtime()) < TIMEOUT_TIME))
+				{
+					MPI_Test(&request, &ready, &status);
+					cycles++;
+				}
+
+				if (!ready)
+				{
+					if (nRunning == 0)
+					{
+						// Cancellation due to TIMEOUT
+						MPI_Cancel(&request);
+						MPI_Request_free(&request);
+						printf("rank %d: receiving TIMEOUT, buffer : %d, cycles : %d\n", world_rank, buffer, cycles);
+						return false;
+					}
+				}
+				else
+					return true;
+			}
 		}
 
 		void notifyTermination()
@@ -726,9 +735,11 @@ namespace GemPBA
 		{
 			MPI_Barrier(world_Comm);
 			// applicable for all the processes
-			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, availableProcesses_Comm, &availableProcesses, &win_availableProcesses);
+			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, availableProcesses_Comm, &availableProcesses,
+							 &win_availableProcesses);
 			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
-			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, availableProcesses_Comm, &next_process,
+			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, availableProcesses_Comm,
+							 &next_process,
 							 &win_nextProcess);
 
 			init();
