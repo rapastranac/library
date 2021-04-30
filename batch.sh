@@ -18,10 +18,10 @@ echo "Starting run at: `date`"
 #mpirun -hostfile hostfile -np 3 ./a.out -N 1 -P 5 -I input/DSJC500_5
 
 #mpirun -n 5 --bind-to core --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out
-mpirun --oversubscribe -n 5 -display-map --bind-to core:overload-allowed --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out
+#mpirun --oversubscribe -n 5 -display-map --bind-to core:overload-allowed --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out
 #mpirun -hostfile hostfile -np 10 ./a.out -N 1
 #mpirun -n 5  --bind-to core --map-by numa --report-bindings ./a.out
-#mpirun -n 6 -host manager:5,node1:1  --bind-to core:overload-allowed --map-by numa:PE=2 --report-bindings ./a.out -N 1
+mpirun -n 9 -host manager:6,node1:3  --bind-to core:overload-allowed --map-by numa:PE=2 --report-bindings ./a.out -N 2
 
 
 #mpirun -n 5 -host manager:3,node1:2 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings ./a.out -N 2

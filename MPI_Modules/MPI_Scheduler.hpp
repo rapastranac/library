@@ -197,7 +197,7 @@ namespace GemPBA
 
 		void taskFunneling(auto &branchHandler)
 		{
-			std::pair<int, std::string> *message;
+			std::string *message;
 			bool isPop = q.pop(message);
 
 			while (true)
@@ -206,24 +206,10 @@ namespace GemPBA
 				{
 					std::scoped_lock lck(mtx);
 
-					std::unique_ptr<std::pair<int, std::string>> ptr(message);
+					std::unique_ptr<std::string> ptr(message);
 					nTasks++;
 
-					switch (message->first)
-					{
-					case ACTION_SEND_TASK:
-					{
-						sendTask(message->second);
-					}
-					break;
-
-					case ACTION_REF_VAL_UPDATE:
-					{
-						int buf = std::stoi(message->second);
-						MPI_Ssend(&buf, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
-					}
-					break;
-					}
+					sendTask(*message);
 
 					isPop = q.pop(message);
 
@@ -235,6 +221,7 @@ namespace GemPBA
 						throw;
 					}
 				}
+				checkRefValueUpdate(branchHandler);
 				isPop = q.pop(message);
 
 				if (!isPop && branchHandler.isDone())
@@ -253,11 +240,35 @@ namespace GemPBA
 			right away the second time the process receives a task*/
 		}
 
-		// push a task to be sent via MPI
-		void push(std::pair<int, std::string> &&message)
+		bool isChanged(int newVal, int oldVal)
 		{
-			auto pck = std::make_shared<std::pair<int, std::string>>(std::forward<std::pair<int, std::string> &&>(message));
-			auto _message = new std::pair<int, std::string>(*pck);
+			return newVal != oldVal ? true : false;
+		}
+
+		void checkRefValueUpdate(auto &branchHandler)
+		{
+			// thoughts: no need to care for maximisation or minimisation since the branchHandler does it already
+			if (isChanged(refValueGlobal[0], refValueGlobal_old)) // center has put a new value
+			{
+				refValueGlobal_old = refValueGlobal[0];
+				int mostUpToDate;
+				// pass old cuz value might change in between
+				bool success = branchHandler.updateRefValue(refValueGlobal_old, &mostUpToDate);
+				if (!success)
+					MPI_Ssend(&mostUpToDate, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
+			}
+			else if (isChanged(branchHandler.refValue(), refValueGlobal[0])) // this process has attained a better value
+			{
+				int temp = branchHandler.refValue();
+				MPI_Ssend(&temp, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
+			}
+		}
+
+		// push a task to be sent via MPI
+		void push(std::string &&message)
+		{
+			auto pck = std::make_shared<std::string>(std::forward<std::string &&>(message));
+			auto _message = new std::string(*pck);
 
 			if (!q.empty())
 			{
@@ -276,20 +287,17 @@ namespace GemPBA
 		bool tryPush(auto &getBuffer)
 		{
 			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock);
-			//std::unique_lock<std::mutex> lck2(transmitting, std::defer_lock);
 
 			if (lck1.try_lock() && !transmitting.load())
 			{
 				if (next_process[0] > 0)
 				{
-					//std::scoped_lock<std::mutex> lck(transmitting);
 					transmitting = true;
 
 					dest_rank_tmp = next_process[0];
 					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, dest_rank_tmp);
 					shift_left(next_process, world_size);
-					auto message = std::make_pair<int, std::string>(ACTION_SEND_TASK, getBuffer());
-					push(std::move(message));
+					push(getBuffer());
 
 					return true;
 				}
@@ -756,13 +764,10 @@ namespace GemPBA
 			return world_rank;
 		}
 
-		void linkRefValue(int **refValueNodes, std::string keyword)
+		void linkRefValue(int **refValueNodes)
 		{
 			if (refValueGlobal)
-			{
-				*refValueNodes = refValueGlobal;
-				setRefValStrategyLookup(keyword);
-			}
+				*refValueNodes = this->refValueGlobal;
 			else
 			{
 				fmt::print("Error, refValueGlobal has not been initialized in MPI_Scheduler.hpp\n");
@@ -770,68 +775,9 @@ namespace GemPBA
 			}
 		}
 
-		void updateRefValue(int reference_value)
+		void setRefValStrategyLookup(bool maximisation)
 		{
-			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock); // mandatory lock, since this value should be updated
-
-			//std::unique_lock<std::mutex> lck2(transmitting, std::defer_lock);
-			//std::lock(lck1, lck2);
-
-			//std::unique_lock lck(mtx);
-			while (true)
-			{
-				if (lck1.try_lock())
-				{
-					if (!transmitting.load())
-					{
-						// if acquired, check is transmittion in progress.
-						// if not transmitting, free to operate
-						break;
-					}
-					else
-					{
-						// if transmition in progress, release lock, since
-						// main thread needs it
-						lck1.unlock();
-					}
-				}
-			}
-
-			//fmt::print("queue empty? : {} \n", q.empty());
-
-			transmitting = true;
-
-			// a message is built containing the TAG and the data buffer
-			auto buffer = std::to_string(reference_value);
-			auto message = std::make_pair<int, std::string>(std::forward<int>(ACTION_REF_VAL_UPDATE), std::forward<std::string &&>(buffer));
-
-			push(std::move(message));
-		}
-
-		/* 	input: string
-			"maximise" if searching for the greatest reference value
-			"minimise" if searching for the lowest reference value
-			return: this method does not return
-		*/
-		void setRefValStrategyLookup(std::string keyword)
-		{
-			// convert string to upper case
-			std::for_each(keyword.begin(), keyword.end(), [](char &c) {
-				c = std::toupper(c);
-			});
-
-			if (keyword == "MAXIMISE")
-			{
-				maximisation = true;
-				refValueGlobal[0] = INT_MIN;
-			}
-			else if (keyword == "MINIMISE")
-			{
-				maximisation = false;
-				refValueGlobal[0] = INT_MAX;
-			}
-			else
-				throw std::runtime_error("in updateRefValue(), keyword : " + keyword + " not recognised\n");
+			this->maximisation = maximisation;
 		}
 
 	private:
@@ -852,7 +798,7 @@ namespace GemPBA
 		std::condition_variable cv;
 		int dest_rank_tmp = -1;
 
-		detail::Queue<std::pair<int, std::string> *> q;
+		detail::Queue<std::string *> q;
 		bool exit = false;
 
 		MPI_Win win_availableProcesses; // window for the number of available processes
@@ -864,8 +810,9 @@ namespace GemPBA
 		MPI_Comm world_Comm;			  // world communicator
 
 		int *availableProcesses = nullptr; // Number of available processes	[every process is aware of this number]
-		int *refValueGlobal = nullptr;	   // reference value to chose a best result
-		int *next_process = nullptr;	   // potentially to replace availableProcesses
+		int *refValueGlobal = nullptr;	   // reference value to chose a best solution
+		int refValueGlobal_old;
+		int *next_process = nullptr; // potentially to replace availableProcesses
 
 		bool maximisation; // true if Maximising, false if Minimising
 

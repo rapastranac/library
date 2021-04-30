@@ -143,59 +143,62 @@ namespace GemPBA
 		//TODO still missing some mutexes
 		int *refValueTest()
 		{
-			return refValueGlobal;
+			return &refValueLocal;
 		}
 
 		int refValue()
 		{
-			if (refValueGlobal)
-				return refValueGlobal[0];
-			else
-			{
-				fmt::print("Error, refValueGlobal has not been initialized in BranchHandler.hpp \n");
-				throw std::runtime_error("Error, refValueGlobal has not been initialized in BranchHandler.hpp\n");
-			}
+			return refValueLocal;
 		}
 
 		//if multi-processing, then every process should call this method
 		void setRefValue(int refValue)
 		{
+#ifdef MPI_ENABLED
+			this->refValueGlobal[0] = refValue;
+#else
 			this->refValueGlobal = new int[1];
 			this->refValueGlobal[0] = refValue;
-		}
-
-#ifdef MPI_ENABLED
-		/* 	input: 		intitial reference value (int), string ""
-						"maximise" if searching for the greatest reference value
-						"minimise" if searching for the lowest reference value
-			return: 	this method does not return
-		*/
-		void setRefValue(int refValue, std::string keyword)
-		{
-			mpiScheduler->linkRefValue(&refValueGlobal, keyword);
-			this->refValueGlobal[0] = refValue;
-		}
-
-		/* 	input:		string
-						"maximise" if searching for the greatest reference value
-						"minimise" if searching for the lowest reference value
-			return:		this method does not return
-		*/
-		void setRefValStrategyLookup(std::string keyword)
-		{
-			mpiScheduler->linkRefValue(&refValueGlobal, keyword);
-			mpiScheduler->setRefValStrategyLookup(keyword); // TODO redundant
-		}
 #endif
-
-		void updateRefValue(int reference_value)
-		{
-			refValueGlobal[0] = reference_value;
 		}
 
-		void updateRefValue(int reference_value, bool)
+		/*	return false if there exist already a better value, this better value is copied
+			to the second parameter mostUpToDate if provided by reference
+			return true if value did not exist*/
+		bool updateRefValue(int new_refValue, int *mostUpToDate = nullptr)
 		{
-			mpiScheduler->updateRefValue(reference_value);
+			std::scoped_lock<std ::mutex> lck(mtx);
+
+			if (maximisation)
+			{
+				if (refValueLocal < new_refValue)
+				{
+					refValueLocal_old = refValueLocal;
+					refValueLocal = new_refValue;
+					return true;
+				}
+				else
+				{
+					if (mostUpToDate)
+						*mostUpToDate = refValueLocal;
+					return false;
+				}
+			}
+			else // minimisation
+			{
+				if (refValueLocal > new_refValue)
+				{
+					refValueLocal_old = refValueLocal;
+					refValueLocal = new_refValue;
+					return true;
+				}
+				else
+				{
+					if (mostUpToDate)
+						*mostUpToDate = refValueLocal;
+					return false;
+				}
+			}
 		}
 
 	private:
@@ -585,20 +588,51 @@ namespace GemPBA
 			return instance;
 		}
 
-		~BranchHandler() = default;
+		~BranchHandler()
+		{
+#ifndef MPI_ENABLED
+			delete[] refValueGlobal;
+#endif
+		}
 		BranchHandler(const BranchHandler &) = delete;
 		BranchHandler(BranchHandler &&) = delete;
 		BranchHandler &operator=(const BranchHandler &) = delete;
 		BranchHandler &operator=(BranchHandler &&) = delete;
 
-		void link_mpiScheduler(MPI_Scheduler *mpiScheduler)
+		void passMPIScheduler(MPI_Scheduler *mpiScheduler)
 		{
 			this->mpiScheduler = mpiScheduler;
+			mpiScheduler->linkRefValue(&refValueGlobal);
+			refValueGlobal[0] = refValueLocal;
+			mpiScheduler->setRefValStrategyLookup(maximisation);
+		}
+
+		void setRefValStrategyLookup(std::string keyword)
+		{
+			// convert string to upper case
+			std::for_each(keyword.begin(), keyword.end(), [](char &c) {
+				c = std::toupper(c);
+			});
+
+			if (keyword == "MINIMISE")
+			{
+				maximisation = false;
+				refValueLocal = INT_MAX;
+			}
+			else if (keyword != "MAXIMISE")
+				throw std::runtime_error("in setRefValStrategyLookup(), keyword : " + keyword + " not recognised\n");
+
+#ifdef MPI_ENABLED
+			mpiScheduler->setRefValStrategyLookup(maximisation); // TODO redundant
+#endif
 		}
 
 		/*----------------Singleton----------------->>end*/
 	protected:
 		int *refValueGlobal = nullptr; // shared with MPI
+		int refValueLocal = INT_MIN;
+		int refValueLocal_old;
+		bool maximisation = true;
 
 #ifdef MPI_ENABLED
 
@@ -608,7 +642,6 @@ namespace GemPBA
 		int world_rank = -1;			// get the rank of the process
 		int world_size = -1;			// get the number of processes/nodes
 		char processor_name[128];		// name of the node
-		int *next_process = nullptr;	// size: world_size array next_process[0]= {new,-1,-1,-1... -1}
 		MPI_Comm *world_Comm = nullptr; // world communicator MPI
 
 		template <typename _ret, typename Holder, typename Serialize,

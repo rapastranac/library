@@ -29,7 +29,8 @@ auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 std::mutex mtx;
 size_t leaves = 0;
 
-int k = 28;
+int k = 20;
+size_t multiple = 1024; // static_cast<size_t>(pow(2, 18));
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
@@ -45,8 +46,8 @@ void foo(int id, int depth, float treeIdx, void *parent)
 
 		int tmp = branchHandler.refValue();
 		if ((int)leaves > tmp)
-			if (leaves % ((size_t)pow(2, 14)) == 0)
-				branchHandler.updateRefValue(leaves, true);
+			if (leaves % multiple == 0)
+				branchHandler.updateRefValue(leaves);
 
 		//fmt::print("rank {}, Leaves : {}\n", branchHandler.rank_me(), leaves);
 		return;
@@ -56,11 +57,11 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	float newTreeIdx = treeIdx + pow(2, depth);
 	hol_l.holdArgs(newDepth, newTreeIdx);
 
-	if (depth < 6)
+	//if (depth < 6)
 		branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
-	else
-		//	foo(id, newDepth, newTreeIdx, nullptr);
-		branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
+	//else
+	//	//	foo(id, newDepth, newTreeIdx, nullptr);
+	//	branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
 
 	//std::this_thread::sleep_for(1s);
 
@@ -104,10 +105,9 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	auto mainAlgo = std::bind(&VC_void_MPI::mvc, &cover, _1, _2, _3, _4); // target algorithm [all arguments]
 
 	auto &mpiScheduler = GemPBA::MPI_Scheduler::getInstance(); // MPI MPI_Scheduler
-	branchHandler.link_mpiScheduler(&mpiScheduler);
-	int rank = mpiScheduler.init(NULL, NULL); // initialize MPI and member variable linkin
-											  //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
-
+	int rank = mpiScheduler.init(NULL, NULL);				   // initialize MPI and member variable linkin
+															   //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
+	branchHandler.passMPIScheduler(&mpiScheduler);
 	//GemPBA::ResultHolder<int, int, float> hldr(dlb, -1, nullptr);
 	//float val = 845.515;
 	//hldr.holdArgs(val);
