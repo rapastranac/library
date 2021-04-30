@@ -171,11 +171,11 @@ namespace GemPBA
 
 				notifyRunningState();
 
-				if (transmitting)
-				{
-					fmt::print("rank {} is transmitting, received from {} this should not happen \n", world_rank, status.MPI_SOURCE);
-					throw;
-				}
+				//if (transmitting)
+				//{
+				//	fmt::print("rank {} is transmitting, received from {} this should not happen \n", world_rank, status.MPI_SOURCE);
+				//	throw;
+				//}
 
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, status.MPI_SOURCE);
 				//  push to the thread pool *********************************************************************
@@ -204,8 +204,9 @@ namespace GemPBA
 			{
 				while (isPop)
 				{
-					std::unique_ptr<std::pair<int, std::string>> ptr(message);
+					std::scoped_lock lck(mtx);
 
+					std::unique_ptr<std::pair<int, std::string>> ptr(message);
 					nTasks++;
 
 					switch (message->first)
@@ -228,6 +229,11 @@ namespace GemPBA
 
 					if (!isPop)
 						transmitting = false;
+					else
+					{
+						fmt::print("Task found in queue, this should not happen,\t transmitting :{} \n");
+						throw;
+					}
 				}
 				isPop = q.pop(message);
 
@@ -252,6 +258,7 @@ namespace GemPBA
 		{
 			auto pck = std::make_shared<std::pair<int, std::string>>(std::forward<std::pair<int, std::string> &&>(message));
 			auto _message = new std::pair<int, std::string>(*pck);
+
 			if (!q.empty())
 			{
 				fmt::print("ERROR: q is not empty !!!!\n");
@@ -268,25 +275,25 @@ namespace GemPBA
         */
 		bool tryPush(auto &getBuffer)
 		{
-			std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
-			if (lck.try_lock() && !transmitting)
+			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock);
+			//std::unique_lock<std::mutex> lck2(transmitting, std::defer_lock);
+
+			if (lck1.try_lock() && !transmitting.load())
 			{
 				if (next_process[0] > 0)
 				{
+					//std::scoped_lock<std::mutex> lck(transmitting);
 					transmitting = true;
 
 					dest_rank_tmp = next_process[0];
 					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, dest_rank_tmp);
-
 					shift_left(next_process, world_size);
-
 					auto message = std::make_pair<int, std::string>(ACTION_SEND_TASK, getBuffer());
-
 					push(std::move(message));
 
 					return true;
 				}
-				lck.unlock(); // NEVER FORGET THIS ONE
+				//lck.unlock(); // NEVER FORGET THIS ONE
 			}
 			return false;
 		}
@@ -318,7 +325,7 @@ namespace GemPBA
 
 		void sendTask(std::string &buffer)
 		{
-			std::unique_lock<std::mutex> lck(mtx);
+			//std::unique_lock<std::mutex> lck(mtx);
 			if (dest_rank_tmp > 0)
 			{
 				if (dest_rank_tmp == world_rank)
@@ -765,11 +772,33 @@ namespace GemPBA
 
 		void updateRefValue(int reference_value)
 		{
-			std::unique_lock<std::mutex> lck(mtx); // mandatory lock, since this value should be updated
+			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock); // mandatory lock, since this value should be updated
+
+			//std::unique_lock<std::mutex> lck2(transmitting, std::defer_lock);
+			//std::lock(lck1, lck2);
+
+			//std::unique_lock lck(mtx);
+			while (true)
+			{
+				if (lck1.try_lock())
+				{
+					if (!transmitting.load())
+					{
+						// if acquired, check is transmittion in progress.
+						// if not transmitting, free to operate
+						break;
+					}
+					else
+					{
+						// if transmition in progress, release lock, since
+						// main thread needs it
+						lck1.unlock();
+					}
+				}
+			}
 
 			//fmt::print("queue empty? : {} \n", q.empty());
-			while (transmitting)
-				;
+
 			transmitting = true;
 
 			// a message is built containing the TAG and the data buffer
@@ -819,8 +848,8 @@ namespace GemPBA
 		Tree processTree;
 
 		std::mutex mtx;
+		std::atomic<bool> transmitting;
 		std::condition_variable cv;
-		bool transmitting = false;
 		int dest_rank_tmp = -1;
 
 		detail::Queue<std::pair<int, std::string> *> q;
