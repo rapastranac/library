@@ -143,7 +143,7 @@ namespace ThreadPool
                 delete _f; // empty the queue
         }
 
-        [[maybe_unused]] double getIdleTime()
+        [[maybe_unused]] double idle_time()
         {
             return ((double)idleTime.load() * 1.0e-9); //seconds
         }

@@ -69,7 +69,7 @@ public:
 		size_t k = relaxation(LB, UB);
 		//std::max({LB, degLB, acLB})
 
-		if (k + graph.coverSize() >= (size_t)branchHandler.getRefValue())
+		if (k + graph.coverSize() >= (size_t)branchHandler.refValue())
 		{
 			//size_t addition = k + graph.coverSize();
 			return;
@@ -96,7 +96,7 @@ public:
 
 #endif
 
-		int *referenceValue = branchHandler.getRefValueTest();
+		int *referenceValue = branchHandler.refValueTest();
 
 		hol_l.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_l] {
 			Graph g = graph;
@@ -142,7 +142,7 @@ public:
 			}
 		}
 		/*
-		if (C2Size < branchHandler.getRefValue() || hol_r.isBound())
+		if (C2Size < branchHandler.refValue() || hol_r.isBound())
 		{*/
 		if (hol_r.evaluate_branch_checkIn())
 		{

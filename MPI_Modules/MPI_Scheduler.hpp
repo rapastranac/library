@@ -6,6 +6,7 @@
 #include "Tree.hpp"
 #include <Queue.hpp>
 
+#include <algorithm>
 #include <condition_variable>
 #include <cstring>
 #include <random>
@@ -33,11 +34,11 @@
 
 #define ACTION_REF_VAL_REQUEST 8
 #define ACTION_REF_VAL_UPDATE 9
-#define ACTION_MAXIMISE_REF_VALUE 10
-#define ACTION_MINIMISE_REF_VALUE 11
 
-#define TAG_HAS_RESULT 12
-#define TAG_NO_RESULT 13
+#define ACTION_SEND_TASK 12
+
+#define TAG_HAS_RESULT 13
+#define TAG_NO_RESULT 14
 
 #define TIMEOUT_TIME 3
 
@@ -54,9 +55,9 @@ namespace GemPBA
 			return instance;
 		}
 
-		void setThreadsPerNode(size_t threadsPerNode)
+		void setThreadsPerNode(size_t threads_per_process)
 		{
-			this->threadsPerNode = threadsPerNode;
+			this->threads_per_process = threads_per_process;
 		}
 
 		int init(int *argc, char *argv[])
@@ -140,7 +141,7 @@ namespace GemPBA
 
 		std::vector<int> executedTasksPerNode()
 		{
-			return tasks_per_node;
+			return tasks_per_process;
 		}
 
 		void barrier()
@@ -170,7 +171,7 @@ namespace GemPBA
 
 				notifyRunningState();
 
-				if (isTransmitting)
+				if (transmitting)
 				{
 					fmt::print("rank {} is transmitting, received from {} this should not happen \n", world_rank, status.MPI_SOURCE);
 					throw;
@@ -196,30 +197,45 @@ namespace GemPBA
 
 		void taskFunneling(auto &branchHandler)
 		{
-			std::string *buffer;
-			bool isPop = q.pop(buffer);
+			std::pair<int, std::string> *message;
+			bool isPop = q.pop(message);
 
 			while (true)
 			{
 				while (isPop)
 				{
-					std::unique_ptr<std::string> ptr(buffer);
+					std::unique_ptr<std::pair<int, std::string>> ptr(message);
 
 					nTasks++;
-					sendNextNode(*buffer);
 
-					isPop = q.pop(buffer);
+					switch (message->first)
+					{
+					case ACTION_SEND_TASK:
+					{
+						sendTask(message->second);
+					}
+					break;
+
+					case ACTION_REF_VAL_UPDATE:
+					{
+						int buf = std::stoi(message->second);
+						MPI_Ssend(&buf, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
+					}
+					break;
+					}
+
+					isPop = q.pop(message);
 
 					if (!isPop)
-						isTransmitting = false;
+						transmitting = false;
 				}
-				isPop = q.pop(buffer);
+				isPop = q.pop(message);
 
 				if (!isPop && branchHandler.isDone())
 				{
 					/* by the time the thread realises that the thread pool has no more tasks, 
 						there might be another buffer pushed, which should be verified in the next line*/
-					isPop = q.pop(buffer);
+					isPop = q.pop(message);
 					if (!isPop)
 					{
 						fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
@@ -232,39 +248,42 @@ namespace GemPBA
 		}
 
 		// push a task to be sent via MPI
-		void push(std::string &&buffer)
+		void push(std::pair<int, std::string> &&message)
 		{
-			auto pck = std::make_shared<std::string>(std::forward<std::string &&>(buffer));
-			auto _buffer = new std::string(*pck);
+			auto pck = std::make_shared<std::pair<int, std::string>>(std::forward<std::pair<int, std::string> &&>(message));
+			auto _message = new std::pair<int, std::string>(*pck);
 			if (!q.empty())
 			{
 				fmt::print("ERROR: q is not empty !!!!\n");
 				throw;
 			}
 
-			q.push(_buffer);
+			q.push(_message);
 		}
 
 		/*
         - this method attempts pushing to other nodes, only ONE buffer will be enqueued at a time
         - if the taskFunneling is transmitting the buffer to another node, this method will return false
-        - if previous conditions are met, then actual condition for pushing is evaluated nextNode[0] > 0
+        - if previous conditions are met, then actual condition for pushing is evaluated next_process[0] > 0
         */
 		bool tryPush(auto &getBuffer)
 		{
 			std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
-			if (lck.try_lock() && !isTransmitting)
+			if (lck.try_lock() && !transmitting)
 			{
-				if (nextNode[0] > 0)
+				if (next_process[0] > 0)
 				{
-					isTransmitting = true;
+					transmitting = true;
 
-					newNode = nextNode[0];
-					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, newNode);
+					dest_rank_tmp = next_process[0];
+					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, dest_rank_tmp);
 
-					shift_left(nextNode, world_size);
+					shift_left(next_process, world_size);
 
-					push(getBuffer());
+					auto message = std::make_pair<int, std::string>(ACTION_SEND_TASK, getBuffer());
+
+					push(std::move(message));
+
 					return true;
 				}
 				lck.unlock(); // NEVER FORGET THIS ONE
@@ -297,25 +316,25 @@ namespace GemPBA
 			MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_RUNNING, world_Comm);
 		}
 
-		void sendNextNode(std::string &buffer)
+		void sendTask(std::string &buffer)
 		{
 			std::unique_lock<std::mutex> lck(mtx);
-			if (newNode > 0)
+			if (dest_rank_tmp > 0)
 			{
-				if (newNode == world_rank)
+				if (dest_rank_tmp == world_rank)
 				{
 					fmt::print("rank {} attempting to send to itself !!!\n", world_rank);
 					throw;
 				}
 
-				fmt::print("rank {} about to send buffer to rank {}\n", world_rank, newNode);
-				MPI_Ssend(buffer.data(), buffer.size(), MPI_CHAR, newNode, 0, world_Comm);
-				fmt::print("rank {} sent buffer to rank {}\n", world_rank, newNode);
-				newNode = -1;
+				fmt::print("rank {} about to send buffer to rank {}\n", world_rank, dest_rank_tmp);
+				MPI_Ssend(buffer.data(), buffer.size(), MPI_CHAR, dest_rank_tmp, 0, world_Comm);
+				fmt::print("rank {} sent buffer to rank {}\n", world_rank, dest_rank_tmp);
+				dest_rank_tmp = -1;
 			}
 			else
 			{
-				fmt::print("rank {}, target rank is {}, something happened\n", world_rank, newNode);
+				fmt::print("rank {}, target rank is {}, something happened\n", world_rank, dest_rank_tmp);
 				throw;
 			}
 		}
@@ -363,8 +382,8 @@ namespace GemPBA
 				int offset = 0;
 				for (auto &child : processTree[rank])
 				{
-					put(&child, 1, rank, MPI_INT, offset, win_NextNode);
-					nodeState[child] = STATE_ASSIGNED;
+					put(&child, 1, rank, MPI_INT, offset, win_nextProcess);
+					processState[child] = STATE_ASSIGNED;
 					--nAvailable;
 					++offset;
 				}
@@ -461,7 +480,7 @@ namespace GemPBA
 				{
 				case STATE_RUNNING: // received if and only if a worker receives from other but center
 				{
-					nodeState[status.MPI_SOURCE] = STATE_RUNNING; // node was assigned, now it's running
+					processState[status.MPI_SOURCE] = STATE_RUNNING; // node was assigned, now it's running
 					++nRunning;
 					fmt::print("rank {} reported running, nRunning :{}\n", status.MPI_SOURCE, nRunning);
 
@@ -473,20 +492,20 @@ namespace GemPBA
 						int nxt = getAvailable();
 						if (nxt > 0)
 						{
-							put(&nxt, 1, status.MPI_SOURCE, MPI_INT, 0, win_NextNode);
+							put(&nxt, 1, status.MPI_SOURCE, MPI_INT, 0, win_nextProcess);
 							processTree[status.MPI_SOURCE].addNext(nxt);
-							nodeState[nxt] = STATE_ASSIGNED;
+							processState[nxt] = STATE_ASSIGNED;
 							--nAvailable;
 						}
 					}
-					tasks_per_node[status.MPI_SOURCE]++;
+					tasks_per_process[status.MPI_SOURCE]++;
 					totalRequests++;
 				}
 				break;
 				case STATE_AVAILABLE:
 				{
 					++rcv_availability;
-					nodeState[status.MPI_SOURCE] = STATE_AVAILABLE;
+					processState[status.MPI_SOURCE] = STATE_AVAILABLE;
 					++nAvailable;
 					--nRunning;
 
@@ -497,15 +516,15 @@ namespace GemPBA
 
 					for (int rank = 1; rank < world_size; rank++)
 					{
-						if (nodeState[rank] == STATE_RUNNING) // finds the first running node
+						if (processState[rank] == STATE_RUNNING) // finds the first running node
 						{
 							if (!processTree[rank].hasNext()) // checks if running node has a child to push to
 							{
-								put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0, win_NextNode); // assigns returning node to the running node
-								processTree[rank].addNext(status.MPI_SOURCE);				// assigns returning node to the running node
-								nodeState[status.MPI_SOURCE] = STATE_ASSIGNED;				// it flags returning node as assigned
-								--nAvailable;												// assigned, not available any more
-								break;														// breaks for-loop
+								put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0, win_nextProcess); // assigns returning node to the running node
+								processTree[rank].addNext(status.MPI_SOURCE);				   // assigns returning node to the running node
+								processState[status.MPI_SOURCE] = STATE_ASSIGNED;			   // it flags returning node as assigned
+								--nAvailable;												   // assigned, not available any more
+								break;														   // breaks for-loop
 							}
 						}
 					}
@@ -513,16 +532,30 @@ namespace GemPBA
 				break;
 				case ACTION_REF_VAL_UPDATE:
 				{
-					// send ref value global
-					MPI_Ssend(refValueGlobal, 1, MPI_INT, status.MPI_SOURCE, 0, world_Comm);
+					/* if center reaches this point, for sure nodes have attained a better reference value
+						or they are not up-to-date, thus it is required to broad cast it whether this value
+						changes or not  */
+					bool signal;
 
-					// receive either the update ref value global or just pass
-					MPI_Recv(&buffer, 1, MPI_INT, status.MPI_SOURCE, MPI_ANY_TAG, world_Comm, &status);
-					int TAG2 = status.MPI_TAG;
-					if (TAG2 == ACTION_REF_VAL_UPDATE)
+					if (maximisation)
+						signal = (buffer > refValueGlobal[0]) ? refValueGlobal[0] = buffer : false;
+					else
+						signal = (buffer < refValueGlobal[0]) ? refValueGlobal[0] = buffer : false;
+
+					bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
+
+					if (signal)
 					{
-						refValueGlobal[0] = buffer;
-						bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
+						static int success = 0;
+						success++;
+						fmt::print("refValueGlobal updated to : {} by rank {} \n", refValueGlobal[0], status.MPI_SOURCE);
+						fmt::print("SUCCESS updates : {}\n", success);
+					}
+					else
+					{
+						static int failures = 0;
+						failures++;
+						fmt::print("FAILED updates : {} \n", failures);
 					}
 				}
 				break;
@@ -556,7 +589,7 @@ namespace GemPBA
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				if (nodeState[rank] == STATE_AVAILABLE)
+				if (processState[rank] == STATE_AVAILABLE)
 					return rank;
 			}
 			return -1; // all nodes are running
@@ -619,8 +652,8 @@ namespace GemPBA
 			const int dest = 1;
 			// global synchronisation **********************
 			--nAvailable;
-			nodeState[dest] = STATE_RUNNING;
-			++tasks_per_node[dest];
+			processState[dest] = STATE_RUNNING;
+			++tasks_per_process[dest];
 			// *********************************************
 
 			int err = MPI_Ssend(buffer, COUNT, MPI_CHAR, dest, 0, world_Comm); // send buffer
@@ -669,17 +702,17 @@ namespace GemPBA
             }*/
 
 			MPI_Comm_group(world_Comm, &world_group); // world group, all ranks
-			MPI_Comm_dup(world_Comm, &numNodes_Comm);
+			MPI_Comm_dup(world_Comm, &availableProcesses_Comm);
 		}
 
 		void allocateMPI()
 		{
 			MPI_Barrier(world_Comm);
 			// applicable for all the processes
-			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &numAvailableNodes, &win_NumNodes);
+			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, availableProcesses_Comm, &availableProcesses, &win_availableProcesses);
 			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
-			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, numNodes_Comm, &nextNode,
-							 &win_NextNode);
+			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, availableProcesses_Comm, &next_process,
+							 &win_nextProcess);
 
 			init();
 			MPI_Barrier(world_Comm);
@@ -687,22 +720,22 @@ namespace GemPBA
 
 		void deallocateMPI()
 		{
-			MPI_Win_free(&win_NumNodes);
+			MPI_Win_free(&win_availableProcesses);
 			MPI_Win_free(&win_refValueGlobal);
-			MPI_Win_free(&win_NextNode);
+			MPI_Win_free(&win_nextProcess);
 			MPI_Group_free(&world_group);
 		}
 
 		void init()
 		{
-			numAvailableNodes[0] = 0;
-			tasks_per_node.resize(world_size, 0);
-			nodeState.resize(world_size, STATE_AVAILABLE);
+			availableProcesses[0] = 0;
+			tasks_per_process.resize(world_size, 0);
+			processState.resize(world_size, STATE_AVAILABLE);
 			processTree.resize(world_size);
 
 			for (int i = 0; i < world_size; i++)
 			{
-				nextNode[i] = -1; // -1 one means it has no next node assigned
+				next_process[i] = -1; // -1 one means it has no next node assigned
 			}
 
 			if (world_rank == 0)
@@ -716,10 +749,13 @@ namespace GemPBA
 			return world_rank;
 		}
 
-		void linkRefValue(int **refValueNodes)
+		void linkRefValue(int **refValueNodes, std::string keyword)
 		{
 			if (refValueGlobal)
+			{
 				*refValueNodes = refValueGlobal;
+				setRefValStrategyLookup(keyword);
+			}
 			else
 			{
 				fmt::print("Error, refValueGlobal has not been initialized in MPI_Scheduler.hpp\n");
@@ -727,9 +763,46 @@ namespace GemPBA
 			}
 		}
 
-		void updateRefValue(int val, std::string_view keyword)
+		void updateRefValue(int reference_value)
 		{
-			MPI_Ssend(&val, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
+			std::unique_lock<std::mutex> lck(mtx); // mandatory lock, since this value should be updated
+
+			//fmt::print("queue empty? : {} \n", q.empty());
+			while (transmitting)
+				;
+			transmitting = true;
+
+			// a message is built containing the TAG and the data buffer
+			auto buffer = std::to_string(reference_value);
+			auto message = std::make_pair<int, std::string>(std::forward<int>(ACTION_REF_VAL_UPDATE), std::forward<std::string &&>(buffer));
+
+			push(std::move(message));
+		}
+
+		/* 	input: string
+			"maximise" if searching for the greatest reference value
+			"minimise" if searching for the lowest reference value
+			return: this method does not return
+		*/
+		void setRefValStrategyLookup(std::string keyword)
+		{
+			// convert string to upper case
+			std::for_each(keyword.begin(), keyword.end(), [](char &c) {
+				c = std::toupper(c);
+			});
+
+			if (keyword == "MAXIMISE")
+			{
+				maximisation = true;
+				refValueGlobal[0] = INT_MIN;
+			}
+			else if (keyword == "MINIMISE")
+			{
+				maximisation = false;
+				refValueGlobal[0] = INT_MAX;
+			}
+			else
+				throw std::runtime_error("in updateRefValue(), keyword : " + keyword + " not recognised\n");
 		}
 
 	private:
@@ -742,35 +815,36 @@ namespace GemPBA
 		int nTasks = 0;
 		int nRunning = 0;
 		int nAvailable = 0;
-		std::vector<int> nodeState;					// state of the nodes : running, assigned or available
-		std::map<int, std::set<int>> nodesTopology; // order map and set, determine next node to push to
+		std::vector<int> processState; // state of the nodes : running, assigned or available
 		Tree processTree;
 
 		std::mutex mtx;
 		std::condition_variable cv;
-		bool isTransmitting = false;
-		int newNode = -1;
+		bool transmitting = false;
+		int dest_rank_tmp = -1;
 
-		detail::Queue<std::string *> q;
+		detail::Queue<std::pair<int, std::string> *> q;
 		bool exit = false;
 
-		MPI_Win win_NumNodes;		// window for the number of available nodes
-		MPI_Win win_refValueGlobal; // window to send reference value global
-		MPI_Win win_NextNode;
+		MPI_Win win_availableProcesses; // window for the number of available processes
+		MPI_Win win_refValueGlobal;		// window to send reference value global
+		MPI_Win win_nextProcess;
 
-		MPI_Group world_group;	// all ranks belong to this group
-		MPI_Comm numNodes_Comm; // attached to win_NumNodes
-		MPI_Comm world_Comm;	// world communicator
+		MPI_Group world_group;			  // all ranks belong to this group
+		MPI_Comm availableProcesses_Comm; // attached to win_availableProcesses
+		MPI_Comm world_Comm;			  // world communicator
 
-		int *numAvailableNodes = nullptr; // Number of available nodes	[every node is aware of this number]
-		int *refValueGlobal = nullptr;	  // reference value to chose a best result
-		int *nextNode = nullptr;		  // potentially to replace numAvailableNodes
+		int *availableProcesses = nullptr; // Number of available processes	[every process is aware of this number]
+		int *refValueGlobal = nullptr;	   // reference value to chose a best result
+		int *next_process = nullptr;	   // potentially to replace availableProcesses
+
+		bool maximisation; // true if Maximising, false if Minimising
 
 		std::vector<std::pair<int, std::string>> bestResults;
 
-		size_t threadsPerNode = std::thread::hardware_concurrency(); // detects the number of logical processors in machine
+		size_t threads_per_process = std::thread::hardware_concurrency(); // detects the number of logical processors in machine
 
-		std::vector<int> tasks_per_node;
+		std::vector<int> tasks_per_process;
 
 		// statistics
 		size_t totalRequests = 0;
@@ -779,7 +853,9 @@ namespace GemPBA
 		double end_time = 0;
 
 		/* singleton*/
-		MPI_Scheduler() {}
+		MPI_Scheduler()
+		{
+		}
 	};
 
 } // namespace GemPBA

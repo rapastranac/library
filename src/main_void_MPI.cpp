@@ -29,20 +29,26 @@ auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 std::mutex mtx;
 size_t leaves = 0;
 
-int k = 10;
+int k = 20;
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
 	using HolderType = GemPBA::ResultHolder<void, int, float>;
 
-	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx); // node id in the tree
+	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.rank_me(), id, depth, treeIdx); // node id in the tree
 
 	if (depth >= k)
 	{
 		std::scoped_lock<std::mutex> lck(mtx);
 		leaves++;
-		branchHandler.updateRefValue(leaves);
-		//fmt::print("rank {}, Leaves : {}\n", branchHandler.getRankID(), leaves);
+		branchHandler.holdSolution(leaves, leaves, serializer);
+
+		int tmp = branchHandler.refValue();
+		if ((int)leaves > tmp)
+			if (leaves % 8 == 0)
+				branchHandler.updateRefValue(leaves, true);
+
+		//fmt::print("rank {}, Leaves : {}\n", branchHandler.rank_me(), leaves);
 		return;
 	}
 	int newDepth = depth + 1;
@@ -50,11 +56,11 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	float newTreeIdx = treeIdx + pow(2, depth);
 	hol_l.holdArgs(newDepth, newTreeIdx);
 
-	if (depth < 5)
-		branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
-	else
-		//	foo(id, newDepth, newTreeIdx, nullptr);
-		branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
+	//if (depth < 5)
+	branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
+	//else
+	//	foo(id, newDepth, newTreeIdx, nullptr);
+	//	branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
 
 	//std::this_thread::sleep_for(1s);
 
@@ -72,7 +78,7 @@ int bar(int id, int depth, float treeIdx, void *parent)
 		return leaves;
 	}
 	int newDepth = depth + 1;
-	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.getRankID(), id, depth, treeIdx);
+	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.rank_me(), id, depth, treeIdx);
 	H_Type hol_l(dlb, id, parent);
 	float newTreeIdx = treeIdx + pow(2, depth);
 	hol_l.holdArgs(newDepth, newTreeIdx);
@@ -117,7 +123,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	//std::this_thread::sleep_for(1s); //emulates quick task
 	//branchHandler.wait();
 	//fmt::print("Leaves : {}\n", res);
-	//fmt::print("Thread calls : {}\n", branchHandler.getNumberRequests());
+	//fmt::print("Thread calls : {}\n", branchHandler.number_thread_requests());
 
 	//return 0;
 
@@ -153,7 +159,8 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	std::string buffer = serializer(depth, treeIdx);
 
 	// ************************************************************************
-	branchHandler.setRefValue(0);
+	//branchHandler.setRefValue(0, "MAXIMISE");
+	branchHandler.setRefValStrategyLookup("maximise");
 
 	if (rank == 0)
 		mpiScheduler.runCenter(buffer.data(), buffer.size());
@@ -179,7 +186,7 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	if (rank != 0)
 	{ //rank 0 does not run an instance of BranchHandler
 		idl_tm = branchHandler.getPoolIdleTime();
-		rqst = branchHandler.getNumberRequests();
+		rqst = branchHandler.number_thread_requests();
 	}
 
 	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in
@@ -226,11 +233,11 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 		fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", sum);
 
 		// **************************************************************************
-		auto tasks_per_node = mpiScheduler.executedTasksPerNode();
+		auto tasks_per_process = mpiScheduler.executedTasksPerNode();
 
 		for (int rank = 1; rank < world_size; rank++)
 		{
-			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_node[rank]);
+			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_process[rank]);
 		}
 		fmt::print("\n");
 

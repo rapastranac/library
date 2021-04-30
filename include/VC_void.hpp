@@ -80,7 +80,7 @@ public:
         end = std::chrono::steady_clock::now();
         elapsed_secs = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 
-        printf("refGlobal : %d \n", branchHandler.getRefValue());
+        printf("refGlobal : %d \n", branchHandler.refValue());
         return true;
     }
 
@@ -103,7 +103,7 @@ public:
         size_t k = relaxation(LB, UB);
         //std::max({LB, degLB, acLB})
 
-        if (k + graph.coverSize() >= (size_t)branchHandler.getRefValue())
+        if (k + graph.coverSize() >= (size_t)branchHandler.refValue())
         {
             //size_t addition = k + graph.coverSize();
             return;
@@ -127,7 +127,7 @@ public:
         branchHandler.linkParent(id, parent, hol_l, hol_r);
 #endif
 
-        int *referenceValue = branchHandler.getRefValueTest();
+        int *referenceValue = branchHandler.refValueTest();
 
         hol_l.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_l] {
             Graph g = graph;

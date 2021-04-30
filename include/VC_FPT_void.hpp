@@ -84,13 +84,13 @@ public:
         end = std::chrono::steady_clock::now();
         elapsed_secs = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 
-        printf("refGlobal : %d \n", branchHandler.getRefValue());
+        printf("refGlobal : %d \n", branchHandler.refValue());
         return true;
     }
 
     void mvc(int id, int k, int depth, Graph &graph, void *parent)
     {
-        if (branchHandler.getRefValue() == 1)
+        if (branchHandler.refValue() == 1)
             return;
 
         if (k < 0)
@@ -135,7 +135,7 @@ public:
 #ifdef DLB
         branchHandler.linkParent(id, parent, hol_l, hol_r);
 #endif
-        int *referenceValue = branchHandler.getRefValueTest();
+        int *referenceValue = branchHandler.refValueTest();
 
         hol_l.bind_branch_checkIn([&k, &graph, &v, referenceValue, &depth, &hol_l] {
             if (referenceValue[0] == 1)

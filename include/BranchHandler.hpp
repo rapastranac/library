@@ -65,7 +65,7 @@ namespace GemPBA
 	public:
 		double getPoolIdleTime()
 		{
-			return thread_pool->getIdleTime() / (double)processor_count;
+			return thread_pool->idle_time() / (double)processor_count;
 		}
 
 		int getPoolSize() //ParBranchHandler::getInstance().MaxThreads() = 10;
@@ -80,29 +80,30 @@ namespace GemPBA
 		}
 
 		//seconds
-		double getIdleTime()
+		double idle_time()
 		{
 			double nanoseconds = idleTime / ((double)processor_count + 1);
 			return nanoseconds * 1.0e-9; // convert to seconds
 		}
 
-		void holdSolution(auto &bestR)
+		void holdSolution(auto &bestLocalSolution)
 		{
-			this->bestR = bestR;
+			this->bestSolution = std::make_any(bestLocalSolution);
 		}
 
-		template <typename T>
-		void holdSolution(T &solution, auto &serializer)
+		void holdSolution(int refValueLocal, auto &solution, auto &serializer)
 		{
-			this->bestResultBuffer.second = serializer(solution);
+			this->bestSolution_serialized.first = refValueLocal;
+			this->bestSolution_serialized.second = serializer(solution);
 		}
-
-		size_t getNumberRequests()
+		// get number of successful thread requests
+		size_t number_thread_requests()
 		{
-			return requests.load();
+			return numThreadRequests.load();
 		}
 #ifdef MPI_ENABLED
-		int getRankID()
+		// get number for this rank
+		int rank_me()
 		{
 			return mpiScheduler->getRank();
 		}
@@ -119,7 +120,7 @@ namespace GemPBA
 
 		bool has_result()
 		{
-			return bestR.has_value();
+			return bestSolution.has_value();
 		}
 
 		bool isDone()
@@ -129,47 +130,23 @@ namespace GemPBA
 
 		void clear_result()
 		{
-			bestR.reset();
+			bestSolution.reset();
 		}
 
 		template <typename RESULT_TYPE>
 		[[nodiscard]] auto fetchSolution() -> RESULT_TYPE
 		{ // fetching results caught by the library=
 
-			return std::any_cast<RESULT_TYPE>(bestR);
+			return std::any_cast<RESULT_TYPE>(bestSolution);
 		}
-
-		void lock()
-		{
-			this->mtx.lock();
-		}
-		void unlock()
-		{
-			//https://developercommunity.visualstudio.com/content/problem/459999/incorrect-lock-warnings-by-analyzer-c26110-and-c26.html
-#pragma warning(suppress : 26110)
-			this->mtx.unlock();
-		}
-
-#ifdef MPI_ENABLED
-
-		void lock_mpi()
-		{
-			this->mtx_MPI.lock();
-		}
-		void unlock_mpi()
-		{
-			this->mtx_MPI.unlock();
-		}
-
-#endif
 
 		//TODO still missing some mutexes
-		int *getRefValueTest()
+		int *refValueTest()
 		{
 			return refValueGlobal;
 		}
 
-		int getRefValue()
+		int refValue()
 		{
 			if (refValueGlobal)
 				return refValueGlobal[0];
@@ -183,34 +160,44 @@ namespace GemPBA
 		//if multi-processing, then every process should call this method
 		void setRefValue(int refValue)
 		{
-
-#ifdef MPI_ENABLED
-			mpiScheduler->linkRefValue(&refValueGlobal);
-			this->refValueGlobal[0] = refValue;
-#else
 			this->refValueGlobal = new int[1];
 			this->refValueGlobal[0] = refValue;
+		}
+
+#ifdef MPI_ENABLED
+		/* 	input: 		intitial reference value (int), string ""
+						"maximise" if searching for the greatest reference value
+						"minimise" if searching for the lowest reference value
+			return: 	this method does not return
+		*/
+		void setRefValue(int refValue, std::string keyword)
+		{
+			mpiScheduler->linkRefValue(&refValueGlobal, keyword);
+			this->refValueGlobal[0] = refValue;
+		}
+
+		/* 	input:		string
+						"maximise" if searching for the greatest reference value
+						"minimise" if searching for the lowest reference value
+			return:		this method does not return
+		*/
+		void setRefValStrategyLookup(std::string keyword)
+		{
+			mpiScheduler->linkRefValue(&refValueGlobal, keyword);
+			mpiScheduler->setRefValStrategyLookup(keyword); // TODO redundant
+		}
 #endif
-		}
 
-		void updateRefValue(int val)
+		void updateRefValue(int reference_value)
 		{
-			refValueGlobal[0] = val;
-			bestResultBuffer.first = val;
-			bestResultBuffer.second = std::to_string(val);
+			refValueGlobal[0] = reference_value;
 		}
 
-		void updateRefValue(int val, std::string_view keyword)
+		void updateRefValue(int reference_value, bool)
 		{
-			mpiScheduler->updateRefValue(val, keyword);
-			refValueGlobal[0] = val;
-			bestResultBuffer.first = val;
-			bestResultBuffer.second = std::to_string(val);
+			mpiScheduler->updateRefValue(reference_value);
 		}
 
-		/*begin<<------casting strategies -------------------------*/
-		//https://stackoverflow.com/questions/15326186/how-to-call-child-method-from-a-parent-pointer-in-c
-		//https://stackoverflow.com/questions/3747066/c-cannot-convert-from-base-a-to-derived-type-b-via-virtual-base-a
 	private:
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
@@ -225,7 +212,7 @@ namespace GemPBA
 					return true;
 				}
 
-				this->requests++;
+				this->numThreadRequests++;
 				upperHolder->setPushStatus();
 				lck.unlock();
 
@@ -279,7 +266,7 @@ namespace GemPBA
 					}
 
 					//after this line, only leftMost holder should be pushed
-					this->requests++;
+					this->numThreadRequests++;
 					holder.setPushStatus();
 					//holder.prune();
 					dlb.prune(&holder);
@@ -317,7 +304,7 @@ namespace GemPBA
 
 					dlb.checkRightSiblings(&holder);
 				}
-				this->requests++;
+				this->numThreadRequests++;
 				holder.setPushStatus();
 
 				lck.unlock();
@@ -383,18 +370,6 @@ namespace GemPBA
 
 #ifdef MPI_ENABLED
 
-		bool is_node_available()
-		{
-			if (nextNode[0] != -1)
-			{
-				if (nextNode[0] != nextNode[1])
-					return true; // center has put a new target
-				else
-					return false; // no node is available
-			}
-			return false; // center has not had time to put any target yet
-		}
-
 		bool push_multiprocess(int id, auto &holder, auto &&serializer)
 		{
 			std::unique_lock<std::mutex> lck(mtx_MPI, std::defer_lock);
@@ -438,11 +413,6 @@ namespace GemPBA
 				return false;
 
 			return push_multithreading<_ret>(f, id, holder);
-		}
-
-		int getBusyNodes()
-		{
-			return world_size - numAvailableNodes[0] - 1;
 		}
 
 #endif
@@ -512,59 +482,6 @@ namespace GemPBA
 			return forward<_ret>(f, threadId, holder);
 		}
 
-		template <typename _Ret, typename... Args>
-		auto constructMediators(auto &&callable, auto &&serializer, auto &&deserializer)
-		{
-			using HolderType = GemPBA::ResultHolder<_Ret, Args...>;
-
-			/*
-				They are wrapped with smart pointer to free memory automatically
-
-				a	fetch the result from the holder (if applicable), serialize it and return it as a string buffer
-				b	deserialize a buffer and create the first task of the thread after the node receives a task from center
-				c	TODO ...
-			*/
-			std::shared_ptr<::function<std::string()>> a;
-
-			auto b = [this, &a, callable, serializer, deserializer](const char *buffer, const int count) {
-				//std::shared_ptr<HolderType> holder = std::make_shared<HolderType>(dlb, -1);
-				HolderType *holder = new HolderType(dlb, -1);
-
-				std::stringstream ss;
-				for (int i = 0; i < count; i++)
-				{
-					ss << buffer[i];
-				}
-
-				auto _deser = std::bind_front(deserializer, std::ref(ss));
-				std::apply(_deser, holder->getArgs());
-
-				try_push_MT<_Ret>(callable, -1, *holder);
-
-				a = std::make_shared<std::function<std::string()>>([holder, serializer]() {
-					auto res = holder->get();
-					std::stringstream ss;
-					serializer(ss, res);
-					delete holder;
-					return ss.str();
-				});
-				return 0;
-			};
-
-			auto c = [this]() {
-				return this->isDone();
-			};
-
-			auto d = [this]() {
-				if (bestResultBuffer.first == -1)
-					return std::make_pair(0, static_cast<std::string>("Empty buffer, no result"));
-				else
-					return bestResultBuffer;
-			};
-
-			return std::make_tuple(std::move(a), std::move(b), std::move(c), std::move(d));
-		}
-
 		/* 	
 			types must be passed through the brackets constructBufferDecoder<_Ret, Args...>(..), so it's
 			known at compile time.
@@ -606,20 +523,20 @@ namespace GemPBA
 		[[nodiscard]] auto constructResultFetcher()
 		{
 			return [this]() {
-				if (bestResultBuffer.first == -1)
+				if (bestSolution_serialized.first == -1)
 					return std::make_pair(0, static_cast<std::string>("Empty buffer, no result"));
 				else
-					return bestResultBuffer;
+					return bestSolution_serialized;
 			};
 		}
 
 		[[nodiscard]] auto constructResultFetcher(auto *holder, auto &&deserializer)
 		{
 			return [this]() {
-				if (bestResultBuffer.first == -1)
+				if (bestSolution_serialized.first == -1)
 					return std::make_pair(0, static_cast<std::string>("Empty buffer, no result"));
 				else
-					return bestResultBuffer;
+					return bestSolution_serialized;
 			};
 		}
 
@@ -628,19 +545,16 @@ namespace GemPBA
 		{
 			this->processor_count = std::thread::hardware_concurrency();
 			this->idleTime = 0;
-			this->superFlag = false;
-			this->idCounter = 0;
-			this->requests = 0;
-			this->bestResultBuffer.first = -1; // this allows to avoid sending empty buffers
+			this->numThreadRequests = 0;
+			this->bestSolution_serialized.first = -1; // this allows to avoid sending empty buffers
 		}
 
-		std::atomic<size_t> idCounter;
-		std::atomic<size_t> requests;
+		std::atomic<size_t> numThreadRequests;
 
 		/*This section refers to the strategy wrapping a function
 			then pruning data to be use by the wrapped function<<---*/
-		std::any bestR;
-		std::pair<int, std::string> bestResultBuffer;
+		std::any bestSolution;
+		std::pair<int, std::string> bestSolution_serialized;
 
 		DLB_Handler &dlb = GemPBA::DLB_Handler::getInstance();
 #ifdef DLB
@@ -657,7 +571,6 @@ namespace GemPBA
 		std::atomic<long long> idleTime;
 		std::mutex mtx; //local mutex
 		std::condition_variable cv;
-		std::atomic<bool> superFlag;
 		std::unique_ptr<ThreadPool::Pool> thread_pool;
 
 		BranchHandler()
@@ -691,13 +604,12 @@ namespace GemPBA
 
 		MPI_Scheduler *mpiScheduler = nullptr;
 
-		std::mutex mtx_MPI;				  // mutex to ensure MPI_THREAD_SERIALIZED
-		int world_rank = -1;			  // get the rank of the process
-		int world_size = -1;			  // get the number of processes/nodes
-		char processor_name[128];		  // name of the node
-		int *numAvailableNodes = nullptr; // remote memory synchronised by center node
-		int *nextNode = nullptr;		  // size: world_size array nextNode[0]= {new,-1,-1,-1... -1}
-		MPI_Comm *world_Comm = nullptr;	  // world communicator MPI
+		std::mutex mtx_MPI;				// mutex to ensure MPI_THREAD_SERIALIZED
+		int world_rank = -1;			// get the rank of the process
+		int world_size = -1;			// get the number of processes/nodes
+		char processor_name[128];		// name of the node
+		int *next_process = nullptr;	// size: world_size array next_process[0]= {new,-1,-1,-1... -1}
+		MPI_Comm *world_Comm = nullptr; // world communicator MPI
 
 		template <typename _ret, typename Holder, typename Serialize,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
@@ -715,8 +627,8 @@ namespace GemPBA
 				fmt::print("Cover size() : {}, sending to center \n", res.coverSize());
 #endif
 
-				bestResultBuffer.first = refValueGlobal[0];
-				auto &ss = bestResultBuffer.second; // it should be empty
+				bestSolution_serialized.first = refValueGlobal[0];
+				auto &ss = bestSolution_serialized.second; // it should be empty
 				serialize(ss, res);
 			}
 			else // some other node requested help and it is surely waiting for the return value
@@ -742,16 +654,6 @@ namespace GemPBA
 		void reply(Serialize &&, Holder &, int)
 		{
 			thread_pool->wait();
-		}
-
-		void fetch_and_op(const void *origin_addr, void *result_addr,
-						  MPI_Datatype datatype, int target_rank, MPI_Aint target_disp,
-						  MPI_Op op, MPI_Win &win)
-		{
-			MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target_rank, MPI_MODE_NOCHECK, win);
-			MPI_Fetch_and_op(origin_addr, result_addr, datatype, target_rank, target_disp, op, win);
-			MPI_Win_flush(target_rank, win);
-			MPI_Win_unlock(target_rank, win);
 		}
 
 		MPI_Comm &getCommunicator()

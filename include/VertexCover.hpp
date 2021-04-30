@@ -227,8 +227,8 @@ public:
 			   << "\n";
 
 		col1 = "Idle time:";
-		col2 = std::to_string(branchHandler.getIdleTime());
-		string col3 = std::to_string((branchHandler.getIdleTime() * 100.0 / (elapsed_secs * 1.0e-9))) + "%";
+		col2 = std::to_string(branchHandler.idle_time());
+		string col3 = std::to_string((branchHandler.idle_time() * 100.0 / (elapsed_secs * 1.0e-9))) + "%";
 
 		cout << std::left << std::setw(wide * 0.3)
 			 << col1
@@ -265,7 +265,7 @@ public:
 			   << "\n";
 
 		col1 = "Successful requests:";
-		col2 = std::to_string(branchHandler.getNumberRequests());
+		col2 = std::to_string(branchHandler.number_thread_requests());
 		cout << std::internal
 			 << col1
 			 << std::setfill(' ')
@@ -298,7 +298,7 @@ public:
 				   << Util::ToString((double)(elapsed_secs * 1.0e-9)) << ","
 				   << Util::ToString((int)leaves) << ","
 				   << Util::ToString((int)measured_Depth) << ","
-				   << Util::ToString((double)(branchHandler.getIdleTime() * 1.0e-9)) << ","
+				   << Util::ToString((double)(branchHandler.idle_time() * 1.0e-9)) << ","
 				   << Util::ToString((double)(branchHandler.getPoolIdleTime())) << "\n";
 		output_raw.close();
 	}
@@ -312,8 +312,8 @@ public:
 	{
 		auto clock = std::chrono::system_clock::now();
 		std::time_t time = std::chrono::system_clock::to_time_t(clock); //it includes a "\n"
-		string col1 = fmt::format("VC = {}", branchHandler.getRefValue());
-		string col2 = fmt::format("process {}, thread {}, {}", branchHandler.getRankID(), id, std::ctime(&time));
+		string col1 = fmt::format("VC = {}", branchHandler.refValue());
+		string col2 = fmt::format("process {}, thread {}, {}", branchHandler.rank_me(), id, std::ctime(&time));
 		cout << std::internal
 			 << std::setfill('.')
 			 << col1
