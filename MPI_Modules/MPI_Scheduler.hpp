@@ -450,6 +450,7 @@ namespace GemPBA
 			sendSeed(SEED, SEED_SIZE);
 
 			int rcv_availability = 0;
+			bool exitLoop = false;
 
 			while (true)
 			{
@@ -463,33 +464,34 @@ namespace GemPBA
 				double begin = MPI_Wtime();
 				MPI_Irecv(&buffer, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &request);
 
-			awaitPendingMsg:
-				MPI_Test(&request, &ready, &status);
-
-				// Check whether the underlying communication had already taken place
 				int cycles = 0;
-				while (!ready && difftime(begin, MPI_Wtime()) < TIMEOUT_TIME)
+				while (true)
 				{
 					MPI_Test(&request, &ready, &status);
-					cycles++;
-				}
-
-				if (!ready)
-				{
-					if (nRunning == 0)
+					// Check whether the underlying communication had already taken place
+					while (!ready && difftime(begin, MPI_Wtime()) < TIMEOUT_TIME)
 					{
-						// Cancellation due to TIMEOUT
-						MPI_Cancel(&request);
-						MPI_Request_free(&request);
-						printf("rank %d: receiving TIMEOUT, buffer : %d, cycles : %d\n", world_rank, buffer, cycles);
-						break;
+						MPI_Test(&request, &ready, &status);
+						cycles++;
 					}
-					/* if it reaches this point, then there's still a pending message
-					so the center keeps trying to receive it without making another call
-					to MPI_Irecv(..)
-					*/
-					goto awaitPendingMsg;
+
+					if (!ready)
+					{
+						if (nRunning == 0)
+						{
+							// Cancellation due to TIMEOUT
+							MPI_Cancel(&request);
+							MPI_Request_free(&request);
+							printf("rank %d: receiving TIMEOUT, buffer : %d, cycles : %d\n", world_rank, buffer, cycles);
+							exitLoop = true;
+						}
+					}
+					else
+						break;
 				}
+				if (exitLoop)
+					break;
+
 
 				switch (status.MPI_TAG)
 				{
@@ -548,7 +550,7 @@ namespace GemPBA
 				case ACTION_REF_VAL_UPDATE:
 				{
 					/* if center reaches this point, for sure nodes have attained a better reference value
-						or they are not up-to-date, thus it is required to broad cast it whether this value
+						or they are not up-to-date, thus it is required to broadcast it whether this value
 						changes or not  */
 					bool signal;
 

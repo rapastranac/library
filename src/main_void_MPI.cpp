@@ -29,8 +29,8 @@ auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 std::mutex mtx;
 size_t leaves = 0;
 
-int k = 20;
-size_t multiple = 1024; // static_cast<size_t>(pow(2, 18));
+int k = 24;
+size_t multiple =1024; //static_cast<size_t>(pow(2, 18));
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
@@ -58,7 +58,7 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	hol_l.holdArgs(newDepth, newTreeIdx);
 
 	//if (depth < 6)
-		branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
+	branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
 	//else
 	//	//	foo(id, newDepth, newTreeIdx, nullptr);
 	//	branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
@@ -97,6 +97,7 @@ int bar(int id, int depth, float treeIdx, void *parent)
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
+	
 
 	Graph graph;
 	Graph oGraph;
