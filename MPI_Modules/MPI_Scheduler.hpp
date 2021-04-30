@@ -240,7 +240,7 @@ namespace GemPBA
 				if (!isPop && branchHandler.isDone())
 				{
 					/* by the time the thread realises that the thread pool has no more tasks, 
-						there might be another buffer pushed, which should be verified in the next line*/
+						another buffer there might have been pushed, which should be verified in the next line*/
 					isPop = q.pop(message);
 					if (!isPop)
 					{

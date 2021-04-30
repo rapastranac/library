@@ -45,7 +45,7 @@ void foo(int id, int depth, float treeIdx, void *parent)
 
 		int tmp = branchHandler.refValue();
 		if ((int)leaves > tmp)
-			if (leaves % 8 == 0)
+			if (leaves % ((size_t)pow(2, 14)) == 0)
 				branchHandler.updateRefValue(leaves, true);
 
 		//fmt::print("rank {}, Leaves : {}\n", branchHandler.rank_me(), leaves);
@@ -56,11 +56,11 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	float newTreeIdx = treeIdx + pow(2, depth);
 	hol_l.holdArgs(newDepth, newTreeIdx);
 
-	//if (depth < 5)
-	branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
-	//else
-	//	foo(id, newDepth, newTreeIdx, nullptr);
-	//	branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
+	if (depth < 6)
+		branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
+	else
+		//	foo(id, newDepth, newTreeIdx, nullptr);
+		branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
 
 	//std::this_thread::sleep_for(1s);
 
