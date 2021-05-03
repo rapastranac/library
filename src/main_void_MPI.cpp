@@ -23,19 +23,18 @@
 #include <string>
 #include <vector>
 
-GemPBA::DLB_Handler &dlb = GemPBA::DLB_Handler::getInstance();
+auto &dlb = GemPBA::DLB_Handler::getInstance();
 auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 
 std::mutex mtx;
 size_t leaves = 0;
 
 int k = 20;
-size_t multiple =1024; //static_cast<size_t>(pow(2, 18));
+size_t multiple = 1024; //static_cast<size_t>(pow(2, 18));
 
 void foo(int id, int depth, float treeIdx, void *parent)
 {
 	using HolderType = GemPBA::ResultHolder<void, int, float>;
-
 	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.rank_me(), id, depth, treeIdx); // node id in the tree
 
 	if (depth >= k)
@@ -54,50 +53,41 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	}
 	int newDepth = depth + 1;
 	HolderType hol_l(dlb, id, parent);
-	float newTreeIdx = treeIdx + pow(2, depth);
-	hol_l.holdArgs(newDepth, newTreeIdx);
+	HolderType hol_r(dlb, id, parent);
+	hol_l.setDepth(depth);
+	hol_r.setDepth(depth);
+
+	dlb.linkParent(id, parent, hol_l, hol_r);
+
+	hol_l.bind_branch_checkIn([&]() {
+		float newTreeIdx = treeIdx + pow(2, depth);
+		hol_l.holdArgs(newDepth, newTreeIdx);
+		return true;
+	});
+
+	hol_r.bind_branch_checkIn([&]() {
+		hol_r.holdArgs(newDepth, treeIdx);
+		return true;
+	});
 
 	//if (depth < 6)
-	branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
+	if (hol_l.evaluate_branch_checkIn())
+		branchHandler.try_push_MP<void>(foo, id, hol_l, serializer);
 	//else
 	//	//	foo(id, newDepth, newTreeIdx, nullptr);
 	//	branchHandler.try_push_MT<void>(foo, id, hol_l); // only threads
 
 	//std::this_thread::sleep_for(1s);
 
-	foo(id, newDepth, treeIdx, nullptr);
-}
+	//foo(id, newDepth, treeIdx, nullptr);
 
-int bar(int id, int depth, float treeIdx, void *parent)
-{
-	using H_Type = GemPBA::ResultHolder<int, int, float>;
-
-	if (depth > 4)
-	{
-		std::scoped_lock<std::mutex> lck(mtx);
-		leaves++;
-		return leaves;
-	}
-	int newDepth = depth + 1;
-	//fmt::print("rank {}, id : {} depth : {} treeIdx : {}\n", branchHandler.rank_me(), id, depth, treeIdx);
-	H_Type hol_l(dlb, id, parent);
-	float newTreeIdx = treeIdx + pow(2, depth);
-	hol_l.holdArgs(newDepth, newTreeIdx);
-
-	//branchHandler.try_push_MP<void>(foo, id, hol, serializer);
-	branchHandler.try_push_MT<int>(bar, id, hol_l);
-
-	//std::this_thread::sleep_for(1s);
-	int r_left = bar(id, newDepth, treeIdx, nullptr);
-
-	int r_right = hol_l.get();
-	return r_left > r_right ? r_left : r_right;
+	if (hol_r.evaluate_branch_checkIn())
+		branchHandler.forward<void>(foo, id, hol_r);
 }
 
 int main_void_MPI(int numThreads, int prob, std::string filename)
 {
 	//using HolderType = GemPBA::ResultHolder<void, int, Graph>;
-	
 
 	Graph graph;
 	Graph oGraph;
@@ -107,12 +97,14 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	auto &mpiScheduler = GemPBA::MPI_Scheduler::getInstance(); // MPI MPI_Scheduler
 	int rank = mpiScheduler.init(NULL, NULL);				   // initialize MPI and member variable linkin
-															   //HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
+	//HolderType holder(handler);									//it creates a ResultHolder, required to retrive result
 	branchHandler.passMPIScheduler(&mpiScheduler);
-	//GemPBA::ResultHolder<int, int, float> hldr(dlb, -1, nullptr);
+	GemPBA::ResultHolder<void, int, float> hldr(dlb, -1, nullptr);
 	//float val = 845.515;
-	//hldr.holdArgs(val);
-	//branchHandler.setMaxThreads(6);
+	int frst = 0;
+	float scnd = 1;
+	hldr.holdArgs(frst, scnd);
+	branchHandler.initThreadPool(numThreads);
 
 	//foo(-1, 0, -1, nullptr);
 	//auto res = bar(-1, 0, -1, nullptr);
@@ -120,16 +112,16 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	//while (!branchHandler.isDone())
 	//	fmt::print("Not done yet !!\n");
 
-	//branchHandler.try_push_MT<int>(bar, -1, hldr);
-	//std::this_thread::sleep_for(1s); //emulates quick task
-	//branchHandler.wait();
-	//fmt::print("Leaves : {}\n", res);
-	//fmt::print("Thread calls : {}\n", branchHandler.number_thread_requests());
+	branchHandler.try_push_MT<void>(foo, -1, hldr);
+	std::this_thread::sleep_for(1s); //emulates quick task
+	branchHandler.wait();
+	fmt::print("Leaves : {}\n", leaves);
+	fmt::print("Thread calls : {}\n", branchHandler.number_thread_requests());
 
-	//return 0;
+	return 0;
 
 	/* previous input and output required before following condition
-	thus, other nodes know the data type*/
+    thus, other nodes know the data type*/
 	using HolderType = GemPBA::ResultHolder<void, int, float>;
 
 	HolderType holder(dlb, -1); //it creates a ResultHolder, required to retrive result

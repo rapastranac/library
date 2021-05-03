@@ -20,15 +20,16 @@ namespace GemPBA
         std::mutex mtx;
         std::atomic<long long> idleTime{0};
 
+#ifdef R_SEARCH
+        bool rootSearch = R_SEARCH;
+#else
+        bool rootSearch = false;
+#endif
         size_t idCounter = 0;
 
         DLB_Handler() {}
 
     public:
-        void resetIdCounter() //TEMPO
-        {
-            idCounter = 0;
-        }
         static DLB_Handler &getInstance()
         {
             static DLB_Handler instance;
@@ -319,7 +320,7 @@ namespace GemPBA
         }
 
         template <typename Holder>
-        void helper(Holder *parent, Holder &child)
+        void linkParent_helper(Holder *parent, Holder &child)
         {
             child.parent = parent->itself;
             child.root = parent->root;
@@ -327,7 +328,7 @@ namespace GemPBA
         }
 
         template <typename Holder, typename... Args>
-        void helper(Holder *parent, Holder &child, Args &...args)
+        void linkParent_helper(Holder *parent, Holder &child, Args &...args)
         {
             child.parent = parent->itself;
             child.root = parent->root;
@@ -349,7 +350,7 @@ namespace GemPBA
                     child.root = &roots[threadId];
                 }
                 virtualRoot->children.push_back(&child);
-                helper(virtualRoot, args...);
+                linkParent_helper(virtualRoot, args...);
             }
         }
 

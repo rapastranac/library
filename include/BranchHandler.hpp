@@ -173,7 +173,6 @@ namespace GemPBA
 			{
 				if (refValueLocal < new_refValue)
 				{
-					refValueLocal_old = refValueLocal;
 					refValueLocal = new_refValue;
 					return true;
 				}
@@ -188,7 +187,6 @@ namespace GemPBA
 			{
 				if (refValueLocal > new_refValue)
 				{
-					refValueLocal_old = refValueLocal;
 					refValueLocal = new_refValue;
 					return true;
 				}
@@ -204,25 +202,31 @@ namespace GemPBA
 	private:
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool try_top_holder(std::unique_lock<std::mutex> &lck, F &&f, Holder &holder)
+		bool try_top_holder(F &&f, Holder &holder)
+		//bool try_top_holder(std::unique_lock<std::mutex> &lck, F &&f, Holder &holder)
 		{
-			Holder *upperHolder = dlb.checkParent(&holder);
-			if (upperHolder)
+			if (is_DLB)
 			{
-				if (!upperHolder->evaluate_branch_checkIn())
+				Holder *upperHolder = dlb.checkParent(&holder);
+				if (upperHolder)
 				{
-					upperHolder->setDiscard();
-					return true;
+					if (!upperHolder->evaluate_branch_checkIn()) // checks if it's worth it to push
+					{
+						upperHolder->setDiscard(); // discard otherwise
+						return true;			   // return true because it was found
+					}
+
+					this->numThreadRequests++;
+					upperHolder->setPushStatus();
+					//lck.unlock();
+
+					std::args_handler::unpack_and_push_void(*thread_pool, f, upperHolder->getArgs());
+					return true; // top holder found
 				}
-
-				this->numThreadRequests++;
-				upperHolder->setPushStatus();
-				lck.unlock();
-
-				std::args_handler::unpack_and_push_void(*thread_pool, f, upperHolder->getArgs());
-				return true; // top holder found
+				dlb.checkRightSiblings(&holder); // this decrements parent's children
+												 //return false;					 // top holder not found
 			}
-			return false; // top holder not found
+			return false; // top holder not found or just DLB disabled
 		}
 
 #ifdef MPI_ENABLED
@@ -235,8 +239,10 @@ namespace GemPBA
 				if (!upperHolder->evaluate_branch_checkIn())
 				{
 					upperHolder->setDiscard();
-					return true;
+					return true; // top holder found but discarded, therefore not sent
 				}
+
+				// TODO send message in here
 
 				return true; // top holder found
 			}
@@ -250,43 +256,36 @@ namespace GemPBA
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool push_multithreading(F &&f, int id, Holder &holder)
 		{
-			/*This lock must be adquired before checking the condition,	
-			even though busyThreads is atomic*/
-			std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
-
-			if (lck.try_lock())
+			/* the underlying loop breaks when current holder is treated,
+				whether is pushed to the pool or forwarded */
+			while (true)
 			{
-				if (thread_pool->n_idle() > 0)
+				/* this lock must be adquired before checking the condition,	
+					even though busyThreads is atomic*/
+				std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
+
+				if (lck.try_lock())
 				{
-					if (is_DLB)
+					if (thread_pool->n_idle() > 0)
 					{
-						bool res = try_top_holder<_ret>(lck, f, holder);
-						if (res)
-							return false; // if top holder found, then it should
-										  // return false to keep trying another top holder
+						if (try_top_holder<_ret>(f, holder))
+							continue; // keeps iterating from root to current level
 
-						dlb.checkRightSiblings(&holder); // this decrements parent's children
+						//after this line, only leftMost holder should be pushed
+						this->numThreadRequests++;
+						holder.setPushStatus();
+						dlb.prune(&holder);
+						//lck.unlock(); // [[released at destruction]] WARNING. ATTENTION, CUIDADO, PILAS !!!!
+
+						std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
+						return true; // pushed to pool
 					}
-
-					//after this line, only leftMost holder should be pushed
-					this->numThreadRequests++;
-					holder.setPushStatus();
-					//holder.prune();
-					dlb.prune(&holder);
 					lck.unlock();
-
-					std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
-					return true;
 				}
-				lck.unlock();
-			}
 
-			if (is_DLB)
-				this->forward<_ret>(f, id, holder, true);
-			else
 				this->forward<_ret>(f, id, holder);
-
-			return true;
+				return false;
+			}
 		}
 
 		template <typename _ret, typename F, typename Holder,
@@ -333,31 +332,9 @@ namespace GemPBA
 		}
 
 		template <typename _ret, typename F, typename Holder>
-		bool push_multithreading(F &&f, int id, Holder &holder, bool trackStack)
-		{
-			bool _flag = false;
-			/* false means that current holder was not able to be pushed 
-				because a top holder was pushed instead, this false allows
-				to keep trying to find a top holder in the case of an
-				available thread*/
-			while (!_flag)
-				_flag = push_multithreading<_ret>(f, id, holder);
-
-			return _flag; // this is for user's tracking pursposes if applicable
-		}
-
-		template <typename _ret, typename F, typename Holder>
 		bool try_push_MT(F &&f, int id, Holder &holder)
 		{
-			bool _flag = false;
-			/* false means that current holder was not able to be pushed 
-				because a top holder was pushed instead, this false allows
-				to keep trying to find a top holder in the case of an
-				available thread*/
-			while (!_flag)
-				_flag = push_multithreading<_ret>(f, id, holder);
-
-			return _flag; // this is for user's tracking pursposes if applicable
+			return push_multithreading<_ret>(f, id, holder);
 		}
 
 		template <typename _ret, typename F, typename Holder, typename Serializer>
@@ -365,34 +342,40 @@ namespace GemPBA
 		{
 			bool _flag = push_multiprocess(id, holder, serializer);
 
-			if (!_flag)
+			if (_flag)
+				return _flag;
+			else
 				return try_push_MT<_ret>(f, id, holder);
-
-			return _flag; // this is for user's tracking pursposes if applicable
 		}
 
 #ifdef MPI_ENABLED
 
 		bool push_multiprocess(int id, auto &holder, auto &&serializer)
 		{
-			std::unique_lock<std::mutex> lck(mtx_MPI, std::defer_lock);
-			if (lck.try_lock()) // if mutex acquired, other threads will avoid this section
+			while (true)
 			{
-				//TODO implement DLB_Handler in here
-
-				auto getBuffer = [&serializer, &holder]() {
-					return std::apply(serializer, holder.getArgs());
-				};
-
-				if (mpiScheduler->tryPush(getBuffer))
+				std::unique_lock<std::mutex> lck(mtx_MPI, std::defer_lock);
+				if (lck.try_lock()) // if mutex acquired, other threads will jump this section
 				{
-					holder.setMPISent();
-					//holder.prune();
-					dlb.prune(&holder);
-					return true;
+					auto getBuffer = [&serializer, &holder]() {
+						return std::apply(serializer, holder.getArgs());
+					};
+
+					//TODO implement DLB_Handler in here	************************************
+					//if (try_top_holder<_ret>(lck, f, holder))
+					//	continue; // keeps iterating from root to current level
+					// ****************************************************************************
+
+					if (mpiScheduler->tryPush(getBuffer))
+					{
+						holder.setMPISent();
+						//holder.prune();
+						dlb.prune(&holder);
+						return true;
+					}
 				}
+				return false;
 			}
-			return false;
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
@@ -420,21 +403,12 @@ namespace GemPBA
 
 #endif
 		// no DLB_Handler begin **********************************************************************
-		template <typename _ret, typename F, typename Holder,
-				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		_ret forward(F &&f, int threadId, Holder &holder)
-		{
-			holder.setForwardStatus();
-			//holder.threadId = threadId;
-			std::args_handler::unpack_and_forward_void(f, threadId, holder.getArgs(), &holder);
-		}
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder)
 		{
 			holder.setForwardStatus();
-			//holder.threadId = threadId;
 			return std::args_handler::unpack_and_forward_non_void(f, threadId, holder.getArgs(), &holder);
 		}
 
@@ -442,7 +416,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		_ret forward(F &&f, int threadId, Holder &holder, bool)
+		_ret forward(F &&f, int threadId, Holder &holder)
 		{
 #ifdef MPI_ENABLED
 			if (holder.is_pushed() || holder.is_MPI_Sent())
@@ -451,11 +425,11 @@ namespace GemPBA
 			if (holder.is_pushed())
 				return;
 #endif
-
 			if (is_DLB)
 				dlb.checkLeftSibling(&holder);
 
-			forward<_ret>(f, threadId, holder);
+			holder.setForwardStatus();
+			std::args_handler::unpack_and_forward_void(f, threadId, holder.getArgs(), &holder);
 		}
 
 		template <typename _ret, typename F, typename Holder,
@@ -560,7 +534,7 @@ namespace GemPBA
 		std::pair<int, std::string> bestSolution_serialized;
 
 		DLB_Handler &dlb = GemPBA::DLB_Handler::getInstance();
-#ifdef DLB
+#ifdef R_SEARCH
 		bool is_DLB = true;
 #else
 		bool is_DLB = false;
@@ -631,7 +605,6 @@ namespace GemPBA
 	protected:
 		int *refValueGlobal = nullptr; // shared with MPI
 		int refValueLocal = INT_MIN;
-		int refValueLocal_old;
 		bool maximisation = true;
 
 #ifdef MPI_ENABLED

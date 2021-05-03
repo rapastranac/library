@@ -25,20 +25,12 @@
 #define STATE_RUNNING 1
 #define STATE_ASSIGNED 2
 #define STATE_AVAILABLE 3
-#define STATE_NEED_NXT_NODE 4
 
-#define NO_NODE_ASSIGNED 5
+#define TERMINATION_TAG 6
+#define REFVAL_UPDATE_TAG 9
 
-#define ACTION_TERMINATE 6
-#define ACTION_PUSH_REQUEST 7
-
-#define ACTION_REF_VAL_REQUEST 8
-#define ACTION_REF_VAL_UPDATE 9
-
-#define ACTION_SEND_TASK 12
-
-#define TAG_HAS_RESULT 13
-#define TAG_NO_RESULT 14
+#define HAS_RESULT_TAG 13
+#define NO_RESULT_TAG 14
 
 #define TIMEOUT_TIME 3
 
@@ -159,16 +151,14 @@ namespace GemPBA
 				MPI_Status status;
 				int count; // count to be received
 
-				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm,
-						  &status); // receives status before receiving the message
-				MPI_Get_count(&status, MPI_CHAR,
-							  &count); // receives total number of datatype elements of the message
+				MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
+				MPI_Get_count(&status, MPI_CHAR, &count);					 // receives total number of datatype elements of the message
 
-				char *incoming_buffer = new char[count];
-				MPI_Recv(incoming_buffer, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
+				char *message = new char[count];
+				MPI_Recv(message, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
 				recvdMessages++;
 
-				if (isTerminated(status.MPI_TAG, incoming_buffer))
+				if (isTerminated(status.MPI_TAG, message))
 					break;
 
 				notifyRunningState();
@@ -181,7 +171,7 @@ namespace GemPBA
 
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, status.MPI_SOURCE);
 				//  push to the thread pool *********************************************************************
-				auto *holder = bufferDecoder(incoming_buffer, count); // holder might be useful for non-void functions
+				auto *holder = bufferDecoder(message, count); // holder might be useful for non-void functions
 				fmt::print("rank {}, pushed buffer to thread pool \n", world_rank, status.MPI_SOURCE);
 				// **********************************************************************************************
 
@@ -189,7 +179,7 @@ namespace GemPBA
 				notifyStateAvailable();
 
 				//delete holder;
-				delete[] incoming_buffer;
+				delete[] message;
 			}
 
 			// TODO.. send result
@@ -257,13 +247,13 @@ namespace GemPBA
 				// pass old cuz value might change in between
 				bool success = branchHandler.updateRefValue(refValueGlobal_old, &mostUpToDate);
 				if (!success)
-					MPI_Ssend(&mostUpToDate, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
+					MPI_Ssend(&mostUpToDate, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
 			}
 			else if (isChanged(branchHandler.refValue(),
 							   refValueGlobal[0])) // this process has attained a better value
 			{
 				int temp = branchHandler.refValue();
-				MPI_Ssend(&temp, 1, MPI_INT, 0, ACTION_REF_VAL_UPDATE, world_Comm);
+				MPI_Ssend(&temp, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
 			}
 		}
 
@@ -312,7 +302,7 @@ namespace GemPBA
 
 		bool isTerminated(int TAG, char *buffer)
 		{
-			if (TAG == ACTION_TERMINATE)
+			if (TAG == TERMINATION_TAG)
 			{
 				delete[] buffer;
 				fmt::print("rank {} exited\n", world_rank);
@@ -429,12 +419,12 @@ namespace GemPBA
 			auto [refVal, buffer] = resultFetcher();
 			if (buffer.starts_with("Empty"))
 			{
-				MPI_Send(buffer.data(), buffer.size(), MPI_CHAR, 0, TAG_NO_RESULT, world_Comm);
+				MPI_Send(buffer.data(), buffer.size(), MPI_CHAR, 0, NO_RESULT_TAG, world_Comm);
 			}
 			else
 			{
-				MPI_Send(buffer.data(), buffer.size(), MPI_CHAR, 0, TAG_HAS_RESULT, world_Comm);
-				MPI_Send(&refVal, 1, MPI_INT, 0, TAG_HAS_RESULT, world_Comm);
+				MPI_Send(buffer.data(), buffer.size(), MPI_CHAR, 0, HAS_RESULT_TAG, world_Comm);
+				MPI_Send(&refVal, 1, MPI_INT, 0, HAS_RESULT_TAG, world_Comm);
 			}
 		}
 
@@ -455,7 +445,6 @@ namespace GemPBA
 			sendSeed(SEED, SEED_SIZE);
 
 			int rcv_availability = 0;
-			bool exitLoop = false;
 
 			while (true)
 			{
@@ -525,7 +514,7 @@ namespace GemPBA
 					}
 				}
 				break;
-				case ACTION_REF_VAL_UPDATE:
+				case REFVAL_UPDATE_TAG:
 				{
 					/* if center reaches this point, for sure nodes have attained a better reference value
                             or they are not up-to-date, thus it is required to broadcast it whether this value
@@ -606,7 +595,7 @@ namespace GemPBA
 			{
 				char buffer[] = "exit signal";
 				int count = sizeof(buffer);
-				MPI_Send(&buffer, count, MPI_CHAR, rank, ACTION_TERMINATE, world_Comm); // send positive signal
+				MPI_Send(&buffer, count, MPI_CHAR, rank, TERMINATION_TAG, world_Comm); // send positive signal
 			}
 			MPI_Barrier(world_Comm);
 		}
@@ -647,12 +636,12 @@ namespace GemPBA
 
 				switch (status.MPI_TAG)
 				{
-				case TAG_HAS_RESULT:
+				case HAS_RESULT_TAG:
 				{
 					std::string buf(buffer, count);
 
 					int refValue;
-					MPI_Recv(&refValue, 1, MPI_INT, rank, TAG_HAS_RESULT, world_Comm, &status);
+					MPI_Recv(&refValue, 1, MPI_INT, rank, HAS_RESULT_TAG, world_Comm, &status);
 
 					bestResults[rank].first = refValue; // reference value corresponding to result
 					bestResults[rank].second = buf;		// best result so far from this rank
@@ -663,7 +652,7 @@ namespace GemPBA
 				}
 				break;
 
-				case TAG_NO_RESULT:
+				case NO_RESULT_TAG:
 				{
 					delete[] buffer;
 					fmt::print("solution NOT received from rank {}\n", rank);

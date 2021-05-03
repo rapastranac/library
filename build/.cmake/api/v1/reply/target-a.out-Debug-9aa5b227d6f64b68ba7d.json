@@ -52,6 +52,12 @@
 			{
 				"command" : 3,
 				"file" : 0,
+				"line" : 32,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
 				"line" : 37,
 				"parent" : 0
 			},
@@ -93,7 +99,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : " -fopenmp -g"
+					"fragment" : " -fopenmp -g  "
 				},
 				{
 					"fragment" : "-pthread"
@@ -162,45 +168,41 @@
 				},
 				{
 					"backtrace" : 5,
+					"define" : "R_SEARCH=true"
+				},
+				{
+					"backtrace" : 6,
 					"define" : "VC_VOID_MPI"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 6,
+					"backtrace" : 7,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 7,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 8,
 					"path" : "/home/andres/cloud/library/include"
 				},
 				{
-					"backtrace" : 8,
+					"backtrace" : 9,
 					"path" : "/home/andres/cloud/library/MPI_Modules"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 10,
 					"path" : "/home/andres/cloud/library/cereal"
 				},
 				{
-					"backtrace" : 10,
+					"backtrace" : 11,
 					"path" : "/home/andres/cloud/library/fmt/include"
 				}
 			],
 			"language" : "CXX",
-			"languageStandard" : 
-			{
-				"backtraces" : 
-				[
-					1
-				],
-				"standard" : "20"
-			},
 			"sourceIndexes" : 
 			[
 				0,
@@ -233,12 +235,10 @@
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 2,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so",
 				"role" : "libraries"
 			},
 			{
-				"backtrace" : 2,
 				"fragment" : "/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so",
 				"role" : "libraries"
 			},
