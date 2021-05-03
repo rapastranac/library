@@ -257,9 +257,14 @@ namespace GemPBA
 			}
 		}
 
-		// push a task to be sent via MPI
+		// enqueue a message which will be sent to the next assigned process
 		void push(std::string &&message)
 		{
+			transmitting = true;
+			dest_rank_tmp = next_process[0];
+			fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, dest_rank_tmp);
+			shift_left(next_process, world_size);
+
 			auto pck = std::make_shared<std::string>(std::forward<std::string &&>(message));
 			auto _message = new std::string(*pck);
 
@@ -270,34 +275,37 @@ namespace GemPBA
 			}
 
 			q.push(_message);
+
+			releasePriority();
 		}
 
-		/*
-        - this method attempts pushing to other nodes, only ONE buffer will be enqueued at a time
-        - if the taskFunneling is transmitting the buffer to another node, this method will return false
-        - if previous conditions are met, then actual condition for pushing is evaluated next_process[0] > 0
-        */
-		bool tryPush(auto &getBuffer)
+		/*	- return false is priority not acquired
+			- priority released automatically if a message is pushed, otherwise it should be released manually
+			- only ONE buffer will be enqueued at a time
+        	- if the taskFunneling is transmitting the buffer to another node, this method will return false
+        	- if previous conditions are met, then actual condition for pushing is evaluated next_process[0] > 0
+		*/
+		bool acquirePriority()
 		{
 			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock);
 
-			if (lck1.try_lock() && !transmitting.load())
+			if (lck1.try_lock() && !transmitting.load() && !acquired.load())
 			{
 				if (next_process[0] > 0)
 				{
-					transmitting = true;
-
-					dest_rank_tmp = next_process[0];
-					fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank,
-							   dest_rank_tmp);
-					shift_left(next_process, world_size);
-					push(getBuffer());
-
+					acquired = true;
 					return true;
 				}
-				//lck.unlock(); // NEVER FORGET THIS ONE
 			}
 			return false;
+		}
+
+		void releasePriority()
+		{
+			if (acquired)
+				acquired = false;
+			else
+				throw std::runtime_error("Error, double release of priority at releasePriority()\n");
 		}
 
 		bool isTerminated(int TAG, char *buffer)
@@ -759,6 +767,9 @@ namespace GemPBA
 			{
 				bestResults.resize(world_size, std::make_pair(-1, std::string()));
 			}
+
+			transmitting = false;
+			acquired = false;
 		}
 
 		int getRank()
@@ -797,6 +808,7 @@ namespace GemPBA
 
 		std::mutex mtx;
 		std::atomic<bool> transmitting;
+		std::atomic<bool> acquired;
 		std::condition_variable cv;
 		int dest_rank_tmp = -1;
 

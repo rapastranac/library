@@ -101,24 +101,25 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	branchHandler.passMPIScheduler(&mpiScheduler);
 	GemPBA::ResultHolder<void, int, float> hldr(dlb, -1, nullptr);
 	//float val = 845.515;
-	int frst = 0;
-	float scnd = 1;
-	hldr.holdArgs(frst, scnd);
-	branchHandler.initThreadPool(numThreads);
 
-	//foo(-1, 0, -1, nullptr);
-	//auto res = bar(-1, 0, -1, nullptr);
-
-	//while (!branchHandler.isDone())
-	//	fmt::print("Not done yet !!\n");
-
-	branchHandler.try_push_MT<void>(foo, -1, hldr);
-	std::this_thread::sleep_for(1s); //emulates quick task
-	branchHandler.wait();
-	fmt::print("Leaves : {}\n", leaves);
-	fmt::print("Thread calls : {}\n", branchHandler.number_thread_requests());
-
-	return 0;
+	//	int frst = 0;
+	//	float scnd = 1;
+	//	hldr.holdArgs(frst, scnd);
+	//	branchHandler.initThreadPool(numThreads);
+	//
+	//	//foo(-1, 0, -1, nullptr);
+	//	//auto res = bar(-1, 0, -1, nullptr);
+	//
+	//	//while (!branchHandler.isDone())
+	//	//	fmt::print("Not done yet !!\n");
+	//
+	//	branchHandler.try_push_MT<void>(foo, -1, hldr);
+	//	std::this_thread::sleep_for(1s); //emulates quick task
+	//	branchHandler.wait();
+	//	fmt::print("Leaves : {}\n", leaves);
+	//	fmt::print("Thread calls : {}\n", branchHandler.number_thread_requests());
+	//
+	//	return 0;
 
 	/* previous input and output required before following condition
     thus, other nodes know the data type*/

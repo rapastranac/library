@@ -203,7 +203,6 @@ namespace GemPBA
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool try_top_holder(F &&f, Holder &holder)
-		//bool try_top_holder(std::unique_lock<std::mutex> &lck, F &&f, Holder &holder)
 		{
 			if (is_DLB)
 			{
@@ -213,25 +212,23 @@ namespace GemPBA
 					if (!upperHolder->evaluate_branch_checkIn()) // checks if it's worth it to push
 					{
 						upperHolder->setDiscard(); // discard otherwise
-						return true;			   // return true because it was found
+						return true;			   // return true because it was still found
 					}
 
 					this->numThreadRequests++;
 					upperHolder->setPushStatus();
-					//lck.unlock();
 
 					std::args_handler::unpack_and_push_void(*thread_pool, f, upperHolder->getArgs());
 					return true; // top holder found
 				}
 				dlb.checkRightSiblings(&holder); // this decrements parent's children
-												 //return false;					 // top holder not found
 			}
 			return false; // top holder not found or just DLB disabled
 		}
 
 #ifdef MPI_ENABLED
-		template <typename Holder, typename F_serial>
-		bool try_top_holder(Holder &holder, F_serial &&f_serial, int dest_rank)
+		template <typename Holder>
+		bool try_top_holder(auto &getBuffer, Holder &holder)
 		{
 			Holder *upperHolder = checkParent(&holder); //  if it finds it, then root has been already lowered
 			if (upperHolder)
@@ -352,27 +349,48 @@ namespace GemPBA
 
 		bool push_multiprocess(int id, auto &holder, auto &&serializer)
 		{
+			/* the underlying loop breaks when:
+				- successful buffer pushed to main thread
+				- unable to push if main thread busy
+				- there is not next available process
+			*/
 			while (true)
 			{
 				std::unique_lock<std::mutex> lck(mtx_MPI, std::defer_lock);
 				if (lck.try_lock()) // if mutex acquired, other threads will jump this section
 				{
-					auto getBuffer = [&serializer, &holder]() {
-						return std::apply(serializer, holder.getArgs());
-					};
+					//auto getBuffer = [&serializer, &holder]() {
+					//	return std::apply(serializer, holder.getArgs());
+					//};
 
 					//TODO implement DLB_Handler in here	************************************
-					//if (try_top_holder<_ret>(lck, f, holder))
-					//	continue; // keeps iterating from root to current level
+					//if (mpiScheduler->acquirePriority())
+					//{
+					//	if (try_top_holder(getBuffer, holder))
+					//		continue; // keeps iterating from root to current level
+					//	mpiScheduler->releasePriority();
+					//}
 					// ****************************************************************************
 
-					if (mpiScheduler->tryPush(getBuffer))
+					if (mpiScheduler->acquirePriority())
 					{
+						auto getBuffer = [&serializer, &holder]() {
+							return std::apply(serializer, holder.getArgs());
+						};
+
+						mpiScheduler->push(getBuffer());
 						holder.setMPISent();
-						//holder.prune();
 						dlb.prune(&holder);
 						return true;
 					}
+
+					/*
+					if (mpiScheduler->tryPush(getBuffer))
+					{
+						holder.setMPISent();
+						dlb.prune(&holder);
+						return true;
+					} */
 				}
 				return false;
 			}
