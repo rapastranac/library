@@ -79,6 +79,15 @@ namespace GemPBA
 			thread_pool = std::make_unique<ThreadPool::Pool>(poolSize);
 		}
 
+		void lock()
+		{
+			this->mtx.lock();
+		}
+		void unlock()
+		{
+			this->mtx.unlock();
+		}
+
 		//seconds
 		double idle_time()
 		{
@@ -88,7 +97,7 @@ namespace GemPBA
 
 		void holdSolution(auto &bestLocalSolution)
 		{
-			this->bestSolution = std::make_any(bestLocalSolution);
+			this->bestSolution = std::make_any<decltype(bestLocalSolution)>(bestLocalSolution);
 		}
 
 		void holdSolution(int refValueLocal, auto &solution, auto &serializer)
@@ -156,6 +165,7 @@ namespace GemPBA
 		{
 #ifdef MPI_ENABLED
 			this->refValueGlobal[0] = refValue;
+			this->refValueLocal = refValue;
 #else
 			this->refValueGlobal = new int[1];
 			this->refValueGlobal[0] = refValue;

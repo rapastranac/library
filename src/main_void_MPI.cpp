@@ -123,7 +123,8 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	/* previous input and output required before following condition
     thus, other nodes know the data type*/
-	using HolderType = GemPBA::ResultHolder<void, int, float>;
+	//using HolderType = GemPBA::ResultHolder<void, int, float>;
+	using HolderType = GemPBA::ResultHolder<void, int, Graph>;
 
 	HolderType holder(dlb, -1); //it creates a ResultHolder, required to retrive result
 	int depth = 0;
@@ -138,30 +139,38 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	//	numThreads = 4;
 	// ******************************************************************
 
-	//int preSize = graph.preprocessing();
-	//size_t k_mm = cover.maximum_matching(graph);
-	//size_t k_uBound = graph.max_k();
-	//size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
-	//handler.setRefValue(k_prime);
-	//cover.init(graph, numThreads, filename, prob);
+	int preSize = graph.preprocessing();
+	size_t k_mm = cover.maximum_matching(graph);
+	size_t k_uBound = graph.max_k();
+	size_t k_prime = std::min(k_mm, k_uBound) + graph.coverSize();
+	branchHandler.setRefValue(k_prime);
+	cover.init(graph, numThreads, filename, prob);
 
-	//mpiScheduler.setThreadsPerNode(numThreads);
-	//holder.holdArgs(depth, graph);
+	holder.holdArgs(depth, graph);
+	branchHandler.setRefValStrategyLookup("minimise");
+	branchHandler.initThreadPool(numThreads);
+	branchHandler.try_push_MT<void>(mainAlgo, -1, holder);
+	std::this_thread::sleep_for(1s); //emulates quick task
+	branchHandler.wait();
+
+	return 0;
 
 	// foo(int id, int depth, float treeIdx, void *parent) ********************
 	float treeIdx = 1;
-	std::string buffer = serializer(depth, treeIdx);
+	//std::string buffer = serializer(depth, treeIdx);
+	std::string buffer = serializer(depth, graph);
 
 	// ************************************************************************
-	//branchHandler.setRefValue(0, "MAXIMISE");
-	branchHandler.setRefValStrategyLookup("maximise");
+	//branchHandler.setRefValStrategyLookup("maximise");
+	branchHandler.setRefValStrategyLookup("minimise");
 
 	if (rank == 0)
 		mpiScheduler.runCenter(buffer.data(), buffer.size());
 	else
 	{
 		branchHandler.initThreadPool(numThreads);
-		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, float>(foo, deserializer);
+		//auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, float>(foo, deserializer);
+		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, Graph>(mainAlgo, deserializer);
 		auto resultFetcher = branchHandler.constructResultFetcher();
 		mpiScheduler.runNode(branchHandler, bufferDecoder, resultFetcher, serializer);
 	}
@@ -210,15 +219,15 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 		//print sumation of refValGlobal
 
-		//std::stringstream ss;
-		//std::string buffer = mpiScheduler.fetchSolution(); // returns a stringstream
-		//
-		//ss << buffer;
-		//
-		//deserializer(ss, oGraph);
-		//auto cv = oGraph.postProcessing();
-		//fmt::print("Cover size : {} \n", cv.size());
-		//
+		std::stringstream ss;
+		std::string buffer = mpiScheduler.fetchSolution(); // returns a stringstream
+
+		ss << buffer;
+
+		deserializer(ss, oGraph);
+		auto cv = oGraph.postProcessing();
+		fmt::print("Cover size : {} \n", cv.size());
+
 		double sum = 0;
 		for (int i = 1; i < world_size; i++)
 		{

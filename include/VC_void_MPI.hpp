@@ -151,6 +151,7 @@ public:
 
 	void terminate_condition(Graph &graph, int id, int depth)
 	{
+		/*
 		auto condition1 = [this](int refValGlobal, int refValLocal) {
 			return (leaves == 0) && (refValLocal < refValGlobal) ? true : false;
 		};
@@ -174,7 +175,22 @@ public:
 				measured_Depth = (size_t)depth;
 
 			++leaves;
-		};
+		}; */
+
+		std::scoped_lock<std::mutex> lck(mtx);
+		if (graph.coverSize() < branchHandler.refValue())
+		{
+			branchHandler.holdSolution(graph.coverSize(), graph, serializer);
+
+			branchHandler.updateRefValue(graph.coverSize());
+			foundAtDepth = depth;
+			recurrent_msg(id);
+
+			if (depth > (int)measured_Depth)
+				measured_Depth = (size_t)depth;
+
+			++leaves;
+		}
 
 		//branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition1, ifCond1, graph, serializer); // thread safe
 		//branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition2, ifCond2, graph, serializer); // thread safe
