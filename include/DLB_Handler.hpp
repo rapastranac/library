@@ -5,6 +5,18 @@
 #include <map>
 #include <mutex>
 
+/* 
+- by default every holder is a root of itself and has no parent
+
+- if a parent is passed at construction time, then a holder will have this as a parent
+and it will adopt the parent's root as its root as well
+
+- if two or more holders that don't have a parent get linked, at linking time, a dummy holder will
+be constructed which will act as a root and it is considered virtual since its only purpose
+is to be a root. This allows to track all levels of the exploration tree, and therefore
+all holders are potentally pushable
+*/
+
 namespace GemPBA
 {
     template <typename _Ret, typename... Args>
@@ -56,7 +68,7 @@ namespace GemPBA
         }
 
         template <typename Holder>
-        Holder *checkParent(Holder *holder)
+        Holder *find_top_holder(Holder *holder)
         {
 
             Holder *leftMost = nullptr; // this is the branch that led us to the root
@@ -84,12 +96,12 @@ namespace GemPBA
                 return nullptr; // there is no parent
 
 #ifdef DEBUG_COMMENTS
-            fmt::print("rank {}, likely to get an upperHolder \n", world_rank);
+            fmt::print("rank {}, likely to get an upperHolder \n", -1);
 #endif
             int N_children = root->children.size();
 
 #ifdef DEBUG_COMMENTS
-            fmt::print("rank {}, root->children.size() = {} \n", world_rank, N_children);
+            fmt::print("rank {}, root->children.size() = {} \n", -1, N_children);
 #endif
 
             /*Here below, we check is left child was pushed to pool, then the pointer to parent is pruned
@@ -147,7 +159,7 @@ namespace GemPBA
             else if (root->children.size() == 2)
             {
 #ifdef DEBUG_COMMENTS
-                fmt::print("rank {}, about to choose an upperHolder \n", world_rank);
+                fmt::print("rank {}, about to choose an upperHolder \n", -1);
 #endif
                 /*	this scope is meant to push right branch which was put in waiting line
 					because there was no available thread to push leftMost branch, then leftMost
@@ -177,10 +189,10 @@ namespace GemPBA
                            root->ph_count,
                            root->isVirtual,
                            root->isDiscarded);
-                fmt::print("4 Testing, it's not supposed to happen, checkParent() \n");
+                fmt::print("4 Testing, it's not supposed to happen, find_top_holder() \n");
                 //auto s =std::source_location::current();
                 //fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
-                throw "4 Testing, it's not supposed to happen, checkParent()";
+                throw "4 Testing, it's not supposed to happen, find_top_holder()";
                 return nullptr;
             }
         }
@@ -205,7 +217,7 @@ namespace GemPBA
 				one w_i remaining, then thread will return to first level where the
 				parent is also the root, then leftMost child of the root should be
 				deleted of the list since it is already solved. Thus, pushing cb twice
-				is avoided because checkParent() pushes the second element of the children
+				is avoided because find_top_holder() pushes the second element of the children
 			*/
 
             if (holder->parent) //this confirms the holder is not a root
@@ -288,12 +300,12 @@ namespace GemPBA
 
         // controls the root when succesfull parallel calls ( if not upperHolder available)
         template <typename Holder>
-        void checkRightSiblings(Holder *holder)
+        void pop_left_sibling(Holder *holder)
         {
-            /* this method is invoked when DLB_Handler is enable and the method checkParent() was not able to find
+            /* this method is invoked when DLB_Handler is enabled and the method find_top_holder() was not able to find
 		a top branch to push, because it means the next right sibling will become a root(for binary recursion)
 		or just the leftMost will be unlisted from the parent's children. This method is invoked if and only if 
-		an available worker is available*/
+		a thread is available*/
             auto *_parent = holder->parent;
             if (_parent)                          // it should always comply, virtual parent is being created
             {                                     // it also confirms that holder is not a parent (applies for DLB_Handler)
@@ -311,10 +323,7 @@ namespace GemPBA
                 }
                 else
                 {
-                    std::cout << "4 Testing, it's not supposed to happen, checkRightSiblings()" << std::endl;
-                    //auto s =std::source_location::current();
-                    //fmt::print("[{}]{}:({},{})\n", s.file_name(), s.function_name(), s.line(), s.column());
-                    throw "4 Testing, it's not supposed to happen, checkRightSiblings()";
+                    throw std::runtime_error("4 Testing, it's not supposed to happen, pop_left_sibling()\n");
                 }
             }
         }
@@ -361,6 +370,7 @@ namespace GemPBA
             holder->root = nullptr;
             holder->parent = nullptr;
         }
+
         template <typename Holder>
         void lowerRoot(Holder &holder)
         {

@@ -18,10 +18,17 @@ echo "Starting run at: `date`"
 #mpirun -hostfile hostfile -np 3 ./a.out -N 1 -P 5 -I input/DSJC500_5
 
 #mpirun -n 5 --bind-to core --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out
-#mpirun --oversubscribe -n 5 -display-map --bind-to core:overload-allowed --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out
+#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out -I input/prob_4/600/00600_1
+
+
+#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out -I input/prob_4/600/00600_1
+mpirun --oversubscribe -n 17 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/prob_4/600/00600_1
+
 #mpirun -hostfile hostfile -np 10 ./a.out -N 1
-#mpirun -n 5  --bind-to core --map-by numa --report-bindings ./a.out
-#mpirun -n 9 -host manager:6,node1:3  --bind-to core:overload-allowed --map-by numa:PE=2 --report-bindings ./a.out -N 2
+#mpirun -n 2  --bind-to core:overload-allowed --map-by numa:PE=2 --report-bindings ./a.out -N 6
+#mpirun -n 2 -host manager:1,node1:1  --bind-to core:overload-allowed --map-by numa:PE=6 --report-bindings ./a.out -N 6
+#mpirun -n 17 -host manager:16,node1:1  --bind-to none --map-by core --report-bindings ./a.out -N 1  -I input/prob_4/600/00600_1
+#mpirun -n 2  -host manager:1,node1:1   --bind-to none --map-by core --report-bindings ./a.out -N 16 -I input/prob_4/600/00600_1
 
 
 #mpirun -n 5 -host manager:3,node1:2 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings ./a.out -N 2
@@ -32,7 +39,7 @@ echo "Starting run at: `date`"
 #mpirun -n 5 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings a.out -N 1
 #mpirun --oversubscribe -n 5 a.out -N 10
 
-mpirun -n 2 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -display :0 -e gdb -x gdb_commands --args a.out -N 1
+#mpirun -n 2 -display-map --bind-to hwthread --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -display :0 -e gdb -x gdb_commands --args a.out -N 1
 # ---------------------------------------------------------------------
 echo "Finishing run at: `date`"
 # ---------------------------------------------------------------------

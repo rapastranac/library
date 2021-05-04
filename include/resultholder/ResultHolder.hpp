@@ -112,11 +112,12 @@ namespace GemPBA
 
 		~ResultHolder()
 		{
-
+#ifdef DEBUG_COMMENTS
 			if (this->isVirtual)
 				fmt::print("Destructor called for virtual root, id : {}, \t threadId :{}, \t depth : {} \n", this->id, this->threadId, this->depth);
-			//else
-			//	fmt::print("Destructor called for  id : {} \n", this->id);
+//else
+//	fmt::print("Destructor called for  id : {} \n", this->id);
+#endif
 		}
 
 		ResultHolder(ResultHolder &&src) = delete;

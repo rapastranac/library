@@ -91,9 +91,8 @@ public:
 		HolderType hol_r(dlb, id, parent);
 		hol_l.setDepth(depth);
 		hol_r.setDepth(depth);
-#ifdef DLB
+#ifdef R_SEARCH
 		dlb.linkParent(id, parent, hol_l, hol_r);
-
 #endif
 
 		int *referenceValue = branchHandler.refValueTest();
@@ -132,14 +131,10 @@ public:
 
 		if (hol_l.evaluate_branch_checkIn())
 		{
-			//if (SIZE > 30)
-			//{
-			branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
-			//}
-			//else
-			//{
-			//	branchHandler.try_push_MT<void>(_f, id, hol_l);
-			//}
+			if (SIZE > 50)
+				branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
+			else
+				branchHandler.try_push_MT<void>(_f, id, hol_l);
 		}
 		if (hol_r.evaluate_branch_checkIn())
 		{

@@ -68,7 +68,7 @@ namespace GemPBA
 														thus, mpi_thread_serialized is guaranteed */
 #ifdef DEBUG_COMMENTS
                 //printf("rank %d entered get() to retrieve from %d! \n", branchHandler.world_rank, dest_rank);
-                fmt::print("rank {} entered get() to retrieve from {}! \n", this->branchHandler.world_rank, dest_rank);
+                fmt::print("rank {} entered get() to retrieve from {}! \n", this->branchHandler.world_rank, this->dest_rank);
 #endif
 
                 MPI_Status status;
@@ -82,7 +82,7 @@ namespace GemPBA
 
 #ifdef DEBUG_COMMENTS
                 //printf("rank %d received %d Bytes from %d! \n", branchHandler.world_rank, Bytes, dest_rank);
-                fmt::print("rank {} received {} Bytes from {}! \n", this->branchHandler.world_rank, Bytes, dest_rank);
+                fmt::print("rank {} received {} Bytes from {}! \n", this->branchHandler.world_rank, Bytes, this->dest_rank);
 #endif
 
                 std::stringstream ss;

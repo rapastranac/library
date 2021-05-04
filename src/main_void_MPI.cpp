@@ -146,14 +146,14 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	branchHandler.setRefValue(k_prime);
 	cover.init(graph, numThreads, filename, prob);
 
-	holder.holdArgs(depth, graph);
-	branchHandler.setRefValStrategyLookup("minimise");
-	branchHandler.initThreadPool(numThreads);
-	branchHandler.try_push_MT<void>(mainAlgo, -1, holder);
-	std::this_thread::sleep_for(1s); //emulates quick task
-	branchHandler.wait();
-
-	return 0;
+	//	holder.holdArgs(depth, graph);
+	//	branchHandler.setRefValStrategyLookup("minimise");
+	//	branchHandler.initThreadPool(numThreads);
+	//	branchHandler.try_push_MT<void>(mainAlgo, -1, holder);
+	//	std::this_thread::sleep_for(1s); //emulates quick task
+	//	branchHandler.wait();
+	//	mpiScheduler.finalize();
+	//	return 0;
 
 	// foo(int id, int depth, float treeIdx, void *parent) ********************
 	float treeIdx = 1;

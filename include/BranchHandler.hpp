@@ -216,7 +216,7 @@ namespace GemPBA
 		{
 			if (is_DLB)
 			{
-				Holder *upperHolder = dlb.checkParent(&holder);
+				Holder *upperHolder = dlb.find_top_holder(&holder);
 				if (upperHolder)
 				{
 					if (!upperHolder->evaluate_branch_checkIn()) // checks if it's worth it to push
@@ -231,7 +231,7 @@ namespace GemPBA
 					std::args_handler::unpack_and_push_void(*thread_pool, f, upperHolder->getArgs());
 					return true; // top holder found
 				}
-				dlb.checkRightSiblings(&holder); // this decrements parent's children
+				dlb.pop_left_sibling(&holder); // pops holder from parent's children
 			}
 			return false; // top holder not found or just DLB disabled
 		}
@@ -240,7 +240,7 @@ namespace GemPBA
 		template <typename Holder>
 		bool try_top_holder(auto &getBuffer, Holder &holder)
 		{
-			Holder *upperHolder = dlb.checkParent(&holder); //  if it finds it, then root has been already lowered
+			Holder *upperHolder = dlb.find_top_holder(&holder); //  if it finds it, then root has been already lowered
 			if (upperHolder)
 			{
 				if (!upperHolder->evaluate_branch_checkIn())
@@ -254,7 +254,7 @@ namespace GemPBA
 
 				return true; // top holder found
 			}
-			dlb.checkRightSiblings(&holder); // this decrements parent's children
+			dlb.pop_left_sibling(&holder); // pops holder from parent's children
 			return false;					 // top holder not found
 		}
 
@@ -313,7 +313,7 @@ namespace GemPBA
 					//if (res)
 					//	return false; //if top holder found, then it should return false to keep trying
 
-					dlb.checkRightSiblings(&holder);
+					dlb.pop_left_sibling(&holder);
 				}
 				this->numThreadRequests++;
 				holder.setPushStatus();
@@ -375,34 +375,30 @@ namespace GemPBA
 						return std::apply(serializer, tuple);
 					};
 
-					//TODO implement DLB_Handler in here	************************************
 					if (mpiScheduler->acquirePriority())
 					{
 						if (try_top_holder(getBuffer, holder))
+						{
+							//if top holder found, then it is pushed, therefore priority is release internally
 							continue; // keeps iterating from root to current level
-						mpiScheduler->releasePriority();
-					}
-					// ****************************************************************************
-
-					if (mpiScheduler->acquirePriority())
-					{
-						//auto getBuffer = [&serializer, &holder]() {
-						//	return std::apply(serializer, holder.getArgs());
-						//};
-
-						mpiScheduler->push(getBuffer(holder.getArgs()));
-						holder.setMPISent();
-						dlb.prune(&holder);
-						return true;
+						}
+						else // since priority is already acquired, take advantage of it to push current holder
+						{
+							mpiScheduler->push(getBuffer(holder.getArgs())); // this releases priority internally
+							holder.setMPISent();
+							dlb.prune(&holder);
+							return true;
+						}
+						//mpiScheduler->releasePriority(); // manual realease if no push
 					}
 
-					/*
-					if (mpiScheduler->tryPush(getBuffer))
-					{
-						holder.setMPISent();
-						dlb.prune(&holder);
-						return true;
-					} */
+					//if (mpiScheduler->acquirePriority())
+					//{
+					//	mpiScheduler->push(getBuffer(holder.getArgs()));
+					//	holder.setMPISent();
+					//	dlb.prune(&holder);
+					//	return true;
+					//}
 				}
 				return false;
 			}

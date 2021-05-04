@@ -168,17 +168,20 @@ namespace GemPBA
 				//	fmt::print("rank {} is transmitting, received from {} this should not happen \n", world_rank, status.MPI_SOURCE);
 				//	throw;
 				//}
-
+#ifdef DEBUG_COMMENTS
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, status.MPI_SOURCE);
+#endif
 				//  push to the thread pool *********************************************************************
 				auto *holder = bufferDecoder(message, count); // holder might be useful for non-void functions
+#ifdef DEBUG_COMMENTS
 				fmt::print("rank {}, pushed buffer to thread pool \n", world_rank, status.MPI_SOURCE);
+#endif
 				// **********************************************************************************************
 
 				taskFunneling(branchHandler);
 				notifyStateAvailable();
 
-				//delete holder;
+				delete holder;
 				delete[] message;
 			}
 
@@ -209,8 +212,7 @@ namespace GemPBA
 						transmitting = false;
 					else
 					{
-						fmt::print("Task found in queue, this should not happen,\t transmitting :{} \n");
-						throw;
+						throw std::runtime_error("Task found in queue, this should not happen in taskFunneling()\n");
 					}
 				}
 				checkRefValueUpdate(branchHandler);
@@ -221,13 +223,12 @@ namespace GemPBA
 					/* by the time the thread realises that the thread pool has no more tasks,
                         another buffer there might have been pushed, which should be verified in the next line*/
 					isPop = q.pop(message);
+
 					if (!isPop)
-					{
-						fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
 						break;
-					}
 				}
 			}
+			fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
 			/* to reuse the task funneling, otherwise it will exit
             right away the second time the process receives a task*/
 		}
@@ -262,7 +263,9 @@ namespace GemPBA
 		{
 			transmitting = true;
 			dest_rank_tmp = next_process[0];
-			fmt::print("rank {} entered MPI_Scheduler::tryPush(..) for the node {}\n", world_rank, dest_rank_tmp);
+#ifdef DEBUG_COMMENTS
+			fmt::print("rank {} entered MPI_Scheduler::push(..) for the node {}\n", world_rank, dest_rank_tmp);
+#endif
 			shift_left(next_process, world_size);
 
 			auto pck = std::make_shared<std::string>(std::forward<std::string &&>(message));
@@ -291,7 +294,11 @@ namespace GemPBA
 			{
 				if (next_process[0] > 0)
 				{
-					acquired = true;
+					if (!acquired.load())
+						acquired = true;
+					else
+						throw std::runtime_error("Error, double release of priority at releasePriority()\n");
+
 					return true;
 				}
 			}
@@ -300,7 +307,7 @@ namespace GemPBA
 
 		void releasePriority()
 		{
-			if (acquired)
+			if (acquired.load())
 				acquired = false;
 			else
 				throw std::runtime_error("Error, double release of priority at releasePriority()\n");
@@ -322,7 +329,9 @@ namespace GemPBA
 		{
 			int buffer = 0;
 			MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_AVAILABLE, world_Comm);
+#ifdef DEBUG_COMMENTS
 			fmt::print("rank {} entered notifyStateAvailable()\n", world_rank);
+#endif
 		}
 
 		void notifyRunningState()
@@ -340,10 +349,13 @@ namespace GemPBA
 					auto msg = "rank " + std::to_string(world_rank) + " attempting to send to itself !!!\n";
 					throw std::runtime_error(msg);
 				}
-
+#ifdef DEBUG_COMMENTS
 				fmt::print("rank {} about to send buffer to rank {}\n", world_rank, dest_rank_tmp);
+#endif
 				MPI_Ssend(message.data(), message.size(), MPI_CHAR, dest_rank_tmp, 0, world_Comm);
+#ifdef DEBUG_COMMENTS
 				fmt::print("rank {} sent buffer to rank {}\n", world_rank, dest_rank_tmp);
+#endif
 				dest_rank_tmp = -1;
 			}
 			else
@@ -469,7 +481,9 @@ namespace GemPBA
 				{
 					processState[status.MPI_SOURCE] = STATE_RUNNING; // node was assigned, now it's running
 					++nRunning;
+#ifdef DEBUG_COMMENTS
 					fmt::print("rank {} reported running, nRunning :{}\n", status.MPI_SOURCE, nRunning);
+#endif
 
 					if (processTree[status.MPI_SOURCE].isAssigned())
 						processTree[status.MPI_SOURCE].release();
@@ -498,9 +512,9 @@ namespace GemPBA
 
 					if (processTree[status.MPI_SOURCE].isAssigned())
 						processTree[status.MPI_SOURCE].release();
-
+#ifdef DEBUG_COMMENTS
 					fmt::print("rank {} reported available, nRunning :{}\n", status.MPI_SOURCE, nRunning);
-
+#endif
 					for (int rank = 1; rank < world_size; rank++)
 					{
 						if (processState[rank] == STATE_RUNNING) // finds the first running node
@@ -537,8 +551,7 @@ namespace GemPBA
 					{
 						static int success = 0;
 						success++;
-						fmt::print("refValueGlobal updated to : {} by rank {} \n", refValueGlobal[0],
-								   status.MPI_SOURCE);
+						fmt::print("refValueGlobal updated to : {} by rank {} \n", refValueGlobal[0], status.MPI_SOURCE);
 						fmt::print("SUCCESS updates : {}\n", success);
 					}
 					else
