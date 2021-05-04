@@ -22,7 +22,13 @@ echo "Starting run at: `date`"
 
 
 #mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out -I input/prob_4/600/00600_1
-mpirun --oversubscribe -n 17 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/prob_4/600/00600_1
+#mpirun --oversubscribe -n 17 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/prob_4/600/00600_1
+#mpirun --oversubscribe -n 20 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat700_1
+#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat500_3
+mpirun --oversubscribe -n 2 -host manager:1,node1:1 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 11 -I input/frb30_15_mis/frb30_15_1.mis
+
+
+
 
 #mpirun -hostfile hostfile -np 10 ./a.out -N 1
 #mpirun -n 2  --bind-to core:overload-allowed --map-by numa:PE=2 --report-bindings ./a.out -N 6

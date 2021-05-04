@@ -95,15 +95,13 @@ public:
 		dlb.linkParent(id, parent, hol_l, hol_r);
 #endif
 
-		int *referenceValue = branchHandler.refValueTest();
-
-		hol_l.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_l] {
+		hol_l.bind_branch_checkIn([&] {
 			Graph g = graph;
 			g.removeVertex(v);
 			g.clean_graph();
 			//g.removeZeroVertexDegree();
 			int C = g.coverSize();
-			if (C < referenceValue[0]) // user's condition to see if it's worth it to make branch call
+			if (C < branchHandler.refValue()) // user's condition to see if it's worth it to make branch call
 			{
 				int newDepth = depth + 1;
 				hol_l.holdArgs(newDepth, g);
@@ -113,13 +111,13 @@ public:
 				return false; // it's not worth it
 		});
 
-		hol_r.bind_branch_checkIn([&graph, &v, referenceValue, &depth, &hol_r] {
+		hol_r.bind_branch_checkIn([&] {
 			Graph g = std::move(graph);
 			g.removeNv(v);
 			g.clean_graph();
 			//g.removeZeroVertexDegree();
 			int C = g.coverSize();
-			if (C < referenceValue[0]) // user's condition to see if it's worth it to make branch call
+			if (C < branchHandler.refValue()) // user's condition to see if it's worth it to make branch call
 			{
 				int newDepth = depth + 1;
 				hol_r.holdArgs(newDepth, g);
@@ -146,32 +144,6 @@ public:
 
 	void terminate_condition(Graph &graph, int id, int depth)
 	{
-		/*
-		auto condition1 = [this](int refValGlobal, int refValLocal) {
-			return (leaves == 0) && (refValLocal < refValGlobal) ? true : false;
-		};
-		//if condition1 complies, then ifCond1 is called
-		auto ifCond1 = [&]() {
-			foundAtDepth = depth;
-			measured_Depth = depth;
-			recurrent_msg(id);
-			++leaves;
-		};
-
-		auto condition2 = [](int refValGlobal, int refValLocal) {
-			return refValLocal < refValGlobal ? true : false;
-		};
-
-		auto ifCond2 = [&]() {
-			foundAtDepth = depth;
-			recurrent_msg(id);
-
-			if (depth > (int)measured_Depth)
-				measured_Depth = (size_t)depth;
-
-			++leaves;
-		}; */
-
 		std::scoped_lock<std::mutex> lck(mtx);
 		if (graph.coverSize() < branchHandler.refValue())
 		{
@@ -186,9 +158,6 @@ public:
 
 			++leaves;
 		}
-
-		//branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition1, ifCond1, graph, serializer); // thread safe
-		//branchHandler.replace_refValGlobal_If<void>(graph.coverSize(), condition2, ifCond2, graph, serializer); // thread safe
 
 		return;
 	}

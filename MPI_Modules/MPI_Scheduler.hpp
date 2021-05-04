@@ -228,7 +228,9 @@ namespace GemPBA
 						break;
 				}
 			}
+#ifdef DEBUG_COMMENTS
 			fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
+#endif
 			/* to reuse the task funneling, otherwise it will exit
             right away the second time the process receives a task*/
 		}

@@ -206,6 +206,8 @@ a_out_EXTERNAL_OBJECTS =
 ../a.out: /usr/lib/x86_64-linux-gnu/libboost_fiber.so.1.71.0
 ../a.out: /usr/lib/x86_64-linux-gnu/libboost_context.so.1.71.0
 ../a.out: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0
+../a.out: /usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so
+../a.out: /usr/lib/x86_64-linux-gnu/libpthread.so
 ../a.out: CMakeFiles/a.out.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable ../a.out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/a.out.dir/link.txt --verbose=$(VERBOSE)

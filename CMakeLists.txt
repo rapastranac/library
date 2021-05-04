@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.16)
 
 project(global)
 
@@ -10,12 +10,12 @@ project(global)
 
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-endif ()
+find_package(OpenMP REQUIRED)
+#if (OPENMP_FOUND)
+#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+#endif()
 
 find_package(Threads  REQUIRED)
 find_package(MPI  REQUIRED)
@@ -38,7 +38,7 @@ add_definitions(-DVC_VOID_MPI)
 #add_definitions(-DVC_NON_VOID)
 #add_definitions(-DVC_NON_VOID_MPI)
 
-add_compile_options("-std=c++2a" "-fconcepts" "-O3")
+add_compile_options("-std=c++2a" "-fconcepts" "-O3" )
 
 #Here below for boost
 #add_compile_options("-Wall" "-Wpedantic" "-Wextra" "-fexceptions" "-pthread" "-fconcepts" )
@@ -61,6 +61,7 @@ add_executable(a.out  ${Sources}
 target_link_libraries(a.out ${CMAKE_THREAD_LIBS_INIT}
                             ${MPI_LIBRARIES}
                             ${Boost_LIBRARIES}
+                            OpenMP::OpenMP_CXX
                             )
 #                            ${Boost_LIBRARIES}
 
