@@ -230,7 +230,7 @@ namespace GemPBA
 		template <typename Holder>
 		bool try_top_holder(auto &getBuffer, Holder &holder)
 		{
-			Holder *upperHolder = checkParent(&holder); //  if it finds it, then root has been already lowered
+			Holder *upperHolder = dlb.checkParent(&holder); //  if it finds it, then root has been already lowered
 			if (upperHolder)
 			{
 				if (!upperHolder->evaluate_branch_checkIn())
@@ -239,11 +239,13 @@ namespace GemPBA
 					return true; // top holder found but discarded, therefore not sent
 				}
 
-				// TODO send message in here
+				upperHolder->setPushStatus();
+				mpiScheduler->push(getBuffer(upperHolder->getArgs()));
 
 				return true; // top holder found
 			}
-			return false; // top holder not found
+			dlb.checkRightSiblings(&holder); // this decrements parent's children
+			return false;					 // top holder not found
 		}
 
 #endif
@@ -359,26 +361,26 @@ namespace GemPBA
 				std::unique_lock<std::mutex> lck(mtx_MPI, std::defer_lock);
 				if (lck.try_lock()) // if mutex acquired, other threads will jump this section
 				{
-					//auto getBuffer = [&serializer, &holder]() {
-					//	return std::apply(serializer, holder.getArgs());
-					//};
+					auto getBuffer = [&serializer](auto &tuple) {
+						return std::apply(serializer, tuple);
+					};
 
 					//TODO implement DLB_Handler in here	************************************
-					//if (mpiScheduler->acquirePriority())
-					//{
-					//	if (try_top_holder(getBuffer, holder))
-					//		continue; // keeps iterating from root to current level
-					//	mpiScheduler->releasePriority();
-					//}
+					if (mpiScheduler->acquirePriority())
+					{
+						if (try_top_holder(getBuffer, holder))
+							continue; // keeps iterating from root to current level
+						mpiScheduler->releasePriority();
+					}
 					// ****************************************************************************
 
 					if (mpiScheduler->acquirePriority())
 					{
-						auto getBuffer = [&serializer, &holder]() {
-							return std::apply(serializer, holder.getArgs());
-						};
+						//auto getBuffer = [&serializer, &holder]() {
+						//	return std::apply(serializer, holder.getArgs());
+						//};
 
-						mpiScheduler->push(getBuffer());
+						mpiScheduler->push(getBuffer(holder.getArgs()));
 						holder.setMPISent();
 						dlb.prune(&holder);
 						return true;

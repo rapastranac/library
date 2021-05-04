@@ -132,25 +132,18 @@ public:
 
 		if (hol_l.evaluate_branch_checkIn())
 		{
-			if (SIZE > 30)
-			{
-				branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
-			}
-			else
-			{
-				branchHandler.try_push_MT<void>(_f, id, hol_l);
-			}
+			//if (SIZE > 30)
+			//{
+			branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
+			//}
+			//else
+			//{
+			//	branchHandler.try_push_MT<void>(_f, id, hol_l);
+			//}
 		}
-		/*
-		if (C2Size < branchHandler.refValue() || hol_r.isBound())
-		{*/
 		if (hol_r.evaluate_branch_checkIn())
 		{
-#ifdef DLB
-			branchHandler.forward<void>(_f, id, hol_r, true);
-#else
 			branchHandler.forward<void>(_f, id, hol_r);
-#endif
 		}
 
 		return;

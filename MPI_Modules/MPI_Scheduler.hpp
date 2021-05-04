@@ -270,8 +270,7 @@ namespace GemPBA
 
 			if (!q.empty())
 			{
-				fmt::print("ERROR: q is not empty !!!!\n");
-				throw;
+				throw std::runtime_error("ERROR: q is not empty !!!!\n");
 			}
 
 			q.push(_message);
@@ -279,7 +278,7 @@ namespace GemPBA
 			releasePriority();
 		}
 
-		/*	- return false is priority not acquired
+		/*	- return true is priority is acquired, false otherwise
 			- priority released automatically if a message is pushed, otherwise it should be released manually
 			- only ONE buffer will be enqueued at a time
         	- if the taskFunneling is transmitting the buffer to another node, this method will return false
@@ -288,7 +287,6 @@ namespace GemPBA
 		bool acquirePriority()
 		{
 			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock);
-
 			if (lck1.try_lock() && !transmitting.load() && !acquired.load())
 			{
 				if (next_process[0] > 0)
@@ -333,26 +331,25 @@ namespace GemPBA
 			MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_RUNNING, world_Comm);
 		}
 
-		void sendTask(std::string &buffer)
+		void sendTask(std::string &message)
 		{
-			//std::unique_lock<std::mutex> lck(mtx);
 			if (dest_rank_tmp > 0)
 			{
 				if (dest_rank_tmp == world_rank)
 				{
-					fmt::print("rank {} attempting to send to itself !!!\n", world_rank);
-					throw;
+					auto msg = "rank " + std::to_string(world_rank) + " attempting to send to itself !!!\n";
+					throw std::runtime_error(msg);
 				}
 
 				fmt::print("rank {} about to send buffer to rank {}\n", world_rank, dest_rank_tmp);
-				MPI_Ssend(buffer.data(), buffer.size(), MPI_CHAR, dest_rank_tmp, 0, world_Comm);
+				MPI_Ssend(message.data(), message.size(), MPI_CHAR, dest_rank_tmp, 0, world_Comm);
 				fmt::print("rank {} sent buffer to rank {}\n", world_rank, dest_rank_tmp);
 				dest_rank_tmp = -1;
 			}
 			else
 			{
-				fmt::print("rank {}, target rank is {}, something happened\n", world_rank, dest_rank_tmp);
-				throw;
+				auto msg = "rank " + std::to_string(world_rank) + ", could not send task to rank " + std::to_string(dest_rank_tmp) + "\n";
+				throw std::runtime_error(msg);
 			}
 		}
 
@@ -436,7 +433,7 @@ namespace GemPBA
 			}
 		}
 
-		/* it returns the substraction between end and double*/
+		/* it returns the substraction between end and start*/
 		double difftime(double start, double end)
 		{
 			return end - start;
@@ -567,7 +564,10 @@ namespace GemPBA
 			end_time = MPI_Wtime();
 		}
 
-		// return false if message not received, which is signal of termination
+		/* return false if message not received, which is signal of termination
+			all workers report (with a message) to center process when about to run a task or when becoming available
+			if no message is received within a TIMEOUT window, then all processes will have finished
+		*/
 		bool awaitMessage(int buffer, int &ready, double begin, MPI_Status &status, MPI_Request &request)
 		{
 			int cycles = 0;
