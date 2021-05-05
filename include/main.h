@@ -16,6 +16,8 @@ int main_void_MPI(int numThreads, int prob, std::string filename);
 int main_non_void(int numThreads, int prob, std::string filename);
 #elif VC_NON_VOID_MPI
 int main_non_void_MPI(int numThreads, int prob, std::string filename);
+#elif BITVECTOR_VC
+int main_void_MPI_bitvec(int numThreads, int prob, std::string filename);
 #endif
 
 #endif

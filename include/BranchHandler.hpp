@@ -255,7 +255,7 @@ namespace GemPBA
 				return true; // top holder found
 			}
 			dlb.pop_left_sibling(&holder); // pops holder from parent's children
-			return false;					 // top holder not found
+			return false;				   // top holder not found
 		}
 
 #endif
@@ -599,6 +599,7 @@ namespace GemPBA
 		BranchHandler &operator=(const BranchHandler &) = delete;
 		BranchHandler &operator=(BranchHandler &&) = delete;
 
+#ifdef MPI_ENABLED
 		void passMPIScheduler(MPI_Scheduler *mpiScheduler)
 		{
 			this->mpiScheduler = mpiScheduler;
@@ -606,6 +607,7 @@ namespace GemPBA
 			refValueGlobal[0] = refValueLocal;
 			mpiScheduler->setRefValStrategyLookup(maximisation);
 		}
+#endif
 
 		void setRefValStrategyLookup(std::string keyword)
 		{
@@ -695,7 +697,6 @@ namespace GemPBA
 
 #endif
 	};
-
-} // namespace library
+} // namespace GemPBA
 
 #endif

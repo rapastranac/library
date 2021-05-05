@@ -5,8 +5,6 @@
 #ifndef OMP_THREADPOOL_H
 #define OMP_THREADPOOL_H
 
-#include <fmt/format.h>
-
 #include "Queue.hpp"
 
 #include <any>
@@ -37,8 +35,6 @@
  *
  * This thread pool spawns a single thread manually, and this one creates parallel region using openMP
  * */
-
-class GemPBA::MPI_Scheduler;
 
 namespace ThreadPool
 {
@@ -83,7 +79,7 @@ namespace ThreadPool
                 {
 #pragma omp single
                     {
-                        fmt::print("Number of threads spawned : {} \n", numThreads);
+                        printf("Number of threads spawned : %d \n", numThreads);
                     }
                     int tid = omp_get_thread_num(); // get thread id
                     run(tid);                       // run thread pool
@@ -280,7 +276,7 @@ namespace ThreadPool
         std::condition_variable cv;      // used with mtx
         std::condition_variable cv_wait; // used with mtx_wait
 
-        detail::Queue<std::function<void(int)> *> q; // task queue
+        Queue<std::function<void(int)> *> q; // task queue
     };
 
 } // namespace ThreadPool

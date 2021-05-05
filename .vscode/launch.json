@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/a.out",
-            "args": ["-N","6", "-I", "input/frb30_15_mis/frb30_15_1.mis"],
+            "args": ["-N","6", "-I", "input/prob_4/600/00600_1"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

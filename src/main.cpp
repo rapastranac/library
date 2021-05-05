@@ -75,5 +75,7 @@ int main(int argc, char *argv[])
 	return main_non_void(numThreads, prob, filename);
 #elif VC_NON_VOID_MPI
 	return main_non_void_MPI(numThreads, prob, filename);
+#elif BITVECTOR_VC
+	return main_void_MPI_bitvec(numThreads, prob, filename);
 #endif
 }

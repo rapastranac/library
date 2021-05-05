@@ -9,6 +9,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/a.out.dir/src/main_non_void_MPI.cpp.o"
   "CMakeFiles/a.out.dir/src/main_void.cpp.o"
   "CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
+  "CMakeFiles/a.out.dir/src/main_void_MPI_bitvec.cpp.o"
   "CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
 )
 

@@ -8,4 +8,4 @@
 #b ThreadPool.hpp:229
 
 r
-#thread apply all generate-core-file
+thread apply all generate-core-file

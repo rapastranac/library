@@ -4,7 +4,7 @@
 
 #include "StreamHandler.hpp"
 #include "Tree.hpp"
-#include <Queue.hpp>
+#include "../include/Queue.hpp"
 
 #include <algorithm>
 #include <condition_variable>
@@ -36,6 +36,7 @@
 
 namespace GemPBA
 {
+	class BranchHandler;
 	// inter process communication handler
 	class MPI_Scheduler
 	{
@@ -827,7 +828,7 @@ namespace GemPBA
 		std::condition_variable cv;
 		int dest_rank_tmp = -1;
 
-		detail::Queue<std::string *> q;
+		Queue<std::string *> q;
 		bool exit = false;
 
 		MPI_Win win_availableProcesses; // window for the number of available processes
