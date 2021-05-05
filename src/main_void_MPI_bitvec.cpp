@@ -42,9 +42,9 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	branchHandler.passMPIScheduler(&mpiScheduler);
 
 	//branchHandler.init();
-	cout << "NUMTHREADS=" << numThreads << endl;
-	branchHandler.initThreadPool(numThreads - 1); //-1 to exclude current
-	cout << "set max threads to " << numThreads << endl;
+	cout << "NUMTHREADS= " << numThreads << endl;
+	//branchHandler.initThreadPool(numThreads - 1); //-1 to exclude current
+	//cout << "set max threads to " << numThreads << endl;
 
 	Graph graph;
 	VC_void_MPI_bitvec cover;

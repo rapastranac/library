@@ -1,7 +1,7 @@
 #ifdef BITVECTOR_VC
 
 #include "VertexCover.hpp"
-
+#include <atomic>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/container/set.hpp>
 #include <boost/unordered_set.hpp>
@@ -102,7 +102,7 @@ public:
     long seen_skips;
 
     unordered_map<int, gbitset> graphbits;
-    long passes;
+    std::atomic<size_t> passes;
     std::mutex mtx;
 
     VC_void_MPI_bitvec()
@@ -187,7 +187,7 @@ public:
 
         int cursol_size = solsize;
 
-        if (passes % 1000000 == 0)
+        if (passes % (size_t)1e7 == 0)
         {
             cout << "WR=" << branchHandler.rank_me()
                  << " ID=" << id << " passes=" << passes << " gsize="
@@ -431,6 +431,8 @@ private:
             //branchHandler.setBestVal(solsize);
             branchHandler.holdSolution(solsize, solsize, serializer);
             branchHandler.updateRefValue(solsize);
+
+            fmt::print("rank {}, MVC solution so far: {}\n", branchHandler.rank_me(), solsize);
         }
 
         return;

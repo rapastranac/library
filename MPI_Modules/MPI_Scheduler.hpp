@@ -216,7 +216,7 @@ namespace GemPBA
 						throw std::runtime_error("Task found in queue, this should not happen in taskFunneling()\n");
 					}
 				}
-				checkRefValueUpdate(branchHandler);
+				updateRefValue(branchHandler);
 				isPop = q.pop(message);
 
 				if (!isPop && branchHandler.isDone())
@@ -241,23 +241,70 @@ namespace GemPBA
 			return newVal != oldVal ? true : false;
 		}
 
-		void checkRefValueUpdate(auto &branchHandler)
+		void updateRefValue(auto &branchHandler)
 		{
+			static size_t C = 0;
+			int _refGlobal = refValueGlobal[0];		  // constant within this scope
+			int _refLocal = branchHandler.refValue(); // constant within this scope
+
 			// thoughts: no need to care for maximisation or minimisation since the branchHandler does it already
-			if (isChanged(refValueGlobal[0], refValueGlobal_old)) // center has put a new value
+			if (isChanged(_refGlobal, refValueGlobal_old)) // center has put a new value
 			{
-				refValueGlobal_old = refValueGlobal[0];
+				refValueGlobal_old = _refGlobal;
 				int mostUpToDate;
-				// pass old cuz value might change in between
-				bool success = branchHandler.updateRefValue(refValueGlobal_old, &mostUpToDate);
+				bool success = branchHandler.updateRefValue(_refGlobal, &mostUpToDate);
 				if (!success)
+				{
+					fmt::print("rank {}, before attempting to update refVal :{}\n", world_rank, mostUpToDate);
 					MPI_Ssend(&mostUpToDate, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
+
+					//MPI_Request request;
+					//MPI_Isend(&mostUpToDate, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm, &request);
+					//fmt::print("rank {}, waiting at attempting update refVal to {}\n", world_rank, mostUpToDate);
+					//MPI_Wait(&request, MPI_STATUS_IGNORE);
+
+					fmt::print("rank {}, attempted to update refVal to {} but most up-to-date : {}\n", world_rank, _refGlobal, mostUpToDate);
+				}
 			}
-			else if (isChanged(branchHandler.refValue(),
-							   refValueGlobal[0])) // this process has attained a better value
+			else if (isChanged(_refLocal, _refGlobal)) // this process has updated the reference value locally
 			{
-				int temp = branchHandler.refValue();
-				MPI_Ssend(&temp, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
+				if (maximisation)
+				{
+					if (_refLocal > _refGlobal)
+					{
+						fmt::print("rank {}, before sending local to center  :{}\n", world_rank, _refLocal);
+						MPI_Ssend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
+
+						//MPI_Request request;
+						//MPI_Isend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm, &request);
+						//fmt::print("rank {}, waiting at sending loca : {} to center\n", world_rank, _refLocal);
+						//MPI_Wait(&request, MPI_STATUS_IGNORE);
+
+						fmt::print("rank {}, sent local : {} to center, global was : {}\n", world_rank, _refLocal, _refGlobal);
+					}
+				}
+				else //minimisation
+				{
+					if (_refLocal < _refGlobal)
+					{
+						fmt::print("rank {}, before sending local to center  :{}\n", world_rank, _refLocal);
+						MPI_Ssend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
+
+						//MPI_Request request;
+						//MPI_Isend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm, &request);
+						//fmt::print("rank {}, waiting at sending loca : {} to center\n", world_rank, _refLocal);
+						//MPI_Wait(&request, MPI_STATUS_IGNORE);
+
+						fmt::print("rank {}, sent local : {} to center, global was : {}\n", world_rank, _refLocal, _refGlobal);
+					}
+				}
+			}
+
+			C++;
+			if ((C % (size_t)1e7) == 0)
+			{
+				C = 0;
+				fmt::print("rank {}, refGlobal : {}\n", world_rank, _refGlobal);
 			}
 		}
 
@@ -541,27 +588,40 @@ namespace GemPBA
 					/* if center reaches this point, for sure nodes have attained a better reference value
                             or they are not up-to-date, thus it is required to broadcast it whether this value
                             changes or not  */
-					bool signal;
+
+					fmt::print("center received refValue {} from rank {}\n", buffer, status.MPI_SOURCE);
+					bool signal = false;
 
 					if (maximisation)
-						signal = (buffer > refValueGlobal[0]) ? refValueGlobal[0] = buffer : false;
+					{
+						if (buffer > refValueGlobal[0])
+						{
+							refValueGlobal[0] = buffer;
+							signal = true;
+							bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
+						}
+					}
 					else
-						signal = (buffer < refValueGlobal[0]) ? refValueGlobal[0] = buffer : false;
-
-					bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
+					{
+						if (buffer < refValueGlobal[0])
+						{
+							refValueGlobal[0] = buffer;
+							signal = true;
+							bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
+						}
+					}
 
 					if (signal)
 					{
 						static int success = 0;
 						success++;
-						fmt::print("refValueGlobal updated to : {} by rank {} \n", refValueGlobal[0], status.MPI_SOURCE);
-						fmt::print("SUCCESS updates : {}\n", success);
+						fmt::print("refValueGlobal updated to : {} by rank {}\n", refValueGlobal[0], status.MPI_SOURCE);
 					}
 					else
 					{
 						static int failures = 0;
 						failures++;
-						fmt::print("FAILED updates : {} \n", failures);
+						fmt::print("FAILED updates : {}, refValueGlobal : {} by rank {}\n", failures, refValueGlobal[0], status.MPI_SOURCE);
 					}
 				}
 				break;
@@ -718,18 +778,18 @@ namespace GemPBA
 		{
 			for (int rank = 1; rank < world_size; rank++)
 			{
-				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, rank, 0, window); // open epoch
-				MPI_Put(origin_addr, count, mpi_datatype, rank, offset, count, mpi_datatype,
-						window); // put date through window
-				MPI_Win_flush(rank,
-							  window);		  // complete RMA operation
-				MPI_Win_unlock(rank, window); // close epoch
+				MPI_Win_lock(MPI_LOCK_EXCLUSIVE, rank, 0, window);									  // open epoch
+				MPI_Put(origin_addr, count, mpi_datatype, rank, offset, count, mpi_datatype, window); // put date through window
+				MPI_Win_flush(rank, window);														  // complete RMA operation
+				MPI_Win_unlock(rank, window);														  // close epoch
 			}
 		}
 
 		void createCommunicators()
 		{
-			MPI_Comm_dup(MPI_COMM_WORLD, &world_Comm); // world communicator for this library
+			MPI_Comm_dup(MPI_COMM_WORLD, &world_Comm);			// world communicator for this library
+			MPI_Comm_dup(MPI_COMM_WORLD, &refValueGlobal_Comm); // exclusive communicator for reference value - one-sided comm
+			MPI_Comm_dup(MPI_COMM_WORLD, &nextProcess_Comm);	// exclusive communicator for next process - one-sided comm
 
 			MPI_Comm_size(world_Comm, &this->world_size);
 			MPI_Comm_rank(world_Comm, &this->world_rank);
@@ -739,21 +799,14 @@ namespace GemPBA
                 fmt::print("At least two processes required !!\n");
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }*/
-
-			MPI_Comm_group(world_Comm, &world_group); // world group, all ranks
-			MPI_Comm_dup(world_Comm, &availableProcesses_Comm);
 		}
 
 		void allocateMPI()
 		{
 			MPI_Barrier(world_Comm);
 			// applicable for all the processes
-			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, availableProcesses_Comm, &availableProcesses,
-							 &win_availableProcesses);
-			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, world_Comm, &refValueGlobal, &win_refValueGlobal);
-			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, availableProcesses_Comm,
-							 &next_process,
-							 &win_nextProcess);
+			MPI_Win_allocate(sizeof(int), sizeof(int), MPI_INFO_NULL, refValueGlobal_Comm, &refValueGlobal, &win_refValueGlobal);
+			MPI_Win_allocate(world_size * sizeof(int), sizeof(int), MPI_INFO_NULL, nextProcess_Comm, &next_process, &win_nextProcess);
 
 			init();
 			MPI_Barrier(world_Comm);
@@ -761,15 +814,16 @@ namespace GemPBA
 
 		void deallocateMPI()
 		{
-			MPI_Win_free(&win_availableProcesses);
 			MPI_Win_free(&win_refValueGlobal);
 			MPI_Win_free(&win_nextProcess);
-			MPI_Group_free(&world_group);
+
+			MPI_Comm_free(&refValueGlobal_Comm);
+			MPI_Comm_free(&nextProcess_Comm);
+			MPI_Comm_free(&world_Comm);
 		}
 
 		void init()
 		{
-			availableProcesses[0] = 0;
 			tasks_per_process.resize(world_size, 0);
 			processState.resize(world_size, STATE_AVAILABLE);
 			processTree.resize(world_size);
@@ -831,20 +885,19 @@ namespace GemPBA
 		Queue<std::string *> q;
 		bool exit = false;
 
-		MPI_Win win_availableProcesses; // window for the number of available processes
-		MPI_Win win_refValueGlobal;		// window to send reference value global
+		MPI_Win win_refValueGlobal; // window to send reference value global
 		MPI_Win win_nextProcess;
 
-		MPI_Group world_group;			  // all ranks belong to this group
-		MPI_Comm availableProcesses_Comm; // attached to win_availableProcesses
-		MPI_Comm world_Comm;			  // world communicator
+		//MPI_Group world_group;		  // all ranks belong to this group
+		MPI_Comm refValueGlobal_Comm; // attached to win_refValueGlobal
+		MPI_Comm nextProcess_Comm;	  // attached to win_nextProcess
+		MPI_Comm world_Comm;		  // world communicator
 
-		int *availableProcesses = nullptr; // Number of available processes	[every process is aware of this number]
-		int *refValueGlobal = nullptr;	   // reference value to chose a best solution
+		int *refValueGlobal = nullptr; // reference value to chose a best solution
 		int refValueGlobal_old;
 		int *next_process = nullptr; // potentially to replace availableProcesses
 
-		bool maximisation; // true if Maximising, false if Minimising
+		bool maximisation; // true if maximising, false if minimising
 
 		std::vector<std::pair<int, std::string>> bestResults;
 

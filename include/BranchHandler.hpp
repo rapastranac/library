@@ -155,7 +155,7 @@ namespace GemPBA
 			return &refValueLocal;
 		}
 
-		int refValue()
+		int refValue() const
 		{
 			return refValueLocal;
 		}
@@ -181,7 +181,7 @@ namespace GemPBA
 
 			if (maximisation)
 			{
-				if (refValueLocal < new_refValue)
+				if (new_refValue > refValueLocal)
 				{
 					refValueLocal = new_refValue;
 					return true;
@@ -195,7 +195,7 @@ namespace GemPBA
 			}
 			else // minimisation
 			{
-				if (refValueLocal > new_refValue)
+				if (new_refValue < refValueLocal)
 				{
 					refValueLocal = new_refValue;
 					return true;
