@@ -330,7 +330,7 @@ namespace GemPBA
 				}
 			}
 			*/
-			if (mtx.try_lock()) // acquires mutes
+			if (mtx.try_lock()) // acquires mutex
 			{
 				if (!transmitting.load()) // check if transmission in progress
 				{

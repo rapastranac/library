@@ -252,6 +252,8 @@ namespace GemPBA
 				if (!upperHolder->evaluate_branch_checkIn())
 				{
 					upperHolder->setDiscard();
+					// WARNING, ATTENTION, CUIDADO! : holder discarded, flagged as sent but not really sent, then priority should be realeased!!!!
+					mpiScheduler->releasePriority();
 					return true; // top holder found but discarded, therefore not sent
 				}
 
