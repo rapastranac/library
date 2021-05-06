@@ -336,13 +336,13 @@ public:
             return;
         }
 
-        if (maxdeg <= 2)
-        {
-            //TODO : ACTUALLY COMPUTE THE CYCLES
-            terminate_condition_bits(cursol_size + nbVertices / 2, id, depth);
-            //cout<<"MAXDEG 2 n="<<nbVertices<<endl;
-            return;
-        }
+        //if (maxdeg <= 2)
+        //{
+        //    //TODO : ACTUALLY COMPUTE THE CYCLES
+        //    terminate_condition_bits(cursol_size + nbVertices / 2, id, depth);
+        //    //cout<<"MAXDEG 2 n="<<nbVertices<<endl;
+        //    return;
+        //}
 
         int newDepth = depth + 1;
 

@@ -22,7 +22,7 @@ echo "Starting run at: `date`"
 
 
 #mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out -I input/prob_4/600/00600_1
-#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/prob_4/600/00600_1
+mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/prob_4/600/00600_1
 #mpirun --oversubscribe -n 3 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 5 -I input/p_hat700_1
 #mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat500_3
 #mpirun --oversubscribe -n 129 -host manager:1,node1:1 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/frb30_15_mis/frb30_15_1.mis
@@ -31,7 +31,7 @@ echo "Starting run at: `date`"
 #mpirun --oversubscribe -n 4 -host node1:1,manager:3 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 3 -I input/p_hat700_1
 #mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat700_1
 
-mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat1000_2
+#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat1000_2
 
 
 
