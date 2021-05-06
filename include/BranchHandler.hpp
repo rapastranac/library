@@ -219,6 +219,9 @@ namespace GemPBA
 				Holder *upperHolder = dlb.find_top_holder(&holder);
 				if (upperHolder)
 				{
+					if (upperHolder->isTreated())
+						throw std::runtime_error("Attempt to push a treated holder\n");
+
 					if (!upperHolder->evaluate_branch_checkIn()) // checks if it's worth it to push
 					{
 						upperHolder->setDiscard(); // discard otherwise
@@ -243,6 +246,9 @@ namespace GemPBA
 			Holder *upperHolder = dlb.find_top_holder(&holder); //  if it finds it, then root has been already lowered
 			if (upperHolder)
 			{
+				if (upperHolder->isTreated())
+					throw std::runtime_error("Attempt to push a treated holder\n");
+
 				if (!upperHolder->evaluate_branch_checkIn())
 				{
 					upperHolder->setDiscard();
@@ -279,6 +285,9 @@ namespace GemPBA
 					{
 						if (try_top_holder<_ret>(f, holder))
 							continue; // keeps iterating from root to current level
+
+						if (holder.isTreated())
+							throw std::runtime_error("Attempt to push a treated holder\n");
 
 						//after this line, only leftMost holder should be pushed
 						this->numThreadRequests++;
@@ -384,6 +393,9 @@ namespace GemPBA
 						}
 						else // since priority is already acquired, take advantage of it to push current holder
 						{
+							if (holder.isTreated())
+								throw std::runtime_error("Attempt to push a treated holder\n");
+
 							mpiScheduler->push(getBuffer(holder.getArgs())); // this releases priority internally
 							holder.setMPISent();
 							dlb.prune(&holder);
@@ -444,6 +456,9 @@ namespace GemPBA
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		_ret forward(F &&f, int threadId, Holder &holder)
 		{
+			if (holder.isTreated())
+				throw std::runtime_error("Attempt to push a treated holder\n");
+
 #ifdef MPI_ENABLED
 			if (holder.is_pushed() || holder.is_MPI_Sent())
 				return;

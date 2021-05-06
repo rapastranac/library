@@ -22,6 +22,7 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <unistd.h>
 
 auto &dlb = GemPBA::DLB_Handler::getInstance();
 auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
@@ -163,6 +164,9 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 	// ************************************************************************
 	//branchHandler.setRefValStrategyLookup("maximise");
 	branchHandler.setRefValStrategyLookup("minimise");
+
+	int pid = getpid();
+	fmt::print("rank {} is process ID : {}\n", rank, pid);
 
 	if (rank == 0)
 		mpiScheduler.runCenter(buffer.data(), buffer.size());

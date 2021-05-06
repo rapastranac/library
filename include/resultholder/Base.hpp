@@ -100,6 +100,15 @@ namespace GemPBA
             return isPushed;
         }
 
+        bool isTreated()
+        {
+#ifdef MPI_ENABLED
+            return isPushed || isForwarded || isDiscarded || isRetrieved || isMPISent;
+#else
+            return isPushed || isForwarded || isDiscarded || isRetrieved;
+#endif
+        }
+
         bool is_discarded()
         {
             return isDiscarded;

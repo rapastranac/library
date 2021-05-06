@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include <unistd.h>
+
 int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 {
 
@@ -76,6 +78,9 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	//holder.holdArgs(zero, allones, zero);
 
 	std::cout << "Starting MPI node " << branchHandler.rank_me() << std::endl;
+
+	int pid = getpid();
+	fmt::print("rank {} is process ID : {}\n", rank, pid);
 
 	std::string buffer = serializer(zero, allones, zero);
 

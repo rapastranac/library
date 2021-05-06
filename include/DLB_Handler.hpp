@@ -95,14 +95,14 @@ namespace GemPBA
             else
                 return nullptr; // there is no parent
 
-#ifdef DEBUG_COMMENTS
-            fmt::print("rank {}, likely to get an upperHolder \n", -1);
-#endif
+//#ifdef DEBUG_COMMENTS
+//            fmt::print("rank {}, likely to get an upperHolder \n", -1);
+//#endif
             int N_children = root->children.size();
 
-#ifdef DEBUG_COMMENTS
-            fmt::print("rank {}, root->children.size() = {} \n", -1, N_children);
-#endif
+//#ifdef DEBUG_COMMENTS
+//            fmt::print("rank {}, root->children.size() = {} \n", -1, N_children);
+//#endif
 
             /*Here below, we check is left child was pushed to pool, then the pointer to parent is pruned
 							 parent
@@ -158,9 +158,9 @@ namespace GemPBA
             }
             else if (root->children.size() == 2)
             {
-#ifdef DEBUG_COMMENTS
-                fmt::print("rank {}, about to choose an upperHolder \n", -1);
-#endif
+//#ifdef DEBUG_COMMENTS
+//                fmt::print("rank {}, about to choose an upperHolder \n", -1);
+//#endif
                 /*	this scope is meant to push right branch which was put in waiting line
 					because there was no available thread to push leftMost branch, then leftMost
 					will be the new root since after this scope right branch will have been

@@ -5,7 +5,6 @@
 #include "StreamHandler.hpp"
 #include "Tree.hpp"
 #include "../include/Queue.hpp"
-
 #include <algorithm>
 #include <condition_variable>
 #include <cstring>
@@ -32,7 +31,7 @@
 #define HAS_RESULT_TAG 13
 #define NO_RESULT_TAG 14
 
-#define TIMEOUT_TIME 20
+#define TIMEOUT_TIME 3
 
 namespace GemPBA
 {
@@ -200,7 +199,7 @@ namespace GemPBA
 			{
 				while (isPop)
 				{
-					std::scoped_lock lck(mtx);
+					std::scoped_lock<std::mutex> lck(mtx);
 
 					std::unique_ptr<std::string> ptr(message);
 					nTasks++;
@@ -229,9 +228,9 @@ namespace GemPBA
 						break;
 				}
 			}
-#ifdef DEBUG_COMMENTS
+			//#ifdef DEBUG_COMMENTS
 			fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
-#endif
+			//#endif
 			/* to reuse the task funneling, otherwise it will exit
             right away the second time the process receives a task*/
 		}
@@ -308,6 +307,44 @@ namespace GemPBA
 			//}
 		}
 
+		/*	- return true is priority is acquired, false otherwise
+			- priority released automatically if a message is pushed, otherwise it should be released manually
+			- only ONE buffer will be enqueued at a time
+        	- if the taskFunneling is transmitting the buffer to another node, this method will return false
+        	- if previous conditions are met, then actual condition for pushing is evaluated next_process[0] > 0
+		*/
+		bool acquirePriority()
+		{
+			/*
+			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock);
+			if (lck1.try_lock() && !transmitting.load() && !acquired.load())
+			{
+				if (next_process[0] > 0)
+				{
+					if (!acquired.load())
+						acquired = true;
+					else
+						throw std::runtime_error("Attempt to acquire twice priority at acquirePriority()\n");
+
+					return true;
+				}
+			}
+			*/
+			if (mtx.try_lock()) // acquires mutes
+			{
+				if (!transmitting.load()) // check if transmission in progress
+				{
+					if (next_process[0] > 0) // check if there is another process in the list
+					{
+						return true; // priority acquired
+					}
+				}
+				mtx.unlock();
+			}
+
+			return false;
+		}
+
 		// enqueue a message which will be sent to the next assigned process
 		void push(std::string &&message)
 		{
@@ -331,36 +368,15 @@ namespace GemPBA
 			releasePriority();
 		}
 
-		/*	- return true is priority is acquired, false otherwise
-			- priority released automatically if a message is pushed, otherwise it should be released manually
-			- only ONE buffer will be enqueued at a time
-        	- if the taskFunneling is transmitting the buffer to another node, this method will return false
-        	- if previous conditions are met, then actual condition for pushing is evaluated next_process[0] > 0
-		*/
-		bool acquirePriority()
-		{
-			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock);
-			if (lck1.try_lock() && !transmitting.load() && !acquired.load())
-			{
-				if (next_process[0] > 0)
-				{
-					if (!acquired.load())
-						acquired = true;
-					else
-						throw std::runtime_error("Error, double release of priority at releasePriority()\n");
-
-					return true;
-				}
-			}
-			return false;
-		}
-
 		void releasePriority()
 		{
+			mtx.unlock();
+			/*
 			if (acquired.load())
 				acquired = false;
 			else
 				throw std::runtime_error("Error, double release of priority at releasePriority()\n");
+				*/
 		}
 
 		bool isTerminated(int TAG, char *buffer)
@@ -402,7 +418,7 @@ namespace GemPBA
 #ifdef DEBUG_COMMENTS
 				fmt::print("rank {} about to send buffer to rank {}\n", world_rank, dest_rank_tmp);
 #endif
-				MPI_Ssend(message.data(), message.size(), MPI_CHAR, dest_rank_tmp, 0, world_Comm);
+				MPI_Send(message.data(), message.size(), MPI_CHAR, dest_rank_tmp, 0, world_Comm);
 #ifdef DEBUG_COMMENTS
 				fmt::print("rank {} sent buffer to rank {}\n", world_rank, dest_rank_tmp);
 #endif
@@ -571,13 +587,14 @@ namespace GemPBA
 						{
 							if (!processTree[rank].hasNext()) // checks if running node has a child to push to
 							{
-								put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0,
-									win_nextProcess); // assigns returning node to the running node
-								processTree[rank].addNext(
-									status.MPI_SOURCE);							  // assigns returning node to the running node
-								processState[status.MPI_SOURCE] = STATE_ASSIGNED; // it flags returning node as assigned
-								--nAvailable;									  // assigned, not available any more
-								break;											  // breaks for-loop
+								put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0, win_nextProcess); // assigns returning node to the running node
+								processTree[rank].addNext(status.MPI_SOURCE);				   // assigns returning node to the running node
+								processState[status.MPI_SOURCE] = STATE_ASSIGNED;			   // it flags returning node as assigned
+								--nAvailable;												   // assigned, not available any more
+#ifdef DEBUG_COMMENTS
+								fmt::print("ASSIGNEMENT:\trank {} <-- [{}]\n", rank, status.MPI_SOURCE);
+#endif
+								break; // breaks for-loop
 							}
 						}
 					}
