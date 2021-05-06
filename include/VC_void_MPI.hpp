@@ -129,10 +129,10 @@ public:
 
 		if (hol_l.evaluate_branch_checkIn())
 		{
-			if (SIZE > 15)
-				branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
-			else
-				branchHandler.try_push_MT<void>(_f, id, hol_l);
+			//if (SIZE > 15)
+			branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
+			//else
+			//branchHandler.try_push_MT<void>(_f, id, hol_l);
 		}
 		if (hol_r.evaluate_branch_checkIn())
 		{

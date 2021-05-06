@@ -32,7 +32,7 @@
 #define HAS_RESULT_TAG 13
 #define NO_RESULT_TAG 14
 
-#define TIMEOUT_TIME 3
+#define TIMEOUT_TIME 20
 
 namespace GemPBA
 {
@@ -243,7 +243,7 @@ namespace GemPBA
 
 		void updateRefValue(auto &branchHandler)
 		{
-			static size_t C = 0;
+			//static size_t C = 0;
 			int _refGlobal = refValueGlobal[0];		  // constant within this scope
 			int _refLocal = branchHandler.refValue(); // constant within this scope
 
@@ -300,12 +300,12 @@ namespace GemPBA
 				}
 			}
 
-			C++;
-			if ((C % (size_t)1e7) == 0)
-			{
-				C = 0;
-				fmt::print("rank {}, refGlobal : {}\n", world_rank, _refGlobal);
-			}
+			//C++;
+			//if ((C % (size_t)1e7) == 0)
+			//{
+			//	C = 0;
+			//	fmt::print("rank {}, refGlobal : {}\n", world_rank, _refGlobal);
+			//}
 		}
 
 		// enqueue a message which will be sent to the next assigned process

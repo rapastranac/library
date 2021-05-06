@@ -4,6 +4,7 @@
 #include "argsparse/argparse.hpp"
 
 #include <iostream>
+#include <unistd.h>
 
 //#include <mpi.h>
 int main(int argc, char *argv[])
@@ -64,6 +65,9 @@ int main(int argc, char *argv[])
 	//std::cout << "sizeof(MPI::BOOL) : " << size << std::endl;
 	//MPI_Finalize();
 	//return 0;
+
+	int pid = getpid();
+	fmt::print("process ID : {}\n", pid);
 
 #ifdef VC_VOID
 	return main_void(numThreads, prob, filename);

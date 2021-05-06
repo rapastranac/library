@@ -187,7 +187,7 @@ public:
 
         int cursol_size = solsize;
 
-        if (passes % (size_t)1e7 == 0)
+        if (passes % (size_t)1e6 == 0)
         {
             cout << "WR=" << branchHandler.rank_me()
                  << " ID=" << id << " passes=" << passes << " gsize="
@@ -354,7 +354,7 @@ public:
 
         dlb.linkParent(id, parent, hol_l, hol_r);
 
-        hol_l.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &newDepth, &depth, &hol_l] {
+        hol_l.bind_branch_checkIn([&] {
             int bestVal = branchHandler.refValue();
             gbitset ingraph1 = bits_in_graph;
             ingraph1.set(maxdeg_v, false);
@@ -371,7 +371,7 @@ public:
                 return false;
         });
 
-        hol_r.bind_branch_checkIn([this, &bits_in_graph, &maxdeg_v, &cursol_size, &newDepth, &depth, &hol_r] {
+        hol_r.bind_branch_checkIn([&] {
             int bestVal = branchHandler.refValue();
             //right branch = take out v nbrs
             gbitset ingraph2 = bits_in_graph;
@@ -395,10 +395,10 @@ public:
 
             //if (nbVertices <= 5)
             //    branchHandler.forward<void>(_f, id, hol_l);
-            if (nbVertices <= 15)
-                branchHandler.try_push_MT<void>(_f, id, hol_l);
-            else
-                branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
+            //if (nbVertices <= 15)
+            //    branchHandler.try_push_MT<void>(_f, id, hol_l);
+            //else
+            branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
         }
         else
         {
