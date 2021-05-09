@@ -29,7 +29,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 Set(CMAKE_EXE_LINKER_FLAGS  "-lboost_system -lboost_serialization  -lboost_fiber")
 
 
-#add_definitions(-DR_SEARCH=true)
+add_definitions(-DR_SEARCH=true)
 add_definitions(-DMPI_ENABLED)
 #add_definitions(-DDEBUG_COMMENTS)
 #add_definitions(-DVC_VOID)

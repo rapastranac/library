@@ -243,27 +243,30 @@ namespace GemPBA
 		template <typename Holder>
 		bool try_top_holder(auto &getBuffer, Holder &holder)
 		{
-			Holder *upperHolder = dlb.find_top_holder(&holder); //  if it finds it, then root has been already lowered
-			if (upperHolder)
+			if (is_DLB)
 			{
-				if (upperHolder->isTreated())
-					throw std::runtime_error("Attempt to push a treated holder\n");
-
-				if (!upperHolder->evaluate_branch_checkIn())
+				Holder *upperHolder = dlb.find_top_holder(&holder); //  if it finds it, then root has been already lowered
+				if (upperHolder)
 				{
-					upperHolder->setDiscard();
-					// WARNING, ATTENTION, CUIDADO! : holder discarded, flagged as sent but not really sent, then priority should be realeased!!!!
-					mpiScheduler->releasePriority();
-					return true; // top holder found but discarded, therefore not sent
+					if (upperHolder->isTreated())
+						throw std::runtime_error("Attempt to push a treated holder\n");
+
+					if (!upperHolder->evaluate_branch_checkIn())
+					{
+						upperHolder->setDiscard();
+						// WARNING, ATTENTION, CUIDADO! : holder discarded, flagged as sent but not really sent, then priority should be realeased!!!!
+						mpiScheduler->releasePriority();
+						return true; // top holder found but discarded, therefore not sent
+					}
+
+					upperHolder->setPushStatus();
+					mpiScheduler->push(getBuffer(upperHolder->getArgs()));
+
+					return true; // top holder found
 				}
-
-				upperHolder->setPushStatus();
-				mpiScheduler->push(getBuffer(upperHolder->getArgs()));
-
-				return true; // top holder found
+				dlb.pop_left_sibling(&holder); // pops holder from parent's children
 			}
-			dlb.pop_left_sibling(&holder); // pops holder from parent's children
-			return false;				   // top holder not found
+			return false; // top holder not found
 		}
 
 #endif
@@ -277,10 +280,7 @@ namespace GemPBA
 				whether is pushed to the pool or forwarded */
 			while (true)
 			{
-				/* this lock must be adquired before checking the condition,	
-					even though busyThreads is atomic*/
 				std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
-
 				if (lck.try_lock())
 				{
 					if (thread_pool->n_idle() > 0)
@@ -300,12 +300,15 @@ namespace GemPBA
 						std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
 						return true; // pushed to pool
 					}
-					lck.unlock();
+					break; // mutex released at destruction
 				}
-
-				this->forward<_ret>(f, id, holder);
-				return false;
+				else
+				{
+					break;
+				}
 			}
+			this->forward<_ret>(f, id, holder);
+			return false;
 		}
 
 		template <typename _ret, typename F, typename Holder,
@@ -403,19 +406,15 @@ namespace GemPBA
 							dlb.prune(&holder);
 							return true;
 						}
-						//mpiScheduler->releasePriority(); // manual realease if no push
 					}
-
-					//if (mpiScheduler->acquirePriority())
-					//{
-					//	mpiScheduler->push(getBuffer(holder.getArgs()));
-					//	holder.setMPISent();
-					//	dlb.prune(&holder);
-					//	return true;
-					//}
+					break;
 				}
-				return false;
+				else
+				{
+					break;
+				}
 			}
+			return false;
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
