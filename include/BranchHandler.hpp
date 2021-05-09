@@ -276,8 +276,13 @@ namespace GemPBA
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool push_multithreading(F &&f, int id, Holder &holder)
 		{
-			/* the underlying loop breaks when current holder is treated,
-				whether is pushed to the pool or forwarded */
+			/* the underlying loop breaks under one of the following scenarios:
+				- mutex cannot be acquired
+				- there is no available thread in the pool
+				- current level holder is pushed
+	
+				NOTE: if top holder found, it'll keep trying to find more
+			*/
 			while (true)
 			{
 				std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
@@ -375,10 +380,13 @@ namespace GemPBA
 
 		bool push_multiprocess(int id, auto &holder, auto &&serializer)
 		{
-			/* the underlying loop breaks when:
-				- successful buffer pushed to main thread
-				- unable to push if main thread busy
+			/* the underlying loop breaks under one of the following scenarios:
+				- unable to acquired priority
+				- unable to acquire mutex
 				- there is not next available process
+				- current level holder is pushed
+
+				NOTE: if top holder found, it'll keep trying to find more
 			*/
 			while (true)
 			{
