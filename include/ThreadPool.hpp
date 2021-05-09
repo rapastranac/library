@@ -86,8 +86,7 @@ namespace ThreadPool
                 }                                   // leave parallel region
             };
 
-            //thread = std::make_unique<std::thread>(f);
-            thread.reset(new std::thread(f));
+            thread = std::make_unique<std::thread>(f);
             while (nWaiting.load() != (int)SIZE)
                 ; // main thread loops until one thread in thread pool has attained waiting mode
         }
