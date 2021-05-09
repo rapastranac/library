@@ -132,6 +132,13 @@ int main_void_MPI(int numThreads, int prob, std::string filename)
 
 	graph.readEdges(filename);
 
+	std::vector<Graph> graphs;
+
+	for (int i = 1; i < 20; i++)
+	{
+		graphs.push_back(graph);
+	}
+
 	// ******************************************************************
 	// temp for mini-cluster
 	//if (rank == 1)

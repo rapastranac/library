@@ -189,13 +189,19 @@ public:
 
         if (passes % (size_t)1e6 == 0)
         {
-            cout << "WR=" << branchHandler.rank_me()
-                 << " ID=" << id << " passes=" << passes << " gsize="
-                 << bits_in_graph.count() << " refvalue=" << branchHandler.refValue()
-                 << " solsize=" << cursol_size << " isskips=" << is_skips
-                 << " deglbskips=" << deglb_skips << endl; //<<" seen_skips="<<seen_skips<<" seen.size="<<seen[id].size()<<endl;
-                                                           //cout<<"ID="<<id<<" CSOL="<<cursol_size<<" REFVAL="<<branchHandler.getRefValue()<<endl;
-                                                           //branchHandler.printDebugInfo();
+            auto clock = std::chrono::system_clock::now();
+            std::time_t time = std::chrono::system_clock::to_time_t(clock); //it includes a "\n"
+
+            auto str = fmt::format("WR= {} ID= {} passes={} gsize={} refvalue={} solsize={} isskips={} deglbskips={} {}",
+                                   branchHandler.rank_me(), id, passes, bits_in_graph.count(),
+                                   branchHandler.refValue(), cursol_size, is_skips, deglb_skips,
+                                   std::ctime(&time));
+
+            cout << str;
+
+            //<<" seen_skips="<<seen_skips<<" seen.size="<<seen[id].size()<<endl;
+            //cout<<"ID="<<id<<" CSOL="<<cursol_size<<" REFVAL="<<branchHandler.getRefValue()<<endl;
+            //branchHandler.printDebugInfo();
         }
 
         //cout<<"depth="<<depth<<" ref="<<branchHandler.getRefValue()<<"cursolsize="<<cursol_size<<" cnt="<<bits_in_graph.count()<<" sol="<<cur_sol<<endl;
@@ -351,9 +357,9 @@ public:
 
         hol_l.setDepth(depth);
         hol_r.setDepth(depth);
-
+#ifdef R_SEARCH
         dlb.linkParent(id, parent, hol_l, hol_r);
-
+#endif
         hol_l.bind_branch_checkIn([&] {
             int bestVal = branchHandler.refValue();
             gbitset ingraph1 = bits_in_graph;

@@ -83,7 +83,7 @@ private:
 
 	void _addRowToList(int vec0)
 	{
-		this->adj.insert(pair<int, set<int>>(vec0, rows));
+		this->adj.insert(pair<int16_t, set<int16_t>>(vec0, rows));
 		this->rows.clear();
 	}
 
@@ -168,7 +168,7 @@ private:
 		}
 	}
 
-	int _getRandomVertex(std::vector<int> &target)
+	int _getRandomVertex(std::vector<int16_t> &target)
 	{
 		/*Here this will explore the list of higest degree vertices and
 			it will choose any of them randomly*/
@@ -186,12 +186,12 @@ private:
 
 		int _counterEdges = 0;
 		auto adj_cpy = this->adj;
-		map<int, set<int>>::iterator it = adj_cpy.begin();
+		auto it = adj_cpy.begin();
 
 		while (it != adj_cpy.end())
 		{
 			_counterEdges += it->second.size();
-			set<int>::iterator it2 = it->second.begin();
+			auto it2 = it->second.begin();
 			while (it2 != it->second.end())
 			{
 				adj_cpy[*it2].erase(it->first);
@@ -209,9 +209,9 @@ private:
 	Thus, in G0, an isolated vertex can be eliminated, reducing n0 by one.
 	This rule is applied repeatedly until all isolated
 	vertices are eliminated.*/
-	bool _rule1(map<int, set<int>> &adj)
+	bool _rule1(map<int16_t, set<int16_t>> &adj)
 	{
-		std::vector<int> degree_zero;
+		std::vector<int16_t> degree_zero;
 
 		// this loop finds vertices of degree zero
 		for (auto const &[v, neighbours] : adj)
@@ -240,10 +240,10 @@ private:
 	vertices for deletion under Rule 1. This reduces n0 by the number
 	of deleted vertices and reduces k by one. This rule is applied repeatedly
 	until all pendant vertices are eliminated.*/
-	bool _rule2(map<int, set<int>> &adj, int &added_to_cover)
+	bool _rule2(map<int16_t, set<int16_t>> &adj, int16_t &added_to_cover)
 	{
-		vector<int> pendant_neighbour;
-		vector<pair<int, int>> matching_ccs;
+		vector<int16_t> pendant_neighbour;
+		vector<pair<int16_t, int16_t>> matching_ccs;
 
 		for (auto &[v, neighbours] : adj)
 		{
@@ -290,7 +290,7 @@ private:
 
 	/* this rule states that having a vertex u with two adjacent neighbours v and w,
 		then v and w will be in the MVC*/
-	bool _rule3(map<int, set<int>> &adj, int &added_to_cover)
+	bool _rule3(map<int16_t, set<int16_t>> &adj, int16_t &added_to_cover)
 	{
 		/*		u ---- v ~~~
 				 \	  /
@@ -305,11 +305,11 @@ private:
 		{
 			if (ite->second.size() == 2)
 			{
-				int u = ite->first;
+				int16_t u = ite->first;
 				auto it = ite->second.begin();
-				int v = *it;
+				int16_t v = *it;
 				it++;
-				int w = *it;
+				int16_t w = *it;
 
 				if (adj[v].contains(w) && adj[w].contains(v))
 				{
@@ -336,7 +336,7 @@ private:
 		return flag;
 	}
 
-	bool _rule4(map<int, set<int>> &adj)
+	bool _rule4(map<int16_t, set<int16_t>> &adj)
 	{
 		/*		u ---- v ~~~
 				 \				==>  ~~~(u')~~~
@@ -344,11 +344,11 @@ private:
 				   w ~~~
 		*/
 
-		map<int, set<int>>::const_iterator it = adj.begin();
-		map<int, set<int>> folded_vertices;
+		auto it = adj.begin();
+		map<int16_t, set<int16_t>> folded_vertices;
 		std::once_flag oo_flag;
 
-		int id = -1;
+		int16_t id = -1;
 
 		bool flag = false;
 
@@ -356,12 +356,12 @@ private:
 		{
 			if (it->second.size() == 2)
 			{
-				int u = it->first;
+				int16_t u = it->first;
 				/*adjacent neighbours*/
-				set<int>::const_iterator an = it->second.begin();
-				int v = *an;
+				set<int16_t>::const_iterator an = it->second.begin();
+				int16_t v = *an;
 				an++;
-				int w = *an;
+				int16_t w = *an;
 				if (!adj[v].contains(w) && !adj[w].contains(v))
 				{
 					//Check to not fold already folded vertices
@@ -374,10 +374,10 @@ private:
 					//Create (u')
 					FoldedVertices u_prime(u, v, w);
 					//push to a adj of all the folded vertices
-					foldedVertices.insert(pair<int, FoldedVertices>(id, u_prime));
+					foldedVertices.insert(pair<int16_t, FoldedVertices>(id, u_prime));
 
 					//Check neighbours of v
-					set<int> foldedNeigbours;
+					set<int16_t> foldedNeigbours;
 					for (auto vertex : adj[v])
 					{
 						if (vertex != u)
@@ -397,7 +397,7 @@ private:
 					erase(adj, w);
 
 					//Insert (u') into graph
-					adj.insert(pair<int, set<int>>(id, foldedNeigbours));
+					adj.insert(pair<int16_t, set<int16_t>>(id, foldedNeigbours));
 					//link the neighbours of v and w to (u')
 					for (auto f_vertex : foldedNeigbours)
 					{
@@ -425,7 +425,7 @@ private:
 		return flag;
 	}
 
-	bool _rule5(map<int, set<int>> &adj, int &added_to_cover, int k)
+	bool _rule5(map<int16_t, set<int16_t>> &adj, int16_t &added_to_cover, int16_t k)
 	{
 		for (auto const &[v, neighbours] : adj)
 		{
@@ -434,7 +434,7 @@ private:
 		return true;
 	}
 
-	void erase(map<int, set<int>> &adj, int v)
+	void erase(map<int16_t, set<int16_t>> &adj, int16_t v)
 	{
 		try
 		{
@@ -664,7 +664,7 @@ public:
 	// it returns the number of neighbours that were removed
 	int removeNv(int v)
 	{
-		std::set<int> neighboursOfv(adj[v]); //copy of neigbours of vertex v
+		std::set<int16_t> neighboursOfv(adj[v]); //copy of neigbours of vertex v
 		int numNeighours = neighboursOfv.size();
 		for (auto vertex : neighboursOfv)
 		{
@@ -819,7 +819,7 @@ public:
 	}
 
 	//gets neighbours of v, Nv(v) = {w1,w2, ... ,wi}
-	std::set<int> &operator[](const int v)
+	std::set<int16_t> &operator[](const int16_t v)
 	{
 		if (!adj.contains(v))
 			throw "_VERTEX_NOT_FOUND";
@@ -827,7 +827,7 @@ public:
 			return adj[v];
 	}
 
-	typedef std::map<int, set<int>>::iterator iterator;
+	typedef std::map<int16_t, set<int16_t>>::iterator iterator;
 
 	iterator begin() { return adj.begin(); }
 	iterator end() { return adj.end(); }
@@ -853,7 +853,7 @@ public:
 
 	int [[nodiscard("Number of vertices added to the cover")]] clean_graph()
 	{
-		int added_to_cover = 0;
+		int16_t added_to_cover = 0;
 		bool flag = true;
 		bool flag2 = true;
 		while (flag2)
@@ -877,9 +877,9 @@ public:
 		return added_to_cover;
 	}
 
-	int [[nodiscard("Number of vertices added to the cover")]] clean_graph(int k)
+	int [[nodiscard("Number of vertices added to the cover")]] clean_graph(int16_t k)
 	{
-		int added_to_cover = 0;
+		int16_t added_to_cover = 0;
 		bool flag = true;
 		bool flag2 = true;
 		while (flag2)
@@ -905,7 +905,7 @@ public:
 
 	int clean_graph2()
 	{
-		int added_to_cover = 0;
+		int16_t added_to_cover = 0;
 		bool flag = true;
 
 		while (flag)
@@ -919,16 +919,16 @@ public:
 		return added_to_cover;
 	}
 
-	std::set<int> cover()
+	std::set<int16_t> cover()
 	{
 		return _cover;
 	}
 
-	std::set<int> postProcessing()
+	std::set<int16_t> postProcessing()
 	{
 		//_cover.insert(-2);
-		std::set<int>::iterator it = _cover.begin();
-		set<int> unfolded_vertices;
+		auto it = _cover.begin();
+		set<int16_t> unfolded_vertices;
 		/*If a vertex is negative, it means it was folded, then we look up
 			the foldedVertices to unfold it*/
 		while (it != _cover.end())
@@ -952,7 +952,7 @@ public:
 
 		/* if (u') was not included in the cover, then u must be
 			present in the cover */
-		map<int, FoldedVertices>::const_iterator i = foldedVertices.begin();
+		auto i = foldedVertices.begin();
 		while (i != foldedVertices.end())
 		{
 			unfolded_vertices.insert(i->second.u);
@@ -963,7 +963,7 @@ public:
 		/* ******************************************************** */
 
 		/*Build minimum vertex cover*/
-		set<int>::const_iterator j = unfolded_vertices.begin();
+		auto j = unfolded_vertices.begin();
 
 		while (j != unfolded_vertices.end())
 		{
@@ -1009,13 +1009,13 @@ public:
 
 	void print_edges(std::ofstream &file)
 	{
-		map<int, set<int>>::const_iterator it = adj.begin();
+		auto it = adj.begin();
 
 		/*Fix this to not printing duplicated edges*/
 
 		while (!adj.empty())
 		{
-			set<int>::const_iterator it2 = (*it).second.begin();
+			auto it2 = (*it).second.begin();
 			while (!(*it).second.empty())
 			{
 				file << (*it).first << "\t" << *it2;
@@ -1178,16 +1178,16 @@ public:
 
 	/*		TEMPORARY		*/
 
-	std::vector<std::vector<int>> ADJ_MATRIX()
+	std::vector<std::vector<int16_t>> ADJ_MATRIX()
 	{
 
-		int N = adj.size();
-		std::vector<std::vector<int>> tmp(N, std::vector<int>(N, 0));
+		int16_t N = adj.size();
+		std::vector<std::vector<int16_t>> tmp(N, std::vector<int16_t>(N, 0));
 
-		map<int, set<int>>::const_iterator it = adj.begin();
+		auto it = adj.begin();
 		while (it != adj.end())
 		{
-			set<int>::const_iterator jt = it->second.begin();
+			auto jt = it->second.begin();
 			while (jt != it->second.end())
 			{
 				tmp[it->first][*jt] = 1;
@@ -1198,11 +1198,11 @@ public:
 		return tmp;
 	}
 
-	std::vector<int> DEGREE()
+	std::vector<int16_t> DEGREE()
 	{
-		std::vector<int> tmp;
+		std::vector<int16_t> tmp;
 
-		std::map<int, set<int>>::const_iterator it = adj.cbegin();
+		auto it = adj.cbegin();
 
 		while (it != adj.cend())
 		{
@@ -1254,21 +1254,20 @@ public:
 	}
 #endif
 
-	std::map<int, std::set<int>> adj; /*Adjacency list*/
+	std::map<int16_t, std::set<int16_t>> adj; /*Adjacency list*/
 
 private:
-	int max;						 /*Highest degree within graph*/
-	int min;						 /*Lowest degree within graph*/
-	std::vector<int> idsMax;		 /*Stores the positions of max degree
-									vertices within the adjacency adj*/
-	std::vector<int> idsMin;		 /*same as above but for min degree*/
-	std::set<int> rows;				 /*Temporary variable to store*/
-	std::map<int, int> vertexDegree; /*list of vertices with their corresponding
+	int max;								 /*Highest degree within graph*/
+	int min;								 /*Lowest degree within graph*/
+	std::vector<int16_t> idsMax;			 /*Stores the positions of max degree vertices within the adjacency adj*/
+	std::vector<int16_t> idsMin;			 /*same as above but for min degree*/
+	std::set<int16_t> rows;					 /*Temporary variable to store*/
+	std::map<int16_t, int16_t> vertexDegree; /*list of vertices with their corresponding
 									number of edges*/
-	std::set<int> _zeroVertexDegree; /*List of vertices with zero degree*/
+	std::set<int16_t> _zeroVertexDegree;	 /*List of vertices with zero degree*/
 
-	std::map<int, FoldedVertices> foldedVertices;
-	std::set<int> _cover;
+	std::map<int16_t, FoldedVertices> foldedVertices;
+	std::set<int16_t> _cover;
 
 	int numEdges;	 //number of edges
 	int numVertices; //number of vertices

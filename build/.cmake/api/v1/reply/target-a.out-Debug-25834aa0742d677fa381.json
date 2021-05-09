@@ -52,19 +52,7 @@
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 34,
-				"parent" : 0
-			},
-			{
-				"command" : 3,
-				"file" : 0,
 				"line" : 33,
-				"parent" : 0
-			},
-			{
-				"command" : 3,
-				"file" : 0,
-				"line" : 32,
 				"parent" : 0
 			},
 			{
@@ -182,41 +170,33 @@
 				},
 				{
 					"backtrace" : 5,
-					"define" : "DEBUG_COMMENTS"
-				},
-				{
-					"backtrace" : 6,
 					"define" : "MPI_ENABLED"
-				},
-				{
-					"backtrace" : 7,
-					"define" : "R_SEARCH=true"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 8,
+					"backtrace" : 6,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
 				},
 				{
-					"backtrace" : 8,
+					"backtrace" : 6,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 7,
 					"path" : "/home/andres/cloud/library/include"
 				},
 				{
-					"backtrace" : 10,
+					"backtrace" : 8,
 					"path" : "/home/andres/cloud/library/MPI_Modules"
 				},
 				{
-					"backtrace" : 11,
+					"backtrace" : 9,
 					"path" : "/home/andres/cloud/library/cereal"
 				},
 				{
-					"backtrace" : 12,
+					"backtrace" : 10,
 					"path" : "/home/andres/cloud/library/fmt/include"
 				}
 			],
