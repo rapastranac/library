@@ -21,11 +21,11 @@ echo "Starting run at: `date`"
 #mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by numa:PE=2 --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out -I input/prob_4/600/00600_1
 
 
-#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out -I input/prob_4/600/00600_1
+#mpirun --oversubscribe -n 2 -display-map --bind-to none --map-by core --report-bindings xterm -fa 'Monospace' -bg white -fg black -fs 12 -e gdb -x gdb_commands --args a.out -N 4 -I input/prob_4/600/00600_1
 
-
-mpirun --oversubscribe -n 2 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 2 -I input/prob_4/600/00600_1
-mpirun --oversubscribe -n 3 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/prob_4/600/00600_1
+mpirun --oversubscribe -n 15 -host manager:10,node1:5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/prob_4/600/00600_1
+#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/prob_4/600/00600_1
+#mpirun --oversubscribe -n 3 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/prob_4/600/00600_1
 
 
 #mpirun --oversubscribe -n 2 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/p_hat700_1
@@ -37,7 +37,7 @@ mpirun --oversubscribe -n 3 -display-map --bind-to none --map-by core --report-b
 #mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat700_1
 
 #mpirun --oversubscribe -n 5 -host manager:3,node1:2 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat1000_2
-#mpirun --oversubscribe -n 50 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat1000_2
+#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat1000_2
 
 
 

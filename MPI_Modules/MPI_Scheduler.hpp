@@ -2,7 +2,6 @@
 #ifndef MPI_SCHEDULER_HPP
 #define MPI_SCHEDULER_HPP
 
-#include "StreamHandler.hpp"
 #include "Tree.hpp"
 #include "../include/Queue.hpp"
 #include <algorithm>
@@ -12,6 +11,7 @@
 #include <stdlib.h> /* srand, rand */
 #include <fstream>
 #include <iostream>
+#include <limits.h>
 #include <mpi.h>
 #include <string>
 #include <sstream>
@@ -31,7 +31,7 @@
 #define HAS_RESULT_TAG 13
 #define NO_RESULT_TAG 14
 
-#define TIMEOUT_TIME 20
+#define TIMEOUT_TIME 5
 
 namespace GemPBA
 {
@@ -170,6 +170,7 @@ namespace GemPBA
 				//}
 #ifdef DEBUG_COMMENTS
 				fmt::print("rank {}, received buffer from rank {}\n", world_rank, status.MPI_SOURCE);
+				//std::cout << message << std::endl;
 #endif
 				//  push to the thread pool *********************************************************************
 				auto *holder = bufferDecoder(message, count); // holder might be useful for non-void functions
@@ -192,7 +193,7 @@ namespace GemPBA
 
 		void taskFunneling(auto &branchHandler)
 		{
-			std::string *message;
+			std::string *message = nullptr;
 			bool isPop = q.pop(message);
 
 			while (true)
@@ -221,7 +222,7 @@ namespace GemPBA
 				if (!isPop && branchHandler.isDone())
 				{
 					/* by the time the thread realises that the thread pool has no more tasks,
-                        another buffer there might have been pushed, which should be verified in the next line*/
+                        another buffer might have been pushed, which should be verified in the next line*/
 					isPop = q.pop(message);
 
 					if (!isPop)
@@ -231,72 +232,30 @@ namespace GemPBA
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
 #endif
+
+			if (!q.empty())
+				throw std::runtime_error("leaving process with a pending message\n");
 			/* to reuse the task funneling, otherwise it will exit
             right away the second time the process receives a task*/
 		}
 
-		bool isChanged(int newVal, int oldVal)
-		{
-			return newVal != oldVal ? true : false;
-		}
-
 		void updateRefValue(auto &branchHandler)
 		{
+
+			MPI_Win_lock(MPI_LOCK_SHARED, world_rank, 0, win_refValueGlobal); // open epoch
+			int _refGlobal = refValueGlobal[0];								  // constant within this scope
+			MPI_Win_unlock(world_rank, win_refValueGlobal);					  // close epoch
+			int _refLocal = branchHandler.refValue();						  // constant within this scope
+
 			//static size_t C = 0;
-			int _refGlobal = refValueGlobal[0];		  // constant within this scope
-			int _refLocal = branchHandler.refValue(); // constant within this scope
 
-			// thoughts: no need to care for maximisation or minimisation since the branchHandler does it already
-			if (isChanged(_refGlobal, refValueGlobal_old)) // center has put a new value
+			if ((maximisation && _refGlobal > _refLocal) || (!maximisation && _refGlobal < _refLocal))
 			{
-				refValueGlobal_old = _refGlobal;
-				int mostUpToDate;
-				bool success = branchHandler.updateRefValue(_refGlobal, &mostUpToDate);
-				if (!success)
-				{
-					fmt::print("rank {}, before attempting to update refVal :{}\n", world_rank, mostUpToDate);
-					MPI_Ssend(&mostUpToDate, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
-
-					//MPI_Request request;
-					//MPI_Isend(&mostUpToDate, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm, &request);
-					//fmt::print("rank {}, waiting at attempting update refVal to {}\n", world_rank, mostUpToDate);
-					//MPI_Wait(&request, MPI_STATUS_IGNORE);
-
-					fmt::print("rank {}, attempted to update refVal to {} but most up-to-date : {}\n", world_rank, _refGlobal, mostUpToDate);
-				}
+				branchHandler.updateRefValue(_refGlobal);
 			}
-			else if (isChanged(_refLocal, _refGlobal)) // this process has updated the reference value locally
+			else if ((maximisation && _refLocal > _refGlobal) || (!maximisation && _refLocal < _refGlobal))
 			{
-				if (maximisation)
-				{
-					if (_refLocal > _refGlobal)
-					{
-						fmt::print("rank {}, before sending local to center  :{}\n", world_rank, _refLocal);
-						MPI_Ssend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
-
-						//MPI_Request request;
-						//MPI_Isend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm, &request);
-						//fmt::print("rank {}, waiting at sending loca : {} to center\n", world_rank, _refLocal);
-						//MPI_Wait(&request, MPI_STATUS_IGNORE);
-
-						fmt::print("rank {}, sent local : {} to center, global was : {}\n", world_rank, _refLocal, _refGlobal);
-					}
-				}
-				else //minimisation
-				{
-					if (_refLocal < _refGlobal)
-					{
-						fmt::print("rank {}, before sending local to center  :{}\n", world_rank, _refLocal);
-						MPI_Ssend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
-
-						//MPI_Request request;
-						//MPI_Isend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm, &request);
-						//fmt::print("rank {}, waiting at sending loca : {} to center\n", world_rank, _refLocal);
-						//MPI_Wait(&request, MPI_STATUS_IGNORE);
-
-						fmt::print("rank {}, sent local : {} to center, global was : {}\n", world_rank, _refLocal, _refGlobal);
-					}
-				}
+				MPI_Ssend(&_refLocal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, world_Comm);
 			}
 
 			//C++;
@@ -315,21 +274,6 @@ namespace GemPBA
 		*/
 		bool acquirePriority()
 		{
-			/*
-			std::unique_lock<std::mutex> lck1(mtx, std::defer_lock);
-			if (lck1.try_lock() && !transmitting.load() && !acquired.load())
-			{
-				if (next_process[0] > 0)
-				{
-					if (!acquired.load())
-						acquired = true;
-					else
-						throw std::runtime_error("Attempt to acquire twice priority at acquirePriority()\n");
-
-					return true;
-				}
-			}
-			*/
 			if (mtx.try_lock()) // acquires mutex
 			{
 				if (!transmitting.load()) // check if transmission in progress
@@ -341,13 +285,23 @@ namespace GemPBA
 				}
 				mtx.unlock();
 			}
-
 			return false;
+		}
+
+		int nextProcess()
+		{
+			return next_process[0];
 		}
 
 		// enqueue a message which will be sent to the next assigned process
 		void push(std::string &&message)
 		{
+			if (message.size() == 0)
+			{
+				fmt::print("rank {}, attempted to send empty buffer \n", world_rank);
+				throw;
+			}
+
 			transmitting = true;
 			dest_rank_tmp = next_process[0];
 #ifdef DEBUG_COMMENTS
@@ -371,12 +325,6 @@ namespace GemPBA
 		void releasePriority()
 		{
 			mtx.unlock();
-			/*
-			if (acquired.load())
-				acquired = false;
-			else
-				throw std::runtime_error("Error, double release of priority at releasePriority()\n");
-				*/
 		}
 
 		bool isTerminated(int TAG, char *buffer)
@@ -418,7 +366,7 @@ namespace GemPBA
 #ifdef DEBUG_COMMENTS
 				fmt::print("rank {} about to send buffer to rank {}\n", world_rank, dest_rank_tmp);
 #endif
-				MPI_Send(message.data(), message.size(), MPI_CHAR, dest_rank_tmp, 0, world_Comm);
+				MPI_Ssend(message.data(), message.size(), MPI_CHAR, dest_rank_tmp, 0, world_Comm);
 #ifdef DEBUG_COMMENTS
 				fmt::print("rank {} sent buffer to rank {}\n", world_rank, dest_rank_tmp);
 #endif
@@ -581,20 +529,29 @@ namespace GemPBA
 #ifdef DEBUG_COMMENTS
 					fmt::print("rank {} reported available, nRunning :{}\n", status.MPI_SOURCE, nRunning);
 #endif
-					for (int rank = 1; rank < world_size; rank++)
+					std::random_device rd;									// Will be used to obtain a seed for the random number engine
+					std::mt19937 gen(rd());									// Standard mersenne_twister_engine seeded with rd()
+					std::uniform_int_distribution<> distrib(0, world_size); // uniform distribution [closed interval]
+					int random_offset = distrib(gen);						// random value in range
+
+					for (int i_rank = 0; i_rank < world_size; i_rank++)
 					{
-						if (processState[rank] == STATE_RUNNING) // finds the first running node
+						int rank = (i_rank + random_offset) % world_size; // this ensures that rank is always in range 0 <= rank < world_size
+						if (rank > 0)
 						{
-							if (!processTree[rank].hasNext()) // checks if running node has a child to push to
+							if (processState[rank] == STATE_RUNNING) // finds the first running node
 							{
-								put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0, win_nextProcess); // assigns returning node to the running node
-								processTree[rank].addNext(status.MPI_SOURCE);				   // assigns returning node to the running node
-								processState[status.MPI_SOURCE] = STATE_ASSIGNED;			   // it flags returning node as assigned
-								--nAvailable;												   // assigned, not available any more
+								if (!processTree[rank].hasNext()) // checks if running node has a child to push to
+								{
+									put(&status.MPI_SOURCE, 1, rank, MPI_INT, 0, win_nextProcess); // assigns returning node to the running node
+									processTree[rank].addNext(status.MPI_SOURCE);				   // assigns returning node to the running node
+									processState[status.MPI_SOURCE] = STATE_ASSIGNED;			   // it flags returning node as assigned
+									--nAvailable;												   // assigned, not available any more
 #ifdef DEBUG_COMMENTS
-								fmt::print("ASSIGNEMENT:\trank {} <-- [{}]\n", rank, status.MPI_SOURCE);
+									fmt::print("ASSIGNEMENT:\trank {} <-- [{}]\n", rank, status.MPI_SOURCE);
 #endif
-								break; // breaks for-loop
+									break; // breaks for-loop
+								}
 							}
 						}
 					}
@@ -609,23 +566,11 @@ namespace GemPBA
 					fmt::print("center received refValue {} from rank {}\n", buffer, status.MPI_SOURCE);
 					bool signal = false;
 
-					if (maximisation)
+					if ((maximisation && buffer > refValueGlobal[0]) || (!maximisation && buffer < refValueGlobal[0]))
 					{
-						if (buffer > refValueGlobal[0])
-						{
-							refValueGlobal[0] = buffer;
-							signal = true;
-							bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
-						}
-					}
-					else
-					{
-						if (buffer < refValueGlobal[0])
-						{
-							refValueGlobal[0] = buffer;
-							signal = true;
-							bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
-						}
+						refValueGlobal[0] = buffer;
+						signal = true;
+						bcastPut(refValueGlobal, 1, MPI_INT, 0, win_refValueGlobal);
 					}
 
 					if (signal)
@@ -844,6 +789,7 @@ namespace GemPBA
 			tasks_per_process.resize(world_size, 0);
 			processState.resize(world_size, STATE_AVAILABLE);
 			processTree.resize(world_size);
+			refValueGlobal[0] = INT_MIN;
 
 			for (int i = 0; i < world_size; i++)
 			{
@@ -864,20 +810,14 @@ namespace GemPBA
 			return world_rank;
 		}
 
-		void linkRefValue(int **refValueNodes)
-		{
-			if (refValueGlobal)
-				*refValueNodes = this->refValueGlobal;
-			else
-			{
-				fmt::print("Error, refValueGlobal has not been initialized in MPI_Scheduler.hpp\n");
-				throw std::runtime_error("Error, refValueGlobal has not been initialized in MPI_Scheduler.hpp\n");
-			}
-		}
-
 		void setRefValStrategyLookup(bool maximisation)
 		{
 			this->maximisation = maximisation;
+
+			if (!maximisation) // minimisation
+			{
+				refValueGlobal[0] = INT_MAX;
+			}
 		}
 
 	private:
@@ -914,7 +854,7 @@ namespace GemPBA
 		int refValueGlobal_old;
 		int *next_process = nullptr; // potentially to replace availableProcesses
 
-		bool maximisation; // true if maximising, false if minimising
+		bool maximisation = true; // true if maximising, false if minimising
 
 		std::vector<std::pair<int, std::string>> bestResults;
 

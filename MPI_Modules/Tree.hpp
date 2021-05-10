@@ -21,7 +21,7 @@ private:
             this->dummy = nullptr;
         }
 
-        // this method allows to add next node,
+        // this method allows to add a next node,
         void addNext(int idx)
         {
             if (!tree[idx].parent)
@@ -90,17 +90,17 @@ private:
         {
             if (next)
             {
-                if (next->rightSibling)
+                if (next->rightSibling) // at least two nodes
                 {
                     auto nextCpy = next;
-                    next = nextCpy->rightSibling;
+                    next = next->rightSibling;
                     next->leftSibling = nullptr;
 
                     nextCpy->parent = nullptr;
                     nextCpy->leftSibling = nullptr;
                     nextCpy->rightSibling = nullptr;
                 }
-                else
+                else // the only available node
                 {
                     next->parent = nullptr;
                     next = nullptr;
@@ -132,22 +132,18 @@ private:
                 {
                     leftSibling->rightSibling = rightSibling;
                     rightSibling->leftSibling = leftSibling;
+                    --(parent->childrenCount);
+                    parent = nullptr;
                     rightSibling = nullptr;
                     leftSibling = nullptr;
-                    --parent->childrenCount;
-                    parent = nullptr;
-
-                    //std::cerr << "attempt to release other than front\n";
-                    //throw;
                 }
                 else if (leftSibling && !rightSibling) // last one
                 {
                     leftSibling->rightSibling = nullptr;
                     parent->last = leftSibling;
-                    leftSibling = nullptr;
-
-                    --parent->childrenCount;
+                    --(parent->childrenCount);
                     parent = nullptr;
+                    leftSibling = nullptr;
                 }
                 else // the only one or the first one
                 {

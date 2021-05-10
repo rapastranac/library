@@ -431,7 +431,6 @@ private:
         if (solsize == 0)
             return;
 
-        std::scoped_lock<std::mutex> lck(mtx);
         if (solsize < branchHandler.refValue())
         {
             //branchHandler.setBestVal(solsize);

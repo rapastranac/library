@@ -101,6 +101,12 @@ public:
 			g.clean_graph();
 			//g.removeZeroVertexDegree();
 			int C = g.coverSize();
+
+			if (C == 0)
+			{
+				fmt::print("rank {}, thread {}, cover is empty\n", branchHandler.rank_me(), id);
+				throw;
+			}
 			if (C < branchHandler.refValue()) // user's condition to see if it's worth it to make branch call
 			{
 				int newDepth = depth + 1;
@@ -112,7 +118,10 @@ public:
 		});
 
 		hol_r.bind_branch_checkIn([&] {
-			Graph g = std::move(graph);
+			Graph g = graph;
+			if (g.empty())
+				fmt::print("rank {}, thread {}, Graph is empty\n", branchHandler.rank_me(), id);
+
 			g.removeNv(v);
 			g.clean_graph();
 			//g.removeZeroVertexDegree();
@@ -129,10 +138,7 @@ public:
 
 		if (hol_l.evaluate_branch_checkIn())
 		{
-			//if (SIZE > 15)
 			branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
-			//else
-			//branchHandler.try_push_MT<void>(_f, id, hol_l);
 		}
 		if (hol_r.evaluate_branch_checkIn())
 		{
@@ -147,6 +153,7 @@ public:
 		std::scoped_lock<std::mutex> lck(mtx);
 		if (graph.coverSize() < branchHandler.refValue())
 		{
+			int SZ = graph.coverSize();
 			branchHandler.holdSolution(graph.coverSize(), graph, serializer);
 
 			branchHandler.updateRefValue(graph.coverSize());

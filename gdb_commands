@@ -2,10 +2,13 @@
 
 
 #b BranchHandler.hpp:380
-#b main_void_MPI.cpp:214
+#b VC_void_MPI.hpp:160 if SZ == 0
 #b MPI_Scheduler.hpp:513
 #b MPI_Scheduler.hpp:176
 #b ThreadPool.hpp:229
 
+
+b main_void_MPI_bitvec.cpp:82
+
 r
-thread apply all generate-core-file
+#thread apply all generate-core-file

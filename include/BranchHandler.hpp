@@ -24,6 +24,7 @@
 #include <chrono>
 #include <future>
 #include <functional>
+#include <limits.h>
 #include <list>
 #include <iostream>
 #include <math.h>
@@ -97,11 +98,13 @@ namespace GemPBA
 
 		void holdSolution(auto &bestLocalSolution)
 		{
+			std::unique_lock<std::mutex> lck(mtx);
 			this->bestSolution = std::make_any<decltype(bestLocalSolution)>(bestLocalSolution);
 		}
 
 		void holdSolution(int refValueLocal, auto &solution, auto &serializer)
 		{
+			std::unique_lock<std::mutex> lck(mtx);
 			this->bestSolution_serialized.first = refValueLocal;
 			this->bestSolution_serialized.second = serializer(solution);
 		}
@@ -163,13 +166,7 @@ namespace GemPBA
 		//if multi-processing, then every process should call this method
 		void setRefValue(int refValue)
 		{
-#ifdef MPI_ENABLED
-			this->refValueGlobal[0] = refValue;
 			this->refValueLocal = refValue;
-#else
-			this->refValueGlobal = new int[1];
-			this->refValueGlobal[0] = refValue;
-#endif
 		}
 
 		/*	return false if there exist already a better value, this better value is copied
@@ -178,42 +175,25 @@ namespace GemPBA
 		bool updateRefValue(int new_refValue, int *mostUpToDate = nullptr)
 		{
 			std::scoped_lock<std ::mutex> lck(mtx);
-
-			if (maximisation)
+			if ((maximisation && new_refValue > refValueLocal) || (!maximisation && new_refValue < refValueLocal))
 			{
-				if (new_refValue > refValueLocal)
-				{
-					refValueLocal = new_refValue;
-					return true;
-				}
-				else
-				{
-					if (mostUpToDate)
-						*mostUpToDate = refValueLocal;
-					return false;
-				}
+				refValueLocal = new_refValue;
+				return true;
 			}
-			else // minimisation
+			else
 			{
-				if (new_refValue < refValueLocal)
-				{
-					refValueLocal = new_refValue;
-					return true;
-				}
-				else
-				{
-					if (mostUpToDate)
-						*mostUpToDate = refValueLocal;
-					return false;
-				}
+				if (mostUpToDate)
+					*mostUpToDate = refValueLocal;
+				return false;
 			}
 		}
 
 	private:
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool try_top_holder(F &&f, Holder &holder)
-		{
+		bool
+		try_top_holder(F &&f, Holder &holder)
+		{ // this method should not be possibly accessed if priority (Thread Pool) not acquired
 			if (is_DLB)
 			{
 				Holder *upperHolder = dlb.find_top_holder(&holder);
@@ -222,17 +202,17 @@ namespace GemPBA
 					if (upperHolder->isTreated())
 						throw std::runtime_error("Attempt to push a treated holder\n");
 
-					if (!upperHolder->evaluate_branch_checkIn()) // checks if it's worth it to push
+					if (upperHolder->evaluate_branch_checkIn())
+					{
+						this->numThreadRequests++;
+						upperHolder->setPushStatus();
+						std::args_handler::unpack_and_push_void(*thread_pool, f, upperHolder->getArgs());
+					}
+					else // checks if it's worth it to push
 					{
 						upperHolder->setDiscard(); // discard otherwise
-						return true;			   // return true because it was still found
 					}
-
-					this->numThreadRequests++;
-					upperHolder->setPushStatus();
-
-					std::args_handler::unpack_and_push_void(*thread_pool, f, upperHolder->getArgs());
-					return true; // top holder found
+					return true; // top holder found whether discarded or pushed
 				}
 				dlb.pop_left_sibling(&holder); // pops holder from parent's children
 			}
@@ -242,27 +222,27 @@ namespace GemPBA
 #ifdef MPI_ENABLED
 		template <typename Holder>
 		bool try_top_holder(auto &getBuffer, Holder &holder)
-		{
+		{ // this method should not be possibly accessed if priority (MPI) not acquired
 			if (is_DLB)
 			{
-				Holder *upperHolder = dlb.find_top_holder(&holder); //  if it finds it, then root has been already lowered
+				Holder *upperHolder = dlb.find_top_holder(&holder); //  if it finds it, then root has already been lowered
 				if (upperHolder)
 				{
 					if (upperHolder->isTreated())
 						throw std::runtime_error("Attempt to push a treated holder\n");
 
-					if (!upperHolder->evaluate_branch_checkIn())
+					if (upperHolder->evaluate_branch_checkIn())
+					{
+						upperHolder->setMPISent(true, mpiScheduler->nextProcess());
+						mpiScheduler->push(getBuffer(upperHolder->getArgs()));
+					}
+					else
 					{
 						upperHolder->setDiscard();
 						// WARNING, ATTENTION, CUIDADO! : holder discarded, flagged as sent but not really sent, then priority should be realeased!!!!
 						mpiScheduler->releasePriority();
-						return true; // top holder found but discarded, therefore not sent
 					}
-
-					upperHolder->setPushStatus();
-					mpiScheduler->push(getBuffer(upperHolder->getArgs()));
-
-					return true; // top holder found
+					return true; // top holder found whether discarded or pushed
 				}
 				dlb.pop_left_sibling(&holder); // pops holder from parent's children
 			}
@@ -274,13 +254,22 @@ namespace GemPBA
 	public:
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
+		void force_push(F &&f, int id, Holder &holder)
+		{
+			holder.setPushStatus();
+			dlb.prune(&holder);
+			std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
+		}
+
+		template <typename _ret, typename F, typename Holder,
+				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool push_multithreading(F &&f, int id, Holder &holder)
 		{
 			/* the underlying loop breaks under one of the following scenarios:
 				- mutex cannot be acquired
 				- there is no available thread in the pool
 				- current level holder is pushed
-	
+
 				NOTE: if top holder found, it'll keep trying to find more
 			*/
 			while (true)
@@ -291,19 +280,23 @@ namespace GemPBA
 					if (thread_pool->n_idle() > 0)
 					{
 						if (try_top_holder<_ret>(f, holder))
+						{
 							continue; // keeps iterating from root to current level
+						}
+						else
+						{
+							if (holder.isTreated())
+								throw std::runtime_error("Attempt to push a treated holder\n");
 
-						if (holder.isTreated())
-							throw std::runtime_error("Attempt to push a treated holder\n");
+							//after this line, only leftMost holder should be pushed
+							this->numThreadRequests++;
+							holder.setPushStatus();
+							dlb.prune(&holder);
+							//lck.unlock(); // [[released at destruction]] WARNING. ATTENTION, CUIDADO, PILAS !!!!
 
-						//after this line, only leftMost holder should be pushed
-						this->numThreadRequests++;
-						holder.setPushStatus();
-						dlb.prune(&holder);
-						//lck.unlock(); // [[released at destruction]] WARNING. ATTENTION, CUIDADO, PILAS !!!!
-
-						std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
-						return true; // pushed to pool
+							std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
+							return true; // pushed to pool
+						}
 					}
 					break; // mutex released at destruction
 				}
@@ -393,12 +386,12 @@ namespace GemPBA
 				std::unique_lock<std::mutex> lck(mtx_MPI, std::defer_lock);
 				if (lck.try_lock()) // if mutex acquired, other threads will jump this section
 				{
-					auto getBuffer = [&serializer](auto &tuple) {
-						return std::apply(serializer, tuple);
-					};
-
 					if (mpiScheduler->acquirePriority())
 					{
+						auto getBuffer = [&serializer](auto &tuple) {
+							return std::apply(serializer, tuple);
+						};
+
 						if (try_top_holder(getBuffer, holder))
 						{
 							//if top holder found, then it is pushed, therefore priority is release internally
@@ -535,11 +528,12 @@ namespace GemPBA
 				{
 					ss << buffer[i];
 				}
-
+				//std::cout << ss.str() << std::endl;
 				auto _deser = std::bind_front(deserializer, std::ref(ss));
 				std::apply(_deser, holder->getArgs());
 
-				try_push_MT<_Ret>(callable, -1, *holder);
+				//try_push_MT<_Ret>(callable, -1, *holder);
+				force_push<_Ret>(callable, -1, *holder);
 
 				return holder;
 				//return nullptr;
@@ -614,9 +608,6 @@ namespace GemPBA
 
 		~BranchHandler()
 		{
-#ifndef MPI_ENABLED
-			delete[] refValueGlobal;
-#endif
 		}
 		BranchHandler(const BranchHandler &) = delete;
 		BranchHandler(BranchHandler &&) = delete;
@@ -627,9 +618,7 @@ namespace GemPBA
 		void passMPIScheduler(MPI_Scheduler *mpiScheduler)
 		{
 			this->mpiScheduler = mpiScheduler;
-			mpiScheduler->linkRefValue(&refValueGlobal);
-			refValueGlobal[0] = refValueLocal;
-			mpiScheduler->setRefValStrategyLookup(maximisation);
+			this->mpiScheduler->setRefValStrategyLookup(maximisation);
 		}
 #endif
 
@@ -640,22 +629,24 @@ namespace GemPBA
 				c = std::toupper(c);
 			});
 
-			if (keyword == "MINIMISE")
+			if (keyword == "MAXIMISE")
+			{
+				return; // maximise by default
+			}
+			else if (keyword == "MINIMISE")
 			{
 				maximisation = false;
 				refValueLocal = INT_MAX;
-			}
-			else if (keyword != "MAXIMISE")
-				throw std::runtime_error("in setRefValStrategyLookup(), keyword : " + keyword + " not recognised\n");
-
 #ifdef MPI_ENABLED
-			mpiScheduler->setRefValStrategyLookup(maximisation); // TODO redundant
+				mpiScheduler->setRefValStrategyLookup(maximisation); // TODO redundant
 #endif
+			}
+			else
+				throw std::runtime_error("in setRefValStrategyLookup(), keyword : " + keyword + " not recognised\n");
 		}
 
 		/*----------------Singleton----------------->>end*/
 	protected:
-		int *refValueGlobal = nullptr; // shared with MPI
 		int refValueLocal = INT_MIN;
 		bool maximisation = true;
 
@@ -685,7 +676,7 @@ namespace GemPBA
 				fmt::print("Cover size() : {}, sending to center \n", res.coverSize());
 #endif
 
-				bestSolution_serialized.first = refValueGlobal[0];
+				bestSolution_serialized.first = refValue();
 				auto &ss = bestSolution_serialized.second; // it should be empty
 				serialize(ss, res);
 			}
