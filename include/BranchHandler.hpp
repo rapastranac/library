@@ -618,7 +618,6 @@ namespace GemPBA
 		void passMPIScheduler(MPI_Scheduler *mpiScheduler)
 		{
 			this->mpiScheduler = mpiScheduler;
-			this->mpiScheduler->setRefValStrategyLookup(maximisation);
 		}
 #endif
 
