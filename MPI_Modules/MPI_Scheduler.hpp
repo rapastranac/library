@@ -136,11 +136,6 @@ namespace GemPBA
 			return world_size;
 		}
 
-		std::vector<int> executedTasksPerNode()
-		{
-			return tasks_per_process;
-		}
-
 		int tasksRecvd()
 		{
 			return nTasksRecvd;
@@ -534,7 +529,6 @@ namespace GemPBA
 							--nAvailable;
 						}
 					}
-					tasks_per_process[status.MPI_SOURCE]++;
 					totalRequests++;
 				}
 				break;
@@ -735,7 +729,6 @@ namespace GemPBA
 			// global synchronisation **********************
 			--nAvailable;
 			processState[dest] = STATE_RUNNING;
-			++tasks_per_process[dest];
 			// *********************************************
 
 			int err = MPI_Ssend(buffer, COUNT, MPI_CHAR, dest, 0, world_Comm); // send buffer
@@ -807,7 +800,6 @@ namespace GemPBA
 
 		void init()
 		{
-			tasks_per_process.resize(world_size, 0);
 			processState.resize(world_size, STATE_AVAILABLE);
 			processTree.resize(world_size);
 			refValueGlobal[0] = INT_MIN;
@@ -881,8 +873,6 @@ namespace GemPBA
 		std::vector<std::pair<int, std::string>> bestResults;
 
 		size_t threads_per_process = std::thread::hardware_concurrency(); // detects the number of logical processors in machine
-
-		std::vector<int> tasks_per_process;
 
 		// statistics
 		size_t totalRequests = 0;
