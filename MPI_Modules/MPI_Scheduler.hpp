@@ -126,6 +126,11 @@ namespace GemPBA
 			MPI_Barrier(world_Comm);
 		}
 
+		void gather(void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root)
+		{
+			MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, world_Comm);
+		}
+
 		int getWorldSize()
 		{
 			return world_size;
@@ -134,6 +139,16 @@ namespace GemPBA
 		std::vector<int> executedTasksPerNode()
 		{
 			return tasks_per_process;
+		}
+
+		int tasksRecvd()
+		{
+			return nTasksRecvd;
+		}
+
+		int tasksSent()
+		{
+			return nTasksSent;
 		}
 
 		void barrier()
@@ -162,6 +177,7 @@ namespace GemPBA
 					break;
 
 				notifyRunningState();
+				nTasksRecvd++;
 
 				//if (transmitting)
 				//{
@@ -203,7 +219,7 @@ namespace GemPBA
 					std::scoped_lock<std::mutex> lck(mtx);
 
 					std::unique_ptr<std::string> ptr(message);
-					nTasks++;
+					nTasksSent++;
 
 					sendTask(*message);
 
@@ -230,7 +246,7 @@ namespace GemPBA
 				}
 			}
 #ifdef DEBUG_COMMENTS
-			fmt::print("rank {} sent {} tasks\n", world_rank, nTasks);
+			fmt::print("rank {} sent {} tasks\n", world_rank, nTasksSend);
 #endif
 
 			if (!q.empty())
@@ -832,7 +848,8 @@ namespace GemPBA
 		int world_size;			  // get the number of processes/nodes
 		char processor_name[128]; // name of the node
 
-		int nTasks = 0;
+		int nTasksRecvd = 0;
+		int nTasksSent = 0;
 		int nRunning = 0;
 		int nAvailable = 0;
 		std::vector<int> processState; // state of the nodes : running, assigned or available

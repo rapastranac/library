@@ -101,20 +101,30 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	auto world_size = mpiScheduler.getWorldSize();
 	std::vector<double> idleTime(world_size);
 	std::vector<size_t> threadRequests(world_size);
+	std::vector<int> nTasksRecvd(world_size);
+	std::vector<int> nTasksSent(world_size);
 
 	double idl_tm = 0;
 	size_t rqst = 0;
+	int taskRecvd;
+	int taskSent;
 
 	if (rank != 0)
 	{ //rank 0 does not run an instance of BranchHandler
 		idl_tm = branchHandler.getPoolIdleTime();
 		rqst = branchHandler.number_thread_requests();
+
+		taskRecvd = mpiScheduler.tasksRecvd();
+		taskSent = mpiScheduler.tasksSent();
 	}
 
 	// here below, idl_tm is the idle time of the other ranks, which is gathered by .allgather() and stored in
 	// a contiguos array
 	mpiScheduler.allgather(idleTime.data(), &idl_tm, MPI_DOUBLE);
 	mpiScheduler.allgather(threadRequests.data(), &rqst, MPI_UNSIGNED_LONG_LONG);
+
+	mpiScheduler.gather(&taskRecvd, 1, MPI_INT, nTasksRecvd.data(), 1, MPI_INT, 0);
+	mpiScheduler.gather(&taskSent, 1, MPI_INT, nTasksSent.data(), 1, MPI_INT, 0);
 
 	// *****************************************************************************************
 	//ipc_handler.finalize();
@@ -154,11 +164,16 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 		fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", sum);
 
 		// **************************************************************************
-		auto tasks_per_process = mpiScheduler.executedTasksPerNode();
 
 		for (int rank = 1; rank < world_size; rank++)
 		{
-			fmt::print("tasks executed by rank {} = {} \n", rank, tasks_per_process[rank]);
+			fmt::print("tasks sent by rank {} = {} \n", rank, nTasksSent[rank]);
+		}
+		fmt::print("\n");
+
+		for (int rank = 1; rank < world_size; rank++)
+		{
+			fmt::print("tasks received by rank {} = {} \n", rank, nTasksRecvd[rank]);
 		}
 		fmt::print("\n");
 
