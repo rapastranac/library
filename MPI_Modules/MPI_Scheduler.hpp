@@ -52,7 +52,7 @@ namespace GemPBA
 			this->threads_per_process = threads_per_process;
 		}
 
-		int init(int *argc, char *argv[])
+		void init(int *argc, char *argv[])
 		{
 			// Initialise MPI and ask for thread support
 			int provided;
@@ -70,7 +70,10 @@ namespace GemPBA
 			MPI_Get_processor_name(processor_name, &namelen);
 			fmt::print("Process {} of {} is on {}\n", world_rank, world_size, processor_name);
 			allocateMPI();
+		}
 
+		int rank_me()
+		{
 			return world_rank;
 		}
 

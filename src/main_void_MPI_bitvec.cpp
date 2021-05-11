@@ -39,7 +39,9 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 	auto &dlb = GemPBA::DLB_Handler::getInstance();
 	auto &mpiScheduler = GemPBA::MPI_Scheduler::getInstance();
-	int rank = mpiScheduler.init(NULL, NULL);
+
+	mpiScheduler.init(NULL, NULL);
+	int rank = mpiScheduler.rank_me();
 
 	branchHandler.passMPIScheduler(&mpiScheduler);
 
