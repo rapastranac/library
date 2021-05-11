@@ -278,7 +278,9 @@ namespace GemPBA
 			{
 				if (!transmitting.load()) // check if transmission in progress
 				{
-					if (next_process[0] > 0) // check if there is another process in the list
+					int nxt = nextProcess();
+
+					if (nxt > 0) // check if there is another process in the list
 					{
 						return true; // priority acquired
 					}
@@ -290,7 +292,10 @@ namespace GemPBA
 
 		int nextProcess()
 		{
-			return next_process[0];
+			MPI_Win_lock(MPI_LOCK_SHARED, world_rank, 0, win_nextProcess);
+			int nxt = next_process[0];
+			MPI_Win_unlock(world_rank, win_nextProcess);
+			return nxt;
 		}
 
 		// enqueue a message which will be sent to the next assigned process
@@ -303,7 +308,7 @@ namespace GemPBA
 			}
 
 			transmitting = true;
-			dest_rank_tmp = next_process[0];
+			dest_rank_tmp = nextProcess();
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {} entered MPI_Scheduler::push(..) for the node {}\n", world_rank, dest_rank_tmp);
 #endif
