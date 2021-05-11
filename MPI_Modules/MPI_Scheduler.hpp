@@ -57,6 +57,7 @@ namespace GemPBA
 			// Initialise MPI and ask for thread support
 			int provided;
 			MPI_Init_thread(argc, &argv, MPI_THREAD_FUNNELED, &provided);
+			//MPI_Init_thread(argc, &argv, MPI_THREAD_SERIALIZED, &provided);
 
 			if (provided < MPI_THREAD_FUNNELED)
 			{
@@ -230,8 +231,14 @@ namespace GemPBA
 						throw std::runtime_error("Task found in queue, this should not happen in taskFunneling()\n");
 					}
 				}
-				updateRefValue(branchHandler);
-				updateNextProcess();
+
+				{
+					/* this section protects MPI calls */
+					std::scoped_lock<std::mutex> lck(mtx);
+					updateNextProcess();
+					updateRefValue(branchHandler);
+				}
+
 				isPop = q.pop(message);
 
 				if (!isPop && branchHandler.isDone())
@@ -293,7 +300,8 @@ namespace GemPBA
 			{
 				if (!transmitting.load()) // check if transmission in progress
 				{
-					if (nxtProcess > 0) // check if there is another process in the list
+					int nxt = nextProcess();
+					if (nxt > 0) // check if there is another process in the list
 					{
 						return true; // priority acquired
 					}
@@ -312,6 +320,9 @@ namespace GemPBA
 
 		int nextProcess()
 		{
+			//MPI_Win_lock(MPI_LOCK_SHARED, world_rank, 0, win_nextProcess);
+			//this->nxtProcess = this->next_process[0];
+			//MPI_Win_unlock(world_rank, win_nextProcess);
 			return this->nxtProcess;
 		}
 
