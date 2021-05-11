@@ -231,6 +231,7 @@ namespace GemPBA
 					}
 				}
 				updateRefValue(branchHandler);
+				updateNextProcess();
 				isPop = q.pop(message);
 
 				if (!isPop && branchHandler.isDone())
@@ -292,9 +293,7 @@ namespace GemPBA
 			{
 				if (!transmitting.load()) // check if transmission in progress
 				{
-					int nxt = nextProcess();
-
-					if (nxt > 0) // check if there is another process in the list
+					if (nxtProcess > 0) // check if there is another process in the list
 					{
 						return true; // priority acquired
 					}
@@ -304,12 +303,16 @@ namespace GemPBA
 			return false;
 		}
 
-		int nextProcess()
+		void updateNextProcess()
 		{
 			MPI_Win_lock(MPI_LOCK_SHARED, world_rank, 0, win_nextProcess);
-			int nxt = next_process[0];
+			this->nxtProcess = this->next_process[0];
 			MPI_Win_unlock(world_rank, win_nextProcess);
-			return nxt;
+		}
+
+		int nextProcess()
+		{
+			return this->nxtProcess;
 		}
 
 		// enqueue a message which will be sent to the next assigned process
@@ -870,6 +873,7 @@ namespace GemPBA
 		int *refValueGlobal = nullptr; // reference value to chose a best solution
 		int refValueGlobal_old;
 		int *next_process = nullptr; // potentially to replace availableProcesses
+		int nxtProcess = -1;
 
 		bool maximisation = true; // true if maximising, false if minimising
 
