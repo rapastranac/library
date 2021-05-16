@@ -57,7 +57,6 @@ namespace GemPBA
 			// Initialise MPI and ask for thread support
 			int provided;
 			MPI_Init_thread(argc, &argv, MPI_THREAD_FUNNELED, &provided);
-			//MPI_Init_thread(argc, &argv, MPI_THREAD_SERIALIZED, &provided);
 
 			if (provided < MPI_THREAD_FUNNELED)
 			{
@@ -331,8 +330,8 @@ namespace GemPBA
 		{
 			if (message.size() == 0)
 			{
-				fmt::print("rank {}, attempted to send empty buffer \n", world_rank);
-				throw;
+				auto str = fmt::format("rank {}, attempted to send empty buffer \n", world_rank);
+				throw std::runtime_error(str);
 			}
 
 			transmitting = true;
