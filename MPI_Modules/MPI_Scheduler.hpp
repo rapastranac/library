@@ -212,6 +212,10 @@ namespace GemPBA
 
 			while (true)
 			{
+
+				probe_refValue();
+				probe_nextProcess();
+
 				while (isPop)
 				{
 					std::scoped_lock<std::mutex> lck(mtx);
@@ -258,6 +262,28 @@ namespace GemPBA
 				throw std::runtime_error("leaving process with a pending message\n");
 			/* to reuse the task funneling, otherwise it will exit
             right away the second time the process receives a task*/
+		}
+
+		void probe_refValue()
+		{
+			int flag;
+			MPI_Status status;
+			MPI_Iprobe(0, REFVAL_UPDATE_TAG, refValueGlobal_Comm, &flag, &status);
+
+			if (flag)
+			{
+			}
+		}
+
+		void probe_nextProcess()
+		{
+			int flag;
+			MPI_Status status;
+			MPI_Iprobe(0, REFVAL_UPDATE_TAG, nextProcess_Comm, &flag, &status);
+
+			if (flag)
+			{
+			}
 		}
 
 		void updateRefValue(auto &branchHandler)
