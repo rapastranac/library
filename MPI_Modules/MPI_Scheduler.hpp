@@ -27,6 +27,7 @@
 
 #define TERMINATION_TAG 6
 #define REFVAL_UPDATE_TAG 9
+#define NEXT_PROCESS_TAG 10
 
 #define HAS_RESULT_TAG 13
 #define NO_RESULT_TAG 14
@@ -272,6 +273,8 @@ namespace GemPBA
 
 			if (flag)
 			{
+				MPI_Recv(refValueGlobal, 1, MPI_INT, 0, REFVAL_UPDATE_TAG, refValueGlobal_Comm, &status);
+				//MPI_Wait(&request, &status);
 			}
 		}
 
@@ -279,10 +282,12 @@ namespace GemPBA
 		{
 			int flag;
 			MPI_Status status;
-			MPI_Iprobe(0, REFVAL_UPDATE_TAG, nextProcess_Comm, &flag, &status);
+			MPI_Iprobe(0, NEXT_PROCESS_TAG, nextProcess_Comm, &flag, &status);
 
 			if (flag)
 			{
+				MPI_Recv(refValueGlobal, 1, MPI_INT, 0, NEXT_PROCESS_TAG, nextProcess_Comm, &status);
+				//MPI_Wait(&request, &status);
 			}
 		}
 
