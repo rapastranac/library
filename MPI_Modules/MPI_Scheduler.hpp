@@ -399,7 +399,7 @@ namespace GemPBA
 		void notifyStateAvailable()
 		{
 			int buffer = 0;
-			MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_AVAILABLE, world_Comm);
+			MPI_Send(&buffer, 1, MPI_INT, 0, STATE_AVAILABLE, world_Comm);
 #ifdef DEBUG_COMMENTS
 			fmt::print("rank {} entered notifyStateAvailable()\n", world_rank);
 #endif
@@ -408,7 +408,7 @@ namespace GemPBA
 		void notifyRunningState()
 		{
 			int buffer = 0;
-			MPI_Ssend(&buffer, 1, MPI_INT, 0, STATE_RUNNING, world_Comm);
+			MPI_Send(&buffer, 1, MPI_INT, 0, STATE_RUNNING, world_Comm);
 		}
 
 		void sendTask(std::string &message)
