@@ -25,39 +25,22 @@
 
 int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 {
-
-	/*int provided;
-			MPI_Init_thread(NULL, NULL, MPI_THREAD_SERIALIZED, &provided);
-			if (provided < MPI_THREAD_SERIALIZED)
-			{
-				cout<<"The threading support level is lesser than that demanded, got "<<provided<<endl;
-				MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-			}*/
-
 	using HolderType = GemPBA::ResultHolder<void, int, gbitset, int>;
 
 	auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 	auto &dlb = GemPBA::DLB_Handler::getInstance();
 	auto &mpiScheduler = GemPBA::MPI_Scheduler::getInstance();
 
-	mpiScheduler.init(NULL, NULL);
 	int rank = mpiScheduler.rank_me();
-
 	branchHandler.passMPIScheduler(&mpiScheduler);
 
-	//branchHandler.init();
 	cout << "NUMTHREADS= " << numThreads << endl;
-	//branchHandler.initThreadPool(numThreads - 1); //-1 to exclude current
-	//cout << "set max threads to " << numThreads << endl;
 
-	Graph graph;
 	VC_void_MPI_bitvec cover;
-
 	auto function = std::bind(&VC_void_MPI_bitvec ::mvcbitset, &cover, _1, _2, _3, _4, _5); // target algorithm [all arguments]
 																							// initialize MPI and member variable linkin
-
+	Graph graph;
 	graph.readEdges(filename);
-	//graph.preprocessing();
 
 	cover.init(graph, numThreads, filename, prob);
 	cover.setGraph(graph);
@@ -66,6 +49,7 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	gbitset allzeros(gsize);
 	gbitset allones = ~allzeros;
 
+	
 	branchHandler.setRefValue(gsize);
 	branchHandler.setRefValStrategyLookup("minimise");
 
@@ -129,7 +113,6 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	mpiScheduler.gather(&taskSent, 1, MPI_INT, nTasksSent.data(), 1, MPI_INT, 0);
 
 	// *****************************************************************************************
-	//ipc_handler.finalize();
 	//return 0;
 
 	if (rank == 0)
@@ -188,8 +171,6 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 
 		// **************************************************************************
 	}
-
-	mpiScheduler.finalize();
 	return 0;
 }
 

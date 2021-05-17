@@ -117,7 +117,7 @@ namespace GemPBA
 		// get number for this rank
 		int rank_me()
 		{
-			return mpiScheduler->getRank();
+			return mpiScheduler->rank_me();
 		}
 #endif
 
@@ -388,7 +388,8 @@ namespace GemPBA
 				{
 					if (mpiScheduler->acquirePriority())
 					{
-						auto getBuffer = [&serializer](auto &tuple) {
+						auto getBuffer = [&serializer](auto &tuple)
+						{
 							return std::apply(serializer, tuple);
 						};
 
@@ -519,7 +520,8 @@ namespace GemPBA
 		template <typename _Ret, typename... Args>
 		[[nodiscard]] auto constructBufferDecoder(auto &&callable, auto &&deserializer)
 		{
-			return [this, callable, deserializer](const char *buffer, const int count) {
+			return [this, callable, deserializer](const char *buffer, const int count)
+			{
 				using HolderType = GemPBA::ResultHolder<_Ret, Args...>;
 				HolderType *holder = new HolderType(dlb, -1);
 
@@ -543,7 +545,8 @@ namespace GemPBA
 		// this returns a lambda function which returns the best results as raw data
 		[[nodiscard]] auto constructResultFetcher()
 		{
-			return [this]() {
+			return [this]()
+			{
 				if (bestSolution_serialized.first == -1)
 					return std::make_pair(0, static_cast<std::string>("Empty buffer, no result"));
 				else
@@ -553,7 +556,8 @@ namespace GemPBA
 
 		[[nodiscard]] auto constructResultFetcher(auto *holder, auto &&deserializer)
 		{
-			return [this]() {
+			return [this]()
+			{
 				if (bestSolution_serialized.first == -1)
 					return std::make_pair(0, static_cast<std::string>("Empty buffer, no result"));
 				else
@@ -624,9 +628,8 @@ namespace GemPBA
 		void setRefValStrategyLookup(std::string keyword)
 		{
 			// convert string to upper case
-			std::for_each(keyword.begin(), keyword.end(), [](char &c) {
-				c = std::toupper(c);
-			});
+			std::for_each(keyword.begin(), keyword.end(), [](char &c)
+						  { c = std::toupper(c); });
 
 			if (keyword == "MAXIMISE")
 			{
