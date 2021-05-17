@@ -18,23 +18,11 @@ module list
 
 
  
-xterm -e 'ssh nia0027 -t 'htop'' &
-xterm -e 'ssh nia0089 -t 'htop'' &
-xterm -e 'ssh nia0170 -t 'htop'' &
-xterm -e 'ssh nia0188 -t 'htop'' &
-xterm -e 'ssh nia0233 -t 'htop'' &
-xterm -e 'ssh nia0234 -t 'htop'' &
-xterm -e 'ssh nia0239 -t 'htop'' &
-xterm -e 'ssh nia0258 -t 'htop'' &
-xterm -e 'ssh nia0311 -t 'htop'' &
-xterm -e 'ssh nia0315 -t 'htop'' &
-xterm -e 'ssh nia0334 -t 'htop'' &
-xterm -e 'ssh nia0367 -t 'htop'' &
-xterm -e 'ssh nia0383 -t 'htop'' &
-xterm -e 'ssh nia0396 -t 'htop'' &
-xterm -e 'ssh nia0541 -t 'htop'' &
-xterm -e 'ssh nia0568 -t 'htop'' &
-xterm -e 'ssh nia0635 -t 'htop'' &
-xterm -e 'ssh nia0675 -t 'htop'' &
-xterm -e 'ssh nia0857 -t 'htop'' &
-xterm -e 'ssh nia1091 -t 'htop'' &
+xterm -e 'ssh nia0727 -t 'htop'' &
+xterm -e 'ssh nia0728 -t 'htop'' &
+xterm -e 'ssh nia0990 -t 'htop'' &
+xterm -e 'ssh nia0991 -t 'htop'' &
+xterm -e 'ssh nia1504 -t 'htop'' &
+xterm -e 'ssh nia1505 -t 'htop'' &
+xterm -e 'ssh nia1541 -t 'htop'' &
+xterm -e 'ssh nia1542 -t 'htop'' &
