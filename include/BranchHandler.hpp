@@ -296,7 +296,7 @@ namespace GemPBA
 							dlb.prune(&holder);
 							//lck.unlock(); // [[released at destruction]] WARNING. ATTENTION, CUIDADO, PILAS !!!!
 
-							std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
+							std::args_handler::unpack_and_push_void(*thread_pool, std::forward<F>(f), std::forward<decltype(holder.getArgs())>(holder.getArgs()));
 							return true; // pushed to pool
 						}
 					}

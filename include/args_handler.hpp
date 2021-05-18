@@ -67,31 +67,31 @@ namespace std
 		/*--------------- This detects if return type is void or not ----------------->end*/
 
 		template <typename F, typename... Args> //,  // typename std::enable_if<std::is_same<P, ThreadPool::Pool>::value>::type * = nullptr>
-		static auto helper(ThreadPool::Pool &pool, F &&f, Args &...args)
+		static constexpr decltype(auto) helper(ThreadPool::Pool &pool, F &&f, Args &&...args)
 		{
 			//int size = sizeof...(args); //testing
-			auto lambda = [&](int, Args&... args, void *) {
-				//id is ignored due to ctpl stuff
-				//holder tracker (last parameter) is not passed when pushed
-				return pool.push(f, args..., nullptr);
-			};
-			return lambda(0, args..., nullptr);
+			//auto lambda = [&](int, Args&... args, void *) {
+			//id is ignored due to ctpl stuff
+			//holder tracker (last parameter) is not passed when pushed
+			//	return pool.push(f, args..., nullptr);
+			//};
+			//return lambda(0, args..., nullptr);
+			return pool.push(std::forward<F>(f), std::forward<Args>(args)..., std::forward<nullptr_t>(nullptr));
 		}
 
 		/*begin<----------	This unpacks tuple before pushing to pool -------------------*/
 		// void Callable
 
 		template <typename F, typename Tuple, size_t... I>
-		static auto unpack_and_push_void(ThreadPool::Pool &pool, F &&f, Tuple &t, std::index_sequence<I...>)
+		static constexpr decltype(auto) unpack_and_push_void(ThreadPool::Pool &pool, F &&f, Tuple &&t, std::index_sequence<I...>)
 		{
-			return helper(pool, f, std::get<I>(t)...);
+			return helper(pool, std::forward<F>(f), std::get<I>(std::forward<Tuple>(t))...);
 		}
 
 		template <typename F, typename Tuple>
-		static auto unpack_and_push_void(ThreadPool::Pool &pool, F &&f, Tuple &t)
+		static constexpr decltype(auto) unpack_and_push_void(ThreadPool::Pool &pool, F &&f, Tuple &&t)
 		{
-			static constexpr auto size = std::tuple_size<Tuple>::value;
-			return unpack_and_push_void(pool, f, t, std::make_index_sequence<size>{});
+			return unpack_and_push_void(pool, std::forward<F>(f), std::forward<Tuple>(t), std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
 		}
 
 		/*-------------	This unpacks tuple before pushing to pool ---------------->end*/
@@ -174,8 +174,8 @@ namespace std
 		//}
 		/*------- General unpack tuple and passes arguments to callable ----->end*/
 
-		void apply_pool(){
-			
+		void apply_pool()
+		{
 		}
 	};
 
