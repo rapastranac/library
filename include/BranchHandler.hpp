@@ -194,7 +194,7 @@ namespace GemPBA
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		bool
-		try_top_holder(F &&f, Holder &holder)
+		try_top_holder(F &f, Holder &holder)
 		{ // this method should not be possibly accessed if priority (Thread Pool) not acquired
 			if (is_DLB)
 			{
@@ -256,7 +256,7 @@ namespace GemPBA
 	public:
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		void force_push(F &&f, int id, Holder &holder)
+		void force_push(F &f, int id, Holder &holder)
 		{
 			holder.setPushStatus();
 			dlb.prune(&holder);
@@ -265,7 +265,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_multithreading(F &&f, int id, Holder &holder)
+		bool push_multithreading(F &f, int id, Holder &holder)
 		{
 			/* the underlying loop breaks under one of the following scenarios:
 				- mutex cannot be acquired
@@ -296,7 +296,7 @@ namespace GemPBA
 							dlb.prune(&holder);
 							//lck.unlock(); // [[released at destruction]] WARNING. ATTENTION, CUIDADO, PILAS !!!!
 
-							std::args_handler::unpack_and_push_void(*thread_pool, std::forward<F>(f), std::forward<decltype(holder.getArgs())>(holder.getArgs()));
+							std::args_handler::unpack_and_push_void(*thread_pool, f, holder.getArgs());
 							return true; // pushed to pool
 						}
 					}
@@ -313,7 +313,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool push_multithreading(F &&f, int id, Holder &holder)
+		bool push_multithreading(F &f, int id, Holder &holder)
 		{
 			/*This lock must be performed before checking the condition,
 			even though numThread is atomic*/
@@ -355,13 +355,13 @@ namespace GemPBA
 		}
 
 		template <typename _ret, typename F, typename Holder>
-		bool try_push_MT(F &&f, int id, Holder &holder)
+		bool try_push_MT(F &f, int id, Holder &holder)
 		{
 			return push_multithreading<_ret>(f, id, holder);
 		}
 
 		template <typename _ret, typename F, typename Holder, typename Serializer>
-		bool try_push_MP(F &&f, int id, Holder &holder, Serializer &&serializer)
+		bool try_push_MP(F &f, int id, Holder &holder, Serializer &&serializer)
 		{
 			bool _flag = push_multiprocess(id, holder, serializer);
 
@@ -422,7 +422,7 @@ namespace GemPBA
 		}
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL>
-		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial, bool)
+		bool push_multiprocess(F &f, int id, Holder &holder, F_SERIAL &f_serial, bool)
 		{
 			bool _flag = false;
 			while (!_flag)
@@ -433,7 +433,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder, typename F_SERIAL,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		bool push_multiprocess(F &&f, int id, Holder &holder, F_SERIAL &&f_serial)
+		bool push_multiprocess(F &f, int id, Holder &holder, F_SERIAL &f_serial)
 		{
 			int r = try_another_process(holder, f_serial);
 			if (r == 0)
@@ -449,7 +449,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		_ret forward(F &&f, int threadId, Holder &holder)
+		_ret forward(F &f, int threadId, Holder &holder)
 		{
 			holder.setForwardStatus();
 			return std::args_handler::unpack_and_forward_non_void(f, threadId, holder.getArgs(), &holder);
@@ -459,7 +459,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		_ret forward(F &&f, int threadId, Holder &holder)
+		_ret forward(F &f, int threadId, Holder &holder)
 		{
 			if (holder.isTreated())
 				throw std::runtime_error("Attempt to push a treated holder\n");
@@ -480,7 +480,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		_ret forward(F &&f, int threadId, Holder &holder, bool)
+		_ret forward(F &f, int threadId, Holder &holder, bool)
 		{
 
 			if (holder.is_pushed())
@@ -494,7 +494,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder, typename F_DESER,
 				  std::enable_if_t<!std::is_void_v<_ret>, int> = 0>
-		_ret forward(F &&f, int threadId, Holder &holder, F_DESER &&f_deser, bool)
+		_ret forward(F &f, int threadId, Holder &holder, F_DESER &f_deser, bool)
 		{
 			if (holder.is_pushed() || holder.is_MPI_Sent()) //TODO.. this should be considered when using DLB_Handler and pushing to another processsI
 				return holder.get(f_deser);					//return {}; // nope, if it was pushed, then result should be retrieved in here

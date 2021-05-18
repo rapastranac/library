@@ -42,40 +42,9 @@ namespace std
 			return bind_place_holders(std::make_index_sequence<sizeof...(Args)>{}, std::forward<F>(f));
 		}
 
-		/*---- this allows to bind a function with unknown number of parameters --->end*/
-
-		/*begin<---------This detects if return type is void or not -------------------*/
-		//struct Void
-		//{
-		//};
-		//template <typename F, typename... Args,
-		//		  typename Result = std::invoke_result_t<F, Args...>,
-		//		  std::enable_if_t<!std::is_void_v<Result>, int> = 0>
-		//static Result invoke_void(F &&f, Args &&...args)
-		//{
-		//	return std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
-		//}
-		//// void case
-		//template <typename F, typename... Args,
-		//		  typename Result = std::invoke_result_t<F, Args...>,
-		//		  std::enable_if_t<std::is_void_v<Result>, int> = 0>
-		//static Void invoke_void(F &&f, Args &&...args)
-		//{
-		//	std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
-		//	return Void();
-		//}
-		/*--------------- This detects if return type is void or not ----------------->end*/
-
 		template <typename F, typename... Args> //,  // typename std::enable_if<std::is_same<P, ThreadPool::Pool>::value>::type * = nullptr>
 		static constexpr decltype(auto) helper(ThreadPool::Pool &pool, F &&f, Args &&...args)
 		{
-			//int size = sizeof...(args); //testing
-			//auto lambda = [&](int, Args&... args, void *) {
-			//id is ignored due to ctpl stuff
-			//holder tracker (last parameter) is not passed when pushed
-			//	return pool.push(f, args..., nullptr);
-			//};
-			//return lambda(0, args..., nullptr);
 			return pool.push(std::forward<F>(f), std::forward<Args>(args)..., std::forward<nullptr_t>(nullptr));
 		}
 
@@ -91,7 +60,9 @@ namespace std
 		template <typename F, typename Tuple>
 		static constexpr decltype(auto) unpack_and_push_void(ThreadPool::Pool &pool, F &&f, Tuple &&t)
 		{
-			return unpack_and_push_void(pool, std::forward<F>(f), std::forward<Tuple>(t), std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
+			return unpack_and_push_void(pool, std::forward<F>(f),
+										std::forward<Tuple>(t),
+										std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
 		}
 
 		/*-------------	This unpacks tuple before pushing to pool ---------------->end*/
@@ -137,18 +108,27 @@ namespace std
 		/*begin<--- This unpacks tuple before forwarding it through the function -----*/
 		/* same as above, not tracking stack */ // TO IMPROVE
 
-		template <typename Function, typename Tuple, typename Holder, size_t... I>
-		static auto unpack_and_forward_void(Function &&f, int id, Tuple &t, Holder *holder, std::index_sequence<I...>)
+		template <typename F, typename Tuple, size_t... I>
+		static constexpr decltype(auto) unpack_and_forward_void(F &&f, int id, Tuple &&t, void *holder, std::index_sequence<I...>)
 		{
 			return f(id, std::get<I>(t)..., holder);
+
+			//return f(id, std::get<I>(std::forward<Tuple>(t))..., holder);
+
+			//return std::invoke(std::forward<F>(f), id,
+			//				   std::get<I>(std::forward<Tuple>(t))..., holder);
 		}
 
-		template <typename Function, typename Tuple, typename Holder>
-		static auto unpack_and_forward_void(Function &&f, int id, Tuple &t, Holder *holder)
+		template <typename F, typename Tuple>
+		static constexpr decltype(auto) unpack_and_forward_void(F &&f, int id, Tuple &&t, void *holder)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
-			static constexpr auto size = std::tuple_size<Tuple>::value;
-			return unpack_and_forward_void(f, id, t, holder, std::make_index_sequence<size>{});
+			//static constexpr auto size = std::tuple_size<Tuple>::value;
+			return unpack_and_forward_void(std::forward<F>(f),
+										   id,
+										   std::forward<Tuple>(t),
+										   holder,
+										   std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
 		}
 		/*------- This unpacks tuple before forwarding it through the function ----->end*/
 

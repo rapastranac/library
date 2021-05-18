@@ -40,7 +40,7 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 43,
+				"line" : 47,
 				"parent" : 0
 			},
 			{
@@ -100,15 +100,7 @@
 				},
 				{
 					"backtrace" : 3,
-					"fragment" : "-std=c++2a"
-				},
-				{
-					"backtrace" : 3,
-					"fragment" : "-fconcepts"
-				},
-				{
-					"backtrace" : 3,
-					"fragment" : "-O3"
+					"fragment" : "-g"
 				},
 				{
 					"backtrace" : 3,
@@ -129,6 +121,10 @@
 				{
 					"backtrace" : 3,
 					"fragment" : "-pthread"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fconcepts"
 				},
 				{
 					"backtrace" : 2,
