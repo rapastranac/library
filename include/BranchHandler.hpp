@@ -113,13 +113,15 @@ namespace GemPBA
 		{
 			return numThreadRequests.load();
 		}
-#ifdef MPI_ENABLED
 		// get number for this rank
 		int rank_me()
 		{
+#ifdef MPI_ENABLED
 			return mpiScheduler->rank_me();
-		}
+#else
+			return -1;
 #endif
+		}
 
 		/* for void algorithms, this allows to reuse the pool*/
 		void wait()

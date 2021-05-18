@@ -13,20 +13,20 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/home/andres/cloud/library/src/main_void.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_void.cpp.o"
   "/home/andres/cloud/library/src/main_void_MPI.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o"
   "/home/andres/cloud/library/src/main_void_MPI_bitvec.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_void_MPI_bitvec.cpp.o"
+  "/home/andres/cloud/library/src/main_void_bitvec.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.o"
   "/home/andres/cloud/library/src/read_graphs.cpp" "/home/andres/cloud/library/build/CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_CXX
-  "BITVECTOR_VC"
+  "BITVECTOR_VC_THREAD"
   "BOOST_ALL_NO_LIB"
   "BOOST_CONTEXT_DYN_LINK"
   "BOOST_FIBER_DYN_LINK"
   "BOOST_FILESYSTEM_DYN_LINK"
   "BOOST_SERIALIZATION_DYN_LINK"
   "BOOST_SYSTEM_DYN_LINK"
-  "MPI_ENABLED"
   "R_SEARCH=true"
   )
 

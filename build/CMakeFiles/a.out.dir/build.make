@@ -148,9 +148,22 @@ CMakeFiles/a.out.dir/src/main_void_MPI_bitvec.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_void_MPI_bitvec.cpp.s"
 	/bin/g++-9 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/cloud/library/src/main_void_MPI_bitvec.cpp -o CMakeFiles/a.out.dir/src/main_void_MPI_bitvec.cpp.s
 
+CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.o: CMakeFiles/a.out.dir/flags.make
+CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.o: ../src/main_void_bitvec.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.o"
+	/bin/g++-9  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.o -c /home/andres/cloud/library/src/main_void_bitvec.cpp
+
+CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.i"
+	/bin/g++-9 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/andres/cloud/library/src/main_void_bitvec.cpp > CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.i
+
+CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.s"
+	/bin/g++-9 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/andres/cloud/library/src/main_void_bitvec.cpp -o CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.s
+
 CMakeFiles/a.out.dir/src/read_graphs.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/src/read_graphs.cpp.o: ../src/read_graphs.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/a.out.dir/src/read_graphs.cpp.o"
 	/bin/g++-9  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/src/read_graphs.cpp.o -c /home/andres/cloud/library/src/read_graphs.cpp
 
 CMakeFiles/a.out.dir/src/read_graphs.cpp.i: cmake_force
@@ -163,7 +176,7 @@ CMakeFiles/a.out.dir/src/read_graphs.cpp.s: cmake_force
 
 CMakeFiles/a.out.dir/fmt/src/format.cc.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/fmt/src/format.cc.o: ../fmt/src/format.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/a.out.dir/fmt/src/format.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/a.out.dir/fmt/src/format.cc.o"
 	/bin/g++-9  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/fmt/src/format.cc.o -c /home/andres/cloud/library/fmt/src/format.cc
 
 CMakeFiles/a.out.dir/fmt/src/format.cc.i: cmake_force
@@ -176,7 +189,7 @@ CMakeFiles/a.out.dir/fmt/src/format.cc.s: cmake_force
 
 CMakeFiles/a.out.dir/fmt/src/os.cc.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/fmt/src/os.cc.o: ../fmt/src/os.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/a.out.dir/fmt/src/os.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/a.out.dir/fmt/src/os.cc.o"
 	/bin/g++-9  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/fmt/src/os.cc.o -c /home/andres/cloud/library/fmt/src/os.cc
 
 CMakeFiles/a.out.dir/fmt/src/os.cc.i: cmake_force
@@ -196,6 +209,7 @@ a_out_OBJECTS = \
 "CMakeFiles/a.out.dir/src/main_void.cpp.o" \
 "CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o" \
 "CMakeFiles/a.out.dir/src/main_void_MPI_bitvec.cpp.o" \
+"CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.o" \
 "CMakeFiles/a.out.dir/src/read_graphs.cpp.o" \
 "CMakeFiles/a.out.dir/fmt/src/format.cc.o" \
 "CMakeFiles/a.out.dir/fmt/src/os.cc.o"
@@ -210,6 +224,7 @@ a_out_EXTERNAL_OBJECTS =
 ../a.out: CMakeFiles/a.out.dir/src/main_void.cpp.o
 ../a.out: CMakeFiles/a.out.dir/src/main_void_MPI.cpp.o
 ../a.out: CMakeFiles/a.out.dir/src/main_void_MPI_bitvec.cpp.o
+../a.out: CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.o
 ../a.out: CMakeFiles/a.out.dir/src/read_graphs.cpp.o
 ../a.out: CMakeFiles/a.out.dir/fmt/src/format.cc.o
 ../a.out: CMakeFiles/a.out.dir/fmt/src/os.cc.o
@@ -224,7 +239,7 @@ a_out_EXTERNAL_OBJECTS =
 ../a.out: /usr/lib/gcc/x86_64-linux-gnu/9/libgomp.so
 ../a.out: /usr/lib/x86_64-linux-gnu/libpthread.so
 ../a.out: CMakeFiles/a.out.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable ../a.out"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/andres/cloud/library/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX executable ../a.out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/a.out.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

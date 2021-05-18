@@ -26,6 +26,7 @@
 int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 {
 	using HolderType = GemPBA::ResultHolder<void, int, gbitset, int>;
+	//using HolderType = GemPBA::ResultHolder<void, int, gbitset, std::vector<int>, int>;
 
 	auto &branchHandler = GemPBA::BranchHandler::getInstance(); // parallel library
 	auto &dlb = GemPBA::DLB_Handler::getInstance();
@@ -49,7 +50,6 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	gbitset allzeros(gsize);
 	gbitset allones = ~allzeros;
 
-	
 	branchHandler.setRefValue(gsize);
 	branchHandler.setRefValStrategyLookup("minimise");
 
@@ -68,6 +68,8 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	int pid = getpid();
 	fmt::print("rank {} is process ID : {}\n", rank, pid);
 
+	//std::vector<int> dummy(250, 0);
+	//std::string buffer = serializer(zero, allones, zero, dummy);
 	std::string buffer = serializer(zero, allones, zero);
 
 	if (rank == 0)
@@ -77,6 +79,7 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	else
 	{
 		branchHandler.initThreadPool(numThreads);
+		//auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, gbitset, int, std::vector<int>>(function, deserializer);
 		auto bufferDecoder = branchHandler.constructBufferDecoder<void, int, gbitset, int>(function, deserializer);
 		auto resultFetcher = branchHandler.constructResultFetcher();
 		mpiScheduler.runNode(branchHandler, bufferDecoder, resultFetcher, serializer);

@@ -2,6 +2,9 @@
 
 #include "VertexCover.hpp"
 #include <atomic>
+#include <array>
+#include <random>
+
 #include <boost/dynamic_bitset.hpp>
 #include <boost/container/set.hpp>
 #include <boost/unordered_set.hpp>
@@ -56,7 +59,8 @@ void helper_ser(auto &archive, auto &first, auto &...args)
     helper_ser(archive, args...);
 }
 
-auto serializer = [](auto &&...args) {
+auto serializer = [](auto &&...args)
+{
     /* here inside, user can implement its favourite serialization method given the
 	arguments pack and it must return a std::string */
     std::stringstream ss;
@@ -78,7 +82,8 @@ void helper_dser(auto &archive, auto &first, auto &...args)
     helper_dser(archive, args...);
 }
 
-auto deserializer = [](std::stringstream &ss, auto &...args) {
+auto deserializer = [](std::stringstream &ss, auto &...args)
+{
     /* here inside, the user can implement its favourite deserialization method given buffer
 	and the arguments pack*/
     //cereal::BinaryInputArchive archive(ss);
@@ -90,10 +95,12 @@ auto deserializer = [](std::stringstream &ss, auto &...args) {
 
 class VC_void_MPI_bitvec : public VertexCover
 {
+    //using HolderType = GemPBA::ResultHolder<void, int, gbitset, int, std::vector<int>>;
     using HolderType = GemPBA::ResultHolder<void, int, gbitset, int>;
 
 private:
     std::function<void(int, int, gbitset &, int, void *)> _f;
+    //std::function<void(int, int, gbitset &, int, std::vector<int>, void *)> _f;
 
 public:
     //vector<boost::unordered_set<pair<gbitset,int>>> seen;
@@ -107,6 +114,7 @@ public:
 
     VC_void_MPI_bitvec()
     {
+        //this->_f = std::bind(&VC_void_MPI_bitvec::mvcbitset, this, _1, _2, _3, _4, _5, _6);
         this->_f = std::bind(&VC_void_MPI_bitvec::mvcbitset, this, _1, _2, _3, _4, _5);
     }
     ~VC_void_MPI_bitvec() {}
@@ -175,8 +183,20 @@ public:
         }
     }
 
+    //void mvcbitset(int id, int depth, gbitset &bits_in_graph, int solsize, std::vector<int> dummy, void *parent)
     void mvcbitset(int id, int depth, gbitset &bits_in_graph, int solsize, void *parent)
     {
+
+        //{                                                   // 1 MB, emulates heavy messaging
+        //    std::random_device rd;                          // Will be used to obtain a seed for the random number engine
+        //    std::mt19937 gen(rd());                         // Standard mersenne_twister_engine seeded with rd()
+        //    std::uniform_int_distribution<> distrib(0, 10); // uniform distribution [closed interval]
+        //    for (size_t i = 0; i < dummy.size(); i++)
+        //    {
+        //        dummy[i] += distrib(gen); // random value in range
+        //    }
+        //}
+
         passes++;
         //branchHandler.passes = passes;
 
@@ -209,6 +229,7 @@ public:
         {
 
             terminate_condition_bits(cursol_size, id, depth);
+            //terminate_condition_bits(cursol_size, id, depth, dummy);
             return;
         }
 
@@ -320,6 +341,8 @@ public:
         {
             //cout<<"terminating 2"<<endl;
             terminate_condition_bits(cursol_size, id, depth);
+            //terminate_condition_bits(cursol_size, id, depth, dummy);
+
             return;
         }
 
@@ -342,14 +365,6 @@ public:
             return;
         }
 
-        //if (maxdeg <= 2)
-        //{
-        //    //TODO : ACTUALLY COMPUTE THE CYCLES
-        //    terminate_condition_bits(cursol_size + nbVertices / 2, id, depth);
-        //    //cout<<"MAXDEG 2 n="<<nbVertices<<endl;
-        //    return;
-        //}
-
         int newDepth = depth + 1;
 
         HolderType hol_l(dlb, id, parent);
@@ -360,41 +375,47 @@ public:
 #ifdef R_SEARCH
         dlb.linkParent(id, parent, hol_l, hol_r);
 #endif
-        hol_l.bind_branch_checkIn([&] {
-            int bestVal = branchHandler.refValue();
-            gbitset ingraph1 = bits_in_graph;
-            ingraph1.set(maxdeg_v, false);
-            //gbitset sol1 = cur_sol;
-            //sol1.set(maxdeg_v, true);
-            int solsize1 = cursol_size + 1;
+        hol_l.bind_branch_checkIn([&]
+                                  {
+                                      int bestVal = branchHandler.refValue();
+                                      gbitset ingraph1 = bits_in_graph;
+                                      ingraph1.set(maxdeg_v, false);
+                                      //gbitset sol1 = cur_sol;
+                                      //sol1.set(maxdeg_v, true);
+                                      int solsize1 = cursol_size + 1;
 
-            if (solsize1 < bestVal)
-            {
-                hol_l.holdArgs(newDepth, ingraph1, solsize1);
-                return true;
-            }
-            else
-                return false;
-        });
+                                      if (solsize1 < bestVal)
+                                      {
+                                          //auto cpy = dummy;
+                                          //hol_l.holdArgs(newDepth, ingraph1, solsize1, cpy);
+                                          hol_l.holdArgs(newDepth, ingraph1, solsize1);
+                                          return true;
+                                      }
+                                      else
+                                          return false;
+                                  });
 
-        hol_r.bind_branch_checkIn([&] {
-            int bestVal = branchHandler.refValue();
-            //right branch = take out v nbrs
-            gbitset ingraph2 = bits_in_graph;
+        hol_r.bind_branch_checkIn([&]
+                                  {
+                                      int bestVal = branchHandler.refValue();
+                                      //right branch = take out v nbrs
+                                      gbitset ingraph2 = bits_in_graph;
 
-            ingraph2 = bits_in_graph & (~graphbits[maxdeg_v]);
-            gbitset nbrs = (graphbits[maxdeg_v] & bits_in_graph);
-            //gbitset sol2 = cur_sol | nbrs;	//add all nbrs to solution
-            int solsize2 = cursol_size + nbrs.count();
+                                      ingraph2 = bits_in_graph & (~graphbits[maxdeg_v]);
+                                      gbitset nbrs = (graphbits[maxdeg_v] & bits_in_graph);
+                                      //gbitset sol2 = cur_sol | nbrs;	//add all nbrs to solution
+                                      int solsize2 = cursol_size + nbrs.count();
 
-            if (solsize2 < bestVal)
-            {
-                hol_r.holdArgs(newDepth, ingraph2, solsize2);
-                return true;
-            }
-            else
-                return false;
-        });
+                                      if (solsize2 < bestVal)
+                                      {
+                                          hol_r.holdArgs(newDepth, ingraph2, solsize2);
+                                          //auto cpy = dummy;
+                                          //hol_r.holdArgs(newDepth, ingraph2, solsize2, cpy);
+                                          return true;
+                                      }
+                                      else
+                                          return false;
+                                  });
 
         if (hol_l.evaluate_branch_checkIn())
         {
@@ -426,6 +447,7 @@ public:
     }
 
 private:
+    //void terminate_condition_bits(int solsize, int id, int depth, auto &dummy)
     void terminate_condition_bits(int solsize, int id, int depth)
     {
         if (solsize == 0)
@@ -438,6 +460,7 @@ private:
             branchHandler.updateRefValue(solsize);
 
             fmt::print("rank {}, MVC solution so far: {}\n", branchHandler.rank_me(), solsize);
+            //fmt::print("dummy[0,...,3] = [{}, {}, {}, {}]\n", dummy[0], dummy[1], dummy[2], dummy[3]);
         }
 
         return;

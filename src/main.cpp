@@ -13,19 +13,22 @@ int main(int argc, char *argv[])
 		.help("Number of threads")
 		.nargs(1)
 		.default_value(int{1})
-		.action([](const std::string &value) { return std::stoi(value); });
+		.action([](const std::string &value)
+				{ return std::stoi(value); });
 
 	program.add_argument("-P", "--prob")
 		.help("Density probability of input graph")
 		.nargs(1)
 		.default_value(int{4})
-		.action([](const std::string &value) { return std::stoi(value); });
+		.action([](const std::string &value)
+				{ return std::stoi(value); });
 
 	program.add_argument("-I", "--indir")
 		.help("Input directory of the graph to be read")
 		.nargs(1)
 		.default_value(std::string{"input/prob_4/400/00400_1"})
-		.action([](const std::string &value) { return value; });
+		.action([](const std::string &value)
+				{ return value; });
 	try
 	{
 		program.parse_args(argc, argv);
@@ -65,7 +68,6 @@ int main(int argc, char *argv[])
 	//MPI_Finalize();
 	//return 0;
 
-	
 #ifdef VC_VOID
 	return main_void(numThreads, prob, filename);
 #elif VC_FPT_VOID
@@ -78,5 +80,7 @@ int main(int argc, char *argv[])
 	return main_non_void_MPI(numThreads, prob, filename);
 #elif BITVECTOR_VC
 	return main_void_MPI_bitvec(numThreads, prob, filename);
+#elif BITVECTOR_VC_THREAD
+	return main_void_bitvec(numThreads, prob, filename);
 #endif
 }

@@ -377,6 +377,33 @@ src/main_void_MPI_bitvec.cpp.s:
 	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void_MPI_bitvec.cpp.s
 .PHONY : src/main_void_MPI_bitvec.cpp.s
 
+src/main_void_bitvec.o: src/main_void_bitvec.cpp.o
+
+.PHONY : src/main_void_bitvec.o
+
+# target to build an object file
+src/main_void_bitvec.cpp.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.o
+.PHONY : src/main_void_bitvec.cpp.o
+
+src/main_void_bitvec.i: src/main_void_bitvec.cpp.i
+
+.PHONY : src/main_void_bitvec.i
+
+# target to preprocess a source file
+src/main_void_bitvec.cpp.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.i
+.PHONY : src/main_void_bitvec.cpp.i
+
+src/main_void_bitvec.s: src/main_void_bitvec.cpp.s
+
+.PHONY : src/main_void_bitvec.s
+
+# target to generate assembly for a file
+src/main_void_bitvec.cpp.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/src/main_void_bitvec.cpp.s
+.PHONY : src/main_void_bitvec.cpp.s
+
 src/read_graphs.o: src/read_graphs.cpp.o
 
 .PHONY : src/read_graphs.o
@@ -441,6 +468,9 @@ help:
 	@echo "... src/main_void_MPI_bitvec.o"
 	@echo "... src/main_void_MPI_bitvec.i"
 	@echo "... src/main_void_MPI_bitvec.s"
+	@echo "... src/main_void_bitvec.o"
+	@echo "... src/main_void_bitvec.i"
+	@echo "... src/main_void_bitvec.s"
 	@echo "... src/read_graphs.o"
 	@echo "... src/read_graphs.i"
 	@echo "... src/read_graphs.s"
