@@ -111,23 +111,20 @@ namespace std
 		template <typename F, typename Tuple, size_t... I>
 		static constexpr decltype(auto) unpack_and_forward_void(F &&f, int id, Tuple &&t, void *holder, std::index_sequence<I...>)
 		{
-			return f(id, std::get<I>(t)..., holder);
-
-			//return f(id, std::get<I>(std::forward<Tuple>(t))..., holder);
-
-			//return std::invoke(std::forward<F>(f), id,
-			//				   std::get<I>(std::forward<Tuple>(t))..., holder);
+			return std::invoke(std::forward<F>(f),
+							   std::forward<int>(id),
+							   std::get<I>(std::forward<Tuple>(t))...,
+							   std::forward<void *>(holder));
 		}
 
 		template <typename F, typename Tuple>
 		static constexpr decltype(auto) unpack_and_forward_void(F &&f, int id, Tuple &&t, void *holder)
 		{
 			//https://stackoverflow.com/a/36656413/5248548
-			//static constexpr auto size = std::tuple_size<Tuple>::value;
 			return unpack_and_forward_void(std::forward<F>(f),
-										   id,
+										   std::forward<int>(id),
 										   std::forward<Tuple>(t),
-										   holder,
+										   std::forward<void *>(holder),
 										   std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{});
 		}
 		/*------- This unpacks tuple before forwarding it through the function ----->end*/
