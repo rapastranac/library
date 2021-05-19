@@ -28,7 +28,7 @@ echo "Starting run at: `date`"
 #mpirun --oversubscribe -n 10 -host manager:5,node1:5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/prob_4/600/00600_1
 #mpirun --oversubscribe -n 15 -host manager:10,node1:5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat700_1
 #mpirun --oversubscribe -n 2 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 48 -I input/prob_4/600/00600_1
-#mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/prob_4/600/00600_1
+mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/prob_4/600/00600_1
 
 
 #mpirun --oversubscribe -n 2 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/p_hat700_1
@@ -40,7 +40,7 @@ echo "Starting run at: `date`"
 #mpirun --oversubscribe -n 5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat700_1
 
 #mpirun --oversubscribe -n 10 -host manager:5,node1:5 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 4 -I input/p_hat1000_2
-mpirun --oversubscribe -n 10 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/p_hat1000_2
+#mpirun --oversubscribe -n 10 -display-map --bind-to none --map-by core --report-bindings ./a.out -N 1 -I input/p_hat1000_2
 
 
 

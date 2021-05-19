@@ -40,13 +40,19 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 47,
+				"line" : 43,
 				"parent" : 0
 			},
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 39,
+				"line" : 38,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 33,
 				"parent" : 0
 			},
 			{
@@ -100,7 +106,15 @@
 				},
 				{
 					"backtrace" : 3,
-					"fragment" : "-g"
+					"fragment" : "-std=c++2a"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fconcepts"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-O3"
 				},
 				{
 					"backtrace" : 3,
@@ -123,10 +137,6 @@
 					"fragment" : "-pthread"
 				},
 				{
-					"backtrace" : 3,
-					"fragment" : "-fconcepts"
-				},
-				{
 					"backtrace" : 2,
 					"fragment" : "-fopenmp"
 				},
@@ -138,7 +148,7 @@
 			[
 				{
 					"backtrace" : 4,
-					"define" : "BITVECTOR_VC_THREAD"
+					"define" : "BITVECTOR_VC"
 				},
 				{
 					"backtrace" : 2,
@@ -166,33 +176,37 @@
 				},
 				{
 					"backtrace" : 5,
+					"define" : "MPI_ENABLED"
+				},
+				{
+					"backtrace" : 6,
 					"define" : "R_SEARCH=true"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 6,
+					"backtrace" : 7,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi"
 				},
 				{
-					"backtrace" : 6,
+					"backtrace" : 7,
 					"path" : "/usr/lib/x86_64-linux-gnu/openmpi/include"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 8,
 					"path" : "/home/andres/cloud/library/include"
 				},
 				{
-					"backtrace" : 8,
+					"backtrace" : 9,
 					"path" : "/home/andres/cloud/library/MPI_Modules"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 10,
 					"path" : "/home/andres/cloud/library/cereal"
 				},
 				{
-					"backtrace" : 10,
+					"backtrace" : 11,
 					"path" : "/home/andres/cloud/library/fmt/include"
 				}
 			],

@@ -83,7 +83,7 @@ namespace GemPBA
 
 		double elapsedTime()
 		{
-			return end_time - start_time;
+			return (end_time - start_time) - static_cast<double>(TIMEOUT_TIME);
 		}
 
 		void allgather(void *recvbuf, void *sendbuf, MPI_Datatype mpi_datatype)
