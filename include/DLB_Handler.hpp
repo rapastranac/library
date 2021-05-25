@@ -369,34 +369,8 @@ namespace GemPBA
         template <typename Holder>
         void lowerRoot(Holder &holder)
         {
-            //Holder *root_cpy = static_cast<Holder *>(*holder.root); // cpy pointer to the current root
-            auto root_cpy = static_cast<Holder *>(*holder.root); // cpy pointer to the current root
-            if (root_cpy->isVirtual)
-            {
-                this->assign_root(holder.threadId, &holder);
-                holder.parent = nullptr;
-
-                //auto smrt = std::make_unique<Holder>(static_cast<Holder *>(*holder.root));
-
-                // at this point nobody should be pointing to the prior root
-                // this should be safe since every member (**root) is pointing to
-                // the container cell instead of a cell within a VirtualRoot
-                // delete root_cpy;
-            }
-            else
-            {
-                this->assign_root(holder.threadId, &holder);
-                holder.parent = nullptr;
-
-                // **************************************************************
-                // I believe this is duplication of something that has already happened
-                // if a thread reach this point of a holder,
-                // the holder should have already been assigned a root in branchHandler.roots[threadId]
-                //then "this->root" is already pointing to branchHandler.roots[threadId]
-
-                //this->root = &branchHandler.roots[threadId];
-                // **************************************************************
-            }
+            this->assign_root(holder.threadId, &holder);
+            holder.parent = nullptr;
         }
 
         /* this is useful because at level zero of a root, there might be multiple
