@@ -99,7 +99,6 @@ public:
         }
     }
 
-    
     void mvcbitset(int id, int depth, gbitset &bits_in_graph, int solsize, void *parent)
     {
 
@@ -283,13 +282,18 @@ public:
 
         int newDepth = depth + 1;
 
+        HolderType *dummyParent = nullptr;
         HolderType hol_l(dlb, id, parent);
         HolderType hol_r(dlb, id, parent);
 
         hol_l.setDepth(depth);
         hol_r.setDepth(depth);
 #ifdef R_SEARCH
-        dlb.linkParent(id, parent, hol_l, hol_r);
+        if (!parent)
+        {
+            dummyParent = new HolderType(dlb, id);
+            dlb.linkVirtualRoot(id, dummyParent, hol_l, hol_r);
+        }
 #endif
         hol_l.bind_branch_checkIn([&]
                                   {
@@ -352,6 +356,9 @@ public:
         }
 
         //cout<<"depth="<<depth<<" done"<<endl;
+
+        if (dummyParent)
+            delete dummyParent;
 
         return;
     }

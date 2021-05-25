@@ -330,7 +330,7 @@ namespace GemPBA
         }
 
         template <typename Holder>
-        void linkParent_helper(Holder *parent, Holder &child)
+        void linkVirtualRoot_helper(Holder *parent, Holder &child)
         {
             child.parent = parent->itself;
             child.root = parent->root;
@@ -338,30 +338,24 @@ namespace GemPBA
         }
 
         template <typename Holder, typename... Args>
-        void linkParent_helper(Holder *parent, Holder &child, Args &...args)
+        void linkVirtualRoot_helper(Holder *virtualRoot, Holder &child, Args &...args)
         {
-            child.parent = parent->itself;
-            child.root = parent->root;
-            parent->children.push_back(&child);
+            child.parent = virtualRoot->itself;
+            child.root = virtualRoot->root;
+            virtualRoot->children.push_back(&child);
         }
 
         template <typename Holder, typename... Args>
-        void linkParent(int threadId, void *parent, Holder &child, Args &...args)
+        void linkVirtualRoot(int threadId, Holder *virtualRoot, Holder &child, Args &...args)
         {
-
-            if (!parent) // this should only happen when parent was nullptr at children's construction time
+            virtualRoot->setDepth(child.depth);
             {
-                Holder *virtualRoot = new Holder(*this, threadId);
-                virtualRoot->setDepth(child.depth);
-
-                {
-                    std::scoped_lock<std::mutex> lck(mtx);
-                    child.parent = static_cast<Holder *>(roots[threadId]);
-                    child.root = &roots[threadId];
-                }
-                virtualRoot->children.push_back(&child);
-                linkParent_helper(virtualRoot, args...);
+                std::scoped_lock<std::mutex> lck(mtx);
+                child.parent = static_cast<Holder *>(roots[threadId]);
+                child.root = &roots[threadId];
             }
+            virtualRoot->children.push_back(&child);
+            linkVirtualRoot_helper(virtualRoot, args...);
         }
 
         template <typename Holder>
@@ -387,7 +381,7 @@ namespace GemPBA
                 // at this point nobody should be pointing to the prior root
                 // this should be safe since every member (**root) is pointing to
                 // the container cell instead of a cell within a VirtualRoot
-               // delete root_cpy;
+                // delete root_cpy;
             }
             else
             {

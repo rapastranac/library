@@ -133,7 +133,7 @@ public:
         hol_l.setDepth(depth);
         hol_r.setDepth(depth);
 #ifdef DLB
-        branchHandler.linkParent(id, parent, hol_l, hol_r);
+        branchHandler.linkVirtualRoot(id, parent, hol_l, hol_r);
 #endif
         int *referenceValue = branchHandler.refValueTest();
 

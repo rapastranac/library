@@ -58,7 +58,7 @@ void foo(int id, int depth, float treeIdx, void *parent)
 	hol_l.setDepth(depth);
 	hol_r.setDepth(depth);
 
-	dlb.linkParent(id, parent, hol_l, hol_r);
+	dlb.linkVirtualRoot(id, parent, hol_l, hol_r);
 
 	hol_l.bind_branch_checkIn([&]()
 							  {
