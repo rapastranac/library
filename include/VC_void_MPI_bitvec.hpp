@@ -419,16 +419,10 @@ public:
 
         if (hol_l.evaluate_branch_checkIn())
         {
-
-            //if (nbVertices <= 5)
+            //if (nbVertices < 50)
             //    branchHandler.forward<void>(_f, id, hol_l);
-            //if (nbVertices <= 15)
-            //    branchHandler.try_push_MT<void>(_f, id, hol_l);
             //else
-            if (nbVertices < 50)
-                branchHandler.forward<void>(_f, id, hol_l);
-            else
-                branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
+            branchHandler.try_push_MP<void>(_f, id, hol_l, serializer);
         }
         else
         {

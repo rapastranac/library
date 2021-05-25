@@ -95,14 +95,14 @@ namespace GemPBA
             else
                 return nullptr; // there is no parent
 
-//#ifdef DEBUG_COMMENTS
-//            fmt::print("rank {}, likely to get an upperHolder \n", -1);
-//#endif
+            //#ifdef DEBUG_COMMENTS
+            //            fmt::print("rank {}, likely to get an upperHolder \n", -1);
+            //#endif
             int N_children = root->children.size();
 
-//#ifdef DEBUG_COMMENTS
-//            fmt::print("rank {}, root->children.size() = {} \n", -1, N_children);
-//#endif
+            //#ifdef DEBUG_COMMENTS
+            //            fmt::print("rank {}, root->children.size() = {} \n", -1, N_children);
+            //#endif
 
             /*Here below, we check is left child was pushed to pool, then the pointer to parent is pruned
 							 parent
@@ -128,7 +128,8 @@ namespace GemPBA
 
             /* there migh be a chance that a good solution has been found in which a top branch is wortless to
 				be pushed, then this branch is ignored if the bound condition is met*/
-            auto worthPushing = [](Holder *holder) -> Holder * {
+            auto worthPushing = [](Holder *holder) -> Holder *
+            {
                 //if (holder->isBound())
                 //{
                 //	bool isWorthPushing = holder->boundCond();
@@ -158,9 +159,9 @@ namespace GemPBA
             }
             else if (root->children.size() == 2)
             {
-//#ifdef DEBUG_COMMENTS
-//                fmt::print("rank {}, about to choose an upperHolder \n", -1);
-//#endif
+                //#ifdef DEBUG_COMMENTS
+                //                fmt::print("rank {}, about to choose an upperHolder \n", -1);
+                //#endif
                 /*	this scope is meant to push right branch which was put in waiting line
 					because there was no available thread to push leftMost branch, then leftMost
 					will be the new root since after this scope right branch will have been
@@ -374,16 +375,19 @@ namespace GemPBA
         template <typename Holder>
         void lowerRoot(Holder &holder)
         {
+            //Holder *root_cpy = static_cast<Holder *>(*holder.root); // cpy pointer to the current root
             auto root_cpy = static_cast<Holder *>(*holder.root); // cpy pointer to the current root
             if (root_cpy->isVirtual)
             {
                 this->assign_root(holder.threadId, &holder);
                 holder.parent = nullptr;
 
+                //auto smrt = std::make_unique<Holder>(static_cast<Holder *>(*holder.root));
+
                 // at this point nobody should be pointing to the prior root
                 // this should be safe since every member (**root) is pointing to
                 // the container cell instead of a cell within a VirtualRoot
-                delete root_cpy;
+               // delete root_cpy;
             }
             else
             {

@@ -99,6 +99,7 @@ public:
         }
     }
 
+    
     void mvcbitset(int id, int depth, gbitset &bits_in_graph, int solsize, void *parent)
     {
 

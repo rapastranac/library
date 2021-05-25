@@ -185,10 +185,7 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o: ../fmt/include/fmt/args.h
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../fmt/include/fmt/core.h
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../fmt/include/fmt/format-inl.h
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../fmt/include/fmt/format.h
-CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/resultholder/Base.hpp
-CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/resultholder/NonVoidIntermediate.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/resultholder/ResultHolder.hpp
-CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/resultholder/VoidIntermediate.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/BranchHandler.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/DLB_Handler.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/Graph.hpp
@@ -198,6 +195,10 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/VC_void.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/VertexCover.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/args_handler.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/main.h
+CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/resultholder/Base.hpp
+CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/resultholder/NonVoidIntermediate.hpp
+CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/resultholder/ResultHolder.hpp
+CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/resultholder/VoidIntermediate.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../include/util.hpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: ../src/main_void.cpp
 CMakeFiles/a.out.dir/src/main_void.cpp.o: /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h

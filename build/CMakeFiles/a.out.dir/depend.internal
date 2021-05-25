@@ -186,10 +186,7 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o
  ../fmt/include/fmt/core.h
  ../fmt/include/fmt/format-inl.h
  ../fmt/include/fmt/format.h
- ../include/resultholder/Base.hpp
- ../include/resultholder/NonVoidIntermediate.hpp
  ../include/resultholder/ResultHolder.hpp
- ../include/resultholder/VoidIntermediate.hpp
  /home/andres/cloud/library/include/BranchHandler.hpp
  /home/andres/cloud/library/include/DLB_Handler.hpp
  /home/andres/cloud/library/include/Graph.hpp
@@ -199,6 +196,10 @@ CMakeFiles/a.out.dir/src/main_void.cpp.o
  /home/andres/cloud/library/include/VertexCover.hpp
  /home/andres/cloud/library/include/args_handler.hpp
  /home/andres/cloud/library/include/main.h
+ /home/andres/cloud/library/include/resultholder/Base.hpp
+ /home/andres/cloud/library/include/resultholder/NonVoidIntermediate.hpp
+ /home/andres/cloud/library/include/resultholder/ResultHolder.hpp
+ /home/andres/cloud/library/include/resultholder/VoidIntermediate.hpp
  /home/andres/cloud/library/include/util.hpp
  /home/andres/cloud/library/src/main_void.cpp
  /usr/lib/x86_64-linux-gnu/openmpi/include/mpi.h

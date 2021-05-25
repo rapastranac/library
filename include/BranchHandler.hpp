@@ -281,6 +281,15 @@ namespace GemPBA
 				{
 					if (thread_pool->n_idle() > 0)
 					{
+
+						std::random_device rd;	// Will be used to obtain a seed for the random number engine
+						std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+						std::uniform_real_distribution<> distrib(0.0, 1.0);
+						float random = distrib(gen);
+
+						if (random > 0.1f)
+							break;
+
 						if (try_top_holder<_ret>(f, holder))
 						{
 							continue; // keeps iterating from root to current level

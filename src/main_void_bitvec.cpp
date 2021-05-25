@@ -37,6 +37,8 @@ int main_void_bitvec(int numThreads, int prob, std::string filename)
 	Graph graph;
 	graph.readEdges(filename);
 
+	int initSize = graph.preprocessing();
+
 	cover.init(graph, numThreads, filename, prob);
 	cover.setGraph(graph);
 

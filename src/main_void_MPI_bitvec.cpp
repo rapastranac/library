@@ -44,6 +44,7 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	graph.readEdges(filename);
 
 	cover.init(graph, numThreads, filename, prob);
+	//int initSize = graph.preprocessing();
 	cover.setGraph(graph);
 
 	int gsize = graph.adj.size() + 1; //+1 cuz some files use node ids from 1 to n (instead of 0 to n - 1)

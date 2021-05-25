@@ -20,15 +20,14 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_CXX
-  "BITVECTOR_VC"
   "BOOST_ALL_NO_LIB"
   "BOOST_CONTEXT_DYN_LINK"
   "BOOST_FIBER_DYN_LINK"
   "BOOST_FILESYSTEM_DYN_LINK"
   "BOOST_SERIALIZATION_DYN_LINK"
   "BOOST_SYSTEM_DYN_LINK"
-  "MPI_ENABLED"
   "R_SEARCH=true"
+  "VC_VOID"
   )
 
 # The include file search paths:
