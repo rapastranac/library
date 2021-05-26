@@ -374,7 +374,7 @@ private:
             branchHandler.holdSolution(solsize);
             branchHandler.updateRefValue(solsize);
 
-            fmt::print("MVC solution so far: {}\n", solsize);
+            fmt::print("MVC solution so far: {} @ depth : {}\n", solsize, depth);
         }
 
         return;

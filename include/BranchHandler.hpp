@@ -265,7 +265,7 @@ namespace GemPBA
 
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
-		bool push_multithreading(F &f, int id, Holder &holder)
+		bool push_multithreading(F &&f, int id, Holder &holder)
 		{
 			/* the underlying loop breaks under one of the following scenarios:
 				- mutex cannot be acquired
@@ -282,13 +282,12 @@ namespace GemPBA
 					if (thread_pool->n_idle() > 0)
 					{
 
-						std::random_device rd;	// Will be used to obtain a seed for the random number engine
-						std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-						std::uniform_real_distribution<> distrib(0.0, 1.0);
-						float random = distrib(gen);
-
-						if (random > 0.1f)
-							break;
+						//std::random_device rd;	// Will be used to obtain a seed for the random number engine
+						//std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+						//std::uniform_real_distribution<> distrib(0.0, 1.0);
+						//float random = distrib(gen);
+						//if (random > 0.1f)
+						//	break;
 
 						if (try_top_holder<_ret>(f, holder))
 						{
@@ -364,7 +363,7 @@ namespace GemPBA
 		}
 
 		template <typename _ret, typename F, typename Holder>
-		bool try_push_MT(F &f, int id, Holder &holder)
+		bool try_push_MT(F &&f, int id, Holder &holder)
 		{
 			return push_multithreading<_ret>(f, id, holder);
 		}

@@ -464,7 +464,7 @@ private:
             branchHandler.holdSolution(solsize, solsize, serializer);
             branchHandler.updateRefValue(solsize);
 
-            fmt::print("rank {}, MVC solution so far: {}\n", branchHandler.rank_me(), solsize);
+            fmt::print("rank {}, MVC solution so far: {} @ depth : {}\n", branchHandler.rank_me(), solsize, depth);
             //fmt::print("dummy[0,...,3] = [{}, {}, {}, {}]\n", dummy[0], dummy[1], dummy[2], dummy[3]);
         }
 
