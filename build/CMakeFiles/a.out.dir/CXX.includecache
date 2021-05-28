@@ -6,6 +6,12 @@
 
 #IncludeRegexTransform: 
 
+../MPI_Modules/Tree.hpp
+iostream
+-
+vector
+-
+
 ../fmt/include/fmt/args.h
 functional
 -
@@ -132,6 +138,12 @@ time.h
 thread
 -
 queue
+-
+unistd.h
+-
+sys/time.h
+-
+sys/resource.h
 -
 
 /home/andres/cloud/library/MPI_Modules/Tree.hpp
@@ -266,6 +278,10 @@ set
 omp.h
 -
 
+/home/andres/cloud/library/include/VC_void_MPI.hpp
+VertexCover.hpp
+/home/andres/cloud/library/include/VertexCover.hpp
+
 /home/andres/cloud/library/include/VC_void_MPI_bitvec.hpp
 VertexCover.hpp
 /home/andres/cloud/library/include/VertexCover.hpp
@@ -384,6 +400,44 @@ cwctype
 sstream
 -
 vector
+-
+
+/home/andres/cloud/library/src/main_void_MPI.cpp
+../include/main.h
+/home/andres/cloud/library/include/main.h
+../include/Graph.hpp
+/home/andres/cloud/library/include/Graph.hpp
+../MPI_Modules/MPI_Scheduler.hpp
+/home/andres/cloud/library/MPI_Modules/MPI_Scheduler.hpp
+../include/VC_void_MPI.hpp
+/home/andres/cloud/library/include/VC_void_MPI.hpp
+../include/resultholder/ResultHolder.hpp
+/home/andres/cloud/library/include/resultholder/ResultHolder.hpp
+../include/BranchHandler.hpp
+/home/andres/cloud/library/include/BranchHandler.hpp
+../include/DLB_Handler.hpp
+/home/andres/cloud/library/include/DLB_Handler.hpp
+Tree.hpp
+/home/andres/cloud/library/src/Tree.hpp
+chrono
+-
+filesystem
+-
+fstream
+-
+iostream
+-
+istream
+-
+sstream
+-
+iterator
+-
+string
+-
+vector
+-
+unistd.h
 -
 
 /home/andres/cloud/library/src/main_void_MPI_bitvec.cpp

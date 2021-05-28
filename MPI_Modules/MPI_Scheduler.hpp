@@ -20,6 +20,8 @@
 #include <time.h>
 #include <thread>
 #include <queue>
+#include <unistd.h>
+
 
 #define CENTER 0
 
@@ -156,6 +158,7 @@ namespace GemPBA
 		void runNode(auto &branchHandler, auto &&bufferDecoder, auto &&resultFetcher, auto &&serializer)
 		{
 			MPI_Barrier(world_Comm);
+			//nice(18);
 
 			while (true)
 			{
@@ -175,8 +178,6 @@ namespace GemPBA
 					if (flag)
 						break;
 				}
-
-				//MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status); // receives status before receiving the message
 				MPI_Get_count(&status, MPI_CHAR, &count); // receives total number of datatype elements of the message
 
 #ifdef DEBUG_COMMENTS
@@ -184,10 +185,12 @@ namespace GemPBA
 #endif
 				char *message = new char[count];
 				MPI_Recv(message, count, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, world_Comm, &status);
-				recvdMessages++;
 
-				if (isTerminated(status.MPI_TAG, message))
+				if (isTerminated(status.MPI_TAG))
+				{
+					delete[] message;
 					break;
+				}
 
 				notifyRunningState();
 				nTasksRecvd++;
@@ -200,7 +203,7 @@ namespace GemPBA
 				// **********************************************************************************************
 
 				taskFunneling(branchHandler);
-				notifyStateAvailable();
+				notifyAvailableState();
 
 				delete holder;
 				delete[] message;
@@ -246,8 +249,9 @@ namespace GemPBA
 		{
 			std::string *message = nullptr;
 			bool isPop = q.pop(message);
+			//nice(18);
 
-			while (true)
+				while (true)
 			{
 
 				while (isPop)
@@ -268,7 +272,7 @@ namespace GemPBA
 						throw std::runtime_error("Task found in queue, this should not happen in taskFunneling()\n");
 					}
 				}
-
+				//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				{
 					/* this section protects MPI calls */
 					std::scoped_lock<std::mutex> lck(mtx);
@@ -299,6 +303,8 @@ namespace GemPBA
 				throw std::runtime_error("leaving process with a pending message\n");
 			/* to reuse the task funneling, otherwise it will exit
             right away the second time the process receives a task*/
+
+			//nice(0);
 		}
 
 		int probe_refValue()
@@ -384,11 +390,10 @@ namespace GemPBA
 			nxtProcess = next_process[0];
 		}
 
-		bool isTerminated(int TAG, char *buffer)
+		bool isTerminated(int TAG)
 		{
 			if (TAG == TERMINATION_TAG)
 			{
-				delete[] buffer;
 				fmt::print("rank {} exited\n", world_rank);
 				MPI_Barrier(world_Comm);
 				return true;
@@ -396,12 +401,12 @@ namespace GemPBA
 			return false;
 		}
 
-		void notifyStateAvailable()
+		void notifyAvailableState()
 		{
 			int buffer = 0;
 			MPI_Send(&buffer, 1, MPI_INT, 0, STATE_AVAILABLE, world_Comm);
 #ifdef DEBUG_COMMENTS
-			fmt::print("rank {} entered notifyStateAvailable()\n", world_rank);
+			fmt::print("rank {} entered notifyAvailableState()\n", world_rank);
 #endif
 		}
 
@@ -871,7 +876,6 @@ namespace GemPBA
 
 		// statistics
 		size_t totalRequests = 0;
-		size_t recvdMessages = 0;
 		double start_time = 0;
 		double end_time = 0;
 
