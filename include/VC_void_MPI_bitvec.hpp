@@ -184,7 +184,7 @@ public:
     }
 
     //void mvcbitset(int id, int depth, gbitset &bits_in_graph, int solsize, std::vector<int> dummy, void *parent)
-    void mvcbitset(int id, int depth, gbitset &bits_in_graph, int solsize, void *parent)
+    void mvcbitset(int id, int depth, gbitset &bits_in_graph, int solsize, void *parent = nullptr)
     {
 
         //{                                                   // 1 MB, emulates heavy messaging
@@ -464,7 +464,10 @@ private:
             branchHandler.holdSolution(solsize, solsize, serializer);
             branchHandler.updateRefValue(solsize);
 
-            fmt::print("rank {}, MVC solution so far: {} @ depth : {}\n", branchHandler.rank_me(), solsize, depth);
+            auto clock = std::chrono::system_clock::now();
+            std::time_t time = std::chrono::system_clock::to_time_t(clock); //it includes a "\n"
+
+            fmt::print("rank {}, MVC solution so far: {} @ depth : {}, {}", branchHandler.rank_me(), solsize, depth, std::ctime(&time));
             //fmt::print("dummy[0,...,3] = [{}, {}, {}, {}]\n", dummy[0], dummy[1], dummy[2], dummy[3]);
         }
 

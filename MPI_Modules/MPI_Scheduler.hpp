@@ -765,7 +765,7 @@ namespace GemPBA
 
 					delete[] buffer;
 
-					fmt::print("solution received from {}, count : {}, refVal {} \n", rank, count, refValue);
+					fmt::print("solution received from rank {}, count : {}, refVal {} \n", rank, count, refValue);
 				}
 				break;
 

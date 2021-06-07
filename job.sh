@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=p_hat1000_nice_15threads
+#SBATCH --job-name=p_hat1000_nonice_16threads
 #SBATCH --output=report/%x-%j.out
 #SBATCH --account=def-mlafond
 #SBATCH --nodes=4
@@ -16,6 +16,7 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=REQUEUE
+#SBATCH --constraint=broadwell
 # ---------------------------------------------------------------------
 
 #module --force purge
@@ -37,7 +38,7 @@ echo "Current working directory: `pwd`"
 echo "Starting run at: `date`"
 
 #srun ./a.out -N 40 -P 4 -I input/prob_4/600/00600_1
-srun ./a.out -N 15 -P 4 -I input/p_hat1000_2
+srun ./a.out -N 16 -P 4 -I input/p_hat1000_2
 #srun ./a.out -N 19 -P 4 -I input/600_cell
 
 

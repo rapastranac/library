@@ -123,16 +123,6 @@ int main_void_MPI_bitvec(int numThreads, int prob, std::string filename)
 	{
 		auto solutions = mpiScheduler.fetchResVec();
 
-		int summation = 0;
-		for (size_t i = 0; i < mpiScheduler.getWorldSize(); i++)
-		{
-			if (solutions[i].first != -1)
-				summation += solutions[i].first;
-		}
-		fmt::print("\n\n");
-		fmt::print("Summation of refValGlobal : {}\n", summation);
-
-		//std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // to let other processes to print
 		mpiScheduler.printStats();
 
 		//print sumation of refValGlobal
