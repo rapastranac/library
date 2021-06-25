@@ -22,7 +22,6 @@
 #include <queue>
 #include <unistd.h>
 
-
 #define CENTER 0
 
 #define STATE_RUNNING 1
@@ -251,7 +250,7 @@ namespace GemPBA
 			bool isPop = q.pop(message);
 			//nice(18);
 
-				while (true)
+			while (true)
 			{
 
 				while (isPop)

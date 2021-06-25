@@ -374,7 +374,10 @@ private:
             branchHandler.holdSolution(solsize);
             branchHandler.updateRefValue(solsize);
 
-            fmt::print("MVC solution so far: {} @ depth : {}\n", solsize, depth);
+            auto clock = std::chrono::system_clock::now();
+            std::time_t time = std::chrono::system_clock::to_time_t(clock); //it includes a "\n"
+
+            fmt::print("rank {}, MVC solution so far: {} @ depth : {}, {}", branchHandler.rank_me(), solsize, depth, std::ctime(&time));
         }
 
         return;

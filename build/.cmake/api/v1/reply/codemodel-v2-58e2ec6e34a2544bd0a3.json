@@ -18,7 +18,7 @@
 					]
 				}
 			],
-			"name" : "Debug",
+			"name" : "Release",
 			"projects" : 
 			[
 				{
@@ -38,7 +38,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "a.out::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-a.out-Debug-72c961e1ca005cdf63b7.json",
+					"jsonFile" : "target-a.out-Release-84adc865fa713e858cbb.json",
 					"name" : "a.out",
 					"projectIndex" : 0
 				}

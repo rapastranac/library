@@ -28,7 +28,6 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
   "BOOST_SERIALIZATION_DYN_LINK"
   "BOOST_SYSTEM_DYN_LINK"
   "MPI_ENABLED"
-  "R_SEARCH=true"
   )
 
 # The include file search paths:

@@ -1,33 +1,25 @@
 #!/bin/bash
-#SBATCH --job-name=p_hat1000_nonice_16threads
+#SBATCH --job-name=p_hat1000_2_10nodes
 #SBATCH --output=report/%x-%j.out
 #SBATCH --account=def-mlafond
-#SBATCH --nodes=4
-#SBATCH --tasks=8
+#SBATCH --nodes=5
 #SBATCH --ntasks-per-socket=1
 #SBATCH --ntasks-per-node=2
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128000M
-##SBATCH --mem-per-cpu=4500M     	# memory; default unit is megabytes
-##SBATCH --mem=MaxMemPerNode		# memory limit per compute node
-#SBATCH --time=0-00:45:00           	# time limit (DD-HH:MM)
+#SBATCH --cpus-per-task=20
+#SBATCH --time=0-00:16:00           	# time limit (DD-HH:MM)
 #SBATCH --mail-user=pasr1602@usherbrooke.ca
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=REQUEUE
-#SBATCH --constraint=broadwell
+#SBATCH --constraint=[dragonfly5] # for niagara only cascadelake Intel 6248, 468 nodes
 # ---------------------------------------------------------------------
 
-#module --force purge
-#module load StdEnv/2020
-#module load gcc/10.2.0
-#module load openmpi/4.0.5
-#module list
+cd $SLURM_SUBMIT_DIR
 
 module --force purge
-module load StdEnv/2020
-module load gcc/9.3.0
+module load CCEnv
+module load StdEnv/2020  gcc/9.3.0
 module load openmpi/4.0.3
 module load boost/1.72.0
 module list
@@ -37,8 +29,8 @@ module list
 echo "Current working directory: `pwd`"
 echo "Starting run at: `date`"
 
-#srun ./a.out -N 40 -P 4 -I input/prob_4/600/00600_1
-srun ./a.out -N 16 -P 4 -I input/p_hat1000_2
+#srun ./a.out -N 19  -I input/00600_1
+srun ./a.out -N 19 -P 4 -I input/p_hat1000_2
 #srun ./a.out -N 19 -P 4 -I input/600_cell
 
 

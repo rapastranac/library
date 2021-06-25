@@ -59,17 +59,20 @@ int main_void_bitvec(int numThreads, int prob, std::string filename)
 	HolderType holder(dlb, -1);
 	holder.holdArgs(zero, allones, zero);
 
+	double start = branchHandler.WTime();
 	branchHandler.initThreadPool(numThreads);
-	branchHandler.try_push_MT<void>(function, -1, holder);
+	branchHandler.force_push<void>(function, -1, holder);
 	branchHandler.wait();
+	double end = branchHandler.WTime();
 
 	double idl_tm = branchHandler.getPoolIdleTime();
 	size_t rqst = branchHandler.number_thread_requests();
 
 	int solution = branchHandler.fetchSolution<int>();
-	fmt::print("Cover size : {} \n", solution);
+	fmt::print("\n\n\nCover size : {} \n", solution);
 
-	fmt::print("\nGlobal pool idle time: {0:.6f} seconds\n\n\n", idl_tm);
+	fmt::print("Global pool idle time: {0:.6f} seconds\n\n\n", idl_tm);
+	fmt::print("Elapsed time: {}\n", end - start);
 
 	// **************************************************************************
 

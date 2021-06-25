@@ -107,7 +107,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : "Debug"
+			"value" : "Release"
 		},
 		{
 			"name" : "CMAKE_CACHEFILE_DIR",
@@ -223,7 +223,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/bin/g++-9"
+			"value" : "/bin/x86_64-linux-gnu-g++-9"
 		},
 		{
 			"name" : "CMAKE_CXX_COMPILER_AR",
@@ -351,7 +351,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/bin/gcc-9"
+			"value" : "/bin/x86_64-linux-gnu-gcc-9"
 		},
 		{
 			"name" : "CMAKE_C_COMPILER_AR",
@@ -1442,22 +1442,6 @@
 			"value" : "/usr/bin/mpicxx"
 		},
 		{
-			"name" : "MPI_CXX_COMPILER_INCLUDE_DIRS",
-			"properties" : 
-			[
-				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
-					"name" : "HELPSTRING",
-					"value" : "MPI CXX compiler wrapper include directories"
-				}
-			],
-			"type" : "STRING",
-			"value" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi;/usr/lib/x86_64-linux-gnu/openmpi/include"
-		},
-		{
 			"name" : "MPI_CXX_COMPILE_DEFINITIONS",
 			"properties" : 
 			[
@@ -1584,22 +1568,6 @@
 			],
 			"type" : "FILEPATH",
 			"value" : "/usr/bin/mpicc"
-		},
-		{
-			"name" : "MPI_C_COMPILER_INCLUDE_DIRS",
-			"properties" : 
-			[
-				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
-					"name" : "HELPSTRING",
-					"value" : "MPI C compiler wrapper include directories"
-				}
-			],
-			"type" : "STRING",
-			"value" : "/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi;/usr/lib/x86_64-linux-gnu/openmpi/include"
 		},
 		{
 			"name" : "MPI_C_COMPILE_DEFINITIONS",

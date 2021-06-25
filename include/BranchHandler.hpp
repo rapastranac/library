@@ -31,6 +31,7 @@
 #include <mutex>
 #include <queue>
 #include <sstream>
+#include <sys/time.h>
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
@@ -130,6 +131,17 @@ namespace GemPBA
 			fmt::print("Main thread waiting results \n");
 #endif
 			this->thread_pool->wait();
+		}
+
+		double WTime()
+		{
+			struct timeval time;
+			if (gettimeofday(&time, NULL))
+			{
+				//  Handle error
+				return 0;
+			}
+			return (double)time.tv_sec + (double)time.tv_usec * .000001;
 		}
 
 		bool has_result()
@@ -254,6 +266,8 @@ namespace GemPBA
 #endif
 
 	public:
+		/* Special care should be taken with this method, otherwise deadlocks
+		might appear*/
 		template <typename _ret, typename F, typename Holder,
 				  std::enable_if_t<std::is_void_v<_ret>, int> = 0>
 		void force_push(F &f, int id, Holder &holder)
